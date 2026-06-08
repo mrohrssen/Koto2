@@ -348,7 +348,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(work.card.frequencyRank, 2);
   });
 
-  it('fills a five-prompt server runway without mutating persistent daily completion', () => {
+  it('fills a thirty-prompt server runway without mutating persistent daily completion', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
       card.due = new Date('2026-05-30T00:00:00Z');
@@ -362,15 +362,14 @@ describe('kanji-kombat deck controller', () => {
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    assert.equal(PROMPT_BUFFER_TARGET, 5);
-    assert.equal(PROMPT_BUFFER_REFILL_THRESHOLD, 3);
-    assert.equal(prompts.length, 5);
-    assert.equal(state.promptBuffer.length, 5);
+    assert.equal(PROMPT_BUFFER_TARGET, 30);
+    assert.equal(PROMPT_BUFFER_REFILL_THRESHOLD, 10);
+    assert.equal(prompts.length, 30);
+    assert.equal(state.promptBuffer.length, 30);
     assert.equal(state.currentQuiz.cardId, state.promptBuffer[0].cardId);
-    assert.equal(state.pendingIntro, null);
-    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.promptId)).size, 5);
-    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 5);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
+    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.promptId)).size, 30);
+    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 30);
   });
 
   it('builds intro prompts in the buffer without recording daily intro counts', () => {
@@ -483,6 +482,31 @@ describe('kanji-kombat deck controller', () => {
     assert.deepEqual(prompts.map(prompt => prompt.kind), ['intro', 'quiz', 'completePrompt']);
     assert.equal(prompts.filter(prompt => prompt.kind === 'intro').length, 1);
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, DAILY_NEW_LIMIT - 1);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
+  });
+
+  it('does not fill the larger runway with new-card intros beyond the daily cap', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    data.kanjiKombatDaily = {
+      date: '2026-05-31',
+      introducedCount: DAILY_NEW_LIMIT - 2,
+      completed: false,
+    };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const prompts = fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(PROMPT_BUFFER_TARGET, 30);
+    assert.equal(prompts.filter(prompt => prompt.kind === 'intro').length, 2);
+    assert.equal(prompts.at(-1).kind, 'completePrompt');
+    assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, DAILY_NEW_LIMIT - 2);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
   });
 

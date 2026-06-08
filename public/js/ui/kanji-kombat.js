@@ -1,11 +1,12 @@
 import { escapeHtml } from './html-utils.js';
 import { renderButtonsAsync } from './ui-components.js';
 import { getSpeakerId, playDialogueLineAudio } from '../tts.js';
+import { createPendingRunAction } from './optimistic-run-action.js';
 import {
-  createPendingRunAction,
-  correctPendingRunAction,
-  isMatchingRunActionResponse,
-} from './optimistic-run-action.js';
+  configureKanjiKombatSyncQueue,
+  REVIEW_SYNC_QUEUE_HARD_LIMIT,
+  REVIEW_SYNC_QUEUE_SOFT_LIMIT,
+} from './kanji-kombat-sync-queue.js';
 
 const DEFAULT_API = {
   submitAnswer: null,
@@ -42,10 +43,14 @@ const ONBOARDING_COPY = {
 };
 
 let onboardingInProgress = false;
-const KANJI_KOMBAT_SAVE_FAILURE_COPY = 'Kanji Kombat choice did not save. Please try again.';
-const PROMPT_BUFFER_REFILL_THRESHOLD = 3;
+const KANJI_KOMBAT_SPOTTY_CONNECTION_COPY = 'Connection is spotty. Your reviews will sync when you reconnect.';
+const PROMPT_BUFFER_REFILL_THRESHOLD = 10;
 let promptBufferRefillPromise = null;
 let latestKanjiKombatState = null;
+let reviewSyncQueue = null;
+let consumedPromptIds = new Set();
+let reviewSyncOnlineDrainTarget = null;
+let reviewSyncVisibilityDrainTarget = null;
 
 function createKanjiKombatPendingAction(gameState, actionType, applyLocal) {
   const actionTypeByName = {
@@ -62,9 +67,33 @@ function createKanjiKombatPendingAction(gameState, actionType, applyLocal) {
 }
 
 export function initKanjiKombatUI(deps) {
+  reviewSyncQueue?.reset();
   api = { ...DEFAULT_API, ...deps };
   latestKanjiKombatState = null;
   promptBufferRefillPromise = null;
+  consumedPromptIds = new Set();
+  reviewSyncQueue = createReviewSyncQueue();
+  if (Array.isArray(deps?.__testQueueSeed)) {
+    reviewSyncQueue = createSeededReviewSyncQueue(reviewSyncQueue, deps.__testQueueSeed);
+  }
+  if (
+    typeof window !== 'undefined'
+    && typeof window.addEventListener === 'function'
+    && reviewSyncOnlineDrainTarget !== window
+  ) {
+    reviewSyncOnlineDrainTarget = window;
+    window.addEventListener('online', () => reviewSyncQueue?.drainNow());
+  }
+  if (
+    typeof document !== 'undefined'
+    && typeof document.addEventListener === 'function'
+    && reviewSyncVisibilityDrainTarget !== document
+  ) {
+    reviewSyncVisibilityDrainTarget = document;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'hidden') reviewSyncQueue?.drainNow();
+    });
+  }
 }
 
 function actionArea() {
@@ -105,12 +134,8 @@ async function askOnboardingBoolean(question) {
   return choice === 0;
 }
 
-async function showKanjiKombatSaveFailure() {
-  await api.showNarration?.(KANJI_KOMBAT_SAVE_FAILURE_COPY, { speaker: 'Cid', autoDismiss: 1800 });
-}
-
-function applyKanjiKombatCorrection(pending, result) {
-  updateKanjiKombatGameState(correctPendingRunAction(pending, result));
+async function showKanjiKombatSyncPause() {
+  await api.showNarration?.(KANJI_KOMBAT_SPOTTY_CONNECTION_COPY, { speaker: 'Cid', autoDismiss: 1800 });
 }
 
 function refreshKanjiKombatAction() {
@@ -119,10 +144,6 @@ function refreshKanjiKombatAction() {
     return;
   }
   api.updateUI?.();
-}
-
-function shouldRollbackKanjiKombatPending(pending, result) {
-  return !result || result.status === 'corrected' || !isMatchingRunActionResponse(pending, result);
 }
 
 function getActiveBufferedPrompt(kk) {
@@ -138,10 +159,111 @@ function updateKanjiKombatGameState(state) {
   api.updateGameState?.(state);
 }
 
+function activePromptId(state) {
+  return getActiveBufferedPrompt(state?.run?.kanjiKombat)?.promptId || null;
+}
+
+function rememberConsumedPrompt(prompt) {
+  if (prompt?.promptId) consumedPromptIds.add(prompt.promptId);
+}
+
+function stateWouldReplayConsumedPrompt(state) {
+  const promptId = activePromptId(state);
+  return !!promptId && consumedPromptIds.has(promptId);
+}
+
+function applyServerStateIfNotBehindLocalProgress(state) {
+  if (!state || stateWouldReplayConsumedPrompt(state)) return false;
+  updateKanjiKombatGameState(state);
+  return true;
+}
+
 function currentKanjiKombatState() {
   return typeof api.getGameState === 'function'
     ? api.getGameState() || latestKanjiKombatState
     : latestKanjiKombatState;
+}
+
+function canConsumeKanjiKombatPrompt() {
+  return !reviewSyncQueue || reviewSyncQueue.canConsumePrompt();
+}
+
+async function settleImmediateReviewSync() {
+  for (let i = 0; i < 5; i++) {
+    await Promise.resolve();
+  }
+}
+
+function createSeededReviewSyncQueue(queue, seedItems = []) {
+  let seedCount = Math.min(seedItems.length, REVIEW_SYNC_QUEUE_HARD_LIMIT);
+  const pendingCount = () => seedCount + queue.pendingCount();
+  return {
+    ...queue,
+    enqueue(item) {
+      if (pendingCount() >= REVIEW_SYNC_QUEUE_HARD_LIMIT) {
+        return { accepted: false, pendingCount: pendingCount(), hardLimit: true };
+      }
+      return queue.enqueue(item);
+    },
+    reset() {
+      seedCount = 0;
+      queue.reset();
+    },
+    pendingCount,
+    isAtSoftLimit: () => pendingCount() >= REVIEW_SYNC_QUEUE_SOFT_LIMIT,
+    isAtHardLimit: () => pendingCount() >= REVIEW_SYNC_QUEUE_HARD_LIMIT,
+    canConsumePrompt: () => pendingCount() < REVIEW_SYNC_QUEUE_HARD_LIMIT,
+    snapshot: () => [
+      ...seedItems.slice(0, seedCount).map(item => ({ ...item, status: 'seeded' })),
+      ...queue.snapshot(),
+    ],
+  };
+}
+
+function createReviewSyncQueue() {
+  return configureKanjiKombatSyncQueue({
+    syncItem: async item => {
+      if (item.kind === 'intro') {
+        return api.submitIntro(item.cardId, item.choice, item.options);
+      }
+      if (item.kind === 'completionChoice') {
+        return api.submitCompletionChoice(item.keepGoing, item.options);
+      }
+      if (item.kind === 'quiz') {
+        return item.sync();
+      }
+      throw new Error(`Unsupported Kanji Kombat sync item: ${item.kind}`);
+    },
+    onAccepted: (item, result) => {
+      if (typeof item.onAccepted === 'function') {
+        void item.onAccepted(result);
+        return;
+      }
+      if (result?.state) applyServerStateIfNotBehindLocalProgress(result.state);
+      if (!result?.combatEnded) requestPromptBufferRefillIfLow(result?.state || currentKanjiKombatState());
+      if (result?.combatEnded) api.finishCombatResult?.(result);
+    },
+    onCorrected: (item, result) => {
+      if (typeof item.onCorrected === 'function') {
+        void item.onCorrected(result);
+        return;
+      }
+      const state = result?.authoritativeState || result?.state;
+      if (state) applyServerStateIfNotBehindLocalProgress(state);
+      refreshKanjiKombatAction();
+    },
+    onFailed: (_item, error) => {
+      console.warn('[KanjiKombat] queued review sync failed:', error?.message || error);
+    },
+    onPause: () => {
+      void showKanjiKombatSyncPause();
+    },
+    schedule: (fn, delay) => {
+      const timer = setTimeout(fn, delay);
+      timer?.unref?.();
+      return timer;
+    },
+  });
 }
 
 function promptIdentity(prompt) {
@@ -237,7 +359,7 @@ function requestPromptBufferRefillIfLow(state) {
   promptBufferRefillPromise = Promise.resolve(api.refillPromptBuffer())
     .then(result => {
       if (result?.state && promptBufferHeadIdentity(currentKanjiKombatState()) === basisHead) {
-        updateKanjiKombatGameState(result.state);
+        applyServerStateIfNotBehindLocalProgress(result.state);
       }
       return result;
     })
@@ -305,7 +427,7 @@ function bindSingleFlightButtons(buttons, getValue, handler, { beforeSubmit = nu
   let inFlight = false;
   for (const button of buttons) {
     button.addEventListener('click', async () => {
-      if (inFlight) return;
+      if (inFlight) return false;
       inFlight = true;
       beforeSubmit?.(button, buttons);
       buttons.forEach(btn => { btn.disabled = true; });
@@ -315,6 +437,7 @@ function bindSingleFlightButtons(buttons, getValue, handler, { beforeSubmit = nu
           inFlight = false;
           buttons.forEach(btn => { btn.disabled = false; });
         }
+        return handled;
       } catch (err) {
         inFlight = false;
         buttons.forEach(btn => { btn.disabled = false; });
@@ -452,6 +575,11 @@ export function renderKanjiKombatAction(gameState) {
   if (completionPrompt || (!hasBufferedPrompt && kk.completionChoicePending)) {
     renderKanjiKombatCompletionChoice({
       onChoice: async keepGoing => {
+        if (!canConsumeKanjiKombatPrompt()) {
+          await showKanjiKombatSyncPause();
+          return false;
+        }
+
         const pending = createKanjiKombatPendingAction(
           gameState,
           'kanjiKombat.completionChoice',
@@ -466,40 +594,30 @@ export function renderKanjiKombatAction(gameState) {
             if (keepGoing) draft.run.kanjiKombat.endlessMode = true;
           }
         );
-        if (!pending) return;
-        updateKanjiKombatGameState(pending.state);
-        if (!renderKanjiKombatAction(pending.state)) clearActionArea();
+        if (!pending) return false;
 
-        let result = null;
-        try {
-          result = await api.submitCompletionChoice(keepGoing, {
+        rememberConsumedPrompt(bufferedPrompt);
+        updateKanjiKombatGameState(pending.state);
+
+        reviewSyncQueue.enqueue({
+          actionId: pending.actionId,
+          kind: 'completionChoice',
+          promptId: bufferedPrompt?.promptId || null,
+          sequence: bufferedPrompt?.sequence ?? null,
+          cardId: null,
+          keepGoing,
+          options: {
             actionId: pending.actionId,
             ...promptRef(bufferedPrompt?.kind === 'completePrompt' ? bufferedPrompt : null),
-          });
-        } catch (error) {
-          console.error('[KanjiKombat] Completion choice failed:', error?.message || error);
-          result = null;
-        }
+          },
+        });
 
-        if (shouldRollbackKanjiKombatPending(pending, result)) {
-          if (!result && await recoverFromNullKanjiKombatResponse(pending)) return;
-          applyKanjiKombatCorrection(pending, result);
-          await showKanjiKombatSaveFailure();
-          refreshKanjiKombatAction();
-          return;
-        }
+        // Let immediately accepted syncs clear before deciding whether the runway is empty.
+        await settleImmediateReviewSync();
+        if (!renderKanjiKombatAction(pending.state)) clearActionArea();
 
-        if (result?.state) updateKanjiKombatGameState(result.state);
-        if (!result?.combatEnded) requestPromptBufferRefillIfLow(result?.state || pending.state);
-        if (result?.combatEnded) {
-          api.finishCombatResult?.(result);
-          return;
-        }
-        if (result?.state && typeof api.refreshAction === 'function') {
-          api.refreshAction();
-          return;
-        }
-        api.updateUI();
+        if (reviewSyncQueue?.pendingCount() > 0) requestPromptBufferRefillIfLow(pending.state);
+        return true;
       },
     });
     return true;
@@ -509,6 +627,11 @@ export function renderKanjiKombatAction(gameState) {
   if (introCard) {
     renderKanjiKombatIntro(introCard, {
       onChoice: async choice => {
+        if (!canConsumeKanjiKombatPrompt()) {
+          await showKanjiKombatSyncPause();
+          return false;
+        }
+
         const pending = createKanjiKombatPendingAction(gameState, 'kanjiKombat.intro', draft => {
           draft.run ||= {};
           draft.run.kanjiKombat ||= {};
@@ -518,36 +641,30 @@ export function renderKanjiKombatAction(gameState) {
             draft.run.kanjiKombat.pendingIntro = null;
           }
         });
-        if (!pending) return;
-        updateKanjiKombatGameState(pending.state);
-        if (!renderKanjiKombatAction(pending.state)) clearActionArea();
+        if (!pending) return false;
 
-        let result = null;
-        try {
-          result = await api.submitIntro(introCard.id, choice, {
+        rememberConsumedPrompt(introPrompt);
+        updateKanjiKombatGameState(pending.state);
+
+        reviewSyncQueue.enqueue({
+          actionId: pending.actionId,
+          kind: 'intro',
+          promptId: introPrompt?.promptId || null,
+          sequence: introPrompt?.sequence ?? null,
+          cardId: introCard.id,
+          choice,
+          options: {
             actionId: pending.actionId,
             ...promptRef(introPrompt),
-          });
-        } catch (error) {
-          console.error('[KanjiKombat] Intro choice failed:', error?.message || error);
-          result = null;
-        }
+          },
+        });
 
-        if (shouldRollbackKanjiKombatPending(pending, result)) {
-          if (!result && await recoverFromNullKanjiKombatResponse(pending)) return;
-          applyKanjiKombatCorrection(pending, result);
-          await showKanjiKombatSaveFailure();
-          refreshKanjiKombatAction();
-          return;
-        }
+        // Let immediately accepted syncs clear before deciding whether the runway is empty.
+        await settleImmediateReviewSync();
+        if (!renderKanjiKombatAction(pending.state)) clearActionArea();
 
-        if (result?.state) updateKanjiKombatGameState(result.state);
-        requestPromptBufferRefillIfLow(result?.state || pending.state);
-        if (result?.state && typeof api.refreshAction === 'function') {
-          api.refreshAction();
-          return;
-        }
-        api.updateUI();
+        if (reviewSyncQueue?.pendingCount() > 0) requestPromptBufferRefillIfLow(pending.state);
+        return true;
       },
     });
     return true;
@@ -567,6 +684,12 @@ export function renderKanjiKombatAction(gameState) {
         return false;
       },
     });
+    return true;
+  }
+
+  if (!hasBufferedPrompt && reviewSyncQueue?.pendingCount() > 0) {
+    clearActionArea();
+    void showKanjiKombatSyncPause();
     return true;
   }
 

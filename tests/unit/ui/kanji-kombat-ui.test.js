@@ -208,6 +208,24 @@ describe('kanji-kombat ui', () => {
     }
   }
 
+  function createFakeEventTarget(base = {}) {
+    const listeners = new Map();
+    return {
+      ...base,
+      listeners,
+      addEventListener(type, handler) {
+        if (!listeners.has(type)) listeners.set(type, []);
+        listeners.get(type).push(handler);
+      },
+      dispatch(type) {
+        for (const handler of listeners.get(type) || []) handler();
+      },
+      listenerCount(type) {
+        return listeners.get(type)?.length || 0;
+      },
+    };
+  }
+
   function pendingOnboardingState(overrides = {}) {
     const {
       phase = 'combat',
@@ -432,12 +450,12 @@ describe('kanji-kombat ui', () => {
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].textContent, 'Yes');
   });
 
-  it('continues after the completion prompt without ending combat', async () => {
+  it('continues after the legacy completion prompt without ending combat', async () => {
     const calls = [];
     initKanjiKombatUI({
       submitCompletionChoice: async (keepGoing, options = {}) => {
         calls.push(['submitCompletionChoice', keepGoing]);
-        return { state: { phase: 'combat' }, actionId: options.actionId };
+        return { status: 'accepted', state: { phase: 'combat' }, actionId: options.actionId };
       },
       updateGameState: state => calls.push(['updateGameState', state.phase]),
       refreshAction: () => calls.push(['refreshAction']),
@@ -454,12 +472,12 @@ describe('kanji-kombat ui', () => {
       combat: { actionCursor: { side: 'ally', index: 0 } },
     });
     await actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].click();
+    await flushPromises(4);
 
     assert.deepEqual(calls, [
       ['updateGameState', 'combat'],
       ['submitCompletionChoice', true],
       ['updateGameState', 'combat'],
-      ['refreshAction'],
     ]);
   });
 
@@ -468,7 +486,7 @@ describe('kanji-kombat ui', () => {
     initKanjiKombatUI({
       submitCompletionChoice: async (keepGoing, options = {}) => {
         calls.push(['submitCompletionChoice', keepGoing]);
-        return { state: { phase: 'combat' }, combatEnded: true, victory: true, actionId: options.actionId };
+        return { status: 'accepted', state: { phase: 'combat' }, combatEnded: true, victory: true, actionId: options.actionId };
       },
       updateGameState: state => calls.push(['updateGameState', state.phase]),
       finishCombatResult: result => calls.push(['finishCombatResult', result.victory]),
@@ -485,6 +503,7 @@ describe('kanji-kombat ui', () => {
       combat: { actionCursor: { side: 'ally', index: 0 } },
     });
     await actionArea.querySelectorAll('.kanji-kombat-completion-action')[0].click();
+    await flushPromises(4);
 
     assert.deepEqual(calls, [
       ['updateGameState', 'combat'],
@@ -494,12 +513,12 @@ describe('kanji-kombat ui', () => {
     ]);
   });
 
-  it('refreshes the combat action after intro choice state updates', async () => {
+  it('applies accepted intro choice state after clearing the choice locally', async () => {
     const calls = [];
     initKanjiKombatUI({
       submitIntro: async (cardId, choice, options = {}) => {
         calls.push(['submitIntro', cardId, choice]);
-        return { state: { phase: 'combat' }, actionId: options.actionId };
+        return { status: 'accepted', state: { phase: 'combat' }, actionId: options.actionId };
       },
       updateGameState: state => calls.push(['updateGameState', state.phase]),
       updateUI: () => calls.push(['updateUI']),
@@ -519,12 +538,12 @@ describe('kanji-kombat ui', () => {
       combat: { actionCursor: { side: 'ally', index: 0 } },
     });
     await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(4);
 
     assert.deepEqual(calls, [
       ['updateGameState', 'combat'],
       ['submitIntro', 'hiragana:か', 'unknown'],
       ['updateGameState', 'combat'],
-      ['refreshAction'],
     ]);
   });
 
@@ -552,217 +571,465 @@ describe('kanji-kombat ui', () => {
       combat: { actionCursor: { side: 'ally', index: 0 } },
     });
     await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
+    await flushPromises(4);
 
     assert.deepEqual(calls, [
       ['updateGameState', 'combat', false, null],
       ['submitIntro', 'hiragana:ka', 'known', true],
       ['updateGameState', 'combat', true, null],
-      ['refreshAction'],
     ]);
     assert.equal(actionArea.innerHTML, '');
   });
 
-  it('rolls back corrected intro choices and shows retry copy', async () => {
+  it('queues intro sync and keeps the next prompt visible when submit is delayed', async () => {
     const calls = [];
+    let resolveSubmit;
+    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
+    let currentState = null;
+
     initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, options = {}) => ({
-        status: 'corrected',
-        actionId: options.actionId,
-        authoritativeState: { phase: 'combat', run: { kanjiKombat: { pendingIntro: { card: { id: 'hiragana:ka' } } } },
-        },
-      }),
-      updateGameState: state => calls.push(['updateGameState', state.phase, !!state.run?.kanjiKombat?.pendingIntro]),
-      updateUI: () => calls.push(['updateUI']),
+      submitIntro: async (cardId, choice, options = {}) => {
+        calls.push(['submitIntro', cardId, choice, options.promptId, options.sequence]);
+        return submitPromise;
+      },
+      updateGameState: state => {
+        currentState = state;
+        calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer[0]?.promptId || null]);
+        renderKanjiKombatAction(state);
+      },
+      getGameState: () => currentState,
       refreshAction: () => calls.push(['refreshAction']),
-      showNarration: async text => calls.push(['showNarration', text]),
-    });
-
-    renderKanjiKombatAction({
-      phase: 'combat',
-      run: {
-        mode: 'kanjiKombat',
-        kanjiKombat: {
-          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
-        },
-      },
-      combat: { actionCursor: { side: 'ally', index: 0 } },
-    });
-    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
-
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat', false],
-      ['updateGameState', 'combat', true],
-      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['refreshAction'],
-    ]);
-  });
-
-  it('rolls back stale accepted intro responses and shows retry copy', async () => {
-    const calls = [];
-    initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, _options = {}) => ({
-        status: 'accepted',
-        actionId: 'run_other_stale',
-        state: { phase: 'combat', accepted: true },
-      }),
-      updateGameState: state => calls.push(['updateGameState', state.phase, !!state.run?.kanjiKombat?.pendingIntro]),
       updateUI: () => calls.push(['updateUI']),
-      refreshAction: () => calls.push(['refreshAction']),
       showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
     });
 
-    renderKanjiKombatAction({
+    currentState = {
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
-        },
-      },
-      combat: { actionCursor: { side: 'ally', index: 0 } },
-    });
-    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
-
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat', false],
-      ['updateGameState', 'combat', true],
-      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['refreshAction'],
-    ]);
-  });
-
-  it('rolls back thrown intro choice errors and shows retry copy', async () => {
-    const calls = [];
-    initKanjiKombatUI({
-      submitIntro: async () => {
-        throw new Error('network');
-      },
-      updateGameState: state => calls.push(['updateGameState', state.phase, !!state.run?.kanjiKombat?.pendingIntro]),
-      updateUI: () => calls.push(['updateUI']),
-      refreshAction: () => calls.push(['refreshAction']),
-      showNarration: async text => calls.push(['showNarration', text]),
-    });
-
-    renderKanjiKombatAction({
-      phase: 'combat',
-      run: {
-        mode: 'kanjiKombat',
-        kanjiKombat: {
-          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
-        },
-      },
-      combat: { actionCursor: { side: 'ally', index: 0 } },
-    });
-    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
-
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat', false],
-      ['updateGameState', 'combat', true],
-      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['refreshAction'],
-    ]);
-  });
-
-  it('restores intro actions after a transient intro submit failure', async () => {
-    const calls = [];
-    let currentState = {
-      phase: 'combat',
-      run: {
-        mode: 'kanjiKombat',
-        kanjiKombat: {
-          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
+          promptBuffer: [
+            {
+              promptId: 'kkp_intro_queue',
+              sequence: 1,
+              kind: 'intro',
+              cardId: 'hiragana:か',
+              intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+            },
+            {
+              promptId: 'kkp_next_queue',
+              sequence: 2,
+              kind: 'quiz',
+              cardId: 'hiragana:き',
+              quiz: {
+                cardId: 'hiragana:き',
+                prompt: 'き',
+                reading: 'き',
+                choices: [{ id: 'ki', answer: 'ki', correct: true }],
+              },
+            },
+          ],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
     };
+
+    renderKanjiKombatAction(currentState);
+    const clickPromise = actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(4);
+
+    assert.equal(actionArea.querySelector('.kanji-kombat-prompt')?.textContent, 'き');
+    assert.deepEqual(calls.slice(0, 2), [
+      ['updateGameState', 'kkp_next_queue'],
+      ['submitIntro', 'hiragana:か', 'unknown', 'kkp_intro_queue', 1],
+    ]);
+    assert.equal(calls.some(call => call[0] === 'showNarration'), false);
+
+    resolveSubmit({
+      status: 'accepted',
+      state: {
+        phase: 'combat',
+        run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
+        combat: { actionCursor: { side: 'ally', index: 0 } },
+      },
+    });
+    await clickPromise;
+    await flushPromises(4);
+  });
+
+  it('does not replay a consumed intro when the server response is null', async () => {
+    const calls = [];
+    let currentState = null;
+
     initKanjiKombatUI({
       submitIntro: async () => null,
       updateGameState: state => {
         currentState = state;
-        calls.push(['updateGameState', !!state.run?.kanjiKombat?.pendingIntro]);
+        calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer[0]?.promptId || null]);
+        renderKanjiKombatAction(state);
       },
-      refreshAction: () => {
-        calls.push(['refreshAction']);
-        renderKanjiKombatAction(currentState);
-      },
+      getGameState: () => currentState,
+      refreshAction: () => calls.push(['refreshAction']),
       updateUI: () => calls.push(['updateUI']),
       showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
     });
 
-    renderKanjiKombatAction(currentState);
-    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
-    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [
+            {
+              promptId: 'kkp_intro_null',
+              sequence: 1,
+              kind: 'intro',
+              cardId: 'hiragana:か',
+              intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+            },
+            {
+              promptId: 'kkp_next_null',
+              sequence: 2,
+              kind: 'quiz',
+              cardId: 'hiragana:き',
+              quiz: {
+                cardId: 'hiragana:き',
+                prompt: 'き',
+                reading: 'き',
+                choices: [{ id: 'ki', answer: 'ki', correct: true }],
+              },
+            },
+          ],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
 
-    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
+    await flushPromises(8);
+
+    assert.equal(actionArea.querySelector('.kanji-kombat-prompt')?.textContent, 'き');
+    assert.equal(calls.some(call => call[0] === 'showNarration' && /did not save/.test(call[1])), false);
+  });
+
+  it('pauses before consuming a prompt when the sync queue is at the hard limit', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      submitIntro: async (...args) => {
+        calls.push(['submitIntro', ...args]);
+        return null;
+      },
+      submitCompletionChoice: async (...args) => {
+        calls.push(['submitCompletionChoice', ...args]);
+        return null;
+      },
+      updateGameState: state => calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer[0]?.promptId || null]),
+      showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
+      __testQueueSeed: Array.from({ length: 60 }, (_, index) => ({
+        actionId: `run_seed_${index}`,
+        kind: 'intro',
+        promptId: `kkp_seed_${index}`,
+      })),
+    });
+    await flushPromises(2);
+
+    assert.deepEqual(calls, []);
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            promptId: 'kkp_blocked_intro',
+            sequence: 1,
+            kind: 'intro',
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    const handled = await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(2);
+
+    assert.equal(handled, false);
     assert.deepEqual(calls, [
-      ['updateGameState', false],
-      ['updateGameState', true],
-      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['refreshAction'],
+      ['showNarration', 'Connection is spotty. Your reviews will sync when you reconnect.'],
     ]);
   });
 
-  it('uses fetched server state after a null intro response instead of replaying the submitted card', async () => {
+  it('shows spotty connection copy when no prompt is available but sync is pending', async () => {
     const calls = [];
-    let currentState = {
+    initKanjiKombatUI({
+      showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
+      __testQueueSeed: [{
+        actionId: 'run_pending_empty',
+        kind: 'intro',
+        promptId: 'kkp_pending_empty',
+      }],
+    });
+
+    renderKanjiKombatAction({
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
+          promptBuffer: [{
+            promptId: 'kkp_stale_intro',
+            sequence: 1,
+            kind: 'intro',
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
-    };
-    const serverState = {
+    });
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
+
+    const handled = renderKanjiKombatAction({
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          currentQuiz: {
-            prompt: 'き',
-            choices: [{ id: 'ki', answer: 'ki' }],
-          },
+          promptBuffer: [],
+          currentQuiz: null,
+          pendingIntro: null,
+          completionChoicePending: false,
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
-    };
+    });
+    await flushPromises(2);
+
+    assert.equal(handled, true);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 0);
+    assert.deepEqual(calls, [
+      ['showNarration', 'Connection is spotty. Your reviews will sync when you reconnect.'],
+    ]);
+  });
+
+  it('shows the sync pause after consuming the last intro while submit is pending', async () => {
+    const calls = [];
+    let resolveSubmit;
+    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
 
     initKanjiKombatUI({
-      submitIntro: async () => null,
-      fetchGameState: async () => {
-        calls.push(['fetchGameState']);
-        return serverState;
+      submitIntro: async (cardId, choice, options = {}) => {
+        calls.push(['submitIntro', cardId, choice, options.promptId, options.sequence]);
+        return submitPromise;
+      },
+      updateGameState: state => calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer.length]),
+      showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            promptId: 'kkp_last_intro',
+            sequence: 3,
+            kind: 'intro',
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    const handled = await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(4);
+
+    assert.equal(handled, true);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 0);
+    assert.deepEqual(calls.slice(0, 3), [
+      ['updateGameState', 0],
+      ['submitIntro', 'hiragana:か', 'unknown', 'kkp_last_intro', 3],
+      ['showNarration', 'Connection is spotty. Your reviews will sync when you reconnect.'],
+    ]);
+
+    resolveSubmit({
+      status: 'accepted',
+      state: {
+        phase: 'combat',
+        run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
+        combat: { actionCursor: { side: 'ally', index: 0 } },
+      },
+    });
+    await flushPromises(4);
+  });
+
+  it('drains the current sync queue on reconnect and visible tab return without duplicate listeners', async () => {
+    const originalWindow = global.window;
+    const originalDocument = global.document;
+    const fakeWindow = createFakeEventTarget();
+    const fakeDocument = createFakeEventTarget({ ...global.document, visibilityState: 'visible' });
+    let staleAttempts = 0;
+    let attempts = 0;
+
+    try {
+      global.window = fakeWindow;
+      global.document = fakeDocument;
+
+      initKanjiKombatUI({
+        submitIntro: async () => {
+          staleAttempts += 1;
+          throw new Error('stale queue should not drain');
+        },
+        showNarration: async () => {},
+        playCorrectAnswerAudio: () => {},
+      });
+      initKanjiKombatUI({
+        submitIntro: async () => {
+          attempts += 1;
+          if (attempts % 2 === 1) throw new Error('offline');
+          return { status: 'accepted', actionId: `run_listener_${attempts}` };
+        },
+        showNarration: async () => {},
+        playCorrectAnswerAudio: () => {},
+      });
+      initKanjiKombatUI({
+        submitIntro: async () => {
+          attempts += 1;
+          if (attempts % 2 === 1) throw new Error('offline');
+          return { status: 'accepted', actionId: `run_listener_${attempts}` };
+        },
+        showNarration: async () => {},
+        playCorrectAnswerAudio: () => {},
+      });
+
+      assert.equal(fakeWindow.listenerCount('online'), 1);
+      assert.equal(fakeDocument.listenerCount('visibilitychange'), 1);
+
+      renderKanjiKombatAction({
+        phase: 'combat',
+        run: {
+          mode: 'kanjiKombat',
+          kanjiKombat: {
+            pendingIntro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          },
+        },
+        combat: { actionCursor: { side: 'ally', index: 0 } },
+      });
+      await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+      await flushPromises(4);
+      assert.equal(attempts, 1);
+
+      fakeWindow.dispatch('online');
+      await flushPromises(4);
+      assert.equal(attempts, 2);
+      assert.equal(staleAttempts, 0);
+
+      renderKanjiKombatAction({
+        phase: 'combat',
+        run: {
+          mode: 'kanjiKombat',
+          kanjiKombat: {
+            pendingIntro: { card: { id: 'hiragana:き', prompt: 'き', reading: 'き', answer: 'ki' } },
+          },
+        },
+        combat: { actionCursor: { side: 'ally', index: 0 } },
+      });
+      await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+      await flushPromises(4);
+      assert.equal(attempts, 3);
+
+      fakeDocument.visibilityState = 'hidden';
+      fakeDocument.dispatch('visibilitychange');
+      await flushPromises(4);
+      assert.equal(attempts, 3);
+
+      fakeDocument.visibilityState = 'visible';
+      fakeDocument.dispatch('visibilitychange');
+      await flushPromises(4);
+      assert.equal(attempts, 4);
+    } finally {
+      if (originalWindow === undefined) {
+        delete global.window;
+      } else {
+        global.window = originalWindow;
+      }
+      global.document = originalDocument;
+    }
+  });
+
+  it('queues keep-going completion choices and advances locally before submit resolves', async () => {
+    const calls = [];
+    let resolveSubmit;
+    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
+    let currentState = null;
+
+    initKanjiKombatUI({
+      submitCompletionChoice: async (keepGoing, options = {}) => {
+        calls.push(['submitCompletionChoice', keepGoing, options.promptId, options.sequence]);
+        return submitPromise;
       },
       updateGameState: state => {
         currentState = state;
         calls.push([
           'updateGameState',
-          !!state.run?.kanjiKombat?.pendingIntro,
-          state.run?.kanjiKombat?.currentQuiz?.prompt || null,
+          state.run.kanjiKombat.completionChoicePending === true,
+          state.run.kanjiKombat.endlessMode === true,
         ]);
       },
-      refreshAction: () => {
-        calls.push(['refreshAction']);
-        renderKanjiKombatAction(currentState);
-      },
+      getGameState: () => currentState,
+      refreshAction: () => calls.push(['refreshAction']),
       updateUI: () => calls.push(['updateUI']),
       showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
     });
 
-    renderKanjiKombatAction(currentState);
-    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          completionChoicePending: true,
+          promptBuffer: [{
+            promptId: 'kkp_complete_queue',
+            sequence: 4,
+            kind: 'completePrompt',
+            cardId: null,
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
 
-    assert.deepEqual(calls, [
-      ['updateGameState', false, null],
-      ['fetchGameState'],
-      ['updateGameState', false, 'き'],
-      ['refreshAction'],
+    renderKanjiKombatAction(currentState);
+    const clickPromise = actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].click();
+    await flushPromises(4);
+
+    assert.deepEqual(calls.slice(0, 2), [
+      ['updateGameState', false, true],
+      ['submitCompletionChoice', true, 'kkp_complete_queue', 4],
     ]);
-    assert.equal(actionArea.querySelector('.kanji-kombat-prompt').textContent, 'き');
+
+    resolveSubmit({
+      status: 'accepted',
+      state: {
+        phase: 'combat',
+        run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
+        combat: { actionCursor: { side: 'ally', index: 0 } },
+      },
+    });
+    await clickPromise;
+    await flushPromises(4);
   });
 
-  it('submits completion choices with an action id and waits for server finish handling', async () => {
+  it('submits completion choices with an action id and handles server finish later', async () => {
     const calls = [];
     initKanjiKombatUI({
       submitCompletionChoice: async (keepGoing, options = {}) => {
@@ -784,6 +1051,7 @@ describe('kanji-kombat ui', () => {
       combat: { actionCursor: { side: 'ally', index: 0 } },
     });
     await actionArea.querySelectorAll('.kanji-kombat-completion-action')[0].click();
+    await flushPromises(4);
 
     assert.deepEqual(calls, [
       ['updateGameState', 'combat', false, false],
@@ -792,103 +1060,6 @@ describe('kanji-kombat ui', () => {
       ['finishCombatResult', true],
     ]);
     assert.equal(actionArea.innerHTML, '');
-  });
-
-  it('rolls back corrected completion choices and shows retry copy', async () => {
-    const calls = [];
-    initKanjiKombatUI({
-      submitCompletionChoice: async (_keepGoing, options = {}) => ({
-        status: 'corrected',
-        actionId: options.actionId,
-        authoritativeState: { phase: 'combat', run: { kanjiKombat: { completionChoicePending: true } } },
-      }),
-      updateGameState: state => calls.push(['updateGameState', state.phase, state.run?.kanjiKombat?.completionChoicePending === true]),
-      updateUI: () => calls.push(['updateUI']),
-      refreshAction: () => calls.push(['refreshAction']),
-      finishCombatResult: () => calls.push(['unexpected-finish']),
-      showNarration: async text => calls.push(['showNarration', text]),
-    });
-
-    renderKanjiKombatAction({
-      phase: 'combat',
-      run: {
-        mode: 'kanjiKombat',
-        kanjiKombat: { completionChoicePending: true },
-      },
-      combat: { actionCursor: { side: 'ally', index: 0 } },
-    });
-    await actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].click();
-
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat', false],
-      ['updateGameState', 'combat', true],
-      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['refreshAction'],
-    ]);
-  });
-
-  it('rolls back stale accepted completion responses and shows retry copy', async () => {
-    const calls = [];
-    initKanjiKombatUI({
-      submitCompletionChoice: async () => ({
-        status: 'accepted',
-        actionId: 'run_other_stale',
-        state: { phase: 'combat', accepted: true },
-      }),
-      updateGameState: state => calls.push(['updateGameState', state.phase, state.run?.kanjiKombat?.completionChoicePending === true]),
-      updateUI: () => calls.push(['updateUI']),
-      finishCombatResult: () => calls.push(['unexpected-finish']),
-      refreshAction: () => calls.push(['refreshAction']),
-      showNarration: async text => calls.push(['showNarration', text]),
-    });
-
-    renderKanjiKombatAction({
-      phase: 'combat',
-      run: {
-        mode: 'kanjiKombat',
-        kanjiKombat: { completionChoicePending: true },
-      },
-      combat: { actionCursor: { side: 'ally', index: 0 } },
-    });
-    await actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].click();
-
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat', false],
-      ['updateGameState', 'combat', true],
-      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['refreshAction'],
-    ]);
-  });
-
-  it('rolls back thrown completion choice errors and shows retry copy', async () => {
-    const calls = [];
-    initKanjiKombatUI({
-      submitCompletionChoice: async () => {
-        throw new Error('network');
-      },
-      updateGameState: state => calls.push(['updateGameState', state.phase, state.run?.kanjiKombat?.completionChoicePending === true]),
-      updateUI: () => calls.push(['updateUI']),
-      finishCombatResult: () => calls.push(['unexpected-finish']),
-      refreshAction: () => calls.push(['refreshAction']),
-      showNarration: async text => calls.push(['showNarration', text]),
-    });
-
-    renderKanjiKombatAction({
-      phase: 'combat',
-      run: {
-        mode: 'kanjiKombat',
-        kanjiKombat: { completionChoicePending: true },
-      },
-      combat: { actionCursor: { side: 'ally', index: 0 } },
-    });
-    await actionArea.querySelectorAll('.kanji-kombat-completion-action')[0].click();
-
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat', false],
-      ['updateGameState', 'combat', true],
-      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['refreshAction'],
-    ]);
   });
 
   it('omits duplicate intro readings when the reading matches the prompt', () => {
@@ -1560,41 +1731,77 @@ describe('kanji-kombat ui', () => {
     );
   });
 
-  it('requests a single-flight refill when the local prompt buffer drops below three', async () => {
-    const calls = [];
-    initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, options = {}) => ({ status: 'accepted', actionId: options.actionId, state: { phase: 'combat', run: { kanjiKombat: { promptBuffer: [] } } } }),
-      refillPromptBuffer: async () => {
-        calls.push(['refill']);
-        return { state: { phase: 'combat', run: { kanjiKombat: { promptBuffer: [] } } } };
-      },
-      updateGameState: () => calls.push(['updateGameState']),
-      refreshAction: () => calls.push(['refreshAction']),
-      playCorrectAnswerAudio: () => {},
-    });
+  function introPrompt(index) {
+    return {
+      promptId: `kkp_intro_${index}`,
+      sequence: index + 1,
+      kind: 'intro',
+      cardId: `hiragana:${index}`,
+      intro: { card: { id: `hiragana:${index}`, prompt: 'か', reading: 'か', answer: 'ka' } },
+    };
+  }
 
-    const gameState = {
+  function combatStateWithPromptBuffer(promptBuffer) {
+    return {
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
-        kanjiKombat: {
-          promptBuffer: [{
-            promptId: 'kkp_intro',
-            sequence: 1,
-            kind: 'intro',
-            cardId: 'hiragana:か',
-            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
-          }],
-        },
+        kanjiKombat: { promptBuffer },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
     };
+  }
 
-    renderKanjiKombatAction(gameState);
+  it('requests a single-flight refill when the local prompt buffer drops below ten', async () => {
+    const calls = [];
+    const promptBuffer = Array.from({ length: 10 }, (_, index) => introPrompt(index));
+    const remainingBuffer = promptBuffer.slice(1);
+    initKanjiKombatUI({
+      submitIntro: async (_cardId, _choice, options = {}) => ({
+        status: 'accepted',
+        actionId: options.actionId,
+      }),
+      refillPromptBuffer: async () => {
+        calls.push(['refill']);
+        return { state: combatStateWithPromptBuffer(remainingBuffer) };
+      },
+      updateGameState: () => calls.push(['updateGameState']),
+      refreshAction: () => calls.push(['refreshAction']),
+      updateUI: () => calls.push(['updateUI']),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction(combatStateWithPromptBuffer(promptBuffer));
     await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
     await flushPromises(4);
 
     assert.equal(calls.filter(call => call[0] === 'refill').length, 1);
+  });
+
+  it('does not request a refill when consuming the local prompt buffer leaves ten prompts', async () => {
+    const calls = [];
+    const promptBuffer = Array.from({ length: 11 }, (_, index) => introPrompt(index));
+    const remainingBuffer = promptBuffer.slice(1);
+    initKanjiKombatUI({
+      submitIntro: async (_cardId, _choice, options = {}) => ({
+        status: 'accepted',
+        actionId: options.actionId,
+      }),
+      refillPromptBuffer: async () => {
+        calls.push(['refill']);
+        return { state: combatStateWithPromptBuffer(remainingBuffer) };
+      },
+      updateGameState: () => calls.push(['updateGameState']),
+      refreshAction: () => calls.push(['refreshAction']),
+      updateUI: () => calls.push(['updateUI']),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction(combatStateWithPromptBuffer(promptBuffer));
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
+    await flushPromises(4);
+
+    assert.equal(calls.filter(call => call[0] === 'refill').length, 0);
   });
 
   it('keeps prompt buffer refill single-flight across multiple below-threshold opportunities', async () => {

@@ -36,8 +36,8 @@ import {
 } from '../script-srs.js';
 
 export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 3;
-export const PROMPT_BUFFER_TARGET = 5;
-export const PROMPT_BUFFER_REFILL_THRESHOLD = 3;
+export const PROMPT_BUFFER_TARGET = 30;
+export const PROMPT_BUFFER_REFILL_THRESHOLD = 10;
 const PROMPT_ID_PREFIX = 'kkp';
 const STREAK_BUFF_STATS = ['atk', 'def', 'dex'];
 const STREAK_HEAL_REWARDS = {
