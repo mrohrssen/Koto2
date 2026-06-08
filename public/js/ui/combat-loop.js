@@ -747,6 +747,12 @@ async function runOptimisticKanjiKombatAnswer({
       }
       if (result?.combatEnded || !isRecoveredCombatActive(getGameState())) {
         await finishCombatLoop(result || { combatEnded: true, victory: false });
+        return;
+      }
+
+      if (hasLocalCombatEnd && !isEnemyDialogueActive()) {
+        await waitBeforeMoveSelection(nextSelectionDelayMs);
+        restartMoveSelection();
       }
     } catch (error) {
       console.warn(warningPrefix, error?.message || error);

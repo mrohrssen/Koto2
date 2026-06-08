@@ -19,6 +19,11 @@ function sourceBetween(source, start, end) {
 }
 
 test('Kanji Kombat keeps creature select covering hub until the battle scene starts', () => {
+  const helperSource = sourceBetween(
+    gameSrc,
+    'async function enterKanjiKombatCombat(state)',
+    'async function recoverKanjiKombatStartState()'
+  );
   const setupSource = sourceBetween(
     gameSrc,
     'async function startKanjiKombatSetup()',
@@ -26,21 +31,46 @@ test('Kanji Kombat keeps creature select covering hub until the battle scene sta
   );
 
   const startApiIndex = setupSource.indexOf('apiStartKanjiKombat(creatureId)');
-  const updateStateIndex = setupSource.indexOf('updateGameState(result.state)');
-  const clearActionsIndex = setupSource.indexOf('actions.clear()');
-  const startLoopIndex = setupSource.indexOf('await combatLoopUI.startCombatLoop({ kanjiKombatOpening: true })');
+  const enterCombatIndex = setupSource.indexOf('await enterKanjiKombatCombat(result.state)');
   const removeOverlayIndex = setupSource.lastIndexOf('removeCollectionOverlay()');
   const updateUiIndex = setupSource.lastIndexOf('updateUI()');
+  const updateStateIndex = helperSource.indexOf('updateGameState(state)');
+  const clearActionsIndex = helperSource.indexOf('actions.clear()');
+  const startLoopIndex = helperSource.indexOf('await combatLoopUI.startCombatLoop({ kanjiKombatOpening: true })');
 
   assert.ok(startApiIndex >= 0, 'Kanji Kombat setup should call the start API');
+  assert.ok(enterCombatIndex > startApiIndex, 'battle scene startup should wait for the start API state');
   assert.ok(clearActionsIndex > updateStateIndex, 'stale hub controls should clear after entering combat state');
   assert.ok(clearActionsIndex < startLoopIndex, 'stale hub controls should clear before the opening battle scene starts');
-  assert.ok(startLoopIndex > startApiIndex, 'battle scene startup should wait for the start API state');
   assert.ok(
-    removeOverlayIndex > startLoopIndex,
+    removeOverlayIndex > enterCombatIndex,
     'creature select overlay should remain visible until the battle scene start has been awaited'
   );
   assert.ok(updateUiIndex > removeOverlayIndex, 'the final UI refresh should happen after removing the overlay');
+});
+
+test('Kanji Kombat start recovers committed combat after a missing start response', () => {
+  const helperSource = sourceBetween(
+    gameSrc,
+    'async function recoverKanjiKombatStartState()',
+    'async function startKanjiKombatSetup()'
+  );
+  const setupSource = sourceBetween(
+    gameSrc,
+    'async function startKanjiKombatSetup()',
+    'function showCollectionSelect'
+  );
+
+  assert.match(helperSource, /apiGetGameState\(\)/);
+  assert.match(helperSource, /isKanjiKombatCombatState\(recoveredState\)/);
+  assert.match(helperSource, /await enterKanjiKombatCombat\(recoveredState\)/);
+  assert.match(setupSource, /else if \(!result\?\.state\) \{\s*await recoverKanjiKombatStartState\(\);/);
+
+  const startApiIndex = setupSource.indexOf('apiStartKanjiKombat(creatureId)');
+  const recoverIndex = setupSource.indexOf('await recoverKanjiKombatStartState()');
+  const removeOverlayIndex = setupSource.lastIndexOf('removeCollectionOverlay()');
+  assert.ok(recoverIndex > startApiIndex, 'recovery should run only after the start API response is missing');
+  assert.ok(removeOverlayIndex > recoverIndex, 'creature select overlay should stay up while recovery checks committed state');
 });
 
 test('async hub render does not redraw hub buttons after phase changes', () => {

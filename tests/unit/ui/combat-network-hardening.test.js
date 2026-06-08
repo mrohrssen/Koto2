@@ -1855,6 +1855,138 @@ describe('combat network hardening', () => {
     assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), false);
   });
 
+  it('resumes Kanji Kombat prompt selection after terminal local KO advances to the next wave', async () => {
+    const calls = [];
+    const updates = [];
+    let resolveVerification;
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [],
+    };
+    const enemy = {
+      id: 'mizu',
+      uid: 'enemy-wave-1',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      element: 'water',
+      hp: 1,
+      maxHp: 1,
+      mp: 0,
+      maxMp: 0,
+      moves: [],
+    };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_kanji_next_wave_resume', stateVersion: 2, nextTurnSeed: 'seed_kanji_next_wave_resume' },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          currentQuiz: {
+            cardId: 'hiragana:あ',
+            choices: [
+              { id: 'answer-correct', answer: 'a', correct: true },
+              { id: 'answer-wrong', answer: 'i', correct: false },
+            ],
+          },
+          promptBuffer: [
+            {
+              promptId: 'kkp_wave_ko',
+              sequence: 1,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              quiz: {
+                cardId: 'hiragana:あ',
+                choices: [
+                  { id: 'answer-correct', answer: 'a', correct: true },
+                  { id: 'answer-wrong', answer: 'i', correct: false },
+                ],
+              },
+            },
+            {
+              promptId: 'kkp_next_wave_prompt',
+              sequence: 2,
+              kind: 'quiz',
+              cardId: 'hiragana:い',
+              quiz: {
+                cardId: 'hiragana:い',
+                prompt: 'い',
+                choices: [{ id: 'answer-i', answer: 'i', correct: true }],
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    combatLoop.__combatNetworkTest.setKanjiKombatAnswerApi(async () => new Promise(resolve => {
+      resolveVerification = resolve;
+    }));
+    configureKanjiKombatSyncQueue({
+      syncItem: async item => item.sync(),
+      onAccepted: (item, result) => {
+        if (typeof item.onAccepted === 'function') void item.onAccepted(result);
+      },
+      onCorrected: (item, result) => {
+        if (typeof item.onCorrected === 'function') void item.onCorrected(result);
+      },
+    });
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId: 'answer-correct',
+      promptRef: { promptId: 'kkp_wave_ko', sequence: 1, cardId: 'hiragana:あ' },
+      turnTiming: {},
+      playback: async () => calls.push({ type: 'playback' }),
+      startMoveSelection: () => calls.push({ type: 'startMoveSelection' }),
+      getEnemyDialogueActive: () => false,
+    });
+
+    assert.equal(handled, true);
+    assert.equal(calls.filter(call => call.type === 'startMoveSelection').length, 0);
+
+    resolveVerification({
+      status: 'accepted',
+      stateVersion: 3,
+      nextSeed: 'seed_after_next_wave',
+      combatEnded: false,
+      nextWave: true,
+      allies: [ally],
+      enemies: [{ ...enemy, hp: 0 }],
+      nextWaveEnemies: [],
+      creatureParty: { active: [ally], reserves: [] },
+      kanjiKombat: updates.at(-1).run.kanjiKombat,
+      turnCount: 1,
+    });
+
+    await waitForCondition(
+      () => calls.some(call => call.type === 'startMoveSelection'),
+      'expected next wave verification to resume prompt selection after the local KO',
+    );
+  });
+
   it('accepted optimistic verification reconciles committed combat result and next seed', async () => {
     const updates = [];
     const currentState = {

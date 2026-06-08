@@ -1184,6 +1184,32 @@ async function hideKanjiKombatCidSprite() {
   restoreKanjiKombatEnemyFormation();
 }
 
+function isKanjiKombatCombatState(state) {
+  return state?.phase === 'combat'
+    && state?.run?.mode === 'kanjiKombat'
+    && !!state?.combat;
+}
+
+async function enterKanjiKombatCombat(state) {
+  updateGameState(state);
+  actions.clear();
+  await combatLoopUI.startCombatLoop({ kanjiKombatOpening: true });
+}
+
+async function recoverKanjiKombatStartState() {
+  let recoveredState = null;
+  try {
+    recoveredState = await apiGetGameState();
+  } catch (error) {
+    console.warn('[KanjiKombat] start state recovery failed:', error?.message || error);
+    return false;
+  }
+
+  if (!isKanjiKombatCombatState(recoveredState)) return false;
+  await enterKanjiKombatCombat(recoveredState);
+  return true;
+}
+
 async function startKanjiKombatSetup() {
   const collection = gameState.meta?.creatureCollection || [];
   if (collection.length === 0) {
@@ -1211,10 +1237,10 @@ async function startKanjiKombatSetup() {
 
   try {
     const result = await apiStartKanjiKombat(creatureId);
-    if (result?.state) {
-      updateGameState(result.state);
-      actions.clear();
-      await combatLoopUI.startCombatLoop({ kanjiKombatOpening: true });
+    if (isKanjiKombatCombatState(result?.state)) {
+      await enterKanjiKombatCombat(result.state);
+    } else if (!result?.state) {
+      await recoverKanjiKombatStartState();
     }
   } finally {
     removeCollectionOverlay();
