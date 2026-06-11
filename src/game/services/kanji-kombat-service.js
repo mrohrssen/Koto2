@@ -1459,7 +1459,8 @@ export class KanjiKombatService {
       );
       const hashMatches = hashTranscript(resolvedCore.transcript) === entry.predictedHash;
 
-      // Commit via the same path as verifyAndCommitOptimisticAnswer
+      // Dedupes via gm.meta action ledger only — not optimistic.acceptedActionIds (used by
+      // verifyAndCommitOptimisticAnswer); each actionId must flow through exactly one path.
       const committed = this.submitAnswer(entry.answerId, {
         promptRef: {
           promptId: prompt.promptId,
@@ -1492,6 +1493,10 @@ export class KanjiKombatService {
 
   /**
    * Replays an ordered batch of client session entries.
+   *
+   * NOT self-rolling-back: a throw mid-batch can leave partial mutations applied.
+   * Callers MUST wrap this in snapshotGameManager/restoreGameManager (the POST /sync
+   * route does this).
    *
    * Returns:
    *   { status: 'ok'|'corrected', confirmedThroughSeq, results, reason?, rejectedSeq?, sessionEpoch }
