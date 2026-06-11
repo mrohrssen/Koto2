@@ -20,6 +20,40 @@ import { test, expect } from '@playwright/test';
  */
 
 const ACK_TIMEOUT_MS = 250;
+
+/**
+ * CSS selector for a fresh (actionable, non-feedback) quiz choice button.
+ * Passed explicitly into waitForFunction to avoid closure-serialisation issues.
+ */
+const FRESH_CHOICE_SEL =
+  '.kanji-kombat-choice:enabled:not(.kanji-kombat-choice--correct-selected):not(.kanji-kombat-choice--wrong-selected)';
+
+/**
+ * Returns true when there is at least one actionable prompt in the DOM
+ * (a fresh quiz button, an intro button, or a completion button).
+ * Designed to be serialised by waitForFunction; receives the selector string
+ * as its only argument.
+ *
+ * @param {string} freshSel - FRESH_CHOICE_SEL value passed from the harness.
+ */
+const isActionablePromptVisible = (freshSel) => {
+  const fresh = document.querySelector(freshSel);
+  const intro = document.querySelector('.kanji-kombat-intro-action');
+  const complete = document.querySelector('.kanji-kombat-completion-action');
+  return !!(fresh || intro || complete);
+};
+
+/**
+ * Waits for an actionable prompt to appear on the page.
+ * @param {import('@playwright/test').Page} page
+ * @param {{ timeout?: number }} [opts]
+ */
+const waitForActionablePrompt = (page, opts = {}) =>
+  page.waitForFunction(isActionablePromptVisible, FRESH_CHOICE_SEL, {
+    timeout: 30_000,
+    ...opts,
+  });
+
 const OFFLINE_WINDOWS = [
   { afterInteraction: 4, durationMs: 60_000 },
   { afterInteraction: 12, durationMs: 75_000 },
@@ -104,20 +138,10 @@ test.describe.serial('Kanji Kombat subway session', () => {
 
     // Wait until the action area has KK buttons rendered (fresh quiz buttons only).
     // The combat loop initialises asynchronously after load; allow 30s.
-    await page.waitForFunction(
-      () => {
-        const fresh = document.querySelector(
-          '.kanji-kombat-choice:enabled:not(.kanji-kombat-choice--correct-selected):not(.kanji-kombat-choice--wrong-selected)',
-        );
-        const intro = document.querySelector('.kanji-kombat-intro-action');
-        const complete = document.querySelector('.kanji-kombat-completion-action');
-        return !!(fresh || intro || complete);
-      },
-      { timeout: 30_000 },
-    );
+    await waitForActionablePrompt(page);
 
     // --- Main interaction loop ---
-    const seenPromptTexts = new Set();
+    const seenPromptIds = new Set();
     let interactions = 0;
     let quizAnswers = 0;
     let introChoices = 0;
@@ -135,7 +159,7 @@ test.describe.serial('Kanji Kombat subway session', () => {
      * Only returns a quiz when a FRESH (non-feedback-marked) button is present.
      */
     const headPrompt = async () => {
-      return page.evaluate(() => {
+      return page.evaluate(freshSel => {
         if (document.querySelector('.kanji-kombat-completion-action')) {
           return { kind: 'completePrompt', promptId: null };
         }
@@ -143,16 +167,14 @@ test.describe.serial('Kanji Kombat subway session', () => {
           const text = document.querySelector('.kanji-kombat-prompt')?.textContent?.trim() || '';
           return { kind: 'intro', promptId: `intro:${text}` };
         }
-        const freshButtons = [...document.querySelectorAll(
-          '.kanji-kombat-choice:enabled:not(.kanji-kombat-choice--correct-selected):not(.kanji-kombat-choice--wrong-selected)',
-        )];
+        const freshButtons = [...document.querySelectorAll(freshSel)];
         if (freshButtons.length > 0) {
           // Fingerprint: sorted answer IDs unique to this quiz instantiation.
           const ids = freshButtons.map(b => b.dataset.answerId || '').sort().join('|');
           return { kind: 'quiz', promptId: `quiz:${ids}` };
         }
         return null;
-      });
+      }, FRESH_CHOICE_SEL);
     };
 
     while (!sessionDone && interactions < MAX_INTERACTIONS) {
@@ -173,17 +195,7 @@ test.describe.serial('Kanji Kombat subway session', () => {
       // Wait for an actionable prompt. For quiz prompts, require a fresh
       // (enabled, non-feedback) button so we don't mistake leftover disabled
       // buttons for a new prompt.
-      await page.waitForFunction(
-        () => {
-          const fresh = document.querySelector(
-            '.kanji-kombat-choice:enabled:not(.kanji-kombat-choice--correct-selected):not(.kanji-kombat-choice--wrong-selected)',
-          );
-          const intro = document.querySelector('.kanji-kombat-intro-action');
-          const complete = document.querySelector('.kanji-kombat-completion-action');
-          return !!(fresh || intro || complete);
-        },
-        { timeout: 30_000 },
-      ).catch(() => {
+      await waitForActionablePrompt(page).catch(() => {
         throw new Error(
           `stalled prompt: no actionable prompt rendered within 30s `
           + `(interaction ${interactions}, quizAnswers=${quizAnswers}, introChoices=${introChoices}, `
@@ -210,19 +222,17 @@ test.describe.serial('Kanji Kombat subway session', () => {
       // rollback or server replay) — the bug under test.
       if (prompt.promptId && prompt.kind !== 'completePrompt') {
         expect(
-          seenPromptTexts,
+          seenPromptIds,
           `prompt "${prompt.promptId}" (kind=${prompt.kind}) rendered twice — an already-answered prompt was offered again`,
         ).not.toContain(prompt.promptId);
-        seenPromptTexts.add(prompt.promptId);
+        seenPromptIds.add(prompt.promptId);
       }
 
       if (prompt.kind === 'quiz') {
         // Click the first FRESH (non-feedback, enabled) choice button.
         // Pin the clicked button by its answer ID — the :not(--selected) locator
         // would drift to a different button once the feedback class is applied.
-        const button = page.locator(
-          '.kanji-kombat-choice:enabled:not(.kanji-kombat-choice--correct-selected):not(.kanji-kombat-choice--wrong-selected)',
-        ).first();
+        const button = page.locator(FRESH_CHOICE_SEL).first();
         const clickedAnswerId = await button.getAttribute('data-answer-id');
         await button.click();
         // Acknowledgment: feedback class must appear within 250 ms.
@@ -238,17 +248,7 @@ test.describe.serial('Kanji Kombat subway session', () => {
         // Wait for combat playback to finish and the NEXT prompt to render.
         // The next prompt replaces #action-area content entirely, so wait for
         // an enabled .kanji-kombat-choice that does NOT have a feedback class.
-        await page.waitForFunction(
-          () => {
-            const fresh = document.querySelector(
-              '.kanji-kombat-choice:enabled:not(.kanji-kombat-choice--correct-selected):not(.kanji-kombat-choice--wrong-selected)',
-            );
-            const intro = document.querySelector('.kanji-kombat-intro-action');
-            const complete = document.querySelector('.kanji-kombat-completion-action');
-            return !!(fresh || intro || complete);
-          },
-          { timeout: 30_000 },
-        ).catch(() => {
+        await waitForActionablePrompt(page).catch(() => {
           throw new Error(
             `stalled prompt: next prompt never rendered within 30s of quiz answer #${quizAnswers} `
             + `(interaction ${interactions}, offline=${restoreAt !== null}) — `
@@ -312,7 +312,7 @@ test.describe.serial('Kanji Kombat subway session', () => {
           return false;
         }
       },
-      { timeout: 60_000 },
+      { timeout: 60_000, polling: 1000 },
     );
 
     // Fetch final server truth.
