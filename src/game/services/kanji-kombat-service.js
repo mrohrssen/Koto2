@@ -50,6 +50,12 @@ function createServerSeed() {
   return randomBytes(16).toString('hex');
 }
 
+export function rotateKanjiKombatSessionEpoch(kk) {
+  if (!kk) return null;
+  kk.sessionEpoch = `kse_${randomBytes(8).toString('hex')}`;
+  return kk.sessionEpoch;
+}
+
 function createCombatId() {
   return `cmb_${randomBytes(8).toString('hex')}`;
 }
@@ -708,6 +714,7 @@ export class KanjiKombatService {
       applyCrestBonuses(ally, crestMults);
     }
     this.gm.run.kanjiKombat = createInitialKanjiKombatState();
+    rotateKanjiKombatSessionEpoch(this.gm.run.kanjiKombat);
     if (!this.gm.meta) this.gm.meta = {};
     const onboarding = ensureKanjiKombatOnboardingState(this.gm.meta);
     const kk = this.gm.run.kanjiKombat;

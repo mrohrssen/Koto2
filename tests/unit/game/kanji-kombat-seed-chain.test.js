@@ -4,6 +4,7 @@ import {
   ensureKanjiKombatTurnSeeds,
   advanceKanjiKombatTurnSeeds,
   TURN_SEED_CHAIN_TARGET,
+  rotateKanjiKombatSessionEpoch,
 } from '../../../src/game/services/kanji-kombat-service.js';
 
 function combatFixture() {
@@ -48,4 +49,13 @@ test('advanceKanjiKombatTurnSeeds shifts the chain and bumps stateVersion', () =
   assert.equal(combat.optimistic.nextTurnSeed, seeds[1]);
   assert.equal(combat.optimistic.turnSeeds[0], seeds[1]);
   assert.equal(combat.optimistic.turnSeeds.length, TURN_SEED_CHAIN_TARGET);
+});
+
+test('rotateKanjiKombatSessionEpoch mints and replaces the epoch', () => {
+  const kk = { sessionEpoch: null };
+  const first = rotateKanjiKombatSessionEpoch(kk);
+  assert.match(first, /^kse_[0-9a-f]{16}$/);
+  const second = rotateKanjiKombatSessionEpoch(kk);
+  assert.notEqual(second, first);
+  assert.equal(kk.sessionEpoch, second);
 });
