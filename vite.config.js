@@ -49,13 +49,17 @@ export default defineConfig({
   plugins: [staticFiles()],
   server: {
     host: true,
-    port: 5173,
-    proxy: {
-      '/api': 'http://localhost:3000',
-      '/assets': 'http://localhost:3000',
-      '/sw.js': 'http://localhost:3000',
-      '/manifest.json': 'http://localhost:3000',
-      '/dev-safe-area.css': 'http://localhost:3000'
-    }
+    port: parseInt(process.env.VITE_PORT || '5173', 10),
+    proxy: (() => {
+      const apiPort = process.env.VITE_API_PORT || '3000';
+      const target = `http://localhost:${apiPort}`;
+      return {
+        '/api': target,
+        '/assets': target,
+        '/sw.js': target,
+        '/manifest.json': target,
+        '/dev-safe-area.css': target,
+      };
+    })(),
   }
 });

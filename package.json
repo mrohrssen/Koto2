@@ -18,6 +18,7 @@
     "test:visual": "npx playwright test --config tests/visual/playwright.config.js tests/visual/screens",
     "test:smoke": "npx playwright test --config tests/visual/playwright.config.js tests/smoke --workers=1",
     "test:smoke:node": "node --test 'tests/smoke/**/*.test.js'",
+    "test:subway": "npm run seed:dev-user && npx playwright test --config tests/smoke/playwright.subway.config.js tests/smoke/kanji-kombat-subway --workers=1",
     "test:coverage": "c8 report --reporter=text --reporter=html",
     "audit:japanese-display": "node scripts/audit-japanese-display-policy.js",
     "optimize-images": "node scripts/optimize-images.js"
