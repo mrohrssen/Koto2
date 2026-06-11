@@ -688,6 +688,7 @@ export class KanjiKombatService {
     });
     if (this.gm.combat?.mode === 'kanjiKombat') {
       ensureKanjiKombatTurnSeeds(this.gm.combat);
+      this.prerollNextWave();
     }
     return prompts;
   }
@@ -1122,15 +1123,11 @@ export class KanjiKombatService {
     return this.getUnlockedAreas().map(area => area.bossCreatureId).filter(Boolean);
   }
 
-  spawnNextWave() {
-    const kk = this.gm.run.kanjiKombat;
-    const wave = kk.wave || 1;
-    kk.waveReached = Math.max(kk.waveReached || 1, wave);
+  rollWaveEnemies(wave) {
     const isMiniboss = wave % 10 === 0;
     const highestLevel = Math.max(1, ...this.gm.run.creatureParty.active.map(c => c.level || 1));
     const areas = this.getUnlockedAreas();
     const stage = Math.max(1, ...areas.map(area => area.stage || 1));
-    let enemies;
 
     if (isMiniboss && this.buildBossPool().length > 0) {
       const bossIds = this.buildBossPool();
@@ -1138,19 +1135,53 @@ export class KanjiKombatService {
       const bossLevel = Math.round(getEnemyLevel({ totalEncounters: wave, enemyCount: 1 }) * 1.25);
       const boss = generateEnemyCreature(Math.max(highestLevel, bossLevel), [bossId], stage);
       boss.hp = boss.maxHp = Math.max(boss.maxHp * 2, boss.hp * 2);
-      enemies = [boss];
-      kk.currentWaveIsMiniboss = true;
-    } else {
-      const maxEnemies = wave <= SOLO_OPENING_WAVES ? 1 : 3;
-      enemies = generateEnemyCreatures(highestLevel, {
-        maxEnemies,
-        creaturePool: this.buildEnemyPool(),
-        stage,
-        encounterIndex: wave - 1,
-        totalEncounters: wave,
-      });
-      kk.currentWaveIsMiniboss = false;
+      return { enemies: [boss], isMiniboss: true };
     }
+    const maxEnemies = wave <= SOLO_OPENING_WAVES ? 1 : 3;
+    const enemies = generateEnemyCreatures(highestLevel, {
+      maxEnemies,
+      creaturePool: this.buildEnemyPool(),
+      stage,
+      encounterIndex: wave - 1,
+      totalEncounters: wave,
+    });
+    return { enemies, isMiniboss: false };
+  }
+
+  prerollNextWave() {
+    const kk = this.gm.run?.kanjiKombat;
+    if (!kk) return null;
+    const upcomingWave = (kk.wave || 1) + 1;
+    if (kk.pendingNextWave?.wave === upcomingWave) return kk.pendingNextWave;
+    const rolled = this.rollWaveEnemies(upcomingWave);
+    const turnSeeds = [];
+    while (turnSeeds.length < TURN_SEED_CHAIN_TARGET) turnSeeds.push(createServerSeed());
+    kk.pendingNextWave = {
+      wave: upcomingWave,
+      isMiniboss: rolled.isMiniboss,
+      enemies: rolled.enemies,
+      combat: {
+        combatId: createCombatId(),
+        stateVersion: 0,
+        nextTurnSeed: turnSeeds[0],
+        turnSeeds,
+      },
+    };
+    return kk.pendingNextWave;
+  }
+
+  spawnNextWave() {
+    const kk = this.gm.run.kanjiKombat;
+    const wave = kk.wave || 1;
+    kk.waveReached = Math.max(kk.waveReached || 1, wave);
+
+    const preroll = kk.pendingNextWave?.wave === wave ? kk.pendingNextWave : null;
+    const rolled = preroll
+      ? { enemies: preroll.enemies, isMiniboss: preroll.isMiniboss }
+      : this.rollWaveEnemies(wave);
+    kk.pendingNextWave = null;
+    const enemies = rolled.enemies;
+    kk.currentWaveIsMiniboss = rolled.isMiniboss;
 
     this.gm.combat = createCombatState(enemies[0]);
     this.gm.combat.mode = 'kanjiKombat';
@@ -1161,12 +1192,14 @@ export class KanjiKombatService {
     this.gm.combat.actionCursor = createPveOpeningCursor({ allies: this.gm.combat.allies, enemies });
     this.gm.combat.actionCount = 0;
     this.gm.combat.cycleCount = 0;
-    this.gm.combat.optimistic = {
-      combatId: createCombatId(),
-      stateVersion: 0,
-      nextTurnSeed: createServerSeed(),
-      acceptedActionIds: {},
-    };
+    this.gm.combat.optimistic = preroll
+      ? { ...preroll.combat, acceptedActionIds: {} }
+      : {
+          combatId: createCombatId(),
+          stateVersion: 0,
+          nextTurnSeed: createServerSeed(),
+          acceptedActionIds: {},
+        };
     ensureKanjiKombatTurnSeeds(this.gm.combat);
     return enemies;
   }
