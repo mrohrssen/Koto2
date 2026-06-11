@@ -54,6 +54,36 @@ function createCombatId() {
   return `cmb_${randomBytes(8).toString('hex')}`;
 }
 
+export const TURN_SEED_CHAIN_TARGET = 30;
+
+export function ensureKanjiKombatTurnSeeds(combat, { target = TURN_SEED_CHAIN_TARGET } = {}) {
+  const optimistic = combat?.optimistic;
+  if (!optimistic) return [];
+  if (!Array.isArray(optimistic.turnSeeds)
+    || optimistic.turnSeeds[0] !== optimistic.nextTurnSeed) {
+    optimistic.turnSeeds = optimistic.nextTurnSeed ? [optimistic.nextTurnSeed] : [];
+  }
+  while (optimistic.turnSeeds.length < target) {
+    optimistic.turnSeeds.push(createServerSeed());
+  }
+  if (!optimistic.nextTurnSeed) optimistic.nextTurnSeed = optimistic.turnSeeds[0] || null;
+  return optimistic.turnSeeds;
+}
+
+export function advanceKanjiKombatTurnSeeds(optimistic, { target = TURN_SEED_CHAIN_TARGET } = {}) {
+  if (!optimistic) return;
+  optimistic.stateVersion += 1;
+  if (Array.isArray(optimistic.turnSeeds) && optimistic.turnSeeds[0] === optimistic.nextTurnSeed) {
+    optimistic.turnSeeds.shift();
+  } else {
+    optimistic.turnSeeds = [];
+  }
+  while (optimistic.turnSeeds.length < target) {
+    optimistic.turnSeeds.push(createServerSeed());
+  }
+  optimistic.nextTurnSeed = optimistic.turnSeeds[0];
+}
+
 function ensureAcceptedActionCache(optimistic) {
   if (!optimistic.acceptedActionIds || typeof optimistic.acceptedActionIds !== 'object') {
     optimistic.acceptedActionIds = Object.create(null);
@@ -656,6 +686,9 @@ export class KanjiKombatService {
       ...opts,
       onboarding: ensureKanjiKombatOnboardingState(this.gm.meta),
     });
+    if (this.gm.combat?.mode === 'kanjiKombat') {
+      ensureKanjiKombatTurnSeeds(this.gm.combat);
+    }
     return prompts;
   }
 
@@ -916,8 +949,9 @@ export class KanjiKombatService {
     });
     const responseOptimistic = this.gm.combat?.optimistic || optimistic;
     if (responseOptimistic === optimistic) {
-      optimistic.stateVersion += 1;
-      optimistic.nextTurnSeed = createServerSeed();
+      advanceKanjiKombatTurnSeeds(optimistic);
+    } else {
+      ensureKanjiKombatTurnSeeds(this.gm.combat);
     }
     ensureAcceptedActionCache(responseOptimistic);
 
@@ -1133,6 +1167,7 @@ export class KanjiKombatService {
       nextTurnSeed: createServerSeed(),
       acceptedActionIds: {},
     };
+    ensureKanjiKombatTurnSeeds(this.gm.combat);
     return enemies;
   }
 

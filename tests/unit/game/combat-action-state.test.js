@@ -50,6 +50,7 @@ describe('combat action state', () => {
       combatId: 'cmb_visible',
       stateVersion: 2,
       nextTurnSeed: 'seed_visible',
+      turnSeeds: null,
     });
   });
 

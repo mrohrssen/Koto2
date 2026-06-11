@@ -287,7 +287,8 @@ export class GameManager {
         optimistic: this.combat.optimistic ? {
           combatId: this.combat.optimistic.combatId,
           stateVersion: this.combat.optimistic.stateVersion,
-          nextTurnSeed: this.combat.optimistic.nextTurnSeed
+          nextTurnSeed: this.combat.optimistic.nextTurnSeed,
+          turnSeeds: this.combat.optimistic.turnSeeds || null
         } : null,
         openingCursors: this.combat.openingCursors || null,
         pendingOpeningActions: this.combat.pendingOpeningActions || null,
