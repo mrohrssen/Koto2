@@ -104,6 +104,31 @@ export default function createKanjiKombatRoutes() {
     }
   });
 
+  router.post('/sync', (req, res) => {
+    const { sessionEpoch, entries } = req.body || {};
+    if (!Array.isArray(entries) || entries.length === 0) {
+      return res.status(400).json({ error: 'entries array required' });
+    }
+    const snapshot = snapshotGameManager(req.gameManager);
+    try {
+      const result = req.gameManager.kanjiKombatService.applySessionSync({ sessionEpoch, entries });
+      req.saveGame();
+      const state = req.getEnrichedGameState();
+      if (result.status === 'corrected') {
+        return res.json({ ...result, authoritativeState: state, state });
+      }
+      return res.json({ ...result, state });
+    } catch (error) {
+      restoreGameManager(req.gameManager, snapshot);
+      return res.status(409).json({
+        status: 'corrected',
+        reason: error.message,
+        confirmedThroughSeq: null,
+        authoritativeState: req.getEnrichedGameState(),
+      });
+    }
+  });
+
   router.get('/leaderboard', (req, res) => {
     try {
       const period = req.query.period === 'weekly' ? 'weekly' : '24h';
