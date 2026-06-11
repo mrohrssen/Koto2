@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { dataPath, getDataDir } from '../data-dir.js';
@@ -107,6 +107,24 @@ export async function seedDevTestUser({
 
   if (previousSave !== nextSave) {
     writeFileSync(savePath, nextSave);
+  }
+
+  // Reset Kanji Kombat daily SRS state so re-running the harness on the same
+  // calendar day starts fresh. Note: if the Express server is already running
+  // its in-memory SRS cache will retain the old data until it is restarted;
+  // for CI this is fine because the server starts fresh per test run.
+  const srsPath = join(dataDir, `srs-${user.id}.json`);
+  if (existsSync(srsPath)) {
+    try {
+      const srsData = JSON.parse(readFileSync(srsPath, 'utf8'));
+      if (srsData.kanjiKombatDaily) {
+        delete srsData.kanjiKombatDaily;
+        writeFileSync(srsPath, `${JSON.stringify(srsData, null, 2)}\n`);
+      }
+    } catch {
+      // If the file is malformed, delete it so the server will recreate it.
+      rmSync(srsPath, { force: true });
+    }
   }
 
   return {
