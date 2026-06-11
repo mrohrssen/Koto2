@@ -543,20 +543,15 @@ describe('POST /api/game/kanji-kombat/sync', () => {
       ?? syncRes.body.authoritativeState?.run?.kanjiKombat?.report?.cardsReviewed
       ?? cardsReviewedAfterAnswer;   // fallback: assume unchanged if not returned
 
-    const isDoubleGraded =
-      !isReplayed
-      && !isCorrected
-      && cardsReviewedAfterSync > cardsReviewedAfterAnswer;
-
-    if (isDoubleGraded) {
-      // Surface the evidence for DONE_WITH_CONCERNS — do NOT fix service code here
-      assert.fail(
-        `CROSS-PATH DEDUPE FAILURE: actionId "${sharedActionId}" graded twice. ` +
-        `cardsReviewed: ${cardsReviewedAfterAnswer} → ${cardsReviewedAfterSync}. ` +
-        `/answer records in combat.optimistic.acceptedActionIds; ` +
-        `/sync records in gm.meta.actionLedger — these are separate stores.`
-      );
-    }
+    // Unconditional: cross-path entry must NEVER add a review regardless of outcome
+    assert.strictEqual(
+      cardsReviewedAfterSync,
+      cardsReviewedAfterAnswer,
+      `CROSS-PATH DEDUPE FAILURE: actionId "${sharedActionId}" graded twice. ` +
+      `cardsReviewed: ${cardsReviewedAfterAnswer} → ${cardsReviewedAfterSync}. ` +
+      `/answer records in combat.optimistic.acceptedActionIds; ` +
+      `/sync records in gm.meta.actionLedger — these are separate stores.`
+    );
 
     // Safe outcome: replayed (deduped by ledger) or corrected (prompt already consumed)
     assert.ok(

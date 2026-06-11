@@ -3,6 +3,7 @@ import { getKanjiKombatLeaderboard } from '../../auth/users.js';
 import { KANJI_KOMBAT_PREDICTION_MODE } from '../../shared/action-protocol.js';
 import {
   createOptimisticActionRunner,
+  enrichedState,
   getOptimisticActionLedgerOwner,
   restoreGameManager,
   sendOptimisticActionError,
@@ -104,6 +105,9 @@ export default function createKanjiKombatRoutes() {
     }
   });
 
+  // Status-code contract: HTTP 200 + status 'corrected' = service-level correction (epoch
+  // mismatch / entry rejection, state saved where committed); HTTP 409 = unexpected throw,
+  // state restored to pre-call snapshot.
   router.post('/sync', (req, res) => {
     const { sessionEpoch, entries } = req.body || {};
     if (!Array.isArray(entries) || entries.length === 0) {
@@ -113,7 +117,7 @@ export default function createKanjiKombatRoutes() {
     try {
       const result = req.gameManager.kanjiKombatService.applySessionSync({ sessionEpoch, entries });
       req.saveGame();
-      const state = req.getEnrichedGameState();
+      const state = enrichedState(req);
       if (result.status === 'corrected') {
         return res.json({ ...result, authoritativeState: state, state });
       }
@@ -124,7 +128,10 @@ export default function createKanjiKombatRoutes() {
         status: 'corrected',
         reason: error.message,
         confirmedThroughSeq: null,
-        authoritativeState: req.getEnrichedGameState(),
+        results: [],
+        rejectedSeq: entries[0]?.seq ?? null,
+        sessionEpoch: req.gameManager.run?.kanjiKombat?.sessionEpoch ?? null,
+        authoritativeState: enrichedState(req),
       });
     }
   });

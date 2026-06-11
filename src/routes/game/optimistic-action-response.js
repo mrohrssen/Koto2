@@ -43,7 +43,7 @@ export function getOptimisticActionLedgerOwner(req) {
   return null;
 }
 
-function enrichedState(req) {
+export function enrichedState(req) {
   try {
     return req.getEnrichedGameState?.() || null;
   } catch {
