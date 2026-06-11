@@ -13,6 +13,10 @@ import {
   KANJI_KOMBAT_PREDICTION_MODE,
   verifyActionEnvelope,
 } from '../../shared/action-protocol.js';
+import {
+  getActionLedgerEntry,
+  rememberActionLedgerResult,
+} from './action-ledger-service.js';
 import { resolveKanjiKombatAnswerTurn } from '../../shared/combat/pve-turn-resolver.js';
 import {
   generateEnemyCreature,
@@ -1410,6 +1414,164 @@ export class KanjiKombatService {
       victory: false,
       kanjiKombatReport: this.gm.run.kanjiKombat.finalReport,
       creatureParty: this.gm.run.creatureParty,
+    };
+  }
+
+  /**
+   * Applies a single session entry (intro, quiz, or completionChoice) to live
+   * state.  Returns the committed result payload.  Throws on validation failure.
+   */
+  applySessionEntry(entry) {
+    const kk = this.gm.run?.kanjiKombat;
+    if (!kk) throw new Error('no_active_kanji_kombat_run');
+
+    const promptRef = {
+      promptId: entry.promptId,
+      sequence: entry.sequence,
+      cardId: entry.cardId,
+    };
+
+    if (entry.kind === 'intro') {
+      if (!entry.cardId || !['known', 'unknown'].includes(entry.choice)) {
+        throw new Error('invalid_intro_entry');
+      }
+      return this.submitIntroChoice(entry.cardId, entry.choice, promptRef);
+    }
+
+    if (entry.kind === 'completionChoice') {
+      if (typeof entry.keepGoing !== 'boolean') throw new Error('invalid_completion_entry');
+      return this.resolveCompletionChoice(entry.keepGoing, promptRef);
+    }
+
+    if (entry.kind === 'quiz') {
+      const optimistic = this.gm.combat?.optimistic;
+      if (!optimistic) throw new Error('missing_optimistic_state');
+
+      // Validate the prompt head before committing
+      const prompt = validateKanjiKombatPromptHead(kk, { ...promptRef, kind: 'quiz' });
+      const choice = prompt.quiz.choices.find(option => option.id === entry.answerId);
+      if (!choice) throw new Error('invalid_kanji_answer');
+
+      const seed = optimistic.nextTurnSeed;
+      const resolvedCore = resolveKanjiKombatAnswerTurn(
+        { combat: this.gm.combat, run: this.gm.run, answerCorrect: choice.correct === true },
+        { seed },
+      );
+      const hashMatches = hashTranscript(resolvedCore.transcript) === entry.predictedHash;
+
+      // Commit via the same path as verifyAndCommitOptimisticAnswer
+      const committed = this.submitAnswer(entry.answerId, {
+        promptRef: {
+          promptId: prompt.promptId,
+          sequence: prompt.sequence,
+          cardId: prompt.cardId,
+        },
+        rng: createSeededRng(seed),
+        xpRng: createSeededRng(`${seed}:xp`),
+        deferXpAwards: true,
+      });
+
+      const responseOptimistic = this.gm.combat?.optimistic || optimistic;
+      if (responseOptimistic === optimistic) {
+        advanceKanjiKombatTurnSeeds(optimistic);
+      } else {
+        ensureKanjiKombatTurnSeeds(this.gm.combat);
+      }
+
+      if (!hashMatches) {
+        // Commit already applied — attach it so the caller can confirm the seq
+        const error = new Error('transcript_mismatch');
+        error.committed = committed;
+        throw error;
+      }
+      return committed;
+    }
+
+    throw new Error(`unsupported_session_entry:${entry.kind}`);
+  }
+
+  /**
+   * Replays an ordered batch of client session entries.
+   *
+   * Returns:
+   *   { status: 'ok'|'corrected', confirmedThroughSeq, results, reason?, rejectedSeq?, sessionEpoch }
+   */
+  applySessionSync({ sessionEpoch, entries = [] } = {}) {
+    const kk = this.gm.run?.kanjiKombat;
+    this.assertOnboardingComplete();
+    if (!kk) throw new Error('no_active_kanji_kombat_run');
+
+    // Old saves may have kk.sessionEpoch === undefined — treat missing/falsy as mismatch
+    if (!sessionEpoch || sessionEpoch !== kk.sessionEpoch) {
+      return {
+        status: 'corrected',
+        reason: 'session_epoch_mismatch',
+        confirmedThroughSeq: null,
+        rejectedSeq: entries[0]?.seq ?? null,
+        results: [],
+        sessionEpoch: kk.sessionEpoch,
+      };
+    }
+
+    const ledgerOwner = this.gm.meta;
+    const results = [];
+    let confirmedThroughSeq = null;
+
+    for (const entry of entries) {
+      // Deduplicate via action ledger
+      const existing = isActionId(entry.actionId)
+        ? getActionLedgerEntry(ledgerOwner, entry.actionId)
+        : null;
+      if (existing?.response) {
+        results.push({ seq: entry.seq, actionId: entry.actionId, replayed: true });
+        confirmedThroughSeq = entry.seq;
+        continue;
+      }
+
+      let committed;
+      try {
+        committed = this.applySessionEntry(entry);
+      } catch (error) {
+        // transcript_mismatch: the grade was committed — confirm the seq but stop
+        // the batch so the client snaps to authoritative state.
+        if (error?.committed) {
+          confirmedThroughSeq = entry.seq;
+          if (isActionId(entry.actionId)) {
+            rememberActionLedgerResult(ledgerOwner, {
+              actionId: entry.actionId,
+              actionType: 'kanjiKombat.sessionEntry',
+              response: { seq: entry.seq, corrected: true },
+            });
+          }
+        }
+        return {
+          status: 'corrected',
+          reason: error?.message || 'session_entry_failed',
+          confirmedThroughSeq,
+          rejectedSeq: entry.seq,
+          results,
+          sessionEpoch: kk.sessionEpoch,
+        };
+      }
+
+      const result = { seq: entry.seq, actionId: entry.actionId, ...committed };
+      results.push(result);
+      confirmedThroughSeq = entry.seq;
+      if (isActionId(entry.actionId)) {
+        rememberActionLedgerResult(ledgerOwner, {
+          actionId: entry.actionId,
+          actionType: 'kanjiKombat.sessionEntry',
+          response: { seq: entry.seq, accepted: true },
+        });
+      }
+    }
+
+    this.refillPromptBuffer();
+    return {
+      status: 'ok',
+      confirmedThroughSeq,
+      results,
+      sessionEpoch: kk.sessionEpoch,
     };
   }
 }
