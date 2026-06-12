@@ -12,6 +12,40 @@
 
 ---
 
+## Execution Status (as of 2026-06-12)
+
+Executed via subagent-driven development on branch `feature/kanji-kombat-session-sync` (worktree `koto-wt-kk-session-sync`). Each task passed a spec-compliance review and a code-quality review before being marked done.
+
+| Task | Status | Commits |
+|------|--------|---------|
+| 0 — Worktree | ✅ Done | (worktree + `08e0fd97` dev-seed reset) |
+| 1 — Subway harness (red) | ✅ Done | `21be5cc7`, `efe8df84` — still red by design; closes in Task 12 |
+| 2 — Server seed chain | ✅ Done | `92789cfe` |
+| 3 — Pre-rolled next wave | ✅ Done | `53b5cd82` |
+| 4 — Session epoch | ✅ Done | `adf3796f` |
+| 5 — Batch sync service | ✅ Done | `4e9b8e88`, `512541c2` (edge-case tests), `05e9225f` (contract docs) |
+| 6 — Sync route | ✅ Done | `b8870251`, `899caace` (error-response hardening) |
+| 7 — Client session module | ⚠️ Implementation done (`92ffa737`); review-mandated test strengthening pending | `92ffa737` |
+| 8 — Client API function | ⬜ Not started | |
+| 9 — Cutover: intro/completion/render | ⬜ Not started | |
+| 10 — Cutover: quiz path | ⬜ Not started | |
+| 11 — Delete old layers | ⬜ Not started | |
+| 12 — Harness green + verification | ⬜ Not started | |
+| 13 — Phase 4 cleanup + device validation | ⬜ Not started | |
+
+Suite state at `92ffa737`: 4141 unit + 64 integration, 0 failures. Subway harness intentionally red.
+
+**Task 7 outstanding (from spec review of `92ffa737`):** the module itself is spec-compliant; the test file needs strengthening before Task 7 closes:
+- The "reset abandons in-flight responses" test is ineffective — mutation-testing showed removing the generation guards still passes. Rewrite so a stale in-flight response would corrupt observable state (post-reset entry not dropped, no stale `onCheckpoint`), and mutation-check it.
+- Add coverage: single-flight + mid-flight entry survival; throwing callback doesn't break the syncer; singleton lifecycle (`configureKanjiKombatSession`/`getKanjiKombatSession`/`resetKanjiKombatSession`); full backoff ladder incl. cap + attempts reset on success and `syncNow()`; session-epoch adoption asserted via next sync payload.
+
+**Review notes binding later tasks:**
+- Task 5: `applySessionSync` is NOT self-rolling-back — callers must wrap in snapshot/restore (the `/sync` route does). Quiz entries dedupe via the `gm.meta` action ledger only, not `optimistic.acceptedActionIds`; each actionId must flow through exactly one path until Task 11 deletes the legacy one. Cross-path dedupe verified safe by integration test (prompt-head validation rejects before grading).
+- Task 6: `/sync` responds HTTP 200 + `status: 'corrected'` for service-level corrections (state saved where committed, incl. transcript_mismatch grades) vs HTTP 409 for unexpected throws (state restored).
+- Wave pre-roll pins enemy difficulty at pre-roll time by design (offline determinism beats mid-session level-up freshness).
+
+---
+
 ## File Structure
 
 - Create: `tests/smoke/kanji-kombat-subway.test.js` — Playwright subway harness (Phase 0 acceptance gate).
@@ -36,7 +70,7 @@
 
 **Files:** none.
 
-- [ ] **Step 1: Sync dev**
+- [x] **Step 1: Sync dev**
 
 ```bash
 cd /Users/michiarohrssen/Documents/Claude/koto-dev
@@ -45,7 +79,7 @@ cd /Users/michiarohrssen/Documents/Claude/koto-dev
 
 Expected: fast-forward or up to date. If unrelated local changes block the pull, stop and report.
 
-- [ ] **Step 2: Create the feature worktree**
+- [x] **Step 2: Create the feature worktree**
 
 ```bash
 /usr/bin/git worktree add ../koto-wt-kk-session-sync -b feature/kanji-kombat-session-sync
@@ -53,7 +87,7 @@ cd ../koto-wt-kk-session-sync
 npm install
 ```
 
-- [ ] **Step 3: Verify the spec and baseline tests**
+- [x] **Step 3: Verify the spec and baseline tests**
 
 ```bash
 test -f docs/superpowers/specs/2026-06-11-kanji-kombat-session-log-sync-design.md && echo SPEC_OK
@@ -72,11 +106,11 @@ The harness is an on-demand Playwright test (smoke tier — not part of `npm tes
 - Create: `tests/smoke/kanji-kombat-subway.test.js`
 - Modify: `package.json` (scripts)
 
-- [ ] **Step 1: Read the existing smoke conventions**
+- [x] **Step 1: Read the existing smoke conventions**
 
 Read `tests/smoke/golden-path.test.js` and `tests/visual/playwright.config.js`. Note: baseURL `http://127.0.0.1:5173`, WebKit iPhone viewport, `webServer` auto-starts `npm run dev`, auth token seeded via `localStorage.authToken`, game state read through `window.__gameState` / `window.__gamePhase()`.
 
-- [ ] **Step 2: Check devtester repeatability**
+- [x] **Step 2: Check devtester repeatability**
 
 ```bash
 grep -n "kanjiKombat\|script" src/dev/dev-test-user.js | head -20
@@ -89,7 +123,7 @@ git add src/dev/dev-test-user.js
 git commit -m "Reset Kanji Kombat daily state in dev seed"
 ```
 
-- [ ] **Step 3: Write the harness**
+- [x] **Step 3: Write the harness**
 
 Create `tests/smoke/kanji-kombat-subway.test.js`:
 
@@ -293,7 +327,7 @@ test.describe.serial('Kanji Kombat subway session', () => {
 });
 ```
 
-- [ ] **Step 4: Add the npm script**
+- [x] **Step 4: Add the npm script**
 
 In `package.json` scripts, after `"test:smoke:node"`:
 
@@ -301,7 +335,7 @@ In `package.json` scripts, after `"test:smoke:node"`:
 "test:subway": "npm run seed:dev-user && npx playwright test --config tests/visual/playwright.config.js tests/smoke/kanji-kombat-subway --workers=1",
 ```
 
-- [ ] **Step 5: Run the harness and confirm it fails for the right reason**
+- [x] **Step 5: Run the harness and confirm it fails for the right reason**
 
 ```bash
 npm run test:subway
@@ -309,7 +343,7 @@ npm run test:subway
 
 Expected: FAIL. Failure mode should be a tap-acknowledgment timeout or a stalled prompt after the first offline answer (the `kanjiKombatQueuedVerificationPending` block), or the seenPromptIds/blank-area assertions. If it fails on setup (login, start, onboarding) instead, fix the harness until it fails on a *gameplay* assertion — that's the bug being reproduced. Iterate on selectors/timing here; the harness driver must be solid before the rebuild starts.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests/smoke/kanji-kombat-subway.test.js package.json
@@ -327,11 +361,11 @@ git commit -m "Add Kanji Kombat subway harness (red)"
 - Modify: `src/game/loop.js:287-291`
 - Create: `tests/unit/game/kanji-kombat-seed-chain.test.js`
 
-- [ ] **Step 1: Read the existing service test conventions**
+- [x] **Step 1: Read the existing service test conventions**
 
 Read the top 60 lines of `tests/unit/game/kanji-kombat-deck.test.js` and `tests/unit/game/kanji-kombat-run.test.js` to see how these tests import the service and construct game-manager fixtures. Mirror that style in the new test file.
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `tests/unit/game/kanji-kombat-seed-chain.test.js` (adapt imports/fixtures to the conventions found in Step 1):
 
@@ -389,7 +423,7 @@ test('advanceKanjiKombatTurnSeeds shifts the chain and bumps stateVersion', () =
 });
 ```
 
-- [ ] **Step 3: Run to verify it fails**
+- [x] **Step 3: Run to verify it fails**
 
 ```bash
 node --test tests/unit/game/kanji-kombat-seed-chain.test.js
@@ -397,7 +431,7 @@ node --test tests/unit/game/kanji-kombat-seed-chain.test.js
 
 Expected: FAIL — `ensureKanjiKombatTurnSeeds` is not exported.
 
-- [ ] **Step 4: Implement the chain helpers**
+- [x] **Step 4: Implement the chain helpers**
 
 In `src/game/services/kanji-kombat-service.js`, after the `createCombatId()` definition (~line 55), add:
 
@@ -433,7 +467,7 @@ export function advanceKanjiKombatTurnSeeds(optimistic, { target = TURN_SEED_CHA
 }
 ```
 
-- [ ] **Step 5: Use the chain in commits and wave spawns**
+- [x] **Step 5: Use the chain in commits and wave spawns**
 
 In `verifyAndCommitOptimisticAnswer` (~line 917-921), replace:
 
@@ -476,7 +510,7 @@ grep -n "nextTurnSeed" src/game/services/*.js src/game/*.js | grep -v turnSeeds
 
 For each kanji-kombat hit that assigns `nextTurnSeed = createServerSeed()` (e.g. inside `combat-cycle-service` wave handling, if present), follow the assignment with `ensureKanjiKombatTurnSeeds(...)` on the same combat object so the invariant holds. PvE creature combat call sites stay untouched.
 
-- [ ] **Step 6: Expose `turnSeeds` to the client**
+- [x] **Step 6: Expose `turnSeeds` to the client**
 
 In `src/game/loop.js:287-291`, the optimistic whitelist:
 
@@ -489,7 +523,7 @@ In `src/game/loop.js:287-291`, the optimistic whitelist:
         } : null,
 ```
 
-- [ ] **Step 7: Run tests**
+- [x] **Step 7: Run tests**
 
 ```bash
 node --test tests/unit/game/kanji-kombat-seed-chain.test.js && npm test
@@ -497,7 +531,7 @@ node --test tests/unit/game/kanji-kombat-seed-chain.test.js && npm test
 
 Expected: new tests PASS; full suite PASS (existing kanji tests must not regress — `nextTurnSeed` behavior is unchanged from their perspective).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add -A
@@ -514,7 +548,7 @@ The server rolls the next wave ahead of time and stores it on `kk.pendingNextWav
 - Modify: `src/game/services/kanji-kombat-service.js`
 - Create: `tests/unit/game/kanji-kombat-wave-preroll.test.js`
 
-- [ ] **Step 1: Find where waves spawn during answers**
+- [x] **Step 1: Find where waves spawn during answers**
 
 ```bash
 grep -rn "spawnNextWave" src/game/ | grep -v test
@@ -522,7 +556,7 @@ grep -rn "spawnNextWave" src/game/ | grep -v test
 
 Note every call site (expect: `startRunWithCreature`, `resolveCompletionChoice`, and the combat-cycle path that fires when all enemies die during an answer — likely in `src/game/services/combat-cycle-service.js` or via a callback). Each call site is a consumption point for the pre-roll.
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `tests/unit/game/kanji-kombat-wave-preroll.test.js` (mirror the game-manager fixture conventions from `tests/unit/game/kanji-kombat-run.test.js` — the tests below express the required behavior; adapt construction to the existing fixture helper):
 
@@ -578,7 +612,7 @@ test('spawnNextWave discards a stale pre-roll for a different wave number', () =
 
 Run: `node --test tests/unit/game/kanji-kombat-wave-preroll.test.js` — expected FAIL (`prerollNextWave` undefined).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `KanjiKombatService`, refactor `spawnNextWave()` (~line 1091) by extracting the enemy roll into a helper, then add pre-roll support:
 
@@ -677,7 +711,7 @@ Then make `refillPromptBuffer` keep the pre-roll fresh — append inside the `if
       this.prerollNextWave();
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 ```bash
 node --test tests/unit/game/kanji-kombat-wave-preroll.test.js && npm test
@@ -685,7 +719,7 @@ node --test tests/unit/game/kanji-kombat-wave-preroll.test.js && npm test
 
 Expected: PASS. Existing wave tests must still pass (fresh-roll path is byte-equivalent to the old behavior).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -701,7 +735,7 @@ git commit -m "Pre-roll Kanji Kombat next wave"
 - Modify: `src/routes/game/state.js`
 - Test: extend `tests/unit/game/kanji-kombat-seed-chain.test.js` (same fixture style)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/unit/game/kanji-kombat-seed-chain.test.js`:
 
@@ -720,7 +754,7 @@ test('rotateKanjiKombatSessionEpoch mints and replaces the epoch', () => {
 
 Run: `node --test tests/unit/game/kanji-kombat-seed-chain.test.js` — expected FAIL.
 
-- [ ] **Step 2: Implement**
+- [x] **Step 2: Implement**
 
 In `kanji-kombat-service.js` near `createServerSeed`:
 
@@ -749,7 +783,7 @@ Rotate on full state GET — read `src/routes/game/state.js` first, then in the 
 
 (`sessionEpoch` reaches the client automatically because `getState()` passes `run.kanjiKombat` through whole.)
 
-- [ ] **Step 3: Run tests, commit**
+- [x] **Step 3: Run tests, commit**
 
 ```bash
 node --test tests/unit/game/kanji-kombat-seed-chain.test.js && npm test
@@ -785,7 +819,7 @@ Return shape:
   reason?, rejectedSeq?, sessionEpoch }
 ```
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `tests/unit/game/kanji-kombat-session-sync.test.js` using the same service fixture as Tasks 2-3. Helper to build a valid quiz entry from the live buffer head:
 
@@ -901,7 +935,7 @@ test('applySessionSync commits intro and completion entries', () => {
 
 Adapt fixture arrangement (quiz-first vs intro-first head) to what `createKanjiKombatTestService` actually produces — assert the head kind explicitly so the tests are self-diagnosing. Run: expected FAIL (`applySessionSync` undefined).
 
-- [ ] **Step 2: Implement `applySessionSync`**
+- [x] **Step 2: Implement `applySessionSync`**
 
 Add imports at the top of `kanji-kombat-service.js`:
 
@@ -1054,7 +1088,7 @@ Add to `KanjiKombatService`:
 
 Note: `rememberActionLedgerResult` stores a minimal response (not the full committed payload) — the batch response carries the full per-entry results; replays only need to dedupe, and full responses would bloat the persisted ledger. Verify `rememberActionLedgerResult`/`getActionLedgerEntry` signatures in `src/game/services/action-ledger-service.js` and adapt if they differ.
 
-- [ ] **Step 3: Run tests**
+- [x] **Step 3: Run tests**
 
 ```bash
 node --test tests/unit/game/kanji-kombat-session-sync.test.js && npm test
@@ -1062,7 +1096,7 @@ node --test tests/unit/game/kanji-kombat-session-sync.test.js && npm test
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add -A
@@ -1077,7 +1111,7 @@ git commit -m "Add Kanji Kombat session batch sync"
 - Modify: `src/routes/game/kanji-kombat.js`
 - Create: `tests/integration/flows/kanji-kombat-sync.test.js`
 
-- [ ] **Step 1: Add the route**
+- [x] **Step 1: Add the route**
 
 In `createKanjiKombatRoutes()`, after the `/prompt-buffer/refill` route:
 
@@ -1110,7 +1144,7 @@ In `createKanjiKombatRoutes()`, after the `/prompt-buffer/refill` route:
 
 (`snapshotGameManager`/`restoreGameManager` are already imported in this file.)
 
-- [ ] **Step 2: Write the integration test**
+- [x] **Step 2: Write the integration test**
 
 Read one existing test in `tests/integration/flows/` first and mirror its app/auth bootstrapping. The test must cover, against a real Express app:
 
@@ -1127,7 +1161,7 @@ Read one existing test in `tests/integration/flows/` first and mirror its app/au
 
 Each numbered behavior is one `test(...)` with real assertions, modeled on the neighboring flow test's request helper.
 
-- [ ] **Step 3: Run and commit**
+- [x] **Step 3: Run and commit**
 
 ```bash
 npm run test:integration && npm test
@@ -1143,7 +1177,7 @@ git commit -m "Add Kanji Kombat sync route"
 - Create: `public/js/ui/kanji-kombat-session.js`
 - Create: `tests/unit/ui/kanji-kombat-session.test.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Mirror the style of `tests/unit/ui/kanji-kombat-sync-queue.test.js` (injectable `schedule`/`cancel`, fake `syncRequest`). Create `tests/unit/ui/kanji-kombat-session.test.js`:
 
@@ -1298,7 +1332,7 @@ test('reset abandons in-flight responses', async () => {
 
 Run: `node --test tests/unit/ui/kanji-kombat-session.test.js` — expected FAIL (module missing).
 
-- [ ] **Step 2: Implement the module**
+- [x] **Step 2: Implement the module**
 
 Create `public/js/ui/kanji-kombat-session.js`:
 
@@ -1482,7 +1516,7 @@ export function resetKanjiKombatSession() {
 }
 ```
 
-- [ ] **Step 3: Run tests, syntax check, commit**
+- [x] **Step 3: Run tests, syntax check, commit**
 
 ```bash
 node --check public/js/ui/kanji-kombat-session.js && echo OK
