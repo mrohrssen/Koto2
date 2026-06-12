@@ -147,6 +147,18 @@ test.describe.serial('Kanji Kombat subway session', () => {
     // The combat loop initialises asynchronously after load; allow 30s.
     await waitForActionablePrompt(page);
 
+    // Track how many sync responses the server corrected (should be zero).
+    let correctedSyncs = 0;
+    page.on('response', async res => {
+      if (!res.url().includes('/api/game/kanji-kombat/sync')) return;
+      try {
+        const body = await res.json();
+        if (body.status === 'corrected') correctedSyncs++;
+      } catch {
+        // Body may be unavailable (e.g. redirect or network error) — ignore.
+      }
+    });
+
     // --- Main interaction loop ---
     const seenPromptIds = new Set();
     let interactions = 0;
@@ -424,6 +436,7 @@ test.describe.serial('Kanji Kombat subway session', () => {
       // exists to verify all held.  The defeat flow auto-forfeits the run, so
       // the per-run report may already be cleared; skip the report-count
       // assertions, which assume the session survived to its completion prompt.
+      expect(correctedSyncs, 'server should not have corrected any sync responses (defeat path)').toBe(0);
       console.log(`[harness] run ended in server-confirmed DEFEAT after ${quizAnswers} quiz answers — `
         + 'valid end: sync integrity invariants held');
       return;
@@ -467,5 +480,6 @@ test.describe.serial('Kanji Kombat subway session', () => {
       serverReport.newCardsIntroduced,
       `server.newCardsIntroduced (${serverReport.newCardsIntroduced}) must equal introChoices (${introChoices})`,
     ).toBe(introChoices);
+    expect(correctedSyncs, 'server should not have corrected any sync responses').toBe(0);
   });
 });

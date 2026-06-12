@@ -482,10 +482,10 @@ function consumePromptHeadDraft(draft, prompt) {
   kk.completionChoicePending = next?.kind === 'completePrompt';
 }
 
-function requestPromptBufferRefillIfLow(state, { forceRefill = false } = {}) {
+function requestPromptBufferRefillIfLow(state) {
   const kk = state?.run?.kanjiKombat;
   if (!Array.isArray(kk?.promptBuffer)) return;
-  if (!forceRefill && kk.promptBuffer.length >= PROMPT_BUFFER_REFILL_THRESHOLD) return;
+  if (kk.promptBuffer.length >= PROMPT_BUFFER_REFILL_THRESHOLD) return;
   if (promptBufferRefillPromise || typeof api.refillPromptBuffer !== 'function') return;
   rememberKanjiKombatState(state);
   promptBufferRefillPromise = Promise.resolve(api.refillPromptBuffer())

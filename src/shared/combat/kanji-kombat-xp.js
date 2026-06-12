@@ -6,7 +6,7 @@
  * on each creature object at runtime (baseHpTemplate, baseAttackTemplate, etc.).
  *
  * Used by both the server (via kanji-kombat-service.js) and the client
- * (via buildOptimisticKanjiKombatAnswer in optimistic-combat-turn.js) so that
+ * (via applyLocalKanjiKombatDeferredKillXp in combat-loop.js) so that
  * the client applies the same XP/level-up HP changes as the server when
  * predicting the hash for the first quiz of a new wave.
  */
