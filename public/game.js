@@ -2250,7 +2250,8 @@ async function initGame() {
     processPendingMoveLearn: list => combatLoopUI.processPendingMoveLearn(list),
     syncKanjiKombatStreakRewardVisuals: result => combatLoopUI.syncKanjiKombatStreakRewardVisuals(result),
     playKanjiKombatNextWaveTransition: result => combatLoopUI.playKanjiKombatNextWaveTransition(result),
-    getLocalKanjiKombatWavesPlayed: () => combatLoopUI.getLocalKanjiKombatWavesPlayed(),
+    getLastLocallyPlayedKanjiKombatWave: () => combatLoopUI.getLastLocallyPlayedKanjiKombatWave(),
+    setLastLocallyPlayedKanjiKombatWave: wave => combatLoopUI.setLastLocallyPlayedKanjiKombatWave(wave),
   });
 
   explorationUI.init({

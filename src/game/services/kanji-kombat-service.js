@@ -1020,11 +1020,13 @@ export class KanjiKombatService {
 
     let nextWave = false;
     let nextWaveEnemies = null;
+    let nextWaveNumber = null;
     if ((this.gm.combat?.enemies || []).length === 0
       || (this.gm.combat?.enemies || []).every(enemy => enemy.hp <= 0 || enemy.befriended)) {
       this.spawnNextWave();
       nextWave = true;
       nextWaveEnemies = cloneCombatants(this.gm.combat.enemies);
+      nextWaveNumber = this.gm.run.kanjiKombat.wave;
     }
 
     const work = this.queueNextPrompt();
@@ -1040,6 +1042,7 @@ export class KanjiKombatService {
       completionChoicePending: false,
       endlessMode: true,
       nextWave,
+      nextWaveNumber,
       nextWaveEnemies,
       kanjiKombat: this.gm.run.kanjiKombat,
       allies: this.gm.combat.allies,
@@ -1380,6 +1383,7 @@ export class KanjiKombatService {
       koRemovals,
       combatEnded: false,
       nextWave: true,
+      nextWaveNumber: this.gm.run.kanjiKombat.wave,
       kanjiKombat: this.gm.run.kanjiKombat,
       allies: this.gm.combat.allies,
       enemies: clearedEnemies,

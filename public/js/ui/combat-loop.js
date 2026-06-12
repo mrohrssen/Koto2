@@ -710,10 +710,19 @@ function applyLocalKanjiKombatWaveTransition(state) {
   return pending;
 }
 
-// Count of wave transitions locally played (not yet confirmed by checkpoint).
-// Exposed to kanji-kombat.js so the checkpoint handler can skip replays.
-let _localKanjiKombatWavesPlayed = 0;
-export function getLocalKanjiKombatWavesPlayed() { return _localKanjiKombatWavesPlayed; }
+// High-water mark of the wave number most recently animated locally (optimistic prediction).
+// The checkpoint handler skips replaying a server-confirmed nextWave result when
+// result.nextWaveNumber <= this mark, meaning the transition was already shown locally.
+// Keying off the wave number (rather than a pair of counts) is drift-proof:
+//   • re-init resets to 0 → genuine server transitions always have wave > 0, so they play;
+//   • a correction snaps the mark to the corrected state's wave → future server-only
+//     transitions (wave > corrected wave) play correctly;
+//   • post-combat-end the mark is reset with the rest of combat state.
+let _lastLocallyPlayedKanjiKombatWave = 0;
+export function getLastLocallyPlayedKanjiKombatWave() { return _lastLocallyPlayedKanjiKombatWave; }
+export function setLastLocallyPlayedKanjiKombatWave(wave) {
+  _lastLocallyPlayedKanjiKombatWave = (typeof wave === 'number' && wave > 0) ? wave : 0;
+}
 
 async function runOptimisticKanjiKombatAnswer({
   answerId,
@@ -788,7 +797,12 @@ async function runOptimisticKanjiKombatAnswer({
     if (waveTransition) {
       updateGameState(localState);
       combatActive = true;
-      _localKanjiKombatWavesPlayed += 1;
+      // Record the new wave number as the high-water mark so the checkpoint handler
+      // knows this transition was already played and skips the server-confirmed replay.
+      _lastLocallyPlayedKanjiKombatWave = Math.max(
+        _lastLocallyPlayedKanjiKombatWave,
+        typeof waveTransition.wave === 'number' ? waveTransition.wave : 0
+      );
       await playKanjiKombatNextWaveTransition({
         nextWave: true,
         nextWaveEnemies: waveTransition.enemies,
@@ -843,7 +857,7 @@ export const __combatNetworkTest = {
   resetPendingFlags() {
     playerAttackPending = false;
     enemyAttackPending = false;
-    _localKanjiKombatWavesPlayed = 0;
+    _lastLocallyPlayedKanjiKombatWave = 0;
   },
   setSyncIndicatorDelayMs(ms) {
     combatSyncIndicatorDelayMs = ms;
@@ -1249,6 +1263,7 @@ export function cleanupCombat() {
   combatPausedForVocab = false;
   _currentRoundBarks = [];
   animatedEnemyKoKeys = new Set();
+  _lastLocallyPlayedKanjiKombatWave = 0;
   // PIXI status label cleanup is handled by BattleScene.beforeExit via
   // registry disposal when we transition to ExplorationScene.
 }

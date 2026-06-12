@@ -31,9 +31,11 @@ const DEFAULT_API = {
   processPendingMoveLearn: null,
   syncKanjiKombatStreakRewardVisuals: null,
   playKanjiKombatNextWaveTransition: null,
-  // Returns the count of wave transitions the combat-loop has locally animated,
-  // used by the checkpoint handler to skip already-shown wave replays.
-  getLocalKanjiKombatWavesPlayed: null,
+  // Get/set the high-water mark of the highest wave number the combat-loop has
+  // locally animated.  The checkpoint handler uses this to suppress double-plays:
+  // a confirmed nextWave result is skipped when result.nextWaveNumber <= mark.
+  getLastLocallyPlayedKanjiKombatWave: null,
+  setLastLocallyPlayedKanjiKombatWave: null,
 };
 
 let api = { ...DEFAULT_API };
@@ -58,16 +60,15 @@ let promptBufferRefillPromise = null;
 let latestKanjiKombatState = null;
 let reviewSyncOnlineDrainTarget = null;
 let reviewSyncVisibilityDrainTarget = null;
-// Tracks how many nextWave transitions the checkpoint handler has already absorbed
-// because the combat-loop had played them locally.
-let _confirmedKanjiKombatWavesAbsorbed = 0;
 
 export function initKanjiKombatUI(deps) {
   getKanjiKombatSession()?.reset();
   api = { ...DEFAULT_API, ...deps };
   latestKanjiKombatState = null;
   promptBufferRefillPromise = null;
-  _confirmedKanjiKombatWavesAbsorbed = 0;
+  // Reset the local-play high-water mark on re-init so genuine server transitions
+  // (which carry wave numbers > 0) are not silently skipped after a re-auth.
+  api.setLastLocallyPlayedKanjiKombatWave?.(0);
   const sessionOpts = {
     syncRequest: payload => api.syncSession(payload),
     onCheckpoint: handleSessionCheckpoint,
@@ -200,11 +201,15 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
       if (result.nextWave) {
         // Skip the wave transition animation if the combat-loop already played it
         // locally as part of an optimistic wave prediction — avoid a double-play.
-        const locallyPlayed = typeof api.getLocalKanjiKombatWavesPlayed === 'function'
-          ? api.getLocalKanjiKombatWavesPlayed()
+        // Identity-based: compare the confirmed wave number against the high-water
+        // mark of locally-animated waves.  A result without nextWaveNumber falls
+        // back to always playing (safe default — means an older server version).
+        const localHighWater = typeof api.getLastLocallyPlayedKanjiKombatWave === 'function'
+          ? api.getLastLocallyPlayedKanjiKombatWave()
           : 0;
-        if (_confirmedKanjiKombatWavesAbsorbed < locallyPlayed) {
-          _confirmedKanjiKombatWavesAbsorbed += 1;
+        const confirmedWave = typeof result.nextWaveNumber === 'number' ? result.nextWaveNumber : 0;
+        if (confirmedWave > 0 && confirmedWave <= localHighWater) {
+          // Already played locally — suppress the replay.
         } else {
           await api.playKanjiKombatNextWaveTransition?.(result);
         }
@@ -220,6 +225,15 @@ async function handleSessionCorrection(response) {
   }
   const state = response?.authoritativeState || response?.state;
   if (state) updateKanjiKombatGameState(state);
+  // Snap the local-play high-water mark to the authoritative wave number so that
+  // future server-only nextWave transitions (with a higher wave number) still play.
+  // A corrected prediction left the mark permanently ahead; resetting it here means
+  // only transitions for waves > correctedWave will be suppressed — which is correct
+  // because those would only exist if the combat-loop had played them locally again.
+  const correctedWave = typeof state?.run?.kanjiKombat?.wave === 'number'
+    ? state.run.kanjiKombat.wave
+    : 0;
+  api.setLastLocallyPlayedKanjiKombatWave?.(correctedWave);
   refreshKanjiKombatAction();
 }
 
