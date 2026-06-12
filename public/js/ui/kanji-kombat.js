@@ -24,7 +24,7 @@ const DEFAULT_API = {
   forceHideNarration: null,
   syncSession: null,
   isCombatAnimationActive: null,
-  __sessionSchedule: null,
+  __sessionSchedule: null, // test seam
   // Visuals from combat-loop.js — used by the checkpoint handler to show
   // server-confirmed XP, streak rewards, and wave transitions.
   showXpEvents: null,
@@ -163,14 +163,16 @@ function updateKanjiKombatGameState(state) {
   api.updateGameState?.(state);
 }
 
-function activePromptId(state) {
-  return getActiveBufferedPrompt(state?.run?.kanjiKombat)?.promptId || null;
-}
-
 function currentKanjiKombatState() {
   return typeof api.getGameState === 'function'
     ? api.getGameState() || latestKanjiKombatState
     : latestKanjiKombatState;
+}
+
+async function waitForCombatAnimationIdle() {
+  while (api.isCombatAnimationActive?.()) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
 }
 
 function handleSessionCheckpoint(response, { logEmpty } = {}) {
@@ -185,8 +187,11 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
   // Re-render the action after applying state (e.g. when combat was inactive after
   // a graceful-pause wave end — this unblocks the player).
   if (response?.state && logEmpty) refreshKanjiKombatAction();
-  // Show server-confirmed visuals for each result in the batch.
+  // Show server-confirmed visuals for each result in the batch — but wait for any
+  // in-flight optimistic animation to finish first, so state-apply and replay visuals
+  // don't race with a running combat sequence.
   void (async () => {
+    await waitForCombatAnimationIdle();
     for (const result of results) {
       if (result.replayed) continue;
       if (result.xpEvents?.length) {
@@ -220,9 +225,7 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
 }
 
 async function handleSessionCorrection(response) {
-  while (api.isCombatAnimationActive?.()) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await waitForCombatAnimationIdle();
   const state = response?.authoritativeState || response?.state;
   if (state) updateKanjiKombatGameState(state);
   // Snap the local-play high-water mark to the authoritative wave number so that
@@ -248,32 +251,6 @@ function promptIdentity(prompt) {
 
 function promptBufferHeadIdentity(state) {
   return promptIdentity(getActiveBufferedPrompt(state?.run?.kanjiKombat));
-}
-
-function visiblePromptIdentity(state) {
-  const kk = state?.run?.kanjiKombat;
-  const buffered = getActiveBufferedPrompt(kk);
-  if (buffered) return promptIdentity(buffered);
-  if (kk?.pendingIntro?.card || kk?.pendingIntro?.cardId) {
-    const cardId = kk.pendingIntro.cardId || kk.pendingIntro.card?.id || '';
-    return `intro|||${cardId}`;
-  }
-  if (kk?.currentQuiz) {
-    const cardId = kk.currentQuiz.cardId || '';
-    return `quiz|||${cardId || kk.currentQuiz.prompt || ''}`;
-  }
-  if (kk?.completionChoicePending) return 'completePrompt|||';
-  return null;
-}
-
-function isUsableFetchedState(state) {
-  return !!state && state.transient !== true && !state.error && state.phase;
-}
-
-function fetchedStateAdvancedPastOriginal(originalState, fetchedState) {
-  if (!isUsableFetchedState(fetchedState)) return false;
-  if (fetchedState.phase !== originalState?.phase) return true;
-  return visiblePromptIdentity(fetchedState) !== visiblePromptIdentity(originalState);
 }
 
 function promptRef(prompt) {
@@ -540,7 +517,7 @@ export function renderKanjiKombatAction(gameState) {
   const quizPrompt = bufferedPrompt?.kind === 'quiz' ? bufferedPrompt : null;
   const hasBufferedPrompt = !!bufferedPrompt;
 
-  if (completionPrompt || (!hasBufferedPrompt && kk.completionChoicePending)) {
+  if (completionPrompt) {
     renderKanjiKombatCompletionChoice({
       onChoice: async keepGoing => {
         const session = getKanjiKombatSession();
@@ -550,11 +527,7 @@ export function renderKanjiKombatAction(gameState) {
         }
 
         const draft = structuredClone(gameState);
-        if (bufferedPrompt?.kind === 'completePrompt') {
-          consumePromptHeadDraft(draft, bufferedPrompt);
-        } else {
-          draft.run.kanjiKombat.completionChoicePending = false;
-        }
+        consumePromptHeadDraft(draft, bufferedPrompt);
         if (keepGoing) draft.run.kanjiKombat.endlessMode = true;
         updateKanjiKombatGameState(draft);
 
@@ -579,7 +552,7 @@ export function renderKanjiKombatAction(gameState) {
     return true;
   }
 
-  const introCard = introPrompt?.intro?.card || (!hasBufferedPrompt ? kk.pendingIntro?.card : null);
+  const introCard = introPrompt?.intro?.card ?? null;
   if (introCard) {
     renderKanjiKombatIntro(introCard, {
       onChoice: async choice => {
@@ -590,11 +563,7 @@ export function renderKanjiKombatAction(gameState) {
         }
 
         const draft = structuredClone(gameState);
-        if (introPrompt) {
-          consumePromptHeadDraft(draft, introPrompt);
-        } else {
-          draft.run.kanjiKombat.pendingIntro = null;
-        }
+        consumePromptHeadDraft(draft, introPrompt);
         updateKanjiKombatGameState(draft);
 
         session.recordAction({
@@ -613,7 +582,7 @@ export function renderKanjiKombatAction(gameState) {
     return true;
   }
 
-  const quiz = quizPrompt?.quiz || (!hasBufferedPrompt ? kk.currentQuiz : null);
+  const quiz = quizPrompt?.quiz || null;
   if (quiz) {
     renderKanjiKombatQuiz(quiz, {
       onAnswer: async answerId => {

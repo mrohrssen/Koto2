@@ -564,7 +564,7 @@ function withKanjiKombatPromptRef(request, promptRef = {}) {
 }
 
 function localStateAfterKanjiKombatPrediction(state, optimistic, promptRef = {}) {
-  const next = JSON.parse(JSON.stringify(state || {}));
+  const next = structuredClone(state || {});
   const kk = next.run?.kanjiKombat;
   let consumedPromptHead = false;
   let promptHeadBlockedCurrentQuizFallback = false;
@@ -777,7 +777,8 @@ async function runOptimisticKanjiKombatAnswer({
   playerAttackPending = false;
 
   // Append to the session log immediately after local state is committed — before
-  // any async transitions, so an animation exception can't lose the record.
+  // the async wave-transition, so a wave-animation exception cannot lose the record.
+  // (The primary playback await above is not covered by this guarantee.)
   session.recordAction({
     actionId: optimistic.envelope.actionId,
     kind: 'quiz',
@@ -2142,9 +2143,12 @@ async function executeCreatureMovesTurn(choices, options = {}) {
         return;
       }
 
-      // When the Kanji Kombat session is at the hard cap, runOptimisticKanjiKombatAnswer
-      // returns false and shows a sync pause — do NOT fall through to the legacy server
-      // request, which would fire 50+ unsynced actions ahead.
+      // runOptimisticKanjiKombatAnswer returns false for two reasons: (a) the session is
+      // at the hard cap and showed a sync pause, or (b) buildOptimisticKanjiKombatRequest
+      // returned null because apiSubmitKanjiKombatAnswer is unavailable (seed-exhausted /
+      // online-only path).  The cap-gate here guards case (a) — do NOT fall through to the
+      // legacy server request, which would fire 50+ unsynced actions ahead.  Case (b) is
+      // intentionally allowed to fall through so the online server path handles it.
       if (actionType === 'kanjiKombat' && options.kanjiAnswerId) {
         const _kkSession = getKanjiKombatSession();
         if (_kkSession && !_kkSession.canConsumePrompt()) return;

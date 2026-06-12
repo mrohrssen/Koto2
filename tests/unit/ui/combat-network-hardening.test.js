@@ -78,11 +78,6 @@ globalThis.cancelAnimationFrame = id => clearImmediate(id);
 const combatLoop = await import('../../../public/js/ui/combat-loop.js');
 const { clearSceneManager, setSceneManager } = await import('../../../public/js/scenes/scene-manager.js');
 const {
-  configureKanjiKombatSyncQueue,
-  REVIEW_SYNC_QUEUE_HARD_LIMIT,
-  resetKanjiKombatSyncQueue,
-} = await import('../../../public/js/ui/kanji-kombat-sync-queue.js');
-const {
   configureKanjiKombatSession,
   getKanjiKombatSession,
   resetKanjiKombatSession,
@@ -99,7 +94,6 @@ describe('combat network hardening', () => {
     actionArea = createActionArea();
     localStorage.clear();
     console.log = () => {};
-    resetKanjiKombatSyncQueue();
     resetKanjiKombatSession();
     combatLoop.__combatNetworkTest.setCreatureCombatApi(null);
     combatLoop.__combatNetworkTest.setSyncIndicatorDelayMs(500);
@@ -108,7 +102,6 @@ describe('combat network hardening', () => {
   afterEach(() => {
     console.log = originalConsoleLog;
     console.warn = originalConsoleWarn;
-    resetKanjiKombatSyncQueue();
     resetKanjiKombatSession();
     clearSceneManager();
   });

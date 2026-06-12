@@ -342,15 +342,21 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          currentQuiz: {
-            prompt: '火',
-            choices: [
-              { id: 'fire', answer: 'fire' },
-              { id: 'water', answer: 'water' },
-              { id: 'tree', answer: 'tree' },
-              { id: 'metal', answer: 'metal' },
-            ],
-          },
+          promptBuffer: [{
+            kind: 'quiz',
+            promptId: 'p-fire',
+            sequence: 1,
+            cardId: 'kanji:火',
+            quiz: {
+              prompt: '火',
+              choices: [
+                { id: 'fire', answer: 'fire' },
+                { id: 'water', answer: 'water' },
+                { id: 'tree', answer: 'tree' },
+                { id: 'metal', answer: 'metal' },
+              ],
+            },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -378,14 +384,20 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          currentQuiz: {
-            prompt: '火',
-            reading: 'ひ',
-            choices: [
-              { id: 'fire', answer: 'Fire', correct: true },
-              { id: 'water', answer: 'Water', correct: false },
-            ],
-          },
+          promptBuffer: [{
+            kind: 'quiz',
+            promptId: 'p-hi',
+            sequence: 1,
+            cardId: 'kanji:火',
+            quiz: {
+              prompt: '火',
+              reading: 'ひ',
+              choices: [
+                { id: 'fire', answer: 'Fire', correct: true },
+                { id: 'water', answer: 'Water', correct: false },
+              ],
+            },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -468,7 +480,7 @@ describe('kanji-kombat ui', () => {
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].textContent, 'Yes');
   });
 
-  it('continues after the legacy completion prompt without ending combat', async () => {
+  it('continues after the buffered completion prompt without ending combat', async () => {
     const calls = [];
     const syncCalls = [];
     initKanjiKombatUI({
@@ -487,7 +499,14 @@ describe('kanji-kombat ui', () => {
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
-        kanjiKombat: { completionChoicePending: true },
+        kanjiKombat: {
+          promptBuffer: [{
+            kind: 'completePrompt',
+            promptId: 'p-complete',
+            sequence: 1,
+            cardId: null,
+          }],
+        },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
     });
@@ -527,7 +546,14 @@ describe('kanji-kombat ui', () => {
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
-        kanjiKombat: { completionChoicePending: true },
+        kanjiKombat: {
+          promptBuffer: [{
+            kind: 'completePrompt',
+            promptId: 'p-complete',
+            sequence: 1,
+            cardId: null,
+          }],
+        },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
     });
@@ -561,9 +587,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: {
-            card: { id: cardId, prompt: 'か', reading: 'か', answer: 'ka' },
-          },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ka',
+            sequence: 1,
+            cardId,
+            intro: { card: { id: cardId, prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -616,7 +646,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: { card: { id: cardId1, prompt: 'あ', reading: 'あ', answer: 'a' } },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-a',
+            sequence: 1,
+            cardId: cardId1,
+            intro: { card: { id: cardId1, prompt: 'あ', reading: 'あ', answer: 'a' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -629,7 +665,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: { card: { id: cardId2, prompt: 'い', reading: 'い', answer: 'i' } },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-i',
+            sequence: 2,
+            cardId: cardId2,
+            intro: { card: { id: cardId2, prompt: 'い', reading: 'い', answer: 'i' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -657,7 +699,7 @@ describe('kanji-kombat ui', () => {
         return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, state: { phase: 'combat', accepted: true } };
       },
       __sessionSchedule: syncSchedule,
-      updateGameState: state => calls.push(['updateGameState', state.phase, state.accepted === true, state.run?.kanjiKombat?.pendingIntro ?? null]),
+      updateGameState: state => calls.push(['updateGameState', state.phase, state.accepted === true, state.run?.kanjiKombat?.promptBuffer?.length ?? null]),
       refreshAction: () => calls.push(['refreshAction']),
       updateUI: () => calls.push(['updateUI']),
       showNarration: async () => calls.push(['unexpected-narration']),
@@ -668,7 +710,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ka',
+            sequence: 1,
+            cardId: 'hiragana:ka',
+            intro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -676,8 +724,8 @@ describe('kanji-kombat ui', () => {
     await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
     await flushPromises(4);
 
-    // First updateGameState: optimistic draft clears pendingIntro
-    assert.deepEqual(calls[0], ['updateGameState', 'combat', false, null]);
+    // First updateGameState: optimistic draft consumes the prompt from the buffer
+    assert.deepEqual(calls[0], ['updateGameState', 'combat', false, 0]);
     // Session received an entry with a valid actionId pattern
     assert.equal(syncCalls.length, 1);
     const entry = syncCalls[0][0];
@@ -1046,7 +1094,13 @@ describe('kanji-kombat ui', () => {
         run: {
           mode: 'kanjiKombat',
           kanjiKombat: {
-            pendingIntro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+            promptBuffer: [{
+              kind: 'intro',
+              promptId: 'p-ka',
+              sequence: 1,
+              cardId: 'hiragana:か',
+              intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+            }],
           },
         },
         combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -1065,7 +1119,13 @@ describe('kanji-kombat ui', () => {
         run: {
           mode: 'kanjiKombat',
           kanjiKombat: {
-            pendingIntro: { card: { id: 'hiragana:き', prompt: 'き', reading: 'き', answer: 'ki' } },
+            promptBuffer: [{
+              kind: 'intro',
+              promptId: 'p-ki',
+              sequence: 2,
+              cardId: 'hiragana:き',
+              intro: { card: { id: 'hiragana:き', prompt: 'き', reading: 'き', answer: 'ki' } },
+            }],
           },
         },
         combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -1173,7 +1233,7 @@ describe('kanji-kombat ui', () => {
         };
       },
       __sessionSchedule: syncSchedule,
-      updateGameState: state => calls.push(['updateGameState', state.phase, state.accepted === true, state.run?.kanjiKombat?.completionChoicePending ?? null]),
+      updateGameState: state => calls.push(['updateGameState', state.phase, state.accepted === true, state.run?.kanjiKombat?.promptBuffer?.length ?? null]),
       finishCombatResult: result => calls.push(['finishCombatResult', result.victory]),
       refreshAction: () => calls.push(['unexpected-refresh']),
       updateUI: () => calls.push(['unexpected-update']),
@@ -1183,15 +1243,22 @@ describe('kanji-kombat ui', () => {
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
-        kanjiKombat: { completionChoicePending: true },
+        kanjiKombat: {
+          promptBuffer: [{
+            kind: 'completePrompt',
+            promptId: 'p-complete',
+            sequence: 1,
+            cardId: null,
+          }],
+        },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
     });
     await actionArea.querySelectorAll('.kanji-kombat-completion-action')[0].click();
     await flushPromises(4);
 
-    // Optimistic update: completionChoicePending cleared
-    assert.deepEqual(calls[0], ['updateGameState', 'combat', false, false]);
+    // Optimistic update: prompt consumed from buffer
+    assert.deepEqual(calls[0], ['updateGameState', 'combat', false, 0]);
     // Action had valid actionId
     assert.equal(syncCalls.length, 1);
     assert.match(syncCalls[0][0].actionId, /^kk_[a-z0-9]+_[a-z0-9]+$/i);
@@ -1281,13 +1348,19 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          currentQuiz: {
-            prompt: '火',
-            choices: [
-              { id: 'fire', answer: 'Fire' },
-              { id: 'water', answer: 'Water' },
-            ],
-          },
+          promptBuffer: [{
+            kind: 'quiz',
+            promptId: 'p-fire',
+            sequence: 1,
+            cardId: 'kanji:火',
+            quiz: {
+              prompt: '火',
+              choices: [
+                { id: 'fire', answer: 'Fire' },
+                { id: 'water', answer: 'Water' },
+              ],
+            },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -1305,10 +1378,16 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          currentQuiz: {
-            prompt: '火',
-            choices: [{ id: 'fire', answer: 'Fire' }],
-          },
+          promptBuffer: [{
+            kind: 'quiz',
+            promptId: 'p-fire',
+            sequence: 1,
+            cardId: 'kanji:火',
+            quiz: {
+              prompt: '火',
+              choices: [{ id: 'fire', answer: 'Fire' }],
+            },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -2096,9 +2175,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: {
-            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
-          },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ka',
+            sequence: 1,
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -2138,9 +2221,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: {
-            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
-          },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ka',
+            sequence: 1,
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -2188,9 +2275,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: {
-            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
-          },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ka',
+            sequence: 1,
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -2232,9 +2323,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: {
-            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
-          },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ka',
+            sequence: 1,
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -2282,9 +2377,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: {
-            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
-          },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ka',
+            sequence: 1,
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -2340,9 +2439,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: {
-            card: { id: 'hiragana:き', prompt: 'き', reading: 'き', answer: 'ki' },
-          },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ki',
+            sequence: 2,
+            cardId: 'hiragana:き',
+            intro: { card: { id: 'hiragana:き', prompt: 'き', reading: 'き', answer: 'ki' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -2422,9 +2525,13 @@ describe('kanji-kombat ui', () => {
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
-          pendingIntro: {
-            card: { id: 'hiragana:く', prompt: 'く', reading: 'く', answer: 'ku' },
-          },
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-ku',
+            sequence: 3,
+            cardId: 'hiragana:く',
+            intro: { card: { id: 'hiragana:く', prompt: 'く', reading: 'く', answer: 'ku' } },
+          }],
         },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
@@ -2435,5 +2542,58 @@ describe('kanji-kombat ui', () => {
     // wave 3 > mark (2) after correction → must play.
     assert.ok(postCorrectionCalls.some(c => c[0] === 'playWaveTransition'),
       'after correction snaps mark to 2, wave 3 transition must play');
+  });
+
+  it('checkpoint replay waits for in-flight optimistic animation before showing visuals', async () => {
+    // Verify that handleSessionCheckpoint defers the visual replay loop until
+    // isCombatAnimationActive returns false, matching the handleSessionCorrection gate.
+    let animationActive = true;
+    const calls = [];
+
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
+        state: { phase: 'combat' },
+        results: [{ xpEvents: [{ type: 'xp', amount: 10 }] }],
+      }),
+      __sessionSchedule: syncSchedule,
+      isCombatAnimationActive: () => animationActive,
+      showXpEvents: events => { calls.push(['showXpEvents', events]); return []; },
+      updateGameState: () => {},
+      refreshAction: () => {},
+      playCorrectAnswerAudio: () => {},
+    });
+
+    // Render an intro prompt and submit a choice to trigger a session sync.
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p1',
+            sequence: 1,
+            cardId: 'hiragana:き',
+            intro: { card: { id: 'hiragana:き', prompt: 'き', reading: 'き', answer: 'ki' } },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    // Flush microtasks — sync runs and checkpoint fires, but the async replay IIFE
+    // is blocked waiting for isCombatAnimationActive() to return false.
+    await flushPromises(10);
+    assert.equal(calls.length, 0, 'showXpEvents must not fire while animation is active');
+
+    // Unblock animation — the polling setTimeout in waitForCombatAnimationIdle uses 100 ms.
+    // Wait long enough for the poll to complete, then flush remaining microtasks.
+    animationActive = false;
+    await new Promise(resolve => setTimeout(resolve, 150));
+    await flushPromises(4);
+    assert.ok(calls.some(c => c[0] === 'showXpEvents'),
+      'showXpEvents must fire after animation becomes idle');
   });
 });
