@@ -31,6 +31,9 @@ const DEFAULT_API = {
   processPendingMoveLearn: null,
   syncKanjiKombatStreakRewardVisuals: null,
   playKanjiKombatNextWaveTransition: null,
+  // Returns the count of wave transitions the combat-loop has locally animated,
+  // used by the checkpoint handler to skip already-shown wave replays.
+  getLocalKanjiKombatWavesPlayed: null,
 };
 
 let api = { ...DEFAULT_API };
@@ -55,12 +58,16 @@ let promptBufferRefillPromise = null;
 let latestKanjiKombatState = null;
 let reviewSyncOnlineDrainTarget = null;
 let reviewSyncVisibilityDrainTarget = null;
+// Tracks how many nextWave transitions the checkpoint handler has already absorbed
+// because the combat-loop had played them locally.
+let _confirmedKanjiKombatWavesAbsorbed = 0;
 
 export function initKanjiKombatUI(deps) {
   getKanjiKombatSession()?.reset();
   api = { ...DEFAULT_API, ...deps };
   latestKanjiKombatState = null;
   promptBufferRefillPromise = null;
+  _confirmedKanjiKombatWavesAbsorbed = 0;
   const sessionOpts = {
     syncRequest: payload => api.syncSession(payload),
     onCheckpoint: handleSessionCheckpoint,
@@ -174,6 +181,9 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
     api.finishCombatResult?.({ ...finalResult, state: response.state });
     return;
   }
+  // Re-render the action after applying state (e.g. when combat was inactive after
+  // a graceful-pause wave end — this unblocks the player).
+  if (response?.state && logEmpty) refreshKanjiKombatAction();
   // Show server-confirmed visuals for each result in the batch.
   void (async () => {
     for (const result of results) {
@@ -188,7 +198,16 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
         await api.syncKanjiKombatStreakRewardVisuals?.(result);
       }
       if (result.nextWave) {
-        await api.playKanjiKombatNextWaveTransition?.(result);
+        // Skip the wave transition animation if the combat-loop already played it
+        // locally as part of an optimistic wave prediction — avoid a double-play.
+        const locallyPlayed = typeof api.getLocalKanjiKombatWavesPlayed === 'function'
+          ? api.getLocalKanjiKombatWavesPlayed()
+          : 0;
+        if (_confirmedKanjiKombatWavesAbsorbed < locallyPlayed) {
+          _confirmedKanjiKombatWavesAbsorbed += 1;
+        } else {
+          await api.playKanjiKombatNextWaveTransition?.(result);
+        }
       }
     }
   })();
@@ -584,6 +603,13 @@ export function renderKanjiKombatAction(gameState) {
   if (quiz) {
     renderKanjiKombatQuiz(quiz, {
       onAnswer: async answerId => {
+        // Gate: same cap check as intro/completion — pause and stop if the session
+        // is full so we never fire a legacy server call 50+ actions ahead.
+        const session = getKanjiKombatSession();
+        if (!session?.canConsumePrompt()) {
+          await showKanjiKombatSyncPause();
+          return false;
+        }
         const result = await api.submitAnswer(answerId, promptRef(quizPrompt));
         if (result?.handledByCombatLoop) return true;
         if (result?.state) updateKanjiKombatGameState(result.state);

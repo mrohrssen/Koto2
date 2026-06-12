@@ -118,7 +118,9 @@ function formatKanjiKombatStreakReward(reward) {
     return `${prefix}\nParty Leveled Up!`;
   }
 
-  return null;
+  // Unknown or predicted-only reward (e.g. local milestone prediction without server type):
+  // show the streak count header so the player sees immediate feedback.
+  return prefix;
 }
 
 export function showKanjiKombatAnswerBanner(correct, streakReward = null) {

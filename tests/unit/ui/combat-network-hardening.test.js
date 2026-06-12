@@ -372,9 +372,10 @@ describe('combat network hardening', () => {
       /api\.syncKanjiKombatStreakRewardVisuals/,
     );
     // The local optimistic path shows the correctness banner immediately (no server wait).
+    // For streak milestones it includes a predicted reward with the streak count.
     assert.match(
       combatLoopSource,
-      /runOptimisticKanjiKombatAnswer[\s\S]*?showKanjiKombatAnswerBanner\(optimistic\.localTranscript\.kanjiAnswerCorrect\)/,
+      /runOptimisticKanjiKombatAnswer[\s\S]*?willKanjiKombatAnswerTriggerStreakReward[\s\S]*?showKanjiKombatAnswerBanner\(correct, predictedStreakReward\)/,
     );
   });
 
@@ -1918,5 +1919,234 @@ describe('combat network hardening', () => {
     assert.equal(calls.filter(call => call.type === 'startMoveSelection').length, 1);
     assert.equal(calls.some(call => call.type === 'stopCombatLoop'), false);
     assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), true);
+  });
+
+  // ---- Finding 3: daily boundary guard ----
+
+  it('does not consume the pre-rolled next wave when the post-answer state has completionChoicePending', async () => {
+    // Arrange a state where answering the last quiz in a wave would clear enemies,
+    // but the next buffered prompt is a completePrompt (daily boundary).
+    // The client must NOT consume pendingNextWave — let the checkpoint deliver truth.
+    configureKanjiKombatSession({
+      syncRequest: async () => new Promise(() => {}),
+      schedule: (fn, delay) => { void delay; return setTimeout(fn, 99999); },
+    });
+    const calls = [];
+    const updates = [];
+    const ally = {
+      id: 'hi', name: '火', element: 'fire',
+      hp: 100, maxHp: 100, attack: 999, defense: 5, dex: 10, mp: 0, maxMp: 0, moves: [],
+    };
+    const enemy = {
+      id: 'mizu', uid: 'enemy-daily', name: '水', element: 'water',
+      hp: 1, maxHp: 1, attack: 1, defense: 0, dex: 0, mp: 0, maxMp: 0, moves: [],
+    };
+    const nextWaveEnemies = [{ id: 'kaze', uid: 'enemy-wave-2', hp: 30, maxHp: 30 }];
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_daily', stateVersion: 2, nextTurnSeed: 's1', turnSeeds: ['s1', 's2'] },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          wave: 1,
+          pendingNextWave: {
+            wave: 2,
+            isMiniboss: false,
+            enemies: nextWaveEnemies,
+            combat: { combatId: 'cmb_daily_next', stateVersion: 3, nextTurnSeed: 's2', turnSeeds: ['s2'] },
+          },
+          // The next prompt is a completePrompt (daily session boundary).
+          promptBuffer: [
+            {
+              promptId: 'kkp_daily_last',
+              sequence: 1,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              quiz: { cardId: 'hiragana:あ', choices: [{ id: 'ans-a', answer: 'a', correct: true }] },
+            },
+            {
+              promptId: 'kkp_daily_complete',
+              sequence: 2,
+              kind: 'completePrompt',
+              cardId: null,
+            },
+          ],
+          currentQuiz: { cardId: 'hiragana:あ', choices: [{ id: 'ans-a', answer: 'a', correct: true }] },
+        },
+      },
+    };
+
+    setSceneManager({
+      transitioning: false,
+      currentScene: {
+        disposed: false, _exiting: false,
+        formation: { walkingEnabled: false },
+        syncCreatures: async () => {},
+      },
+    });
+    combatLoop.__combatNetworkTest.setKanjiKombatAnswerApi(async () => ({ status: 'accepted' }));
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId: 'ans-a',
+      promptRef: { promptId: 'kkp_daily_last', sequence: 1, cardId: 'hiragana:あ' },
+      turnTiming: {},
+      playback: async localTranscript => calls.push({ type: 'playback', allEnemiesDefeated: localTranscript.allEnemiesDefeated }),
+      startMoveSelection: () => calls.push({ type: 'startMoveSelection' }),
+      getEnemyDialogueActive: () => false,
+    });
+
+    assert.equal(handled, true);
+    // Pre-roll must NOT be consumed at the daily boundary.
+    const finalState = updates.at(-1);
+    assert.notEqual(finalState?.run?.kanjiKombat?.pendingNextWave, null,
+      'pendingNextWave must not be consumed at the daily boundary');
+    // startMoveSelection must NOT have been called from the pre-roll path.
+    assert.equal(calls.filter(c => c.type === 'startMoveSelection').length, 0,
+      'startMoveSelection must not fire from pre-roll path at daily boundary');
+    // Session log should have the answer recorded.
+    assert.equal(getKanjiKombatSession().pendingCount(), 1);
+  });
+
+  // ---- Finding 5: streak milestone banner on prediction path ----
+
+  it('shows a streak milestone banner with predicted streak count on the local prediction path', async () => {
+    // Arrange state with streak=2; answering correctly will be streak+1=3 (milestone).
+    configureKanjiKombatSession({
+      syncRequest: async () => new Promise(() => {}),
+      schedule: (fn, delay) => { void delay; return setTimeout(fn, 99999); },
+    });
+    const bannerCalls = [];
+    const updates = [];
+    const ally = {
+      id: 'hi', name: '火', element: 'fire',
+      hp: 100, maxHp: 100, attack: 10, defense: 5, dex: 10, mp: 0, maxMp: 0, moves: [],
+    };
+    const enemy = {
+      id: 'mizu', name: '水', element: 'water',
+      hp: 50, maxHp: 50, attack: 5, defense: 2, dex: 5, mp: 0, maxMp: 0, moves: [],
+    };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_streak', stateVersion: 2, nextTurnSeed: 's1', turnSeeds: ['s1', 's2'] },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          streak: 2, // next correct answer hits milestone 3
+          promptBuffer: [{
+            promptId: 'kkp_streak_milestone',
+            sequence: 1,
+            kind: 'quiz',
+            cardId: 'hiragana:あ',
+            quiz: { cardId: 'hiragana:あ', choices: [{ id: 'ans-a', answer: 'a', correct: true }] },
+          }],
+          currentQuiz: { cardId: 'hiragana:あ', choices: [{ id: 'ans-a', answer: 'a', correct: true }] },
+        },
+      },
+    };
+
+    combatLoop.__combatNetworkTest.setKanjiKombatAnswerApi(async () => ({ status: 'accepted' }));
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId: 'ans-a',
+      promptRef: { promptId: 'kkp_streak_milestone', sequence: 1, cardId: 'hiragana:あ' },
+      turnTiming: {},
+      playback: async () => {},
+      startMoveSelection: () => {},
+      getEnemyDialogueActive: () => false,
+      // Inject a fake vfx.showKanjiKombatAnswerBanner via the combat-loop source seam by
+      // testing the source directly — banner calls happen inside the optimistic function.
+      // We verify via the session log and source checks instead.
+    });
+
+    assert.equal(handled, true);
+    // The session should have one entry.
+    assert.equal(getKanjiKombatSession().pendingCount(), 1);
+  });
+
+  it('streak milestone banner uses predictedStreakReward with the correct streak count', () => {
+    // Source-level check: confirm willKanjiKombatAnswerTriggerStreakReward and
+    // predictedStreakReward are used in the optimistic path.
+    assert.match(
+      combatLoopSource,
+      /willKanjiKombatAnswerTriggerStreakReward\(getGameState\(\), correct\)/,
+    );
+    assert.match(
+      combatLoopSource,
+      /predictedStreakReward.*=.*willKanjiKombatAnswerTriggerStreakReward/,
+    );
+    assert.match(
+      combatLoopSource,
+      /showKanjiKombatAnswerBanner\(correct, predictedStreakReward\)/,
+    );
+  });
+
+  // ---- Finding 6: recordAction before wave transition ----
+
+  it('records the session action before playing the wave transition', () => {
+    // Source-level check: session.recordAction appears before playKanjiKombatNextWaveTransition
+    // in runOptimisticKanjiKombatAnswer.
+    const fnStart = combatLoopSource.indexOf('async function runOptimisticKanjiKombatAnswer');
+    const fnEnd = combatLoopSource.indexOf('\nasync function withAnimationActive');
+    assert.ok(fnStart >= 0 && fnEnd > fnStart, 'runOptimisticKanjiKombatAnswer should exist');
+    const fnBody = combatLoopSource.slice(fnStart, fnEnd);
+    const recordIdx = fnBody.indexOf('session.recordAction(');
+    const waveIdx = fnBody.indexOf('await playKanjiKombatNextWaveTransition(');
+    assert.ok(recordIdx >= 0, 'session.recordAction should appear in runOptimisticKanjiKombatAnswer');
+    assert.ok(waveIdx >= 0, 'playKanjiKombatNextWaveTransition should appear in runOptimisticKanjiKombatAnswer');
+    assert.ok(recordIdx < waveIdx,
+      'session.recordAction must come before playKanjiKombatNextWaveTransition');
+  });
+
+  // ---- Finding 7: cruft removal ----
+
+  it('runOptimisticKanjiKombatAnswer does not accept stopCombatLoop/finishCombatLoop param', () => {
+    // stopCombatLoop is no longer in the parameter destructuring — combat end
+    // is handled exclusively by the server checkpoint.
+    assert.doesNotMatch(
+      combatLoopSource,
+      /runOptimisticKanjiKombatAnswer[\s\S]{0,400}stopCombatLoop: finishCombatLoop/,
+    );
+  });
+
+  it('executeCreatureMovesTurn does not pass recoveryActionType to the kanjiKombat path', () => {
+    // recoveryActionType was deleted from runOptimisticKanjiKombatAnswer params;
+    // the caller must not pass it.
+    const executeSource = combatLoopSource.slice(
+      combatLoopSource.indexOf('async function executeCreatureMovesTurn'),
+    ).slice(0, 400);
+    assert.doesNotMatch(
+      executeSource,
+      /runOptimisticKanjiKombatAnswer[\s\S]{0,200}recoveryActionType/,
+    );
   });
 });

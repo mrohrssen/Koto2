@@ -7,10 +7,9 @@ import { test, expect } from '@playwright/test';
  *
  * Run with: npm run test:subway   (seeds devtester first)
  *
- * EXPECTED RED before the rebuild lands: quiz answers block on per-turn
- * server verification (`kanjiKombatQueuedVerificationPending` in
- * public/js/ui/combat-loop.js), so taps during the offline window are
- * silently ignored after the first unverified answer.
+ * EXPECTED RED before the rebuild lands: quiz answers required per-turn
+ * server verification, so taps during the offline window were silently
+ * ignored after the first unverified answer.
  *
  * NOTE on server cache: `npm run seed:dev-user` clears kanjiKombatDaily
  * from the devtester SRS file on disk. If the Express server is already

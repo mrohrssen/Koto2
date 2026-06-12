@@ -710,6 +710,11 @@ function applyLocalKanjiKombatWaveTransition(state) {
   return pending;
 }
 
+// Count of wave transitions locally played (not yet confirmed by checkpoint).
+// Exposed to kanji-kombat.js so the checkpoint handler can skip replays.
+let _localKanjiKombatWavesPlayed = 0;
+export function getLocalKanjiKombatWavesPlayed() { return _localKanjiKombatWavesPlayed; }
+
 async function runOptimisticKanjiKombatAnswer({
   answerId,
   promptRef = {},
@@ -717,7 +722,6 @@ async function runOptimisticKanjiKombatAnswer({
   nextSelectionDelayMs = 0,
   playback = playCreatureCombatResult,
   startMoveSelection: restartMoveSelection = startMoveSelection,
-  stopCombatLoop: finishCombatLoop = stopCombatLoop,
   getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
 } = {}) {
   const session = getKanjiKombatSession();
@@ -741,8 +745,14 @@ async function runOptimisticKanjiKombatAnswer({
   const requestStartedAt = performance.now();
   markCombatAnimationStart(turnTiming, requestStartedAt);
 
-  // Streak banner: show immediately from the local prediction (no wait-for-server branch).
-  void vfx.showKanjiKombatAnswerBanner(optimistic.localTranscript.kanjiAnswerCorrect);
+  // Streak banner: show immediately from the local prediction.
+  // When the answer triggers a milestone, include a predicted reward with the streak
+  // count so the banner shows "N In A Row!" before the server confirms the reward type.
+  const correct = optimistic.localTranscript.kanjiAnswerCorrect;
+  const predictedStreakReward = willKanjiKombatAnswerTriggerStreakReward(getGameState(), correct)
+    ? { streak: (Number(getGameState()?.run?.kanjiKombat?.streak || 0) + 1) }
+    : null;
+  void vfx.showKanjiKombatAnswerBanner(correct, predictedStreakReward);
 
   await playback(optimistic.localTranscript, turnTiming, {
     choices: [],
@@ -757,12 +767,28 @@ async function runOptimisticKanjiKombatAnswer({
   updateGameState(localState);
   playerAttackPending = false;
 
+  // Append to the session log immediately after local state is committed — before
+  // any async transitions, so an animation exception can't lose the record.
+  session.recordAction({
+    actionId: optimistic.envelope.actionId,
+    kind: 'quiz',
+    promptId: promptRef?.promptId || null,
+    sequence: promptRef?.sequence ?? null,
+    cardId: promptRef?.cardId || null,
+    answerId,
+    predictedHash: optimistic.envelope.predictedHash,
+  });
+
   // Handle wave-end victory prediction locally using the pre-rolled next wave.
-  if (allEnemiesDefeated && !optimistic.localTranscript?.dailyComplete) {
+  // Guard: if the next prompt is a completePrompt (daily boundary), skip the
+  // pre-roll consumption — let the checkpoint deliver the authoritative wave state.
+  const dailyBoundary = localState.run?.kanjiKombat?.completionChoicePending === true;
+  if (allEnemiesDefeated && !dailyBoundary) {
     const waveTransition = applyLocalKanjiKombatWaveTransition(localState);
     if (waveTransition) {
       updateGameState(localState);
       combatActive = true;
+      _localKanjiKombatWavesPlayed += 1;
       await playKanjiKombatNextWaveTransition({
         nextWave: true,
         nextWaveEnemies: waveTransition.enemies,
@@ -783,17 +809,6 @@ async function runOptimisticKanjiKombatAnswer({
     combatActive = isRecoveredCombatActive(localState);
     logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
   }
-
-  // Append to the session log — the session drains this to the server asynchronously.
-  session.recordAction({
-    actionId: optimistic.envelope.actionId,
-    kind: 'quiz',
-    promptId: promptRef?.promptId || null,
-    sequence: promptRef?.sequence ?? null,
-    cardId: promptRef?.cardId || null,
-    answerId,
-    predictedHash: optimistic.envelope.predictedHash,
-  });
 
   const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
   if (!hasLocalCombatEnd && combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
@@ -828,6 +843,7 @@ export const __combatNetworkTest = {
   resetPendingFlags() {
     playerAttackPending = false;
     enemyAttackPending = false;
+    _localKanjiKombatWavesPlayed = 0;
   },
   setSyncIndicatorDelayMs(ms) {
     combatSyncIndicatorDelayMs = ms;
@@ -2094,7 +2110,6 @@ async function executeCreatureMovesTurn(choices, options = {}) {
             answerId: options.kanjiAnswerId,
             promptRef: options.kanjiPromptRef,
             turnTiming,
-            recoveryActionType,
           })
         : !options.request && await runOptimisticCreatureCombatTurn({
             actionType,
@@ -2110,6 +2125,14 @@ async function executeCreatureMovesTurn(choices, options = {}) {
           });
       if (optimisticHandled) {
         return;
+      }
+
+      // When the Kanji Kombat session is at the hard cap, runOptimisticKanjiKombatAnswer
+      // returns false and shows a sync pause — do NOT fall through to the legacy server
+      // request, which would fire 50+ unsynced actions ahead.
+      if (actionType === 'kanjiKombat' && options.kanjiAnswerId) {
+        const _kkSession = getKanjiKombatSession();
+        if (_kkSession && !_kkSession.canConsumePrompt()) return;
       }
 
       const requestStartedAt = performance.now();

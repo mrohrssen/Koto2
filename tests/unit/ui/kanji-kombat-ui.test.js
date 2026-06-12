@@ -2013,4 +2013,231 @@ describe('kanji-kombat ui', () => {
     resolveRefill({ state: { phase: 'combat', run: { kanjiKombat: { promptBuffer: [] } } } });
     await flushPromises(4);
   });
+
+  // ---- Finding 1: quiz onAnswer session-cap gate ----
+
+  it('pauses and stops without firing a legacy request when the session is full on quiz answer', async () => {
+    const calls = [];
+    // Never-resolving syncSession keeps the log full.
+    initKanjiKombatUI({
+      syncSession: async () => new Promise(() => {}),
+      __sessionSchedule: syncSchedule,
+      submitAnswer: async () => { calls.push('unexpectedSubmitAnswer'); return null; },
+      showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    // Fill session to hard cap.
+    const session = getKanjiKombatSession();
+    for (let i = 0; i < 50; i++) {
+      session.recordAction({
+        actionId: `fill_quiz_gate_${i}`,
+        kind: 'quiz',
+        promptId: `kkp_fill_${i}`,
+        sequence: i + 1,
+        cardId: `hiragana:${i}`,
+        answerId: 'ans',
+      });
+    }
+    await flushPromises(2);
+    calls.length = 0;
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            promptId: 'kkp_blocked_quiz',
+            sequence: 51,
+            kind: 'quiz',
+            cardId: 'hiragana:か',
+            quiz: {
+              cardId: 'hiragana:か',
+              prompt: 'か',
+              choices: [{ id: 'ka', answer: 'ka', correct: true }],
+            },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    const handled = await actionArea.querySelectorAll('.kanji-kombat-choice')[0].click();
+    await flushPromises(2);
+
+    assert.equal(handled, false, 'quiz answer should return false when session is at hard cap');
+    assert.equal(calls.some(c => c === 'unexpectedSubmitAnswer'), false,
+      'submitAnswer must not be called when session is full');
+    assert.deepEqual(calls, [
+      ['showNarration', 'Connection is spotty. Your reviews will sync when you reconnect.'],
+    ]);
+  });
+
+  // ---- Finding 2: checkpoint logEmpty re-renders action ----
+
+  it('calls refreshAction after applying state on a logEmpty checkpoint', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
+        state: { phase: 'combat', __checkpointState: true },
+      }),
+      __sessionSchedule: syncSchedule,
+      updateGameState: state => calls.push(['updateGameState', !!state.__checkpointState]),
+      refreshAction: () => calls.push(['refreshAction']),
+      updateUI: () => calls.push(['updateUI']),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: {
+            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(4);
+
+    // State was applied (logEmpty=true) and refreshAction was called.
+    assert.ok(calls.some(c => c[0] === 'updateGameState' && c[1] === true),
+      'checkpoint state should be applied when logEmpty=true');
+    assert.ok(calls.some(c => c[0] === 'refreshAction'),
+      'refreshAction should be called after logEmpty checkpoint state application');
+    // refreshAction comes after updateGameState.
+    const stateIdx = calls.findIndex(c => c[0] === 'updateGameState' && c[1] === true);
+    const refreshIdx = calls.findIndex(c => c[0] === 'refreshAction');
+    assert.ok(refreshIdx > stateIdx, 'refreshAction must come after updateGameState');
+  });
+
+  it('does not call refreshAction when the checkpoint contains a combatEnded result', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
+        state: { phase: 'combat' },
+        results: [{ combatEnded: true, victory: true }],
+      }),
+      __sessionSchedule: syncSchedule,
+      updateGameState: state => calls.push(['updateGameState', state.phase]),
+      refreshAction: () => calls.push(['unexpected-refresh']),
+      finishCombatResult: result => calls.push(['finishCombatResult', result.victory]),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: {
+            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(4);
+
+    assert.equal(calls.some(c => c[0] === 'unexpected-refresh'), false,
+      'refreshAction must NOT be called when the checkpoint has a combatEnded result');
+    assert.ok(calls.some(c => c[0] === 'finishCombatResult'),
+      'finishCombatResult should be called for combat-ending checkpoints');
+  });
+
+  // ---- Finding 4: wave transition not double-played when locally predicted ----
+
+  it('does not replay a wave transition that the combat-loop already played locally', async () => {
+    const calls = [];
+    let localWavesPlayed = 0;
+
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
+        state: { phase: 'combat' },
+        results: [{ nextWave: true }],
+      }),
+      __sessionSchedule: syncSchedule,
+      playKanjiKombatNextWaveTransition: async result => calls.push(['playWaveTransition', result]),
+      getLocalKanjiKombatWavesPlayed: () => localWavesPlayed,
+      updateGameState: () => {},
+      refreshAction: () => {},
+      playCorrectAnswerAudio: () => {},
+    });
+
+    // Simulate: local combat-loop has already played one wave transition.
+    localWavesPlayed = 1;
+
+    // First intro click — triggers a sync response with nextWave:true.
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: {
+            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(4);
+
+    // The checkpoint's nextWave should be absorbed (not replayed) since it was locally played.
+    assert.equal(calls.some(c => c[0] === 'playWaveTransition'), false,
+      'wave transition must not be replayed when it was already locally predicted');
+  });
+
+  it('plays a wave transition from checkpoint when it was NOT locally predicted', async () => {
+    const calls = [];
+    let localWavesPlayed = 0;
+
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
+        state: { phase: 'combat' },
+        results: [{ nextWave: true }],
+      }),
+      __sessionSchedule: syncSchedule,
+      playKanjiKombatNextWaveTransition: async result => calls.push(['playWaveTransition', result]),
+      getLocalKanjiKombatWavesPlayed: () => localWavesPlayed,
+      updateGameState: () => {},
+      refreshAction: () => {},
+      playCorrectAnswerAudio: () => {},
+    });
+
+    // No local wave transition played.
+    localWavesPlayed = 0;
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: {
+            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(4);
+
+    // Wave transition should be played since no local prediction covered it.
+    assert.ok(calls.some(c => c[0] === 'playWaveTransition'),
+      'wave transition should be played when not locally predicted');
+  });
 });
