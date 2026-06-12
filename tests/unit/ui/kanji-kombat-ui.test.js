@@ -545,23 +545,24 @@ describe('kanji-kombat ui', () => {
 
   it('applies accepted intro choice state after clearing the choice locally', async () => {
     const calls = [];
+    // Use a never-resolving syncSession so the intro entry stays in the log
+    // when we snapshot it — the entry is recorded before sync completes.
     initKanjiKombatUI({
-      syncSession: async ({ entries }) => {
-        return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, state: { phase: 'combat' } };
-      },
+      syncSession: () => new Promise(() => {}),
       __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.phase]),
       updateUI: () => calls.push(['updateUI']),
       refreshAction: () => calls.push(['refreshAction']),
     });
 
+    const cardId = 'hiragana:か';
     renderKanjiKombatAction({
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
           pendingIntro: {
-            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
+            card: { id: cardId, prompt: 'か', reading: 'か', answer: 'ka' },
           },
         },
       },
@@ -573,11 +574,78 @@ describe('kanji-kombat ui', () => {
     // Optimistic update fires first
     assert.equal(calls[0][0], 'updateGameState');
     assert.equal(calls[0][1], 'combat');
-    // Intro action was recorded in the session log
+    // Intro entry is still pending in the log (sync never resolved)
     const snap = getKanjiKombatSession().snapshot();
-    assert.equal(snap.length === 0 || snap.some(e => e.kind === 'intro'), true); // may be confirmed
-    // Checkpoint applies server state (logEmpty=true)
-    assert.equal(calls.filter(c => c[0] === 'updateGameState').length >= 1, true);
+    assert.ok(snap.some(e => e.kind === 'intro' && e.cardId === cardId),
+      'intro entry should be in session log with the correct cardId');
+  });
+
+  it('does not apply response.state when checkpoint has logEmpty=false (entries still pending)', async () => {
+    const calls = [];
+    const cardId1 = 'hiragana:あ';
+    const cardId2 = 'hiragana:い';
+    // Use a deferred schedule so both entries are queued before the first drain fires.
+    // The stub confirms only the first entry, leaving the second pending (logEmpty=false).
+    let pendingDrain = null;
+    function deferredSchedule(fn, _delay) {
+      pendingDrain = fn;
+      return 0;
+    }
+    function fireDrain() {
+      if (pendingDrain) { const fn = pendingDrain; pendingDrain = null; fn(); }
+    }
+
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => {
+        // Confirm only the first entry; leave the second pending
+        return {
+          status: 'ok',
+          confirmedThroughSeq: entries[0].seq,
+          state: { phase: 'combat', __checkpointMarker: true },
+        };
+      },
+      __sessionSchedule: deferredSchedule,
+      updateGameState: state => calls.push(['updateGameState', state.__checkpointMarker ?? false]),
+      refreshAction: () => calls.push(['refreshAction']),
+      updateUI: () => calls.push(['updateUI']),
+    });
+
+    // First intro click — drain is deferred, not yet fired
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: { card: { id: cardId1, prompt: 'あ', reading: 'あ', answer: 'a' } },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+
+    // Second intro click — second entry also queued before drain fires
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: { card: { id: cardId2, prompt: 'い', reading: 'い', answer: 'i' } },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+
+    // Both entries are now pending; fire the drain so sync runs with both entries
+    fireDrain();
+    await flushPromises(4);
+
+    // After partial confirmation (logEmpty=false), state must NOT be applied
+    assert.equal(
+      calls.some(c => c[0] === 'updateGameState' && c[1] === true),
+      false,
+      'checkpoint state must not be applied when logEmpty=false',
+    );
   });
 
   it('submits intro choices with an action id and clears the choice locally', async () => {

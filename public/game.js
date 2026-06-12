@@ -215,6 +215,7 @@ import {
   submitKanjiKombatAnswer as apiSubmitKanjiKombatAnswer,
   submitKanjiKombatCompletionChoice as apiSubmitKanjiKombatCompletionChoice,
   refillKanjiKombatPromptBuffer as apiRefillKanjiKombatPromptBuffer,
+  syncKanjiKombatSession as apiSyncKanjiKombatSession,
   getCreatureCollection as apiGetCreatureCollection,
   getFusionState as apiGetFusionState,
   startFusion as apiStartFusion,
@@ -2230,9 +2231,7 @@ async function initGame() {
   });
 
   kanjiKombatUI.initKanjiKombatUI({
-    submitIntro: apiSubmitKanjiKombatIntro,
     submitAnswer: (answerId, promptRef) => combatLoopUI.submitKanjiKombatAnswer(answerId, promptRef),
-    submitCompletionChoice: apiSubmitKanjiKombatCompletionChoice,
     submitOnboarding: apiSubmitKanjiKombatOnboarding,
     refillPromptBuffer: apiRefillKanjiKombatPromptBuffer,
     finishCombatResult: result => combatLoopUI.stopCombatLoop(result),
@@ -2245,6 +2244,8 @@ async function initGame() {
     hideCidSprite: hideKanjiKombatCidSprite,
     showNarration: (text, opts) => narrationBox.show(text, opts),
     forceHideNarration: () => narrationBox.forceHide(),
+    syncSession: apiSyncKanjiKombatSession,
+    isCombatAnimationActive: () => combatAnimationActive,
   });
 
   explorationUI.init({
