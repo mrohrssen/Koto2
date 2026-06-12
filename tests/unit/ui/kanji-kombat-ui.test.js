@@ -690,6 +690,368 @@ describe('kanji-kombat ui', () => {
     );
   });
 
+  it('checkpoint adopts new tail entries from the server pre-rolled wave queue', async () => {
+    // While the client plays optimistically, the server replays entries, spawns
+    // waves and tops up its pre-roll queue — server-side only.  The checkpoint
+    // merge must append the server queue entries the client does not yet hold
+    // (waves > local wave, extending the local queue), otherwise the client hits
+    // a later wave boundary with an empty queue and stalls.
+    let pendingDrain = null;
+    function deferredSchedule(fn, _delay) {
+      pendingDrain = fn;
+      return 0;
+    }
+    function fireDrain() {
+      if (pendingDrain) { const fn = pendingDrain; pendingDrain = null; fn(); }
+    }
+    const serverPreRollW3 = {
+      wave: 3,
+      isMiniboss: false,
+      enemies: [{ id: 'tetsu', hp: 85, maxHp: 85 }],
+      combat: { combatId: 'cmb_w3', stateVersion: 9, nextTurnSeed: 's-w3-1', turnSeeds: ['s-w3-1'] },
+    };
+    const serverPreRollW4 = {
+      wave: 4,
+      isMiniboss: false,
+      enemies: [{ id: 'kumo', hp: 90, maxHp: 90 }],
+      combat: { combatId: 'cmb_w4', stateVersion: 0, nextTurnSeed: 's-w4-1', turnSeeds: ['s-w4-1'] },
+    };
+    let currentState = null;
+    initKanjiKombatUI({
+      // Confirm only the first entry → logEmpty=false → the full state snap is
+      // skipped, so any pendingNextWaves on the local state must come from the merge.
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries[0].seq,
+        state: {
+          phase: 'combat',
+          run: {
+            mode: 'kanjiKombat',
+            kanjiKombat: {
+              wave: 2,
+              pendingNextWaves: [serverPreRollW3, serverPreRollW4],
+              promptBuffer: [],
+            },
+          },
+        },
+      }),
+      __sessionSchedule: deferredSchedule,
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      refreshAction: () => {},
+      updateUI: () => {},
+    });
+
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          wave: 2,
+          pendingNextWaves: [],
+          promptBuffer: [
+            {
+              kind: 'intro',
+              promptId: 'p-merge-1',
+              sequence: 1,
+              cardId: 'hiragana:あ',
+              intro: { card: { id: 'hiragana:あ', prompt: 'あ', reading: 'あ', answer: 'a' } },
+            },
+            {
+              kind: 'intro',
+              promptId: 'p-merge-2',
+              sequence: 2,
+              cardId: 'hiragana:い',
+              intro: { card: { id: 'hiragana:い', prompt: 'い', reading: 'い', answer: 'i' } },
+            },
+          ],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+
+    fireDrain();
+    await flushPromises(4);
+
+    const adoptedQueue = currentState?.run?.kanjiKombat?.pendingNextWaves;
+    assert.deepEqual(
+      (adoptedQueue || []).map(w => w.wave),
+      [3, 4],
+      'server queue entries for waves localWave+1.. must be adopted into the local queue',
+    );
+    assert.deepEqual(adoptedQueue[0].enemies, serverPreRollW3.enemies);
+    assert.deepEqual(adoptedQueue[1].enemies, serverPreRollW4.enemies);
+  });
+
+  it('checkpoint adopts new tail streak-reward payloads append-only by seq', async () => {
+    // The server tops up kk.pendingStreakRewards as it replays entries; the client
+    // consumes its local queue heads at streak milestones.  The checkpoint merge
+    // must append only payloads with seq above any the client has ever held —
+    // never re-installing already-consumed heads (the server may be behind).
+    let pendingDrain = null;
+    function deferredSchedule(fn, _delay) {
+      pendingDrain = fn;
+      return 0;
+    }
+    function fireDrain() {
+      if (pendingDrain) { const fn = pendingDrain; pendingDrain = null; fn(); }
+    }
+    const heldStatUp = { seq: 2, type: 'statUp', allyRoll: 0.5, stat: 'atk' };
+    let currentState = null;
+    initKanjiKombatUI({
+      // Server still carries the consumed seq-1 payload (it is behind) plus a new
+      // tail payload seq-3; only seq-3 must be adopted.
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries[0].seq,
+        state: {
+          phase: 'combat',
+          run: {
+            mode: 'kanjiKombat',
+            kanjiKombat: {
+              wave: 2,
+              pendingNextWaves: [],
+              promptBuffer: [],
+              pendingStreakRewards: {
+                6: [
+                  { seq: 1, type: 'statUp', allyRoll: 0.1, stat: 'def' },
+                  heldStatUp,
+                  { seq: 3, type: 'statUp', allyRoll: 0.9, stat: 'dex' },
+                ],
+                12: [{ seq: 4, type: 'allyJoin', creature: { id: 'tetsu' } }],
+              },
+            },
+          },
+        },
+      }),
+      __sessionSchedule: deferredSchedule,
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      refreshAction: () => {},
+      updateUI: () => {},
+    });
+
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          wave: 2,
+          pendingNextWaves: [],
+          // Client already consumed seq 1 at a streak-6 milestone; it still holds seq 2.
+          pendingStreakRewards: { 6: [heldStatUp], 12: [] },
+          promptBuffer: [
+            {
+              kind: 'intro',
+              promptId: 'p-streak-merge-1',
+              sequence: 1,
+              cardId: 'hiragana:あ',
+              intro: { card: { id: 'hiragana:あ', prompt: 'あ', reading: 'あ', answer: 'a' } },
+            },
+            {
+              kind: 'intro',
+              promptId: 'p-streak-merge-2',
+              sequence: 2,
+              cardId: 'hiragana:い',
+              intro: { card: { id: 'hiragana:い', prompt: 'い', reading: 'い', answer: 'i' } },
+            },
+          ],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+
+    fireDrain();
+    await flushPromises(4);
+
+    const rewards = currentState?.run?.kanjiKombat?.pendingStreakRewards;
+    assert.deepEqual(
+      (rewards?.[6] || []).map(p => p.seq),
+      [2, 3],
+      'held payload preserved, consumed seq-1 not re-installed, new tail seq-3 adopted',
+    );
+    assert.deepEqual(rewards[6][0], heldStatUp, 'held payload must be preserved untouched');
+    assert.deepEqual((rewards?.[12] || []).map(p => p.seq), [4], 'new allyJoin tail adopted');
+  });
+
+  it('checkpoint ignores stale server pre-rolled waves (wave <= local wave)', async () => {
+    // The client is optimistically ahead: it already consumed the wave-3 pre-roll
+    // and is fighting wave 3.  A behind server still carries a queue entry for
+    // wave 3 — adopting it would re-install an already-consumed pre-roll.
+    let pendingDrain = null;
+    function deferredSchedule(fn, _delay) {
+      pendingDrain = fn;
+      return 0;
+    }
+    function fireDrain() {
+      if (pendingDrain) { const fn = pendingDrain; pendingDrain = null; fn(); }
+    }
+    let currentState = null;
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries[0].seq,
+        state: {
+          phase: 'combat',
+          run: {
+            mode: 'kanjiKombat',
+            kanjiKombat: {
+              wave: 2,
+              pendingNextWaves: [{ wave: 3, enemies: [], combat: { nextTurnSeed: 'stale', turnSeeds: ['stale'] } }],
+              promptBuffer: [],
+            },
+          },
+        },
+      }),
+      __sessionSchedule: deferredSchedule,
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      refreshAction: () => {},
+      updateUI: () => {},
+    });
+
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          wave: 3,
+          pendingNextWaves: [],
+          promptBuffer: [
+            {
+              kind: 'intro',
+              promptId: 'p-stale-1',
+              sequence: 1,
+              cardId: 'hiragana:う',
+              intro: { card: { id: 'hiragana:う', prompt: 'う', reading: 'う', answer: 'u' } },
+            },
+            {
+              kind: 'intro',
+              promptId: 'p-stale-2',
+              sequence: 2,
+              cardId: 'hiragana:え',
+              intro: { card: { id: 'hiragana:え', prompt: 'え', reading: 'え', answer: 'e' } },
+            },
+          ],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+
+    fireDrain();
+    await flushPromises(4);
+
+    assert.deepEqual(
+      currentState?.run?.kanjiKombat?.pendingNextWaves,
+      [],
+      'a stale pre-rolled wave (wave <= local wave) must not be adopted',
+    );
+  });
+
+  it('checkpoint never replaces pre-rolled wave entries the client already holds', async () => {
+    // The client already holds a wave-3 entry it may have simulated against.  The
+    // server checkpoint carries its own wave-3 and wave-4 entries — only the new
+    // tail (wave 4) may be appended; the held wave-3 entry must stay untouched.
+    let pendingDrain = null;
+    function deferredSchedule(fn, _delay) {
+      pendingDrain = fn;
+      return 0;
+    }
+    function fireDrain() {
+      if (pendingDrain) { const fn = pendingDrain; pendingDrain = null; fn(); }
+    }
+    const heldW3 = {
+      wave: 3,
+      isMiniboss: false,
+      enemies: [{ id: 'held', hp: 50, maxHp: 50 }],
+      combat: { combatId: 'cmb_held_w3', stateVersion: 0, nextTurnSeed: 'held-s1', turnSeeds: ['held-s1'] },
+    };
+    const serverW3 = {
+      wave: 3,
+      isMiniboss: false,
+      enemies: [{ id: 'server', hp: 99, maxHp: 99 }],
+      combat: { combatId: 'cmb_server_w3', stateVersion: 0, nextTurnSeed: 'srv-s1', turnSeeds: ['srv-s1'] },
+    };
+    const serverW4 = {
+      wave: 4,
+      isMiniboss: false,
+      enemies: [{ id: 'kumo', hp: 90, maxHp: 90 }],
+      combat: { combatId: 'cmb_server_w4', stateVersion: 0, nextTurnSeed: 'srv-s2', turnSeeds: ['srv-s2'] },
+    };
+    let currentState = null;
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries[0].seq,
+        state: {
+          phase: 'combat',
+          run: {
+            mode: 'kanjiKombat',
+            kanjiKombat: { wave: 2, pendingNextWaves: [serverW3, serverW4], promptBuffer: [] },
+          },
+        },
+      }),
+      __sessionSchedule: deferredSchedule,
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      refreshAction: () => {},
+      updateUI: () => {},
+    });
+
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          wave: 2,
+          pendingNextWaves: [heldW3],
+          promptBuffer: [
+            {
+              kind: 'intro',
+              promptId: 'p-held-1',
+              sequence: 1,
+              cardId: 'hiragana:お',
+              intro: { card: { id: 'hiragana:お', prompt: 'お', reading: 'お', answer: 'o' } },
+            },
+            {
+              kind: 'intro',
+              promptId: 'p-held-2',
+              sequence: 2,
+              cardId: 'hiragana:か',
+              intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+            },
+          ],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+
+    fireDrain();
+    await flushPromises(4);
+
+    const queue = currentState?.run?.kanjiKombat?.pendingNextWaves;
+    assert.deepEqual((queue || []).map(w => w.combat.combatId), ['cmb_held_w3', 'cmb_server_w4'],
+      'the held wave-3 entry must survive; only the new wave-4 tail is appended');
+    assert.deepEqual(queue[0].enemies, heldW3.enemies,
+      'held entry content must be untouched');
+  });
+
   it('submits intro choices with an action id and clears the choice locally', async () => {
     const calls = [];
     const syncCalls = [];
@@ -1660,6 +2022,57 @@ describe('kanji-kombat ui', () => {
     assert.equal(actionArea.querySelector('.kanji-kombat-prompt').textContent, 'か');
     await actionArea.querySelectorAll('.kanji-kombat-choice')[0].click();
     assert.deepEqual(calls, [['submitAnswer', 'ka', 'kkp_quiz']]);
+  });
+
+  it('gates a buffered quiz against a dead local wave (graceful pause until checkpoint)', () => {
+    const narrations = [];
+    initKanjiKombatUI({
+      showNarration: async text => narrations.push(text),
+      syncSession: async () => new Promise(() => {}),
+      __sessionSchedule: syncSchedule,
+      playCorrectAnswerAudio: () => {},
+    });
+
+    const stateWithEnemies = enemies => ({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            promptId: 'kkp_dead_wave_quiz',
+            sequence: 1,
+            kind: 'quiz',
+            cardId: 'hiragana:か',
+            quiz: {
+              cardId: 'hiragana:か',
+              prompt: 'か',
+              reading: 'か',
+              choices: [
+                { id: 'ka', answer: 'ka', correct: true },
+                { id: 'ki', answer: 'ki', correct: false },
+              ],
+            },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 }, enemies },
+    });
+
+    // All enemies defeated (offline runway exhausted): the quiz must NOT render —
+    // predicting against a dead wave generates entries the server rejects with
+    // transcript_mismatch.  The handler clears the action area so the checkpoint
+    // handler's hasActionableKanjiKombatPrompt() guard can snap to server state.
+    const handled = renderKanjiKombatAction(stateWithEnemies([
+      { id: 'ki', hp: 0, maxHp: 60 },
+      { id: 'ishi', hp: 0, maxHp: 80 },
+    ]));
+    assert.equal(handled, true, 'gate must report handled so the PvE move UI never shows');
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').length, 0, 'no quiz choices against a dead wave');
+    assert.equal(narrations.length, 1, 'sync pause copy shown');
+
+    // A living enemy renders the quiz normally.
+    renderKanjiKombatAction(stateWithEnemies([{ id: 'ki', hp: 60, maxHp: 60 }]));
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').length, 2, 'quiz renders against a live wave');
   });
 
   it('renders a buffered quiz before legacy completion and intro fields', async () => {

@@ -61,6 +61,14 @@ let latestKanjiKombatState = null;
 let reviewSyncOnlineDrainTarget = null;
 let reviewSyncVisibilityDrainTarget = null;
 let sessionReplayChain = Promise.resolve();
+// High-water mark: highest prompt sequence number ever seen in the local buffer.
+// Used by mergeServerPromptBufferIntoLocalState to filter out already-consumed
+// prompts that the server still has in its (behind) buffer.
+let _promptBufferHighSeq = 0;
+// High-water mark for pre-rolled streak-reward payload seqs (kk.pendingStreakRewards).
+// Same role as _promptBufferHighSeq: lets the checkpoint merge adopt only genuine
+// tail payloads the client has never held, even after local queues drain.
+let _streakRewardHighSeq = 0;
 
 function enqueueSessionReplay(work) {
   sessionReplayChain = sessionReplayChain.then(work).catch(error => {
@@ -75,6 +83,8 @@ export function initKanjiKombatUI(deps) {
   latestKanjiKombatState = null;
   promptBufferRefillPromise = null;
   sessionReplayChain = Promise.resolve();
+  _promptBufferHighSeq = 0;
+  _streakRewardHighSeq = 0;
   // Reset the local-play high-water mark on re-init so genuine server transitions
   // (which carry wave numbers > 0) are not silently skipped after a re-auth.
   api.setLastLocallyPlayedKanjiKombatWave?.(0);
@@ -95,7 +105,21 @@ export function initKanjiKombatUI(deps) {
     && reviewSyncOnlineDrainTarget !== window
   ) {
     reviewSyncOnlineDrainTarget = window;
-    window.addEventListener('online', () => getKanjiKombatSession()?.syncNow());
+    window.addEventListener('online', () => {
+      getKanjiKombatSession()?.syncNow();
+    });
+    // Expose a test seam so automated harnesses can wait for pending syncs to drain.
+    window.__kkPendingSync = () => getKanjiKombatSession()?.pendingCount() ?? 0;
+    // Test seam: current game phase (e.g. to detect a server-confirmed defeat
+    // flipping the client to run_ended after a reconnect checkpoint).
+    window.__kkPhase = () => (typeof api.getGameState === 'function'
+      ? api.getGameState()?.phase ?? null
+      : null);
+    // Test seam: current prompt-buffer head. Lets harnesses derive the correct
+    // quiz choice from game state — the rendered DOM carries no answer marker.
+    window.__kkPromptHead = () => (typeof api.getGameState === 'function'
+      ? api.getGameState()?.run?.kanjiKombat?.promptBuffer?.[0] ?? null
+      : null);
   }
   if (
     typeof document !== 'undefined'
@@ -159,12 +183,63 @@ function refreshKanjiKombatAction() {
   api.updateUI?.();
 }
 
+/**
+ * Returns true when the action area is currently showing a fresh (non-disabled,
+ * non-answered) interactive KK prompt — meaning the combat loop is healthy and
+ * does NOT need a re-render from the checkpoint handler.
+ *
+ * Used by handleSessionCheckpoint to decide whether it is safe to snap the game
+ * state to the server's confirmed-but-potentially-behind version.  With optimistic
+ * rendering the local buffer advances ahead of the server; applying the server
+ * state while a fresh prompt is visible would regress the buffer and cause the
+ * already-shown prompt to be offered again (duplicate).
+ */
+function hasActionableKanjiKombatPrompt() {
+  if (typeof document === 'undefined') return false;
+  const area = document.getElementById('action-area');
+  if (!area) return false;
+  // Return true when the action area holds ANY KK prompt — fresh, disabled, or
+  // feedback-marked.  A disabled button means bindSingleFlightButtons has set
+  // inFlight=true: an answer click is being processed asynchronously.  Overwriting
+  // the game state at that moment would regress the local buffer and cause the
+  // just-answered prompt to be offered again (duplicate detection failure).
+  if (area.querySelector('.kanji-kombat-choice')) return true;
+  if (area.querySelector('.kanji-kombat-intro-action')) return true;
+  if (area.querySelector('.kanji-kombat-completion-action')) return true;
+  return false;
+}
+
 function getActiveBufferedPrompt(kk) {
   return Array.isArray(kk?.promptBuffer) ? kk.promptBuffer[0] || null : null;
 }
 
 function rememberKanjiKombatState(state) {
-  if (state) latestKanjiKombatState = state;
+  if (!state) return;
+  latestKanjiKombatState = state;
+  // Track the highest prompt sequence ever placed in the local buffer so that
+  // mergeServerPromptBufferIntoLocalState can filter out already-consumed entries
+  // that the (behind) server still carries in its confirmed buffer.
+  const buf = state?.run?.kanjiKombat?.promptBuffer;
+  if (Array.isArray(buf) && buf.length > 0) {
+    for (const p of buf) {
+      if (Number.isInteger(p.sequence) && p.sequence > _promptBufferHighSeq) {
+        _promptBufferHighSeq = p.sequence;
+      }
+    }
+  }
+  // Track the highest streak-reward payload seq ever held locally so the
+  // checkpoint merge only adopts genuine server-side tail payloads.
+  const rewards = state?.run?.kanjiKombat?.pendingStreakRewards;
+  if (rewards && typeof rewards === 'object') {
+    for (const queue of Object.values(rewards)) {
+      if (!Array.isArray(queue)) continue;
+      for (const payload of queue) {
+        if (Number.isInteger(payload?.seq) && payload.seq > _streakRewardHighSeq) {
+          _streakRewardHighSeq = payload.seq;
+        }
+      }
+    }
+  }
 }
 
 function updateKanjiKombatGameState(state) {
@@ -184,8 +259,114 @@ async function waitForCombatAnimationIdle() {
   }
 }
 
+/**
+ * Merge new tail prompts from a server checkpoint state into the current local state.
+ *
+ * After the server confirms a batch it refills the prompt buffer up to
+ * PROMPT_BUFFER_TARGET.  These new tail entries are not in the client's local
+ * buffer (which was forked from an earlier server state) and must be appended
+ * so that the client survives long offline windows without exhausting its local
+ * buffer.  Only prompts whose promptId is not already present in the local
+ * buffer are appended — existing local entries (including the currently-shown
+ * head) are left untouched, preventing any regression or re-rendering of
+ * already-answered prompts.
+ */
+function mergeServerPromptBufferIntoLocalState(serverState) {
+  const localState = currentKanjiKombatState();
+  const localKk = localState?.run?.kanjiKombat;
+  const serverKk = serverState?.run?.kanjiKombat;
+  if (!localKk || !serverKk) return;
+  // Adopt new tail entries from the server's pre-rolled next-wave queue.  While
+  // the client plays optimistically, the server replays entries, spawns waves and
+  // tops the queue up — server-side only.  The client consumes its local queue at
+  // each boundary, so without this adoption it eventually reaches a boundary with
+  // an empty queue and stalls.  Append-only merge (mirrors the prompt-buffer tail
+  // merge): adopt server entries that extend the local queue with consecutive wave
+  // numbers, starting after max(local current wave, local queue tail).  Entries the
+  // client already holds are never replaced (it may have simulated against them),
+  // and entries with wave <= the local current wave are stale and ignored.
+  const serverWaveQueue = Array.isArray(serverKk.pendingNextWaves) ? serverKk.pendingNextWaves : [];
+  const localWave = localKk.wave || 1;
+  if (serverWaveQueue.length > 0) {
+    if (!Array.isArray(localKk.pendingNextWaves)) localKk.pendingNextWaves = [];
+    const localWaveQueue = localKk.pendingNextWaves;
+    let expectedWave = localWaveQueue.length > 0
+      ? localWaveQueue[localWaveQueue.length - 1].wave + 1
+      : localWave + 1;
+    for (const entry of serverWaveQueue) {
+      if (typeof entry?.wave !== 'number') continue;
+      if (entry.wave !== expectedWave) continue;
+      localWaveQueue.push(entry);
+      expectedWave += 1;
+    }
+  }
+  // Adopt new tail streak-reward payloads (statUp at streak 6 / allyJoin at 12)
+  // from the server's pre-rolled queues.  Same append-only contract as the wave
+  // queue: the client consumes local queue heads at milestones while the server
+  // replays entries and tops the queues up server-side.  Payloads carry a
+  // monotonic seq; only seqs above any the client has ever held are appended.
+  const serverRewards = serverKk.pendingStreakRewards;
+  if (serverRewards && typeof serverRewards === 'object') {
+    if (!localKk.pendingStreakRewards || typeof localKk.pendingStreakRewards !== 'object') {
+      localKk.pendingStreakRewards = {};
+    }
+    const localRewardHighSeq = Math.max(
+      _streakRewardHighSeq,
+      ...Object.values(localKk.pendingStreakRewards)
+        .flatMap(queue => (Array.isArray(queue) ? queue : []))
+        .map(payload => (Number.isInteger(payload?.seq) ? payload.seq : 0)),
+      0,
+    );
+    for (const [milestone, serverQueue] of Object.entries(serverRewards)) {
+      if (!Array.isArray(serverQueue)) continue;
+      if (!Array.isArray(localKk.pendingStreakRewards[milestone])) {
+        localKk.pendingStreakRewards[milestone] = [];
+      }
+      for (const payload of serverQueue) {
+        if (!Number.isInteger(payload?.seq) || payload.seq <= localRewardHighSeq) continue;
+        localKk.pendingStreakRewards[milestone].push(payload);
+        if (payload.seq > _streakRewardHighSeq) _streakRewardHighSeq = payload.seq;
+      }
+    }
+  }
+  if (!Array.isArray(localKk.promptBuffer) || !Array.isArray(serverKk.promptBuffer)) return;
+  // Use the high-water mark (highest sequence ever in the local buffer) rather than
+  // current buffer IDs.  The server's confirmed buffer may still include prompts the
+  // client already consumed (the client is ahead); filtering by promptId alone would
+  // re-add those consumed entries as "new".  Filtering by sequence > highWater gives
+  // only genuine tail additions that have never been in the client's buffer.
+  const highSeq = Math.max(
+    _promptBufferHighSeq,
+    ...localKk.promptBuffer.map(p => (Number.isInteger(p.sequence) ? p.sequence : 0)),
+  );
+  const newTailPrompts = serverKk.promptBuffer.filter(
+    p => p.promptId && Number.isInteger(p.sequence) && p.sequence > highSeq,
+  );
+  if (newTailPrompts.length === 0) return;
+  // Mutating the current state object directly is safe here — updateGameState would
+  // create a new reference anyway, and the combat loop reads via getGameState() which
+  // returns the same object we're mutating.
+  localKk.promptBuffer = [...localKk.promptBuffer, ...newTailPrompts];
+}
+
 function handleSessionCheckpoint(response, { logEmpty } = {}) {
-  if (response?.state && logEmpty) updateKanjiKombatGameState(response.state);
+  if (response?.state) {
+    // Always merge new tail prompts from the server's refilled buffer into the local
+    // state — this is safe at every checkpoint (not just when the log is empty) because
+    // mergeServerPromptBufferIntoLocalState only appends prompts whose sequence is
+    // greater than any the client has ever seen.  It never regresses the local buffer.
+    // This keeps the client buffer topped up during online windows so it can survive
+    // long offline windows without running dry.
+    mergeServerPromptBufferIntoLocalState(response.state);
+
+    if (logEmpty && !hasActionableKanjiKombatPrompt()) {
+      // Guard: with optimistic rendering the local buffer advances ahead of the server.
+      // If the action area is already showing a fresh interactive prompt the combat loop
+      // is healthy — snapping to the confirmed-but-behind server state would regress the
+      // buffer and re-offer an already-answered prompt (duplicate detection failure).
+      updateKanjiKombatGameState(response.state);
+    }
+  }
   const results = response?.results || [];
   const finalResult = results.findLast?.(r => r.combatEnded)
     || results.slice().reverse().find(r => r.combatEnded);
@@ -195,7 +376,9 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
   }
   // Re-render the action after applying state (e.g. when combat was inactive after
   // a graceful-pause wave end — this unblocks the player).
-  if (response?.state && logEmpty) refreshKanjiKombatAction();
+  if (response?.state && logEmpty && !hasActionableKanjiKombatPrompt()) {
+    refreshKanjiKombatAction();
+  }
   // Show server-confirmed visuals for each result in the batch — but wait for any
   // in-flight optimistic animation to finish first, so state-apply and replay visuals
   // don't race with a running combat sequence.  Serialized through sessionReplayChain
@@ -238,6 +421,8 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
 async function handleSessionCorrection(response) {
   // Serialized through sessionReplayChain so corrections and checkpoint replays
   // are never interleaved — each waits for the previous work to complete first.
+  const corrHead = (response?.authoritativeState || response?.state)?.run?.kanjiKombat?.promptBuffer?.[0]?.promptId ?? null;
+  console.log('[KK Correction] reason=' + response?.reason + ', confirmedThroughSeq=' + response?.confirmedThroughSeq + ', rejectedSeq=' + response?.rejectedSeq + ', corrHead=' + corrHead);
   await enqueueSessionReplay(async () => {
     await waitForCombatAnimationIdle();
     const state = response?.authoritativeState || response?.state;
@@ -297,17 +482,20 @@ function consumePromptHeadDraft(draft, prompt) {
   kk.completionChoicePending = next?.kind === 'completePrompt';
 }
 
-function requestPromptBufferRefillIfLow(state) {
+function requestPromptBufferRefillIfLow(state, { forceRefill = false } = {}) {
   const kk = state?.run?.kanjiKombat;
   if (!Array.isArray(kk?.promptBuffer)) return;
-  if (kk.promptBuffer.length >= PROMPT_BUFFER_REFILL_THRESHOLD) return;
+  if (!forceRefill && kk.promptBuffer.length >= PROMPT_BUFFER_REFILL_THRESHOLD) return;
   if (promptBufferRefillPromise || typeof api.refillPromptBuffer !== 'function') return;
   rememberKanjiKombatState(state);
-  const basisHead = promptBufferHeadIdentity(state);
   promptBufferRefillPromise = Promise.resolve(api.refillPromptBuffer())
     .then(result => {
-      if (result?.state && promptBufferHeadIdentity(currentKanjiKombatState()) === basisHead) {
-        if (result.state) updateKanjiKombatGameState(result.state);
+      if (result?.state) {
+        // Use merge semantics: safely add new tail prompts from the refill response
+        // without snapping local state to the server's behind-state.  The server may
+        // still be behind the client's optimistic advances, so only the genuinely new
+        // tail entries (sequence > _promptBufferHighSeq) are appended.
+        mergeServerPromptBufferIntoLocalState(result.state);
       }
       return result;
     })
@@ -522,6 +710,11 @@ function renderKanjiKombatPendingCompletion() {
 
 export function renderKanjiKombatAction(gameState) {
   rememberKanjiKombatState(gameState);
+  // Ensure the session epoch is current whenever we render a KK prompt.
+  // initKanjiKombatUI runs at app boot (before game state is loaded), so the
+  // session may start with sessionEpoch=null.  Adopting here — each time a prompt
+  // is about to be offered — guarantees the epoch is set before the first sync.
+  getKanjiKombatSession()?.adoptServerState(gameState);
   const kk = gameState.run?.kanjiKombat;
   const cursor = gameState.combat?.actionCursor;
   if (kk?.onboardingPending) return true;
@@ -599,6 +792,28 @@ export function renderKanjiKombatAction(gameState) {
 
   const quiz = quizPrompt?.quiz || null;
   if (quiz) {
+    // Graceful-pause gate: a quiz can only be answered against a LIVE local wave.
+    // After a wave-clear with no local pre-roll (offline runway exhausted) the local
+    // enemies are all defeated and the seed chain belongs to the cleared wave —
+    // predicting against it generates garbage entries the server rejects with
+    // transcript_mismatch.  The combat-loop's graceful pause stops its own selection
+    // loop, but intro/completion onChoice chains also route through here, so this is
+    // the single chokepoint.  Clear the action area (so the checkpoint handler's
+    // hasActionableKanjiKombatPrompt() guard sees no live prompt, snaps to the
+    // server's authoritative wave state, and refreshes the action) and nudge a sync.
+    // Only a non-empty enemies array with no living member counts as a dead wave —
+    // a missing/empty array means combat state isn't loaded (or a non-combat render)
+    // and must not gate.
+    const _enemies = gameState.combat?.enemies;
+    const waveDead = Array.isArray(_enemies)
+      && _enemies.length > 0
+      && !_enemies.some(e => e && e.hp > 0 && e.befriended !== true);
+    if (waveDead) {
+      clearActionArea();
+      getKanjiKombatSession()?.syncNow();
+      void showKanjiKombatSyncPause();
+      return true;
+    }
     renderKanjiKombatQuiz(quiz, {
       onAnswer: async answerId => {
         // Gate: same cap check as intro/completion — pause and stop if the session

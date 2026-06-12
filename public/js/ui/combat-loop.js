@@ -52,6 +52,10 @@ import {
   buildOptimisticCombatTurn,
   buildOptimisticKanjiKombatAnswer,
 } from './optimistic-combat-turn.js';
+import { createPveOpeningCursor } from '../../../src/game/combat/action-cursor.js';
+import { applyKillXpToParty } from '../../../src/shared/combat/kanji-kombat-xp.js';
+import { applyKanjiKombatAnswerStreakProgress } from '../../../src/shared/combat/kanji-kombat-streak.js';
+import { createSeededRng } from '../../../src/shared/deterministic-rng.js';
 import { getKanjiKombatSession } from './kanji-kombat-session.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
@@ -689,25 +693,132 @@ function advanceLocalKanjiKombatChain(state) {
 }
 
 /**
- * Consume the pre-rolled next wave from the local state when a wave-end answer is
- * predicted locally.  Returns the pending object (with .enemies) when consumed, or
- * null when there is no pre-roll (offline second boundary — graceful pause).
+ * Apply deferred kill-XP for enemies newly defeated by THIS answer's ally
+ * attacks, immediately after the turn — mirroring the server's
+ * _collectDeferredKillXpEvents (combat-cycle-service.js), which runs after
+ * EVERY answer with deferXpAwards:true, not just at wave boundaries.  Mid-wave
+ * kills in multi-enemy waves must level/restore the party here too, or the
+ * next transcript hash diverges from the server's (ally hp/level/xp are part
+ * of the hashed stateSummary).
  * Mutates `state` in place (caller owns a deep clone).
+ *
+ * @param {object} state - The local game state (deep-cloned by caller).
+ * @param {object} transcript - The predicted turn transcript (actionSegments carry
+ *   targetDefeated markers on ally attack records and nested procs).
+ * @param {string} seed - The turn seed; reproduces the server's
+ *   `xpRng = createSeededRng(\`${seed}:xp\`)` so XP awards match exactly.
+ */
+function applyLocalKanjiKombatDeferredKillXp(state, transcript, seed) {
+  if (!state?.combat || !state.run?.creatureParty) return;
+  const enemies = state.combat.enemies || [];
+  // Mirror the server's visit order: ally action segments' attack records first,
+  // recursing into partySkillProcs/procs; dedupe by enemy index.
+  const defeatedIndices = new Set();
+  const visit = (record) => {
+    if (!record || typeof record !== 'object') return;
+    if (record.targetDefeated === true && typeof record.targetIndex === 'number') {
+      defeatedIndices.add(record.targetIndex);
+    }
+    for (const proc of record.partySkillProcs || []) visit(proc);
+    for (const proc of record.procs || []) visit(proc);
+  };
+  for (const segment of transcript?.actionSegments || []) {
+    if (segment?.actor?.side !== 'ally') continue;
+    for (const attack of segment.attacks || []) visit(attack);
+  }
+  if (defeatedIndices.size === 0) return;
+
+  const xpRng = seed ? createSeededRng(`${seed}:xp`) : Math.random;
+  const metaMults = state.run.crestMults || null;
+  const itemBuffs = state.run.itemBuffs || null;
+  const runPartySkills = state.run.partySkills || [];
+  for (const enemyIndex of defeatedIndices) {
+    const enemy = enemies[enemyIndex];
+    if (!enemy) continue;
+    applyKillXpToParty(
+      state.run.creatureParty,
+      enemy.level || 1,
+      itemBuffs?.xpMultiplier,
+      itemBuffs?.xpBalanceStacks,
+      metaMults,
+      itemBuffs,
+      runPartySkills,
+      xpRng,
+    );
+  }
+  // Keep combat.allies in sync with creatureParty.active (mirrors the server's
+  // _finalizeKanjiKombatActionResult combat.allies reassignment).
+  state.combat.allies = state.run.creatureParty.active;
+}
+
+/**
+ * Consume the head of the pre-rolled next-wave queue from the local state when a
+ * wave-end answer is predicted locally.  Returns the pending object (with .enemies)
+ * when consumed, or null when the queue is empty (the prompt buffer outlived the
+ * wave runway — graceful pause).  Subsequent boundaries during the same offline
+ * window consume subsequent queue entries.
+ * Deferred kill-XP for the wave-clearing blow is applied earlier, per answer, by
+ * applyLocalKanjiKombatDeferredKillXp (mirroring the server's per-answer
+ * _collectDeferredKillXpEvents which runs before spawnNextWave).
+ * Mutates `state` in place (caller owns a deep clone).
+ *
+ * @param {object} state  - The local game state (deep-cloned by caller).
  */
 function applyLocalKanjiKombatWaveTransition(state) {
   const kk = state?.run?.kanjiKombat;
-  const pending = kk?.pendingNextWave;
+  const queue = Array.isArray(kk?.pendingNextWaves) ? kk.pendingNextWaves : [];
+  const pending = queue[0] || null;
   if (!pending || !state.combat) return null;
+
   kk.wave = pending.wave;
-  kk.pendingNextWave = null;
+  kk.pendingNextWaves = queue.slice(1);
+  // Reset all wave-tracking fields to match what the server's spawnNextWave produces.
+  // Spreading ...state.combat here would carry over stale actionCursor, actionCount,
+  // cycleCount, openingResolved, and turnCount from the previous wave, causing the
+  // client's predicted combat transcript to diverge from the server's.
   state.combat = {
     ...state.combat,
     active: true,
     enemies: pending.enemies,
     isBoss: pending.isMiniboss === true,
     optimistic: { ...pending.combat },
+    // Fresh per-wave counters (mirrors createCombatState + spawnNextWave on the server)
+    actionCount: 0,
+    cycleCount: 0,
+    openingResolved: false,
+    turnCount: 1,
+    actionCursor: createPveOpeningCursor({
+      allies: state.combat.allies || [],
+      enemies: pending.enemies,
+    }),
   };
   return pending;
+}
+
+/**
+ * Advance the local streak and apply any milestone reward to the local draft
+ * state after a predicted answer, via the same shared module the server's
+ * submitAnswer uses (random milestone payloads arrive pre-rolled from the
+ * server in kk.pendingStreakRewards and are consumed verbatim, so the local
+ * party state matches the server's exactly for the next turn's transcript).
+ * Mutates `state` in place (caller owns a deep clone).
+ */
+function applyLocalKanjiKombatStreakProgress(state, correct) {
+  const kk = state?.run?.kanjiKombat;
+  if (!kk || !state.run?.creatureParty) return null;
+  const reward = applyKanjiKombatAnswerStreakProgress({
+    kk,
+    creatureParty: state.run.creatureParty,
+    correct: correct === true,
+    metaMults: state.run.crestMults || null,
+    itemBuffs: state.run.itemBuffs || null,
+  });
+  if (state.combat && state.run.creatureParty.active) {
+    // An ally join (streak 12) grows creatureParty.active in place; keep
+    // combat.allies aliased to it (mirrors the server's combat.allies sync).
+    state.combat.allies = state.run.creatureParty.active;
+  }
+  return reward;
 }
 
 // High-water mark of the wave number most recently animated locally (optimistic prediction).
@@ -732,6 +843,7 @@ async function runOptimisticKanjiKombatAnswer({
   playback = playCreatureCombatResult,
   startMoveSelection: restartMoveSelection = startMoveSelection,
   getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
+  refreshAction = null,
 } = {}) {
   const session = getKanjiKombatSession();
   if (!session || !session.canConsumePrompt()) {
@@ -773,6 +885,17 @@ async function runOptimisticKanjiKombatAnswer({
 
   const localState = localStateAfterKanjiKombatPrediction(getGameState(), optimistic, promptRef);
   advanceLocalKanjiKombatChain(localState);
+  // Mirror the server's submitAnswer ordering: turn resolution → deferred
+  // kill-XP for this answer's kills → (wave spawn) → streak reward.
+  applyLocalKanjiKombatDeferredKillXp(localState, optimistic.localTranscript, optimistic.envelope.seed);
+  // The streak milestone reward is applied AFTER the turn resolution — and on a
+  // wave-clearing answer, after the deferred kill-XP and wave spawn — so on the
+  // wave-clear path below it runs after applyLocalKanjiKombatWaveTransition instead.
+  const dailyBoundary = localState.run?.kanjiKombat?.completionChoicePending === true;
+  const localWaveClear = allEnemiesDefeated && !dailyBoundary;
+  if (!localWaveClear) {
+    applyLocalKanjiKombatStreakProgress(localState, correct);
+  }
   updateGameState(localState);
   playerAttackPending = false;
 
@@ -792,11 +915,15 @@ async function runOptimisticKanjiKombatAnswer({
   // Handle wave-end victory prediction locally using the pre-rolled next wave.
   // Guard: if the next prompt is a completePrompt (daily boundary), skip the
   // pre-roll consumption — let the checkpoint deliver the authoritative wave state.
-  const dailyBoundary = localState.run?.kanjiKombat?.completionChoicePending === true;
-  if (allEnemiesDefeated && !dailyBoundary) {
+  if (localWaveClear) {
     const waveTransition = applyLocalKanjiKombatWaveTransition(localState);
+    // Server order on a wave clear: turn → deferred kill-XP → spawnNextWave →
+    // streak reward (submitAnswer applies the reward after the cursor action,
+    // which spawned the next wave).  Apply the streak progress after the local
+    // wave transition so heals/level-ups see the same post-XP party state.
+    applyLocalKanjiKombatStreakProgress(localState, correct);
+    updateGameState(localState);
     if (waveTransition) {
-      updateGameState(localState);
       combatActive = true;
       // Record the new wave number as the high-water mark so the checkpoint handler
       // knows this transition was already played and skips the server-confirmed replay.
@@ -816,13 +943,31 @@ async function runOptimisticKanjiKombatAnswer({
         restartMoveSelection();
       }
     } else {
-      // No pre-roll: graceful pause — leave combat inactive, checkpoint will deliver the wave.
+      // No pre-roll: graceful pause — do NOT keep serving quiz prompts here.  The
+      // local wave state is dead (all enemies at 0 HP) and the seed chain belongs to
+      // the cleared wave; predicting against it generates garbage entries the server
+      // rejects with transcript_mismatch.  Leave selection stopped: the next
+      // checkpoint delivers the authoritative wave state (full snap is allowed
+      // because no actionable prompt is rendered) and refreshKanjiKombatAction
+      // unblocks the player.
       combatActive = isRecoveredCombatActive(localState);
       logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
     }
   } else {
     combatActive = isRecoveredCombatActive(localState);
     logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
+    // Special case: when all enemies are defeated AND the next prompt is a
+    // completePrompt (daily boundary), the completion screen must render
+    // immediately from the local predicted state.  We cannot call
+    // startMoveSelection (that would re-enter the combat loop before the
+    // server confirms combatEnded), so we use the refreshAction callback to
+    // render the UI directly.  The server checkpoint will later deliver the
+    // authoritative combatEnded result and finishCombatResult will fire.
+    if (allEnemiesDefeated && dailyBoundary && combatActive && !isEnemyDialogueActive?.()) {
+      await waitBeforeMoveSelection(nextSelectionDelayMs);
+      if (typeof refreshAction === 'function') refreshAction();
+      return true;
+    }
   }
 
   const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
@@ -1615,10 +1760,21 @@ function syncFinalState(result) {
 export async function syncKanjiKombatStreakRewardVisuals(result) {
   if (!result?.kanjiStreakReward) return;
 
-  syncFinalState(result);
-
-  const active = result.creatureParty?.active || result.allies || [];
+  // VISUALS ONLY — never merge the result's combat/party snapshot into game
+  // state.  This runs exclusively from the checkpoint replay path
+  // (kanji-kombat.js handleSessionCheckpoint): every replayed result is an OLD
+  // snapshot of an entry the client already predicted locally, so the local
+  // state is AHEAD of it.  Merging (the old syncFinalState call) regressed
+  // combat.enemies/creatureParty to a cleared wave's snapshot; the next
+  // optimistic answer was then predicted against that zombie state and the
+  // server rejected it with transcript_mismatch.  Drive all visuals from the
+  // CURRENT local state, which already includes the locally-applied reward.
+  const gs = getGameState();
+  const active = gs?.run?.creatureParty?.active || [];
   if (!Array.isArray(active) || active.length === 0) return;
+
+  // Keep formation popup data in sync with latest HP
+  if (updateCreatureRowData) updateCreatureRowData(active);
 
   const slots = Array.from(document.querySelectorAll('#player-formation .formation-slot'));
   const renderedIds = slots.map(slot => slot.dataset.creatureId || '');
@@ -1642,7 +1798,7 @@ export async function syncKanjiKombatStreakRewardVisuals(result) {
     try {
       await scene.syncCreatures({
         allies: active,
-        enemies: getGameState()?.combat?.enemies || result.enemies || [],
+        enemies: gs?.combat?.enemies || [],
       });
     } catch (err) {
       if (!(err instanceof SceneDisposedError)) {
@@ -2126,6 +2282,10 @@ async function executeCreatureMovesTurn(choices, options = {}) {
             answerId: options.kanjiAnswerId,
             promptRef: options.kanjiPromptRef,
             turnTiming,
+            // When combat ends at the daily boundary (all enemies defeated, next prompt
+            // is completePrompt), render the completion screen immediately from the local
+            // predicted state so the UI doesn't stall waiting for the server checkpoint.
+            refreshAction: () => kanjiKombatUI.renderKanjiKombatAction(getGameState()),
           })
         : !options.request && await runOptimisticCreatureCombatTurn({
             actionType,

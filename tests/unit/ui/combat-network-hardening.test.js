@@ -867,6 +867,172 @@ describe('combat network hardening', () => {
     assert.equal(updates.at(-1).run.kanjiKombat.currentQuiz.cardId, 'hiragana:い');
   });
 
+  function buildLocalStreakState({ streak = 0, allyHp = 50, pendingStreakRewards = null } = {}) {
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      element: 'fire',
+      level: 1,
+      xp: 0,
+      hp: allyHp,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      attack: 5,
+      defense: 5,
+      dex: 5,
+      moves: [],
+    };
+    const enemy = { ...ally, id: 'mizu', name: '水', nameEn: 'Water', hp: 500, maxHp: 500 };
+    const quiz = {
+      cardId: 'hiragana:あ',
+      choices: [
+        { id: 'answer-correct', answer: 'a', correct: true },
+        { id: 'answer-wrong', answer: 'i', correct: false },
+      ],
+    };
+    return {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_kanji_streak', stateVersion: 2, nextTurnSeed: 'seed_kanji_streak', turnSeeds: ['s1', 's2'] },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          streak,
+          highestStreak: streak,
+          ...(pendingStreakRewards ? { pendingStreakRewards } : {}),
+          currentQuiz: quiz,
+          promptBuffer: [
+            { promptId: 'kkp_streak_1', sequence: 1, kind: 'quiz', cardId: 'hiragana:あ', quiz },
+            {
+              promptId: 'kkp_streak_2',
+              sequence: 2,
+              kind: 'quiz',
+              cardId: 'hiragana:い',
+              quiz: { cardId: 'hiragana:い', choices: [{ id: 'answer-i', answer: 'i', correct: true }] },
+            },
+          ],
+        },
+      },
+    };
+  }
+
+  async function runLocalStreakAnswer(currentState, answerId) {
+    configureKanjiKombatSession({
+      syncRequest: async () => new Promise(() => {}),
+      schedule: (fn, delay) => { void delay; return setTimeout(fn, 99999); },
+    });
+    const updates = [];
+    let playbackAllyHp = null;
+    combatLoop.__combatNetworkTest.setKanjiKombatAnswerApi(async () => ({ status: 'accepted' }));
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId,
+      promptRef: { promptId: 'kkp_streak_1', sequence: 1, cardId: 'hiragana:あ' },
+      turnTiming: {},
+      playback: async localTranscript => {
+        // Post-turn, pre-streak-reward ally HP (the reward applies after the turn)
+        playbackAllyHp = localTranscript.allies?.[0]?.hp ?? null;
+      },
+      startMoveSelection: () => {},
+      getEnemyDialogueActive: () => false,
+    });
+
+    assert.equal(handled, true);
+    return { finalState: updates.at(-1), playbackAllyHp };
+  }
+
+  it('local Kanji Kombat prediction applies the streak-3 heal to the local draft party', async () => {
+    const currentState = buildLocalStreakState({ streak: 2, allyHp: 50 });
+
+    const { finalState, playbackAllyHp } = await runLocalStreakAnswer(currentState, 'answer-correct');
+
+    const kk = finalState.run.kanjiKombat;
+    assert.equal(kk.streak, 3, 'local streak must advance on a correct answer');
+    const finalAlly = finalState.run.creatureParty.active[0];
+    assert.ok(Number.isFinite(playbackAllyHp), 'playback transcript should carry post-turn ally hp');
+    const expectedHp = Math.min(finalAlly.maxHp, playbackAllyHp + Math.ceil(finalAlly.maxHp * 0.20));
+    assert.equal(finalAlly.hp, expectedHp, 'streak-3 heal (20% maxHp) must apply to the local draft');
+    assert.equal(finalState.combat.allies[0], finalAlly, 'combat.allies stays aliased to the party');
+  });
+
+  it('local Kanji Kombat prediction applies the pre-rolled statUp payload at streak 6', async () => {
+    const currentState = buildLocalStreakState({
+      streak: 5,
+      pendingStreakRewards: {
+        6: [{ seq: 1, type: 'statUp', allyRoll: 0, stat: 'def' }],
+        12: [],
+      },
+    });
+
+    const { finalState } = await runLocalStreakAnswer(currentState, 'answer-correct');
+
+    const kk = finalState.run.kanjiKombat;
+    assert.equal(kk.streak, 6);
+    assert.equal(finalState.run.creatureParty.active[0].statStages?.def, 1,
+      'pre-rolled statUp payload must be applied verbatim to the local draft');
+    assert.equal(kk.pendingStreakRewards[6].length, 0, 'payload consumed from the local queue');
+  });
+
+  it('local Kanji Kombat prediction resets the streak on a wrong answer without rewards', async () => {
+    const currentState = buildLocalStreakState({
+      streak: 5,
+      allyHp: 50,
+      pendingStreakRewards: {
+        6: [{ seq: 1, type: 'statUp', allyRoll: 0, stat: 'def' }],
+        12: [],
+      },
+    });
+
+    const { finalState, playbackAllyHp } = await runLocalStreakAnswer(currentState, 'answer-wrong');
+
+    const kk = finalState.run.kanjiKombat;
+    assert.equal(kk.streak, 0, 'local streak must reset on a wrong answer');
+    const finalAlly = finalState.run.creatureParty.active[0];
+    assert.equal(finalAlly.hp, playbackAllyHp, 'no heal applied on a wrong answer');
+    assert.equal(finalAlly.statStages?.def ?? 0, 0, 'no buff applied on a wrong answer');
+    assert.equal(kk.pendingStreakRewards[6].length, 1, 'payload must not be consumed');
+  });
+
+  it('local Kanji Kombat prediction applies deferred kill XP for a mid-wave kill', async () => {
+    // The server awards deferred kill XP after EVERY answer that defeats an enemy
+    // (_collectDeferredKillXpEvents), not just at wave boundaries.  A mid-wave kill
+    // in a multi-enemy wave must level/restore the local draft party identically,
+    // or the next transcript hash diverges.
+    const currentState = buildLocalStreakState({ streak: 0, allyHp: 100 });
+    const template = currentState.combat.enemies[0];
+    currentState.combat.enemies = [
+      { ...template, id: 'mizu', hp: 1, maxHp: 500, level: 2 },
+      { ...template, id: 'tetsu', hp: 500, maxHp: 500, level: 2 },
+    ];
+
+    const { finalState } = await runLocalStreakAnswer(currentState, 'answer-correct');
+
+    assert.equal(finalState.combat.enemies[0].hp, 0, 'first enemy dies to the strike');
+    assert.ok(finalState.combat.enemies[1].hp > 0, 'wave must not be cleared');
+    const finalAlly = finalState.run.creatureParty.active[0];
+    assert.ok(
+      finalAlly.xp > 0 || finalAlly.level > 1,
+      'mid-wave kill XP must be applied to the local draft party',
+    );
+    assert.equal(finalState.combat.allies[0], finalAlly, 'combat.allies stays aliased to the party');
+  });
+
   it('three consecutive Kanji Kombat answers all play locally with a 3-seed chain and all append to the session log', async () => {
     // New contract: with a 3-deep turnSeeds chain, three consecutive answers all return true
     // and all append to the session log without blocking each other.
@@ -1470,8 +1636,9 @@ describe('combat network hardening', () => {
   });
 
   it('local wave-end KO with pre-rolled next wave transitions immediately and resumes selection', async () => {
-    // When a correct answer KOs the last enemy, and a pendingNextWave pre-roll exists,
-    // the wave transition is applied locally (no server wait) and startMoveSelection is called.
+    // When a correct answer KOs the last enemy, and the pendingNextWaves queue holds
+    // a pre-roll, the wave transition is applied locally (no server wait) and
+    // startMoveSelection is called.
     configureKanjiKombatSession({
       syncRequest: async () => new Promise(() => {}),
       schedule: (fn, delay) => { void delay; return setTimeout(fn, 99999); },
@@ -1525,7 +1692,7 @@ describe('combat network hardening', () => {
         creatureParty: { active: [ally], reserves: [] },
         kanjiKombat: {
           wave: 1,
-          pendingNextWave: {
+          pendingNextWaves: [{
             wave: 2,
             isMiniboss: false,
             enemies: nextWaveEnemies, // empty so no DOM rendering in wave transition
@@ -1535,7 +1702,7 @@ describe('combat network hardening', () => {
               nextTurnSeed: 's2',
               turnSeeds: ['s2'],
             },
-          },
+          }],
           promptBuffer: [
             {
               promptId: 'kkp_wave_local_1',
@@ -1591,12 +1758,269 @@ describe('combat network hardening', () => {
       1,
       'startMoveSelection should be called once after the local wave transition',
     );
-    // Wave state was consumed from pendingNextWave.
+    // Wave state was consumed from the head of pendingNextWaves.
     const finalState = updates.at(-1);
-    assert.equal(finalState?.run?.kanjiKombat?.pendingNextWave, null);
+    assert.deepEqual(finalState?.run?.kanjiKombat?.pendingNextWaves, []);
     // enemies come from nextWaveEnemies (empty in this test to skip DOM rendering)
     assert.deepEqual(finalState?.combat?.enemies, nextWaveEnemies);
     assert.equal(getKanjiKombatSession().pendingCount(), 1);
+  });
+
+  it('local wave-end KO with an empty pre-roll queue pauses gracefully instead of restarting selection', async () => {
+    // When a correct answer KOs the last enemy but the pendingNextWaves queue is
+    // EMPTY (the offline window outlived the pre-rolled runway), the client must NOT
+    // keep serving quiz prompts against the dead wave state — that generates garbage
+    // entries the server rejects with transcript_mismatch.  The planned behavior is a
+    // graceful pause: leave selection stopped and let the next checkpoint deliver the
+    // real wave.
+    configureKanjiKombatSession({
+      syncRequest: async () => new Promise(() => {}),
+      schedule: (fn, delay) => { void delay; return setTimeout(fn, 99999); },
+    });
+    const calls = [];
+    const updates = [];
+    const ally = {
+      id: 'hi',
+      name: '火',
+      element: 'fire',
+      hp: 100,
+      maxHp: 100,
+      attack: 999, // guaranteed KO
+      defense: 5,
+      dex: 10,
+      mp: 0,
+      maxMp: 0,
+      moves: [],
+    };
+    const enemy = {
+      id: 'mizu',
+      uid: 'enemy-wave-1',
+      name: '水',
+      element: 'water',
+      hp: 1,
+      maxHp: 1,
+      attack: 1,
+      defense: 0,
+      dex: 0,
+      mp: 0,
+      maxMp: 0,
+      moves: [],
+    };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_wave_nopreroll', stateVersion: 2, nextTurnSeed: 's1', turnSeeds: ['s1', 's2'] },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          wave: 2,
+          pendingNextWaves: [], // empty queue — checkpoint must deliver the next wave
+          promptBuffer: [
+            {
+              promptId: 'kkp_nopreroll_1',
+              sequence: 1,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              quiz: { cardId: 'hiragana:あ', choices: [{ id: 'ans-a', answer: 'a', correct: true }] },
+            },
+            {
+              promptId: 'kkp_nopreroll_2',
+              sequence: 2,
+              kind: 'quiz',
+              cardId: 'hiragana:い',
+              quiz: { cardId: 'hiragana:い', choices: [{ id: 'ans-i', answer: 'i', correct: true }] },
+            },
+          ],
+          currentQuiz: { cardId: 'hiragana:あ', choices: [{ id: 'ans-a', answer: 'a', correct: true }] },
+        },
+      },
+    };
+
+    setSceneManager({
+      transitioning: false,
+      currentScene: {
+        disposed: false,
+        _exiting: false,
+        formation: { walkingEnabled: false },
+        syncCreatures: async () => {},
+      },
+    });
+    combatLoop.__combatNetworkTest.setKanjiKombatAnswerApi(async () => ({ status: 'accepted' }));
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId: 'ans-a',
+      promptRef: { promptId: 'kkp_nopreroll_1', sequence: 1, cardId: 'hiragana:あ' },
+      turnTiming: {},
+      playback: async localTranscript => calls.push({ type: 'playback', allEnemiesDefeated: localTranscript.allEnemiesDefeated }),
+      startMoveSelection: () => calls.push({ type: 'startMoveSelection' }),
+      getEnemyDialogueActive: () => false,
+    });
+
+    assert.equal(handled, true);
+    assert.equal(calls.some(c => c.type === 'playback'), true);
+    // No pre-roll → graceful pause: selection must NOT restart against dead wave state.
+    assert.equal(
+      calls.filter(c => c.type === 'startMoveSelection').length,
+      0,
+      'startMoveSelection must not be called when the wave cleared without a pre-roll',
+    );
+    // The answer itself is still recorded for the server to replay.
+    assert.equal(getKanjiKombatSession().pendingCount(), 1);
+    const finalState = updates.at(-1);
+    assert.deepEqual(finalState?.run?.kanjiKombat?.pendingNextWaves, []);
+  });
+
+  it('two consecutive offline wave-end answers consume two pre-roll queue entries', async () => {
+    // Real cadence clears a wave every 1-3 answers, so a single offline window
+    // routinely crosses TWO wave boundaries.  Each boundary must consume the next
+    // entry from the pendingNextWaves queue, with selection resuming both times.
+    configureKanjiKombatSession({
+      syncRequest: async () => new Promise(() => {}),
+      schedule: (fn, delay) => { void delay; return setTimeout(fn, 99999); },
+    });
+    const calls = [];
+    const updates = [];
+    const ally = {
+      id: 'hi', name: '火', element: 'fire',
+      hp: 100, maxHp: 100, attack: 999, defense: 5, dex: 10, mp: 0, maxMp: 0, moves: [],
+    };
+    const enemy = {
+      id: 'mizu', uid: 'enemy-wave-1', name: '水', element: 'water',
+      hp: 1, maxHp: 1, attack: 1, defense: 0, dex: 0, mp: 0, maxMp: 0, moves: [],
+    };
+    // Both queued waves use empty enemies arrays so playKanjiKombatNextWaveTransition
+    // skips DOM rendering; an empty wave is also vacuously "all defeated", so the
+    // second answer is itself a wave-end answer.
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_two_bound', stateVersion: 2, nextTurnSeed: 's1', turnSeeds: ['s1', 's2'] },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          wave: 1,
+          pendingNextWaves: [
+            {
+              wave: 2,
+              isMiniboss: false,
+              enemies: [],
+              combat: { combatId: 'cmb_two_bound_w2', stateVersion: 0, nextTurnSeed: 'w2-s1', turnSeeds: ['w2-s1', 'w2-s2'] },
+            },
+            {
+              wave: 3,
+              isMiniboss: false,
+              enemies: [],
+              combat: { combatId: 'cmb_two_bound_w3', stateVersion: 0, nextTurnSeed: 'w3-s1', turnSeeds: ['w3-s1', 'w3-s2'] },
+            },
+          ],
+          promptBuffer: [
+            {
+              promptId: 'kkp_two_bound_1',
+              sequence: 1,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              quiz: { cardId: 'hiragana:あ', choices: [{ id: 'ans-a', answer: 'a', correct: true }] },
+            },
+            {
+              promptId: 'kkp_two_bound_2',
+              sequence: 2,
+              kind: 'quiz',
+              cardId: 'hiragana:い',
+              quiz: { cardId: 'hiragana:い', choices: [{ id: 'ans-i', answer: 'i', correct: true }] },
+            },
+            {
+              promptId: 'kkp_two_bound_3',
+              sequence: 3,
+              kind: 'quiz',
+              cardId: 'hiragana:う',
+              quiz: { cardId: 'hiragana:う', choices: [{ id: 'ans-u', answer: 'u', correct: true }] },
+            },
+          ],
+          currentQuiz: { cardId: 'hiragana:あ', choices: [{ id: 'ans-a', answer: 'a', correct: true }] },
+        },
+      },
+    };
+
+    setSceneManager({
+      transitioning: false,
+      currentScene: {
+        disposed: false,
+        _exiting: false,
+        formation: { walkingEnabled: false },
+        syncCreatures: async () => {},
+      },
+    });
+    combatLoop.__combatNetworkTest.setKanjiKombatAnswerApi(async () => ({ status: 'accepted' }));
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    // First boundary: KOs the wave-1 enemy, consumes the wave-2 queue head.
+    const handledFirst = await combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId: 'ans-a',
+      promptRef: { promptId: 'kkp_two_bound_1', sequence: 1, cardId: 'hiragana:あ' },
+      turnTiming: {},
+      playback: async () => calls.push({ type: 'playback' }),
+      startMoveSelection: () => calls.push({ type: 'startMoveSelection' }),
+      getEnemyDialogueActive: () => false,
+    });
+    assert.equal(handledFirst, true);
+    const afterFirst = updates.at(-1);
+    assert.equal(afterFirst?.run?.kanjiKombat?.wave, 2, 'first boundary advances to wave 2');
+    assert.deepEqual(
+      afterFirst?.run?.kanjiKombat?.pendingNextWaves?.map(w => w.wave),
+      [3],
+      'first boundary consumes only the queue head',
+    );
+    assert.equal(afterFirst?.combat?.optimistic?.combatId, 'cmb_two_bound_w2');
+
+    // Second boundary (still offline): consumes the wave-3 queue entry.
+    const handledSecond = await combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId: 'ans-i',
+      promptRef: { promptId: 'kkp_two_bound_2', sequence: 2, cardId: 'hiragana:い' },
+      turnTiming: {},
+      playback: async () => calls.push({ type: 'playback' }),
+      startMoveSelection: () => calls.push({ type: 'startMoveSelection' }),
+      getEnemyDialogueActive: () => false,
+    });
+    assert.equal(handledSecond, true);
+    const afterSecond = updates.at(-1);
+    assert.equal(afterSecond?.run?.kanjiKombat?.wave, 3, 'second boundary advances to wave 3');
+    assert.deepEqual(afterSecond?.run?.kanjiKombat?.pendingNextWaves, [],
+      'second boundary consumes the second queue entry');
+    assert.equal(afterSecond?.combat?.optimistic?.combatId, 'cmb_two_bound_w3');
+    assert.equal(
+      calls.filter(c => c.type === 'startMoveSelection').length,
+      2,
+      'selection resumes after each locally-played boundary',
+    );
+    // Both answers are recorded for the server to replay.
+    assert.equal(getKanjiKombatSession().pendingCount(), 2);
   });
 
   it('accepted optimistic verification reconciles committed combat result and next seed', async () => {
@@ -1919,7 +2343,8 @@ describe('combat network hardening', () => {
   it('does not consume the pre-rolled next wave when the post-answer state has completionChoicePending', async () => {
     // Arrange a state where answering the last quiz in a wave would clear enemies,
     // but the next buffered prompt is a completePrompt (daily boundary).
-    // The client must NOT consume pendingNextWave — let the checkpoint deliver truth.
+    // The client must NOT consume the pendingNextWaves head — let the checkpoint
+    // deliver truth.
     configureKanjiKombatSession({
       syncRequest: async () => new Promise(() => {}),
       schedule: (fn, delay) => { void delay; return setTimeout(fn, 99999); },
@@ -1952,12 +2377,12 @@ describe('combat network hardening', () => {
         creatureParty: { active: [ally], reserves: [] },
         kanjiKombat: {
           wave: 1,
-          pendingNextWave: {
+          pendingNextWaves: [{
             wave: 2,
             isMiniboss: false,
             enemies: nextWaveEnemies,
             combat: { combatId: 'cmb_daily_next', stateVersion: 3, nextTurnSeed: 's2', turnSeeds: ['s2'] },
-          },
+          }],
           // The next prompt is a completePrompt (daily session boundary).
           promptBuffer: [
             {
@@ -2004,10 +2429,10 @@ describe('combat network hardening', () => {
     });
 
     assert.equal(handled, true);
-    // Pre-roll must NOT be consumed at the daily boundary.
+    // Pre-roll queue must NOT be consumed at the daily boundary.
     const finalState = updates.at(-1);
-    assert.notEqual(finalState?.run?.kanjiKombat?.pendingNextWave, null,
-      'pendingNextWave must not be consumed at the daily boundary');
+    assert.equal(finalState?.run?.kanjiKombat?.pendingNextWaves?.length, 1,
+      'pendingNextWaves head must not be consumed at the daily boundary');
     // startMoveSelection must NOT have been called from the pre-roll path.
     assert.equal(calls.filter(c => c.type === 'startMoveSelection').length, 0,
       'startMoveSelection must not fire from pre-roll path at daily boundary');

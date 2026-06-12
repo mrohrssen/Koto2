@@ -186,7 +186,10 @@ describe('optimistic run action integration', () => {
 
 
   it('registers Kanji Kombat session sync drain triggers on reconnect and visibility return', () => {
-    assert.match(kanjiInitSource, /addEventListener\('online', \(\) => getKanjiKombatSession\(\)\?\.syncNow\(\)\)/);
+    // The 'online' event handler calls syncNow() to flush pending log entries when
+    // connectivity is restored.  The exact callback shape may be a block or arrow.
+    assert.match(kanjiInitSource, /addEventListener\('online'/);
+    assert.match(kanjiInitSource, /getKanjiKombatSession\(\)\?\.syncNow\(\)/);
     assert.match(kanjiInitSource, /addEventListener\('visibilitychange', \(\) => \{\s*if \(document\.visibilityState !== 'hidden'\) getKanjiKombatSession\(\)\?\.syncNow\(\);\s*\}\)/);
   });
 
