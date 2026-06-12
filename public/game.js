@@ -2246,6 +2246,10 @@ async function initGame() {
     forceHideNarration: () => narrationBox.forceHide(),
     syncSession: apiSyncKanjiKombatSession,
     isCombatAnimationActive: () => combatAnimationActive,
+    showXpEvents: xpEvents => combatLoopUI.showXpEvents(xpEvents),
+    processPendingMoveLearn: list => combatLoopUI.processPendingMoveLearn(list),
+    syncKanjiKombatStreakRewardVisuals: result => combatLoopUI.syncKanjiKombatStreakRewardVisuals(result),
+    playKanjiKombatNextWaveTransition: result => combatLoopUI.playKanjiKombatNextWaveTransition(result),
   });
 
   explorationUI.init({

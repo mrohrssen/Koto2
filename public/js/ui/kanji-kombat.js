@@ -25,6 +25,12 @@ const DEFAULT_API = {
   syncSession: null,
   isCombatAnimationActive: null,
   __sessionSchedule: null,
+  // Visuals from combat-loop.js — used by the checkpoint handler to show
+  // server-confirmed XP, streak rewards, and wave transitions.
+  showXpEvents: null,
+  processPendingMoveLearn: null,
+  syncKanjiKombatStreakRewardVisuals: null,
+  playKanjiKombatNextWaveTransition: null,
 };
 
 let api = { ...DEFAULT_API };
@@ -161,12 +167,31 @@ function currentKanjiKombatState() {
 
 function handleSessionCheckpoint(response, { logEmpty } = {}) {
   if (response?.state && logEmpty) updateKanjiKombatGameState(response.state);
-  const finalResult = (response?.results || []).findLast?.(result => result.combatEnded)
-    || (response?.results || []).slice().reverse().find(result => result.combatEnded);
+  const results = response?.results || [];
+  const finalResult = results.findLast?.(r => r.combatEnded)
+    || results.slice().reverse().find(r => r.combatEnded);
   if (finalResult) {
     api.finishCombatResult?.({ ...finalResult, state: response.state });
     return;
   }
+  // Show server-confirmed visuals for each result in the batch.
+  void (async () => {
+    for (const result of results) {
+      if (result.replayed) continue;
+      if (result.xpEvents?.length) {
+        const pendingMoveLearn = api.showXpEvents?.(result.xpEvents) || [];
+        if (pendingMoveLearn.length && api.processPendingMoveLearn) {
+          await api.processPendingMoveLearn(pendingMoveLearn);
+        }
+      }
+      if (result.kanjiStreakReward) {
+        await api.syncKanjiKombatStreakRewardVisuals?.(result);
+      }
+      if (result.nextWave) {
+        await api.playKanjiKombatNextWaveTransition?.(result);
+      }
+    }
+  })();
   requestPromptBufferRefillIfLow(response?.state || currentKanjiKombatState());
 }
 

@@ -52,7 +52,7 @@ import {
   buildOptimisticCombatTurn,
   buildOptimisticKanjiKombatAnswer,
 } from './optimistic-combat-turn.js';
-import { getKanjiKombatSyncQueue } from './kanji-kombat-sync-queue.js';
+import { getKanjiKombatSession } from './kanji-kombat-session.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -170,7 +170,6 @@ let enemyAttackTimer = null;
 let animatedEnemyKoKeys = new Set();
 let creatureCombatRequestInFlight = false;
 let kanjiKombatOpeningRevealActive = false;
-let kanjiKombatQueuedVerificationPending = false;
 
 // Move-based combat state
 let currentCreatureIndex = 0;
@@ -675,45 +674,76 @@ async function runOptimisticCreatureCombatTurn({
   return true;
 }
 
+/**
+ * Advance the local turn-seed chain after an optimistic KK answer is applied.
+ * Mutates the optimistic sub-object in place (state was already deep-cloned by
+ * localStateAfterKanjiKombatPrediction before we call this).
+ */
+function advanceLocalKanjiKombatChain(state) {
+  const optimistic = state?.combat?.optimistic;
+  if (!optimistic) return;
+  const seeds = Array.isArray(optimistic.turnSeeds) ? optimistic.turnSeeds.slice(1) : [];
+  optimistic.turnSeeds = seeds;
+  optimistic.nextTurnSeed = seeds[0] || null;
+  optimistic.stateVersion = (optimistic.stateVersion || 0) + 1;
+}
+
+/**
+ * Consume the pre-rolled next wave from the local state when a wave-end answer is
+ * predicted locally.  Returns the pending object (with .enemies) when consumed, or
+ * null when there is no pre-roll (offline second boundary — graceful pause).
+ * Mutates `state` in place (caller owns a deep clone).
+ */
+function applyLocalKanjiKombatWaveTransition(state) {
+  const kk = state?.run?.kanjiKombat;
+  const pending = kk?.pendingNextWave;
+  if (!pending || !state.combat) return null;
+  kk.wave = pending.wave;
+  kk.pendingNextWave = null;
+  state.combat = {
+    ...state.combat,
+    active: true,
+    enemies: pending.enemies,
+    isBoss: pending.isMiniboss === true,
+    optimistic: { ...pending.combat },
+  };
+  return pending;
+}
+
 async function runOptimisticKanjiKombatAnswer({
   answerId,
   promptRef = {},
   turnTiming,
-  recoveryActionType = 'attack',
   nextSelectionDelayMs = 0,
   playback = playCreatureCombatResult,
   startMoveSelection: restartMoveSelection = startMoveSelection,
   stopCombatLoop: finishCombatLoop = stopCombatLoop,
   getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
 } = {}) {
-  if (kanjiKombatQueuedVerificationPending) {
-    console.warn('[KanjiKombat] queued answer verification pending; ignoring duplicate answer');
+  const session = getKanjiKombatSession();
+  if (!session || !session.canConsumePrompt()) {
     playerAttackPending = false;
-    return true;
+    return false; // renders the pause path via kanji-kombat.js
   }
 
   const optimistic = buildOptimisticKanjiKombatRequest(answerId, promptRef);
   if (!optimistic) return false;
+
+  const allEnemiesDefeated =
+    optimistic.localTranscript?.allEnemiesDefeated === true
+    || (optimistic.localTranscript?.combatEnded === true && optimistic.localTranscript?.victory === true);
+  const allAlliesDefeated =
+    optimistic.localTranscript?.allAlliesDefeated === true
+    || (optimistic.localTranscript?.combatEnded === true && optimistic.localTranscript?.victory === false);
   const hasLocalCombatEnd =
-    optimistic.localTranscript?.combatEnded === true
-    || optimistic.localTranscript?.allEnemiesDefeated === true
-    || optimistic.localTranscript?.allAlliesDefeated === true
-    || !!optimistic.localTranscript?.pendingCombatEnd;
-  const queue = getKanjiKombatSyncQueue();
-  if (queue && typeof queue.canConsumePrompt === 'function' && !queue.canConsumePrompt()) {
-    console.warn('[KanjiKombat] sync queue full; using server answer path');
-    return false;
-  }
+    allEnemiesDefeated || allAlliesDefeated || !!optimistic.localTranscript?.pendingCombatEnd;
 
   const requestStartedAt = performance.now();
   markCombatAnimationStart(turnTiming, requestStartedAt);
-  const waitForStreakRewardBanner = willKanjiKombatAnswerTriggerStreakReward(
-    getGameState(),
-    optimistic.localTranscript.kanjiAnswerCorrect
-  );
-  if (!waitForStreakRewardBanner) {
-    void vfx.showKanjiKombatAnswerBanner(optimistic.localTranscript.kanjiAnswerCorrect);
-  }
+
+  // Streak banner: show immediately from the local prediction (no wait-for-server branch).
+  void vfx.showKanjiKombatAnswerBanner(optimistic.localTranscript.kanjiAnswerCorrect);
+
   await playback(optimistic.localTranscript, turnTiming, {
     choices: [],
     logMoveIntent: false,
@@ -723,96 +753,48 @@ async function runOptimisticKanjiKombatAnswer({
   });
 
   const localState = localStateAfterKanjiKombatPrediction(getGameState(), optimistic, promptRef);
+  advanceLocalKanjiKombatChain(localState);
   updateGameState(localState);
   playerAttackPending = false;
-  combatActive = isRecoveredCombatActive(localState);
 
-  const sync = () => apiSubmitKanjiKombatAnswer(withKanjiKombatPromptRef(optimistic.envelope, promptRef));
-  const handleQueuedVerificationResult = async (result, warningPrefix) => {
-    try {
-      const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
-      if (recovery?.recovered === false) throw new Error('Combat sync failed');
-
-      const pendingMoveLearn = showXpEvents(result?.xpEvents);
-      if (pendingMoveLearn?.length) {
-        await processPendingMoveLearn(pendingMoveLearn);
-      }
-      if (result?.kanjiStreakReward || waitForStreakRewardBanner) {
-        await syncKanjiKombatStreakRewardVisuals(result);
-        void vfx.showKanjiKombatAnswerBanner(result.kanjiAnswerCorrect, result.kanjiStreakReward || null);
-      }
-      if (result?.nextWave) {
-        await playKanjiKombatNextWaveTransition(result);
-        animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
-      }
-      if (result?.combatEnded || !isRecoveredCombatActive(getGameState())) {
-        await finishCombatLoop(result || { combatEnded: true, victory: false });
-        return;
-      }
-
-      if (hasLocalCombatEnd && !isEnemyDialogueActive()) {
+  // Handle wave-end victory prediction locally using the pre-rolled next wave.
+  if (allEnemiesDefeated && !optimistic.localTranscript?.dailyComplete) {
+    const waveTransition = applyLocalKanjiKombatWaveTransition(localState);
+    if (waveTransition) {
+      updateGameState(localState);
+      combatActive = true;
+      await playKanjiKombatNextWaveTransition({
+        nextWave: true,
+        nextWaveEnemies: waveTransition.enemies,
+      });
+      animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(localState?.combat?.enemies || []);
+      logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
+      const enemyDialogueActiveAfterWave = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
+      if (!enemyDialogueActiveAfterWave) {
         await waitBeforeMoveSelection(nextSelectionDelayMs);
         restartMoveSelection();
       }
-    } catch (error) {
-      console.warn(warningPrefix, error?.message || error);
-    } finally {
-      kanjiKombatQueuedVerificationPending = false;
-    }
-  };
-  const handleAcceptedSync = result => handleQueuedVerificationResult(
-    result,
-    '[KanjiKombat] queued answer sync failed:',
-  );
-  const handleCorrectedSync = async result => {
-    await handleQueuedVerificationResult(
-      result,
-      '[KanjiKombat] queued answer correction failed:',
-    );
-  };
-  const handleSyncFailure = async error => {
-    try {
-      console.warn('[KanjiKombat] queued answer sync failed:', error?.message || error);
-      const recovery = await recoverFromNullCombatPost(recoveryActionType, {
-        restartSelection: restartMoveSelection,
-      });
-      logCombatTurnTiming(turnTiming, null, recovery.outcome, !recovery.recovered);
-    } finally {
-      kanjiKombatQueuedVerificationPending = false;
-    }
-  };
-
-  if (queue) {
-    const enqueueResult = queue.enqueue({
-      actionId: optimistic.envelope.actionId,
-      kind: 'quiz',
-      promptId: promptRef?.promptId || null,
-      sequence: promptRef?.sequence ?? null,
-      cardId: promptRef?.cardId || null,
-      answerId,
-      envelope: optimistic.envelope,
-      sync,
-      onAccepted: handleAcceptedSync,
-      onCorrected: handleCorrectedSync,
-    });
-    if (enqueueResult?.accepted === false) {
-      console.warn('[KanjiKombat] sync queue rejected answer; verifying answer in background');
-      kanjiKombatQueuedVerificationPending = true;
-      void sync()
-        .then(result => (result?.status === 'corrected' ? handleCorrectedSync(result) : handleAcceptedSync(result)))
-        .catch(handleSyncFailure);
     } else {
-      kanjiKombatQueuedVerificationPending = true;
+      // No pre-roll: graceful pause — leave combat inactive, checkpoint will deliver the wave.
+      combatActive = isRecoveredCombatActive(localState);
+      logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
     }
   } else {
-    console.warn('[KanjiKombat] sync queue unavailable; verifying answer in background');
-    kanjiKombatQueuedVerificationPending = true;
-    void sync()
-      .then(result => (result?.status === 'corrected' ? handleCorrectedSync(result) : handleAcceptedSync(result)))
-      .catch(handleSyncFailure);
+    combatActive = isRecoveredCombatActive(localState);
+    logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
   }
 
-  logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
+  // Append to the session log — the session drains this to the server asynchronously.
+  session.recordAction({
+    actionId: optimistic.envelope.actionId,
+    kind: 'quiz',
+    promptId: promptRef?.promptId || null,
+    sequence: promptRef?.sequence ?? null,
+    cardId: promptRef?.cardId || null,
+    answerId,
+    predictedHash: optimistic.envelope.predictedHash,
+  });
+
   const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
   if (!hasLocalCombatEnd && combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
     await waitBeforeMoveSelection(nextSelectionDelayMs);
@@ -831,7 +813,6 @@ export const __combatNetworkTest = {
     apiGetGameState = null;
     playerAttackPending = false;
     enemyAttackPending = false;
-    kanjiKombatQueuedVerificationPending = false;
   },
   setVerifyCreatureCombatApi(fn) {
     apiVerifyCreatureCombatCycle = fn;
@@ -847,7 +828,6 @@ export const __combatNetworkTest = {
   resetPendingFlags() {
     playerAttackPending = false;
     enemyAttackPending = false;
-    kanjiKombatQueuedVerificationPending = false;
   },
   setSyncIndicatorDelayMs(ms) {
     combatSyncIndicatorDelayMs = ms;
@@ -1250,7 +1230,6 @@ export function cleanupCombat() {
   combatActive = false;
   playerAttackPending = false;
   enemyAttackPending = false;
-  kanjiKombatQueuedVerificationPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
   animatedEnemyKoKeys = new Set();
@@ -1283,7 +1262,7 @@ export function pauseForNextVocab() {
  * Also handles level-up popups and updates the level badge in the DOM.
  * @param {Array} xpEvents - Array of { xpGrants: [...], levelUps: [...] }
  */
-function showXpEvents(xpEvents) {
+export function showXpEvents(xpEvents) {
   const pendingMoveLearn = [];
   if (!xpEvents || xpEvents.length === 0) return pendingMoveLearn;
 
@@ -1335,7 +1314,7 @@ function showXpEvents(xpEvents) {
  * or needs replacement (creature has 4 moves). Shows UI prompt and calls backend API.
  * @param {Array} pendingList - Array of { creature, creatureIndex, newMove }
  */
-async function processPendingMoveLearn(pendingList) {
+export async function processPendingMoveLearn(pendingList) {
   const state = getGameState();
   const activeCreatures = state.run?.creatureParty?.active;
   if (!activeCreatures) return;
@@ -1388,7 +1367,6 @@ export async function startCombatLoop(opts = {}) {
   combatActive = true;
   playerAttackPending = false;
   enemyAttackPending = false;
-  kanjiKombatQueuedVerificationPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
 
@@ -1602,7 +1580,7 @@ function syncFinalState(result) {
   // No-op: PixiJS sprites don't leave stale inline transforms
 }
 
-async function syncKanjiKombatStreakRewardVisuals(result) {
+export async function syncKanjiKombatStreakRewardVisuals(result) {
   if (!result?.kanjiStreakReward) return;
 
   syncFinalState(result);
@@ -1693,7 +1671,7 @@ async function playKanjiKombatOpeningTransition({ enemies = [], allies = [], isB
   await playKanjiKombatEnemyTravelReveal({ enemies, allies, isBoss });
 }
 
-async function playKanjiKombatNextWaveTransition(result) {
+export async function playKanjiKombatNextWaveTransition(result) {
   const enemies = Array.isArray(result.nextWaveEnemies)
     ? result.nextWaveEnemies
     : getGameState()?.combat?.enemies || [];
@@ -2571,7 +2549,6 @@ export async function stopCombatLoop(result) {
   combatActive = false;
   playerAttackPending = false;
   enemyAttackPending = false;
-  kanjiKombatQueuedVerificationPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
   animatedEnemyKoKeys = new Set();

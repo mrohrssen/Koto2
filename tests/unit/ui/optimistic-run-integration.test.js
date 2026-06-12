@@ -240,7 +240,7 @@ describe('optimistic run action integration', () => {
     assert.match(combatLoopSource, /stateWithBufferedKanjiKombatQuiz\(getGameState\(\), promptRef\)/);
     assert.match(combatLoopSource, /currentQuiz: bufferedPrompt\.quiz/);
     assert.match(combatLoopSource, /kanjiPromptRef: promptRef/);
-    assert.match(combatLoopSource, /withKanjiKombatPromptRef\(optimistic\.envelope, promptRef\)/);
+    assert.match(combatLoopSource, /promptId: promptRef\?\.promptId/);
     assert.match(combatLoopSource, /request: \(\) => apiSubmitKanjiKombatAnswer\(withKanjiKombatPromptRef\(answerId, promptRef\)\)/);
   });
 
