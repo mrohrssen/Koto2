@@ -2544,6 +2544,91 @@ describe('kanji-kombat ui', () => {
       'after correction snaps mark to 2, wave 3 transition must play');
   });
 
+  it('serializes checkpoint replay visuals so earlier checkpoints always finish before later ones', async () => {
+    // Verify that two checkpoint replays queued while animation is active execute in
+    // checkpoint order (N=1 before N=2) rather than racing.  The animation gate keeps
+    // both IIFEs parked; once released, the chain drains them in submission order.
+    let animationActive = true;
+    const replayOrder = [];
+
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => {
+        // Return a different wave number depending on which intro was submitted.
+        const seq = entries.at(-1).seq;
+        const waveNumber = seq === 1 ? 1 : 2;
+        return {
+          status: 'ok',
+          confirmedThroughSeq: seq,
+          state: { phase: 'combat' },
+          results: [{ nextWave: true, nextWaveNumber: waveNumber }],
+        };
+      },
+      __sessionSchedule: syncSchedule,
+      isCombatAnimationActive: () => animationActive,
+      playKanjiKombatNextWaveTransition: async result => {
+        replayOrder.push(result.nextWaveNumber);
+      },
+      getLastLocallyPlayedKanjiKombatWave: () => 0,
+      setLastLocallyPlayedKanjiKombatWave: () => {},
+      updateGameState: () => {},
+      refreshAction: () => {},
+      playCorrectAnswerAudio: () => {},
+    });
+
+    // Submit first intro — triggers sync → checkpoint with nextWaveNumber:1.
+    // The replay work is enqueued on sessionReplayChain but blocked by animationActive.
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-wave1',
+            sequence: 1,
+            cardId: 'hiragana:き',
+            intro: { card: { id: 'hiragana:き', prompt: 'き', reading: 'き', answer: 'ki' } },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(10);
+
+    // Submit second intro — triggers sync → checkpoint with nextWaveNumber:2.
+    // This replay work queues behind the first on the chain.
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            kind: 'intro',
+            promptId: 'p-wave2',
+            sequence: 2,
+            cardId: 'hiragana:く',
+            intro: { card: { id: 'hiragana:く', prompt: 'く', reading: 'く', answer: 'ku' } },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(10);
+
+    // Both replays are parked — animation still active.
+    assert.equal(replayOrder.length, 0, 'no replays should fire while animation is active');
+
+    // Release animation gate — the chain drains: wave 1 first, then wave 2.
+    animationActive = false;
+    await new Promise(resolve => setTimeout(resolve, 150));
+    await flushPromises(4);
+
+    assert.deepEqual(replayOrder, [1, 2],
+      'checkpoint replays must execute in submission order (wave 1 before wave 2)');
+  });
+
   it('checkpoint replay waits for in-flight optimistic animation before showing visuals', async () => {
     // Verify that handleSessionCheckpoint defers the visual replay loop until
     // isCombatAnimationActive returns false, matching the handleSessionCorrection gate.

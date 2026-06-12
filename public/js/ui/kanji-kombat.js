@@ -60,12 +60,21 @@ let promptBufferRefillPromise = null;
 let latestKanjiKombatState = null;
 let reviewSyncOnlineDrainTarget = null;
 let reviewSyncVisibilityDrainTarget = null;
+let sessionReplayChain = Promise.resolve();
+
+function enqueueSessionReplay(work) {
+  sessionReplayChain = sessionReplayChain.then(work).catch(error => {
+    console.error('[KanjiKombat] session replay failed', error);
+  });
+  return sessionReplayChain;
+}
 
 export function initKanjiKombatUI(deps) {
   getKanjiKombatSession()?.reset();
   api = { ...DEFAULT_API, ...deps };
   latestKanjiKombatState = null;
   promptBufferRefillPromise = null;
+  sessionReplayChain = Promise.resolve();
   // Reset the local-play high-water mark on re-init so genuine server transitions
   // (which carry wave numbers > 0) are not silently skipped after a re-auth.
   api.setLastLocallyPlayedKanjiKombatWave?.(0);
@@ -189,8 +198,10 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
   if (response?.state && logEmpty) refreshKanjiKombatAction();
   // Show server-confirmed visuals for each result in the batch — but wait for any
   // in-flight optimistic animation to finish first, so state-apply and replay visuals
-  // don't race with a running combat sequence.
-  void (async () => {
+  // don't race with a running combat sequence.  Serialized through sessionReplayChain
+  // so that checkpoint N's visuals always complete before checkpoint N+1's start
+  // (guards against out-of-order replays during a bursty reconnect drain).
+  enqueueSessionReplay(async () => {
     await waitForCombatAnimationIdle();
     for (const result of results) {
       if (result.replayed) continue;
@@ -220,24 +231,28 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
         }
       }
     }
-  })();
+  });
   requestPromptBufferRefillIfLow(response?.state || currentKanjiKombatState());
 }
 
 async function handleSessionCorrection(response) {
-  await waitForCombatAnimationIdle();
-  const state = response?.authoritativeState || response?.state;
-  if (state) updateKanjiKombatGameState(state);
-  // Snap the local-play high-water mark to the authoritative wave number so that
-  // future server-only nextWave transitions (with a higher wave number) still play.
-  // A corrected prediction left the mark permanently ahead; resetting it here means
-  // only transitions for waves > correctedWave will be suppressed — which is correct
-  // because those would only exist if the combat-loop had played them locally again.
-  const correctedWave = typeof state?.run?.kanjiKombat?.wave === 'number'
-    ? state.run.kanjiKombat.wave
-    : 0;
-  api.setLastLocallyPlayedKanjiKombatWave?.(correctedWave);
-  refreshKanjiKombatAction();
+  // Serialized through sessionReplayChain so corrections and checkpoint replays
+  // are never interleaved — each waits for the previous work to complete first.
+  await enqueueSessionReplay(async () => {
+    await waitForCombatAnimationIdle();
+    const state = response?.authoritativeState || response?.state;
+    if (state) updateKanjiKombatGameState(state);
+    // Snap the local-play high-water mark to the authoritative wave number so that
+    // future server-only nextWave transitions (with a higher wave number) still play.
+    // A corrected prediction left the mark permanently ahead; resetting it here means
+    // only transitions for waves > correctedWave will be suppressed — which is correct
+    // because those would only exist if the combat-loop had played them locally again.
+    const correctedWave = typeof state?.run?.kanjiKombat?.wave === 'number'
+      ? state.run.kanjiKombat.wave
+      : 0;
+    api.setLastLocallyPlayedKanjiKombatWave?.(correctedWave);
+    refreshKanjiKombatAction();
+  });
 }
 
 function promptIdentity(prompt) {
