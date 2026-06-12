@@ -169,21 +169,17 @@ describe('optimistic run action integration', () => {
   });
 
   it('sends action ids for Kanji Kombat intro and completion choices without changing answer prediction', () => {
-    assert.match(apiSource, /submitKanjiKombatIntro\(cardId, choice, options = \{\}\)/);
-    assert.match(apiSource, /actionId: options\.actionId/);
-    assert.match(apiSource, /submitKanjiKombatCompletionChoice\(keepGoing, options = \{\}\)/);
-    assert.match(kanjiInitSource, /actionType: 'kanjiKombat\.intro'/);
-    assert.match(kanjiInitSource, /actionType: 'kanjiKombat\.completionChoice'/);
+    // kanji-kombat.js now routes intro/completion through the session log
     assert.match(kanjiInitSource, /kind: 'intro'/);
     assert.match(kanjiInitSource, /kind: 'completionChoice'/);
-    assert.match(kanjiInitSource, /actionId: pending\.actionId/);
-    assert.match(kanjiInitSource, /\.\.\.promptRef\(introPrompt\)/);
-    assert.match(kanjiInitSource, /\.\.\.promptRef\(bufferedPrompt\?\.kind === 'completePrompt' \? bufferedPrompt : null\)/);
+    assert.match(kanjiInitSource, /actionId: createActionId\('kk'\)/);
+    assert.match(kanjiInitSource, /session\.recordAction\(\{/);
+    assert.match(kanjiInitSource, /configureKanjiKombatSession/);
     assert.doesNotMatch(kanjiInitSource, /correctAnswerId[\s\S]{0,400}submitIntro/);
   });
 
-  it('Kanji Kombat prompt choices use subway sync queue copy instead of save-failure rollback copy', () => {
-    assert.match(kanjiInitSource, /configureKanjiKombatSyncQueue/);
+  it('Kanji Kombat prompt choices use session sync copy instead of save-failure rollback copy', () => {
+    assert.match(kanjiInitSource, /configureKanjiKombatSession/);
     assert.match(kanjiInitSource, /Connection is spotty\. Your reviews will sync when you reconnect\./);
     assert.doesNotMatch(kanjiInitSource, /Kanji Kombat choice did not save\. Please try again\./);
   });
@@ -198,9 +194,9 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(queueSource, /while\s*\(\s*true\s*\)/);
   });
 
-  it('registers Kanji Kombat subway sync drain triggers on reconnect and visibility return', () => {
-    assert.match(kanjiInitSource, /addEventListener\('online', \(\) => reviewSyncQueue\?\.drainNow\(\)\)/);
-    assert.match(kanjiInitSource, /addEventListener\('visibilitychange', \(\) => \{\s*if \(document\.visibilityState !== 'hidden'\) reviewSyncQueue\?\.drainNow\(\);\s*\}\)/);
+  it('registers Kanji Kombat session sync drain triggers on reconnect and visibility return', () => {
+    assert.match(kanjiInitSource, /addEventListener\('online', \(\) => getKanjiKombatSession\(\)\?\.syncNow\(\)\)/);
+    assert.match(kanjiInitSource, /addEventListener\('visibilitychange', \(\) => \{\s*if \(document\.visibilityState !== 'hidden'\) getKanjiKombatSession\(\)\?\.syncNow\(\);\s*\}\)/);
   });
 
   it('wires Kanji Kombat prompt buffer API calls', () => {

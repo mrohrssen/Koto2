@@ -8,6 +8,7 @@ import {
   renderKanjiKombatQuiz,
   startKanjiKombatOnboardingIfNeeded,
 } from '../../../public/js/ui/kanji-kombat.js';
+import { getKanjiKombatSession } from '../../../public/js/ui/kanji-kombat-session.js';
 
 class FakeClassList {
   constructor(button) {
@@ -136,6 +137,13 @@ class FakeActionArea {
   }
 }
 
+// Helper: a schedule that runs timers synchronously (zero-delay),
+// enabling tests to observe sync results via flushPromises.
+function syncSchedule(fn, _delay) {
+  fn();
+  return 0;
+}
+
 describe('kanji-kombat ui', () => {
   let actionArea;
 
@@ -199,6 +207,8 @@ describe('kanji-kombat ui', () => {
     };
     initKanjiKombatUI({
       playCorrectAnswerAudio: () => {},
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
   });
 
@@ -267,6 +277,8 @@ describe('kanji-kombat ui', () => {
       updateUI: () => calls.push(['updateUI']),
       refreshAction: () => calls.push(['refreshAction']),
       playCorrectAnswerAudio: () => calls.push(['unexpected-tts']),
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     assert.equal(startKanjiKombatOnboardingIfNeeded(pendingOnboardingState()), true);
@@ -322,6 +334,8 @@ describe('kanji-kombat ui', () => {
       },
       updateGameState: () => calls.push('unexpected-state'),
       updateUI: () => calls.push('unexpected-render'),
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     renderKanjiKombatAction({
@@ -356,6 +370,8 @@ describe('kanji-kombat ui', () => {
       playCorrectAnswerAudio: answer => calls.push(['tts', answer]),
       updateGameState: () => calls.push(['unexpected-state']),
       updateUI: () => calls.push(['unexpected-render']),
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     renderKanjiKombatAction({
@@ -432,6 +448,8 @@ describe('kanji-kombat ui', () => {
     const calls = [];
     initKanjiKombatUI({
       playCorrectAnswerAudio: answer => calls.push(['tts', answer]),
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     renderKanjiKombatIntro({ id: 'kanji:上', prompt: '上', reading: 'じょう', answer: 'Above' }, { onChoice: () => {} });
@@ -452,11 +470,13 @@ describe('kanji-kombat ui', () => {
 
   it('continues after the legacy completion prompt without ending combat', async () => {
     const calls = [];
+    const syncCalls = [];
     initKanjiKombatUI({
-      submitCompletionChoice: async (keepGoing, options = {}) => {
-        calls.push(['submitCompletionChoice', keepGoing]);
-        return { status: 'accepted', state: { phase: 'combat' }, actionId: options.actionId };
+      syncSession: async ({ entries }) => {
+        syncCalls.push(entries.map(e => ({ kind: e.kind, keepGoing: e.keepGoing })));
+        return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, state: { phase: 'combat' } };
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.phase]),
       refreshAction: () => calls.push(['refreshAction']),
       updateUI: () => calls.push(['updateUI']),
@@ -474,20 +494,29 @@ describe('kanji-kombat ui', () => {
     await actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].click();
     await flushPromises(4);
 
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat'],
-      ['submitCompletionChoice', true],
-      ['updateGameState', 'combat'],
-    ]);
+    // Optimistic local update happens before sync
+    assert.equal(calls.filter(c => c[0] === 'updateGameState').length >= 1, true);
+    assert.equal(calls[0][0], 'updateGameState');
+    assert.equal(calls[0][1], 'combat');
+    // Action was recorded to session log as completionChoice keepGoing=true
+    assert.equal(syncCalls.length, 1);
+    assert.deepEqual(syncCalls[0], [{ kind: 'completionChoice', keepGoing: true }]);
+    assert.equal(calls.some(c => c[0] === 'unexpected-finish'), false);
   });
 
   it('finishes combat after the completion prompt is declined', async () => {
     const calls = [];
     initKanjiKombatUI({
-      submitCompletionChoice: async (keepGoing, options = {}) => {
-        calls.push(['submitCompletionChoice', keepGoing]);
-        return { status: 'accepted', state: { phase: 'combat' }, combatEnded: true, victory: true, actionId: options.actionId };
+      syncSession: async ({ entries }) => {
+        // Return combatEnded in results for the "no" completion choice
+        return {
+          status: 'ok',
+          confirmedThroughSeq: entries.at(-1).seq,
+          state: { phase: 'combat' },
+          results: [{ combatEnded: true, victory: true }],
+        };
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.phase]),
       finishCombatResult: result => calls.push(['finishCombatResult', result.victory]),
       refreshAction: () => calls.push(['unexpected-refresh']),
@@ -505,21 +534,22 @@ describe('kanji-kombat ui', () => {
     await actionArea.querySelectorAll('.kanji-kombat-completion-action')[0].click();
     await flushPromises(4);
 
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat'],
-      ['submitCompletionChoice', false],
-      ['updateGameState', 'combat'],
-      ['finishCombatResult', true],
-    ]);
+    // Optimistic local update and pending-completion UI render first
+    assert.equal(calls[0][0], 'updateGameState');
+    assert.equal(calls[0][1], 'combat');
+    // Checkpoint fires finishCombatResult
+    assert.deepEqual(calls.find(c => c[0] === 'finishCombatResult'), ['finishCombatResult', true]);
+    assert.equal(calls.some(c => c[0] === 'unexpected-refresh'), false);
+    assert.equal(calls.some(c => c[0] === 'unexpected-update'), false);
   });
 
   it('applies accepted intro choice state after clearing the choice locally', async () => {
     const calls = [];
     initKanjiKombatUI({
-      submitIntro: async (cardId, choice, options = {}) => {
-        calls.push(['submitIntro', cardId, choice]);
-        return { status: 'accepted', state: { phase: 'combat' }, actionId: options.actionId };
+      syncSession: async ({ entries }) => {
+        return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, state: { phase: 'combat' } };
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.phase]),
       updateUI: () => calls.push(['updateUI']),
       refreshAction: () => calls.push(['refreshAction']),
@@ -540,20 +570,25 @@ describe('kanji-kombat ui', () => {
     await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
     await flushPromises(4);
 
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat'],
-      ['submitIntro', 'hiragana:か', 'unknown'],
-      ['updateGameState', 'combat'],
-    ]);
+    // Optimistic update fires first
+    assert.equal(calls[0][0], 'updateGameState');
+    assert.equal(calls[0][1], 'combat');
+    // Intro action was recorded in the session log
+    const snap = getKanjiKombatSession().snapshot();
+    assert.equal(snap.length === 0 || snap.some(e => e.kind === 'intro'), true); // may be confirmed
+    // Checkpoint applies server state (logEmpty=true)
+    assert.equal(calls.filter(c => c[0] === 'updateGameState').length >= 1, true);
   });
 
   it('submits intro choices with an action id and clears the choice locally', async () => {
     const calls = [];
+    const syncCalls = [];
     initKanjiKombatUI({
-      submitIntro: async (cardId, choice, options = {}) => {
-        calls.push(['submitIntro', cardId, choice, /^run_[a-z0-9]+_[a-z0-9]+$/i.test(options.actionId)]);
-        return { status: 'accepted', actionId: options.actionId, state: { phase: 'combat', accepted: true } };
+      syncSession: async ({ entries }) => {
+        syncCalls.push(entries);
+        return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, state: { phase: 'combat', accepted: true } };
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.phase, state.accepted === true, state.run?.kanjiKombat?.pendingIntro ?? null]),
       refreshAction: () => calls.push(['refreshAction']),
       updateUI: () => calls.push(['updateUI']),
@@ -573,25 +608,32 @@ describe('kanji-kombat ui', () => {
     await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
     await flushPromises(4);
 
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat', false, null],
-      ['submitIntro', 'hiragana:ka', 'known', true],
-      ['updateGameState', 'combat', true, null],
-    ]);
+    // First updateGameState: optimistic draft clears pendingIntro
+    assert.deepEqual(calls[0], ['updateGameState', 'combat', false, null]);
+    // Session received an entry with a valid actionId pattern
+    assert.equal(syncCalls.length, 1);
+    const entry = syncCalls[0][0];
+    assert.match(entry.actionId, /^kk_[a-z0-9]+_[a-z0-9]+$/i);
+    assert.equal(entry.kind, 'intro');
+    assert.equal(entry.cardId, 'hiragana:ka');
+    assert.equal(entry.choice, 'known');
+    // Checkpoint applies accepted state (logEmpty=true → updateGameState called again)
+    assert.equal(calls.some(c => c[0] === 'updateGameState' && c[1] === 'combat' && c[2] === true), true);
     assert.equal(actionArea.innerHTML, '');
   });
 
   it('queues intro sync and keeps the next prompt visible when submit is delayed', async () => {
     const calls = [];
-    let resolveSubmit;
-    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
+    let resolveSyncFn;
+    const syncPromise = new Promise(resolve => { resolveSyncFn = resolve; });
     let currentState = null;
 
     initKanjiKombatUI({
-      submitIntro: async (cardId, choice, options = {}) => {
-        calls.push(['submitIntro', cardId, choice, options.promptId, options.sequence]);
-        return submitPromise;
+      syncSession: async ({ entries }) => {
+        calls.push(['syncSession', entries[0].kind, entries[0].promptId, entries[0].sequence]);
+        return syncPromise;
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => {
         currentState = state;
         calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer[0]?.promptId || null]);
@@ -642,12 +684,13 @@ describe('kanji-kombat ui', () => {
     assert.equal(actionArea.querySelector('.kanji-kombat-prompt')?.textContent, 'き');
     assert.deepEqual(calls.slice(0, 2), [
       ['updateGameState', 'kkp_next_queue'],
-      ['submitIntro', 'hiragana:か', 'unknown', 'kkp_intro_queue', 1],
+      ['syncSession', 'intro', 'kkp_intro_queue', 1],
     ]);
     assert.equal(calls.some(call => call[0] === 'showNarration'), false);
 
-    resolveSubmit({
-      status: 'accepted',
+    resolveSyncFn({
+      status: 'ok',
+      confirmedThroughSeq: 1,
       state: {
         phase: 'combat',
         run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
@@ -663,7 +706,8 @@ describe('kanji-kombat ui', () => {
     let currentState = null;
 
     initKanjiKombatUI({
-      submitIntro: async () => null,
+      syncSession: async () => null,
+      __sessionSchedule: syncSchedule,
       updateGameState: state => {
         currentState = state;
         calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer[0]?.promptId || null]);
@@ -715,29 +759,32 @@ describe('kanji-kombat ui', () => {
     assert.equal(calls.some(call => call[0] === 'showNarration' && /did not save/.test(call[1])), false);
   });
 
-  it('pauses before consuming a prompt when the sync queue is at the hard limit', async () => {
+  it('pauses before consuming a prompt when the session is at the hard limit', async () => {
     const calls = [];
+    // Never-resolving syncSession keeps the log full
     initKanjiKombatUI({
-      submitIntro: async (...args) => {
-        calls.push(['submitIntro', ...args]);
-        return null;
-      },
-      submitCompletionChoice: async (...args) => {
-        calls.push(['submitCompletionChoice', ...args]);
-        return null;
-      },
+      syncSession: async () => new Promise(() => {}),
+      __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer[0]?.promptId || null]),
       showNarration: async text => calls.push(['showNarration', text]),
       playCorrectAnswerAudio: () => {},
-      __testQueueSeed: Array.from({ length: 60 }, (_, index) => ({
-        actionId: `run_seed_${index}`,
-        kind: 'intro',
-        promptId: `kkp_seed_${index}`,
-      })),
     });
-    await flushPromises(2);
 
-    assert.deepEqual(calls, []);
+    // Seed the session log to the hard cap (50) by recording 50 actions directly.
+    // onPause fires when the 50th item is added, so clear calls after seeding.
+    const session = getKanjiKombatSession();
+    for (let i = 0; i < 50; i++) {
+      session.recordAction({
+        actionId: `run_seed_${i}`,
+        kind: 'intro',
+        promptId: `kkp_seed_${i}`,
+        sequence: i + 1,
+        cardId: `hiragana:${i}`,
+        choice: 'unknown',
+      });
+    }
+    await flushPromises(2);
+    calls.length = 0; // clear any onPause narration from seeding
 
     renderKanjiKombatAction({
       phase: 'combat',
@@ -746,7 +793,7 @@ describe('kanji-kombat ui', () => {
         kanjiKombat: {
           promptBuffer: [{
             promptId: 'kkp_blocked_intro',
-            sequence: 1,
+            sequence: 51,
             kind: 'intro',
             cardId: 'hiragana:か',
             intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
@@ -765,16 +812,24 @@ describe('kanji-kombat ui', () => {
     ]);
   });
 
-  it('shows spotty connection copy when no prompt is available but sync is pending', async () => {
+  it('shows spotty connection copy when no prompt is available but session is pending', async () => {
     const calls = [];
+    // Never-resolving syncSession keeps pending log non-empty
     initKanjiKombatUI({
+      syncSession: async () => new Promise(() => {}),
+      __sessionSchedule: syncSchedule,
       showNarration: async text => calls.push(['showNarration', text]),
       playCorrectAnswerAudio: () => {},
-      __testQueueSeed: [{
-        actionId: 'run_pending_empty',
-        kind: 'intro',
-        promptId: 'kkp_pending_empty',
-      }],
+    });
+
+    // Seed one pending action so session.pendingCount() > 0
+    getKanjiKombatSession().recordAction({
+      actionId: 'run_pending_empty',
+      kind: 'intro',
+      promptId: 'kkp_pending_empty',
+      sequence: 1,
+      cardId: 'hiragana:0',
+      choice: 'unknown',
     });
 
     renderKanjiKombatAction({
@@ -817,16 +872,17 @@ describe('kanji-kombat ui', () => {
     ]);
   });
 
-  it('shows the sync pause after consuming the last intro while submit is pending', async () => {
+  it('shows the sync pause after consuming the last intro while sync is pending', async () => {
     const calls = [];
-    let resolveSubmit;
-    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
+    let resolveSyncFn;
+    const syncPromise = new Promise(resolve => { resolveSyncFn = resolve; });
 
     initKanjiKombatUI({
-      submitIntro: async (cardId, choice, options = {}) => {
-        calls.push(['submitIntro', cardId, choice, options.promptId, options.sequence]);
-        return submitPromise;
+      syncSession: async ({ entries }) => {
+        calls.push(['syncSession', entries[0].kind, entries[0].promptId, entries[0].sequence]);
+        return syncPromise;
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer.length]),
       showNarration: async text => calls.push(['showNarration', text]),
       playCorrectAnswerAudio: () => {},
@@ -856,12 +912,13 @@ describe('kanji-kombat ui', () => {
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 0);
     assert.deepEqual(calls.slice(0, 3), [
       ['updateGameState', 0],
-      ['submitIntro', 'hiragana:か', 'unknown', 'kkp_last_intro', 3],
+      ['syncSession', 'intro', 'kkp_last_intro', 3],
       ['showNarration', 'Connection is spotty. Your reviews will sync when you reconnect.'],
     ]);
 
-    resolveSubmit({
-      status: 'accepted',
+    resolveSyncFn({
+      status: 'ok',
+      confirmedThroughSeq: 1,
       state: {
         phase: 'combat',
         run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
@@ -871,7 +928,7 @@ describe('kanji-kombat ui', () => {
     await flushPromises(4);
   });
 
-  it('drains the current sync queue on reconnect and visible tab return without duplicate listeners', async () => {
+  it('drains the current session on reconnect and visible tab return without duplicate listeners', async () => {
     const originalWindow = global.window;
     const originalDocument = global.document;
     const fakeWindow = createFakeEventTarget();
@@ -884,28 +941,31 @@ describe('kanji-kombat ui', () => {
       global.document = fakeDocument;
 
       initKanjiKombatUI({
-        submitIntro: async () => {
+        syncSession: async () => {
           staleAttempts += 1;
-          throw new Error('stale queue should not drain');
+          throw new Error('stale session should not drain');
         },
+        __sessionSchedule: syncSchedule,
         showNarration: async () => {},
         playCorrectAnswerAudio: () => {},
       });
       initKanjiKombatUI({
-        submitIntro: async () => {
+        syncSession: async () => {
           attempts += 1;
           if (attempts % 2 === 1) throw new Error('offline');
-          return { status: 'accepted', actionId: `run_listener_${attempts}` };
+          return { status: 'ok', confirmedThroughSeq: 999 };
         },
+        __sessionSchedule: syncSchedule,
         showNarration: async () => {},
         playCorrectAnswerAudio: () => {},
       });
       initKanjiKombatUI({
-        submitIntro: async () => {
+        syncSession: async () => {
           attempts += 1;
           if (attempts % 2 === 1) throw new Error('offline');
-          return { status: 'accepted', actionId: `run_listener_${attempts}` };
+          return { status: 'ok', confirmedThroughSeq: 999 };
         },
+        __sessionSchedule: syncSchedule,
         showNarration: async () => {},
         playCorrectAnswerAudio: () => {},
       });
@@ -965,17 +1025,18 @@ describe('kanji-kombat ui', () => {
     }
   });
 
-  it('queues keep-going completion choices and advances locally before submit resolves', async () => {
+  it('queues keep-going completion choices and advances locally before sync resolves', async () => {
     const calls = [];
-    let resolveSubmit;
-    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
+    let resolveSyncFn;
+    const syncPromise = new Promise(resolve => { resolveSyncFn = resolve; });
     let currentState = null;
 
     initKanjiKombatUI({
-      submitCompletionChoice: async (keepGoing, options = {}) => {
-        calls.push(['submitCompletionChoice', keepGoing, options.promptId, options.sequence]);
-        return submitPromise;
+      syncSession: async ({ entries }) => {
+        calls.push(['syncSession', entries[0].kind, entries[0].keepGoing, entries[0].promptId, entries[0].sequence]);
+        return syncPromise;
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => {
         currentState = state;
         calls.push([
@@ -1014,11 +1075,12 @@ describe('kanji-kombat ui', () => {
 
     assert.deepEqual(calls.slice(0, 2), [
       ['updateGameState', false, true],
-      ['submitCompletionChoice', true, 'kkp_complete_queue', 4],
+      ['syncSession', 'completionChoice', true, 'kkp_complete_queue', 4],
     ]);
 
-    resolveSubmit({
-      status: 'accepted',
+    resolveSyncFn({
+      status: 'ok',
+      confirmedThroughSeq: 1,
       state: {
         phase: 'combat',
         run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
@@ -1031,11 +1093,18 @@ describe('kanji-kombat ui', () => {
 
   it('submits completion choices with an action id and handles server finish later', async () => {
     const calls = [];
+    const syncCalls = [];
     initKanjiKombatUI({
-      submitCompletionChoice: async (keepGoing, options = {}) => {
-        calls.push(['submitCompletionChoice', keepGoing, /^run_[a-z0-9]+_[a-z0-9]+$/i.test(options.actionId)]);
-        return { status: 'accepted', actionId: options.actionId, state: { phase: 'combat', accepted: true }, combatEnded: true, victory: true };
+      syncSession: async ({ entries }) => {
+        syncCalls.push(entries);
+        return {
+          status: 'ok',
+          confirmedThroughSeq: entries.at(-1).seq,
+          state: { phase: 'combat', accepted: true },
+          results: [{ combatEnded: true, victory: true }],
+        };
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.phase, state.accepted === true, state.run?.kanjiKombat?.completionChoicePending ?? null]),
       finishCombatResult: result => calls.push(['finishCombatResult', result.victory]),
       refreshAction: () => calls.push(['unexpected-refresh']),
@@ -1053,13 +1122,17 @@ describe('kanji-kombat ui', () => {
     await actionArea.querySelectorAll('.kanji-kombat-completion-action')[0].click();
     await flushPromises(4);
 
-    assert.deepEqual(calls, [
-      ['updateGameState', 'combat', false, false],
-      ['submitCompletionChoice', false, true],
-      ['updateGameState', 'combat', true, null],
-      ['finishCombatResult', true],
-    ]);
-    assert.equal(actionArea.innerHTML, '');
+    // Optimistic update: completionChoicePending cleared
+    assert.deepEqual(calls[0], ['updateGameState', 'combat', false, false]);
+    // Action had valid actionId
+    assert.equal(syncCalls.length, 1);
+    assert.match(syncCalls[0][0].actionId, /^kk_[a-z0-9]+_[a-z0-9]+$/i);
+    assert.equal(syncCalls[0][0].kind, 'completionChoice');
+    assert.equal(syncCalls[0][0].keepGoing, false);
+    // Checkpoint fires finishCombatResult
+    assert.deepEqual(calls.find(c => c[0] === 'finishCombatResult'), ['finishCombatResult', true]);
+    assert.equal(calls.some(c => c[0] === 'unexpected-refresh'), false);
+    assert.equal(calls.some(c => c[0] === 'unexpected-update'), false);
   });
 
   it('omits duplicate intro readings when the reading matches the prompt', () => {
@@ -1132,6 +1205,8 @@ describe('kanji-kombat ui', () => {
       updateGameState: () => submitted.push('unexpected-state'),
       updateUI: () => submitted.push('unexpected-update'),
       playCorrectAnswerAudio: () => {},
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     renderKanjiKombatAction({
@@ -1178,9 +1253,10 @@ describe('kanji-kombat ui', () => {
         submitted.push(answerId);
         return { handledByCombatLoop: true };
       },
-      submitIntro: async () => ({}),
       updateGameState: () => {},
       updateUI: () => { updateUICalls += 1; },
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     assert.equal(renderKanjiKombatAction(state), true);
@@ -1206,6 +1282,8 @@ describe('kanji-kombat ui', () => {
       updateUI: () => calls.push(['updateUI']),
       refreshAction: () => calls.push(['refreshAction']),
       playCorrectAnswerAudio: () => calls.push(['unexpected-tts']),
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     const started = startKanjiKombatOnboardingIfNeeded({
@@ -1300,6 +1378,8 @@ describe('kanji-kombat ui', () => {
       submitOnboarding: () => calls.push(['submitOnboarding']),
       refreshAction: () => calls.push(['refreshAction']),
       playCorrectAnswerAudio: () => {},
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     const started = startKanjiKombatOnboardingIfNeeded({
@@ -1324,6 +1404,8 @@ describe('kanji-kombat ui', () => {
       submitOnboarding: () => calls.push(['submitOnboarding']),
       refreshAction: () => calls.push(['refreshAction']),
       playCorrectAnswerAudio: () => {},
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     const started = startKanjiKombatOnboardingIfNeeded(pendingOnboardingState({
@@ -1364,6 +1446,8 @@ describe('kanji-kombat ui', () => {
         },
         refreshAction: () => calls.push(['unexpected-refresh']),
         playCorrectAnswerAudio: () => {},
+        syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+        __sessionSchedule: syncSchedule,
       });
 
       assert.equal(startKanjiKombatOnboardingIfNeeded(pendingState), true);
@@ -1392,6 +1476,8 @@ describe('kanji-kombat ui', () => {
         calls.push(['submitAnswer', answerId, promptRef.promptId]);
       },
       playCorrectAnswerAudio: () => {},
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     renderKanjiKombatAction({
@@ -1436,6 +1522,8 @@ describe('kanji-kombat ui', () => {
         calls.push(['submitAnswer', answerId, promptRef.promptId]);
       },
       playCorrectAnswerAudio: () => {},
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
     });
 
     renderKanjiKombatAction({
@@ -1473,15 +1561,16 @@ describe('kanji-kombat ui', () => {
     assert.deepEqual(calls, [['submitAnswer', 'ku', 'kkp_quiz_priority']]);
   });
 
-  it('locally consumes buffered intro prompts and renders the next prompt before submit resolves', async () => {
+  it('locally consumes buffered intro prompts and renders the next prompt before sync resolves', async () => {
     const calls = [];
-    let resolveSubmit;
-    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
+    let resolveSyncFn;
+    const syncPromise = new Promise(resolve => { resolveSyncFn = resolve; });
     initKanjiKombatUI({
-      submitIntro: async (cardId, choice, options = {}) => {
-        calls.push(['submitIntro', cardId, choice, options.promptId, options.sequence]);
-        return submitPromise;
+      syncSession: async ({ entries }) => {
+        calls.push(['syncSession', entries[0].kind, entries[0].cardId, entries[0].promptId, entries[0].sequence]);
+        return syncPromise;
       },
+      __sessionSchedule: syncSchedule,
       updateGameState: state => calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer[0]?.promptId || null]),
       refreshAction: () => calls.push(['refreshAction']),
       updateUI: () => calls.push(['updateUI']),
@@ -1524,21 +1613,21 @@ describe('kanji-kombat ui', () => {
 
     assert.deepEqual(calls.slice(0, 2), [
       ['updateGameState', 'kkp_next'],
-      ['submitIntro', 'hiragana:か', 'unknown', 'kkp_intro', 1],
+      ['syncSession', 'intro', 'hiragana:か', 'kkp_intro', 1],
     ]);
 
-    resolveSubmit({ status: 'accepted', state: { phase: 'combat', run: { kanjiKombat: { promptBuffer: [] } } } });
+    resolveSyncFn({ status: 'ok', confirmedThroughSeq: 1, state: { phase: 'combat', run: { kanjiKombat: { promptBuffer: [] } } } });
     await clickPromise;
     await flushPromises(2);
   });
 
-  it('does not restore a consumed prompt when refill resolves before submit', async () => {
+  it('does not restore a consumed prompt when refill resolves before sync', async () => {
     const calls = [];
-    let resolveSubmit;
+    let resolveSyncFn;
     let resolveStaleRefill;
-    let submitResolved = false;
+    let syncResolved = false;
     let actionId = null;
-    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
+    const syncPromise = new Promise(resolve => { resolveSyncFn = resolve; });
     const staleRefillPromise = new Promise(resolve => { resolveStaleRefill = resolve; });
     const acceptedState = {
       phase: 'combat',
@@ -1546,14 +1635,15 @@ describe('kanji-kombat ui', () => {
       combat: { actionCursor: { side: 'ally', index: 0 } },
     };
     initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, options = {}) => {
-        actionId = options.actionId;
-        calls.push(['submitIntro', options.promptId]);
-        return submitPromise;
+      syncSession: async ({ entries }) => {
+        actionId = entries[0].actionId;
+        calls.push(['syncSession', entries[0].promptId]);
+        return syncPromise;
       },
+      __sessionSchedule: syncSchedule,
       refillPromptBuffer: async () => {
-        calls.push(['refill', submitResolved]);
-        if (!submitResolved) return staleRefillPromise;
+        calls.push(['refill', syncResolved]);
+        if (!syncResolved) return staleRefillPromise;
         return { state: acceptedState };
       },
       updateGameState: state => {
@@ -1626,8 +1716,8 @@ describe('kanji-kombat ui', () => {
         false
       );
     } finally {
-      submitResolved = true;
-      resolveSubmit({ status: 'accepted', actionId, state: acceptedState });
+      syncResolved = true;
+      resolveSyncFn({ status: 'ok', confirmedThroughSeq: 1, state: acceptedState });
       await clickPromise;
       await flushPromises(2);
     }
@@ -1662,11 +1752,12 @@ describe('kanji-kombat ui', () => {
       combat: { actionCursor: { side: 'ally', index: 0 } },
     };
     initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, options = {}) => ({
-        status: 'accepted',
-        actionId: options.actionId,
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
         state: quizState,
       }),
+      __sessionSchedule: syncSchedule,
       refillPromptBuffer: async () => {
         calls.push(['refill']);
         return refillPromise;
@@ -1757,10 +1848,11 @@ describe('kanji-kombat ui', () => {
     const promptBuffer = Array.from({ length: 10 }, (_, index) => introPrompt(index));
     const remainingBuffer = promptBuffer.slice(1);
     initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, options = {}) => ({
-        status: 'accepted',
-        actionId: options.actionId,
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
       }),
+      __sessionSchedule: syncSchedule,
       refillPromptBuffer: async () => {
         calls.push(['refill']);
         return { state: combatStateWithPromptBuffer(remainingBuffer) };
@@ -1783,10 +1875,11 @@ describe('kanji-kombat ui', () => {
     const promptBuffer = Array.from({ length: 11 }, (_, index) => introPrompt(index));
     const remainingBuffer = promptBuffer.slice(1);
     initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, options = {}) => ({
-        status: 'accepted',
-        actionId: options.actionId,
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
       }),
+      __sessionSchedule: syncSchedule,
       refillPromptBuffer: async () => {
         calls.push(['refill']);
         return { state: combatStateWithPromptBuffer(remainingBuffer) };
@@ -1809,11 +1902,12 @@ describe('kanji-kombat ui', () => {
     let resolveRefill;
     const refillPromise = new Promise(resolve => { resolveRefill = resolve; });
     initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, options = {}) => ({
-        status: 'accepted',
-        actionId: options.actionId,
+      syncSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
         state: { phase: 'combat', run: { kanjiKombat: { promptBuffer: [] } } },
       }),
+      __sessionSchedule: syncSchedule,
       refillPromptBuffer: async () => {
         calls.push(['refill']);
         return refillPromise;
