@@ -181,7 +181,7 @@ describe('Kanji Kombat wave completion', () => {
     assert.equal(gm.run.creatureParty.active[1].hp, 33);
   });
 
-  it('applies a random stat-stage buff at a 6 correct answer streak and keeps it across waves', () => {
+  it('applies the pre-rolled stat-stage buff at a 6 correct answer streak and keeps it across waves', () => {
     const gm = rewardGm({
       active: [
         makeRewardCreature('hi', 20, 20),
@@ -189,11 +189,14 @@ describe('Kanji Kombat wave completion', () => {
       ],
     });
 
-    let reward;
-    withMathRandom([0.1, 0.4], () => {
-      gm.run.kanjiKombat.streak = 5;
-      reward = gm.kanjiKombatService.recordCorrectAnswer();
-    });
+    // Streak-6 buffs are pre-rolled into kk.pendingStreakRewards (rolled once by
+    // ensurePendingStreakRewards) and consumed verbatim at the milestone.
+    gm.run.kanjiKombat.pendingStreakRewards = {
+      6: [{ seq: 1, type: 'statUp', allyRoll: 0.1, stat: 'def' }],
+      12: [],
+    };
+    gm.run.kanjiKombat.streak = 5;
+    const reward = gm.kanjiKombatService.recordCorrectAnswer();
 
     assert.deepEqual(reward, {
       type: 'statUp',
@@ -209,6 +212,7 @@ describe('Kanji Kombat wave completion', () => {
         .map(([stat, value]) => ({ id: ally.id, stat, value }))
     );
     assert.deepEqual(buffed, [{ id: 'hi', stat: 'def', value: 1 }]);
+    assert.equal(gm.run.kanjiKombat.pendingStreakRewards[6].length, 0, 'payload consumed');
 
     gm.kanjiKombatService.spawnNextWave();
 
@@ -216,17 +220,20 @@ describe('Kanji Kombat wave completion', () => {
     assert.strictEqual(gm.combat.allies, gm.run.creatureParty.active);
   });
 
-  it('adds a random unlocked ally at a 12 streak and keeps the reward cycle active', () => {
+  it('adds the pre-rolled unlocked ally at a 12 streak and keeps the reward cycle active', () => {
     const gm = rewardGm({
       collection: ['hi', 'mizu', 'ki'],
       active: [makeRewardCreature('hi', 20, 20)],
     });
 
-    let reward;
-    withMathRandom([0], () => {
-      gm.run.kanjiKombat.streak = 11;
-      reward = gm.kanjiKombatService.recordCorrectAnswer();
-    });
+    // Streak-12 ally joins are pre-rolled into kk.pendingStreakRewards with the
+    // full runtime creature object and consumed verbatim at the milestone.
+    gm.run.kanjiKombat.pendingStreakRewards = {
+      6: [],
+      12: [{ seq: 1, type: 'allyJoin', creature: makeRewardCreature('mizu') }],
+    };
+    gm.run.kanjiKombat.streak = 11;
+    const reward = gm.kanjiKombatService.recordCorrectAnswer();
 
     assert.equal(reward.type, 'allyJoined');
     assert.equal(reward.streak, 12);
@@ -235,6 +242,7 @@ describe('Kanji Kombat wave completion', () => {
     assert.equal(gm.run.creatureParty.active[1].id, 'mizu');
     assert.equal(gm.combat.allies.length, 2);
     assert.equal(gm.run.kanjiKombat.streak, 12);
+    assert.equal(gm.run.kanjiKombat.pendingStreakRewards[12].length, 0, 'payload consumed');
   });
 
   it('full-heals all allies at a 12 streak when the party is already full', () => {

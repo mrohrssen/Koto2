@@ -362,14 +362,14 @@ describe('kanji-kombat deck controller', () => {
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    assert.equal(PROMPT_BUFFER_TARGET, 30);
+    assert.equal(PROMPT_BUFFER_TARGET, 60);
     assert.equal(PROMPT_BUFFER_REFILL_THRESHOLD, 10);
-    assert.equal(prompts.length, 30);
-    assert.equal(state.promptBuffer.length, 30);
+    assert.equal(prompts.length, 60);
+    assert.equal(state.promptBuffer.length, 60);
     assert.equal(state.currentQuiz.cardId, state.promptBuffer[0].cardId);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
-    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.promptId)).size, 30);
-    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 30);
+    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.promptId)).size, 60);
+    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 60);
   });
 
   it('builds intro prompts in the buffer without recording daily intro counts', () => {
@@ -503,7 +503,7 @@ describe('kanji-kombat deck controller', () => {
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    assert.equal(PROMPT_BUFFER_TARGET, 30);
+    assert.equal(PROMPT_BUFFER_TARGET, 60);
     assert.equal(prompts.filter(prompt => prompt.kind === 'intro').length, 2);
     assert.equal(prompts.at(-1).kind, 'completePrompt');
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, DAILY_NEW_LIMIT - 2);

@@ -387,7 +387,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
     assert.equal(gm.run.kanjiKombat.onboardingPending, false);
     assert.ok(gm.run.kanjiKombat.promptBuffer.length > 0);
-    assert.equal(gm.run.kanjiKombat.promptBuffer.length <= 30, true);
+    assert.equal(gm.run.kanjiKombat.promptBuffer.length <= 60, true);
     assert.equal(gm.run.kanjiKombat.pendingIntro.cardId, gm.run.kanjiKombat.promptBuffer[0].cardId);
   });
 
@@ -405,7 +405,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
     assert.equal(result.graded.id, head.cardId);
     assert.notEqual(gm.run.kanjiKombat.promptBuffer[0]?.promptId, head.promptId);
-    assert.equal(gm.run.kanjiKombat.promptBuffer.length <= 30, true);
+    assert.equal(gm.run.kanjiKombat.promptBuffer.length <= 60, true);
     assert.equal(gm.run.kanjiKombat.pendingIntro?.promptId, gm.run.kanjiKombat.promptBuffer[0]?.promptId);
   });
 

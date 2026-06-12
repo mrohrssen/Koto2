@@ -46,6 +46,7 @@ import {
   resolvePveTurn,
 } from '../../shared/combat/pve-turn-resolver.js';
 import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
+import { applyKillXpToParty } from '../../shared/combat/kanji-kombat-xp.js';
 import { hasUnsafeSharedPveOptimisticPrediction } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
@@ -597,7 +598,7 @@ export class CombatCycleService {
     return xpEvents;
   }
 
-  _collectDeferredKillXpEvents(attacks, metaMults, rng = Math.random) {
+  _collectDeferredKillXpEvents(attacks, metaMults, rng = Math.random, awardXp = awardKillXp) {
     const xpEvents = [];
     const defeatedEnemyIndices = new Set();
 
@@ -608,7 +609,7 @@ export class CombatCycleService {
         const enemy = this.gm.combat.enemies?.[enemyIndex];
         if (enemy && !defeatedEnemyIndices.has(enemyIndex)) {
           defeatedEnemyIndices.add(enemyIndex);
-          const xpEvent = awardKillXp(
+          const xpEvent = awardXp(
             this.gm.run.creatureParty,
             enemy.level,
             this.gm.run.itemBuffs?.xpMultiplier,
@@ -1062,11 +1063,18 @@ export class CombatCycleService {
       playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
     }
 
+    // Kanji Kombat MUST use the shared (browser-safe) kill-XP routine, not
+    // awardKillXp/addXpToCreature: the transcript hash covers full creature
+    // objects (moves included), and the client cannot learn moves on level-up.
+    // KK party levels are run-scoped and ally moves are never used in KK combat
+    // (allies attack via the synthetic strike), so skipping move learning here
+    // is purely cosmetic — and required for client/server hash parity.
     const deferredXpEvents = deferXpAwards === true
       ? this._collectDeferredKillXpEvents(
           result.actionSegments?.flatMap(segment => segment.actor.side === 'ally' ? segment.attacks : []) || [],
           this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
           xpRng,
+          applyKillXpToParty,
         )
       : [];
     return this._finalizeKanjiKombatActionResult(result, deferredXpEvents);
