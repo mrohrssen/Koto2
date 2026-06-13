@@ -1064,11 +1064,8 @@ export class CombatCycleService {
     }
 
     // Kanji Kombat MUST use the shared (browser-safe) kill-XP routine, not
-    // awardKillXp/addXpToCreature: the transcript hash covers full creature
-    // objects (moves included), and the client cannot learn moves on level-up.
-    // KK party levels are run-scoped and ally moves are never used in KK combat
-    // (allies attack via the synthetic strike), so skipping move learning here
-    // is purely cosmetic — and required for client/server hash parity.
+    // awardKillXp/addXpToCreature — see kanji-kombat-xp.js::addXpToCreatureShared
+    // for why skipping move learning is required for hash parity.
     const deferredXpEvents = deferXpAwards === true
       ? this._collectDeferredKillXpEvents(
           result.actionSegments?.flatMap(segment => segment.actor.side === 'ally' ? segment.attacks : []) || [],

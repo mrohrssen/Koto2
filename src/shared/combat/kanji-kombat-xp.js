@@ -53,7 +53,16 @@ function getStatsForLevel(baseHp, baseAttack, baseMp, level, baseDefense = 5, ba
  * Browser-safe version of src/game/creatures.js::addXpToCreature.
  * Differences from the original:
  *  - Does NOT look up CREATURES_BY_ID (template fields must already be on the object).
- *  - Does NOT learn new moves (irrelevant for transcript hash computation).
+ *  - Does NOT learn new moves. This is required for client/server hash parity,
+ *    not just a simplification: the transcript hash covers full creature
+ *    objects including move lists, and the client cannot learn moves on
+ *    level-up (no CREATURES_BY_ID in the browser), so every server path that
+ *    feeds the hash must use THIS routine too. KK party levels are run-scoped
+ *    and KK allies never use their move lists (they attack via the synthetic
+ *    strike), so skipping move learning is purely cosmetic.
+ *  - getStatsForLevel's dex fallback is `baseDexTemplate ?? 5`; the original
+ *    calls requireBaseDex(...) on the creature template, which can throw when
+ *    the template lacks baseDex.
  *
  * Mutates `creature` in place. Returns an array of level-up descriptors.
  */

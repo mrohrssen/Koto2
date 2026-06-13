@@ -2061,7 +2061,7 @@ describe('kanji-kombat ui', () => {
     // All enemies defeated (offline runway exhausted): the quiz must NOT render —
     // predicting against a dead wave generates entries the server rejects with
     // transcript_mismatch.  The handler clears the action area so the checkpoint
-    // handler's hasActionableKanjiKombatPrompt() guard can snap to server state.
+    // handler's hasRenderedKanjiKombatPrompt() guard can snap to server state.
     const handled = renderKanjiKombatAction(stateWithEnemies([
       { id: 'ki', hp: 0, maxHp: 60 },
       { id: 'ishi', hp: 0, maxHp: 80 },

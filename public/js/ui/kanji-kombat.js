@@ -184,17 +184,17 @@ function refreshKanjiKombatAction() {
 }
 
 /**
- * Returns true when the action area is currently showing a fresh (non-disabled,
- * non-answered) interactive KK prompt — meaning the combat loop is healthy and
- * does NOT need a re-render from the checkpoint handler.
+ * Returns true when the action area contains ANY rendered KK prompt markup —
+ * fresh, disabled (answer in flight), or feedback-marked.
  *
- * Used by handleSessionCheckpoint to decide whether it is safe to snap the game
- * state to the server's confirmed-but-potentially-behind version.  With optimistic
- * rendering the local buffer advances ahead of the server; applying the server
- * state while a fresh prompt is visible would regress the buffer and cause the
- * already-shown prompt to be offered again (duplicate).
+ * Gates checkpoint full-snaps in handleSessionCheckpoint: with optimistic
+ * rendering the local buffer advances ahead of the server, so snapping the game
+ * state to the server's confirmed-but-potentially-behind version is only safe
+ * when NO KK prompt markup is present.  Any rendered prompt means local
+ * optimistic state is ahead — overwriting it would regress the buffer and
+ * cause an already-shown or just-answered prompt to be offered again (duplicate).
  */
-function hasActionableKanjiKombatPrompt() {
+function hasRenderedKanjiKombatPrompt() {
   if (typeof document === 'undefined') return false;
   const area = document.getElementById('action-area');
   if (!area) return false;
@@ -343,9 +343,8 @@ function mergeServerPromptBufferIntoLocalState(serverState) {
     p => p.promptId && Number.isInteger(p.sequence) && p.sequence > highSeq,
   );
   if (newTailPrompts.length === 0) return;
-  // Mutating the current state object directly is safe here — updateGameState would
-  // create a new reference anyway, and the combat loop reads via getGameState() which
-  // returns the same object we're mutating.
+  // Invariant: this mutates the live state object — the same reference the
+  // combat loop reads via getGameState().
   localKk.promptBuffer = [...localKk.promptBuffer, ...newTailPrompts];
 }
 
@@ -359,7 +358,7 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
     // long offline windows without running dry.
     mergeServerPromptBufferIntoLocalState(response.state);
 
-    if (logEmpty && !hasActionableKanjiKombatPrompt()) {
+    if (logEmpty && !hasRenderedKanjiKombatPrompt()) {
       // Guard: with optimistic rendering the local buffer advances ahead of the server.
       // If the action area is already showing a fresh interactive prompt the combat loop
       // is healthy — snapping to the confirmed-but-behind server state would regress the
@@ -376,7 +375,7 @@ function handleSessionCheckpoint(response, { logEmpty } = {}) {
   }
   // Re-render the action after applying state (e.g. when combat was inactive after
   // a graceful-pause wave end — this unblocks the player).
-  if (response?.state && logEmpty && !hasActionableKanjiKombatPrompt()) {
+  if (response?.state && logEmpty && !hasRenderedKanjiKombatPrompt()) {
     refreshKanjiKombatAction();
   }
   // Show server-confirmed visuals for each result in the batch — but wait for any
@@ -422,7 +421,12 @@ async function handleSessionCorrection(response) {
   // Serialized through sessionReplayChain so corrections and checkpoint replays
   // are never interleaved — each waits for the previous work to complete first.
   const corrHead = (response?.authoritativeState || response?.state)?.run?.kanjiKombat?.promptBuffer?.[0]?.promptId ?? null;
-  console.log('[KK Correction] reason=' + response?.reason + ', confirmedThroughSeq=' + response?.confirmedThroughSeq + ', rejectedSeq=' + response?.rejectedSeq + ', corrHead=' + corrHead);
+  console.warn('[KanjiKombat] sync corrected', {
+    reason: response?.reason,
+    confirmedThroughSeq: response?.confirmedThroughSeq,
+    rejectedSeq: response?.rejectedSeq,
+    corrHead,
+  });
   await enqueueSessionReplay(async () => {
     await waitForCombatAnimationIdle();
     const state = response?.authoritativeState || response?.state;
@@ -799,7 +803,7 @@ export function renderKanjiKombatAction(gameState) {
     // transcript_mismatch.  The combat-loop's graceful pause stops its own selection
     // loop, but intro/completion onChoice chains also route through here, so this is
     // the single chokepoint.  Clear the action area (so the checkpoint handler's
-    // hasActionableKanjiKombatPrompt() guard sees no live prompt, snaps to the
+    // hasRenderedKanjiKombatPrompt() guard sees no live prompt, snaps to the
     // server's authoritative wave state, and refreshes the action) and nudge a sync.
     // Only a non-empty enemies array with no living member counts as a dead wave —
     // a missing/empty array means combat state isn't loaded (or a non-combat render)

@@ -126,11 +126,8 @@ export function resetKanjiKombatStreakOnWrong(kk) {
  * party-wide level-up at 15 followed by a streak reset.
  *
  * `addXp` MUST be the browser-safe shared XP routine (the default) on BOTH
- * sides: the transcript hash covers full creature objects including move
- * lists, so server-side move-learning on level-up (addXpToCreature) would
- * diverge from the client and break hash parity. KK levels are run-scoped
- * and KK allies never use their move lists, so skipping move learning is
- * purely cosmetic.
+ * sides — see kanji-kombat-xp.js::addXpToCreatureShared for why skipping move
+ * learning is required for hash parity.
  *
  * Mutates kk and the party in place.  Returns the reward descriptor or null.
  */

@@ -917,7 +917,7 @@ export class KanjiKombatService {
 
     const sharedCoreHash = hashTranscript(resolvedCore.transcript);
     if (sharedCoreHash !== envelope.predictedHash) {
-      console.error('[KK transcript_mismatch] (live) seed=' + envelope.seed + ' serverHash=' + sharedCoreHash + ' clientHash=' + envelope.predictedHash);
+      console.error(`[KanjiKombat] transcript mismatch (live) seed=${envelope.seed} serverHash=${sharedCoreHash} clientHash=${envelope.predictedHash}`);
     }
     const committed = this.submitAnswer(answerId, {
       promptRef: prompt ? {
@@ -1283,11 +1283,9 @@ export class KanjiKombatService {
     const kk = this.gm.run.kanjiKombat;
     // Shared deterministic reward logic (also run by the client's local
     // simulation and the session-log replay path) — random milestones consume
-    // pre-rolled payloads from kk.pendingStreakRewards verbatim.
-    // NOTE: uses the module's default addXpToCreatureShared (NOT the server's
-    // addXpToCreature): the transcript hash covers full creature objects
-    // including move lists, and the client cannot learn moves on level-up.
-    // KK levels are run-scoped and KK allies never use their move lists.
+    // pre-rolled payloads from kk.pendingStreakRewards verbatim.  Uses the
+    // module's default addXpToCreatureShared (NOT the server's addXpToCreature)
+    // — see kanji-kombat-xp.js::addXpToCreatureShared for the hash-parity rationale.
     const streakReward = applyKanjiKombatStreakReward({
       kk,
       creatureParty: this.gm.run.creatureParty,
@@ -1496,7 +1494,7 @@ export class KanjiKombatService {
       const serverHash = hashTranscript(resolvedCore.transcript);
       const hashMatches = serverHash === entry.predictedHash;
       if (!hashMatches) {
-        console.error('[KK transcript_mismatch] seq=' + entry.seq + ' seed=' + seed + ' serverHash=' + serverHash + ' clientHash=' + entry.predictedHash);
+        console.error(`[KanjiKombat] transcript mismatch (replay) seq=${entry.seq} seed=${seed} serverHash=${serverHash} clientHash=${entry.predictedHash}`);
       }
 
       // Dedupes via gm.meta action ledger only — not optimistic.acceptedActionIds (used by
