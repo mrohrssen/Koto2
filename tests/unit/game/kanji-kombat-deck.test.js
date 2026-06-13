@@ -67,7 +67,8 @@ describe('kanji-kombat deck controller', () => {
     const work = chooseNextScriptWork(userId, state, { random: () => 0.5, now: new Date('2026-05-31T00:00:00Z') });
     assert.equal(work.kind, 'quiz');
     assert.equal(work.card.type, 'hiragana');
-    assert.equal(state.currentQuiz.cardId, work.card.id);
+    assert.equal(state.currentQuiz, null);
+    assert.equal(state.pendingIntro, null);
   });
 
   it('introduces a new card when no due cards exist and daily cap remains', () => {
@@ -80,7 +81,8 @@ describe('kanji-kombat deck controller', () => {
     const work = chooseNextScriptWork(userId, state, { random: () => 0.5, now: new Date('2026-05-31T00:00:00Z') });
     assert.equal(work.kind, 'intro');
     assert.equal(work.card.type, 'hiragana');
-    assert.equal(state.pendingIntro.cardId, work.card.id);
+    assert.equal(state.currentQuiz, null);
+    assert.equal(state.pendingIntro, null);
   });
 
   it('prompts for a completion choice when no due cards exist and daily cap is exhausted', () => {
@@ -94,7 +96,7 @@ describe('kanji-kombat deck controller', () => {
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
     const work = chooseNextScriptWork(userId, state, { random: () => 0.5, now: new Date('2026-05-31T00:00:00Z') });
     assert.equal(work.kind, 'completePrompt');
-    assert.equal(state.completionChoicePending, true);
+    assert.equal(state.completionChoicePending, false);
     assert.equal(state.report.completedDaily, true);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, true);
   });
@@ -129,7 +131,8 @@ describe('kanji-kombat deck controller', () => {
 
     assert.equal(work.kind, 'quiz');
     assert.equal(work.card.type, 'hiragana');
-    assert.equal(state.currentQuiz.cardId, work.card.id);
+    assert.equal(state.currentQuiz, null);
+    assert.equal(state.pendingIntro, null);
     assert.equal(state.completionChoicePending, false);
   });
 
@@ -140,8 +143,12 @@ describe('kanji-kombat deck controller', () => {
     }
     saveSrsData(userId, data);
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
-    const card = chooseNextScriptWork(userId, state, { now: new Date('2026-05-31T00:00:00Z') }).card;
-    const result = resolveIntroChoice(userId, state, card.id, 'unknown', { now: new Date('2026-05-31T00:00:00Z') });
+    const work = chooseNextScriptWork(userId, state, { now: new Date('2026-05-31T00:00:00Z') });
+    const card = work.card;
+    const result = resolveIntroChoice(userId, state, card.id, 'unknown', {
+      introSource: work.source,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
     assert.equal(result.graded.id, card.id);
     assert.equal(result.next.kind === 'quiz' || result.next.kind === 'intro' || result.next.kind === 'complete', true);
     assert.notEqual(result.next.card?.id, card.id);
@@ -156,8 +163,12 @@ describe('kanji-kombat deck controller', () => {
     saveSrsData(userId, data);
 
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
-    const card = chooseNextScriptWork(userId, state, { now: new Date('2026-05-31T00:00:00Z') }).card;
-    const result = resolveIntroChoice(userId, state, card.id, 'known', { now: new Date('2026-05-31T00:00:00Z') });
+    const work = chooseNextScriptWork(userId, state, { now: new Date('2026-05-31T00:00:00Z') });
+    const card = work.card;
+    const result = resolveIntroChoice(userId, state, card.id, 'known', {
+      introSource: work.source,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
 
     assert.equal(result.graded.id, card.id);
     assert.equal(result.graded.reps, 1);
@@ -182,6 +193,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(intro.kind, 'intro');
 
     const result = resolveIntroChoice(userId, state, intro.card.id, 'known', {
+      introSource: intro.source,
       random: () => 0,
       now: new Date('2026-05-31T00:00:00Z'),
     });
@@ -210,6 +222,7 @@ describe('kanji-kombat deck controller', () => {
       assert.equal(work.kind, 'intro');
       seen.push(work.card.id);
       const result = resolveIntroChoice(userId, state, work.card.id, 'unknown', {
+        introSource: work.source,
         random: () => 0,
         now: new Date('2026-05-31T00:00:00Z'),
       });
@@ -239,6 +252,7 @@ describe('kanji-kombat deck controller', () => {
 
     for (let i = 0; i < NO_DUE_DISCOVERY_CHAIN_LIMIT; i++) {
       work = resolveIntroChoice(userId, state, work.card.id, 'known', {
+        introSource: work.source,
         random: () => 0,
         now: new Date('2026-05-31T00:00:00Z'),
       }).next;
@@ -318,6 +332,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(first.card.frequencyRank, 1);
 
     const result = resolveIntroChoice(userId, state, first.card.id, 'unknown', {
+      introSource: first.source,
       random: () => 0,
       now: new Date('2026-05-31T00:00:00Z'),
     });
@@ -366,7 +381,9 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(PROMPT_BUFFER_REFILL_THRESHOLD, 10);
     assert.equal(prompts.length, 60);
     assert.equal(state.promptBuffer.length, 60);
-    assert.equal(state.currentQuiz.cardId, state.promptBuffer[0].cardId);
+    assert.equal(state.currentQuiz, null);
+    assert.equal(state.pendingIntro, null);
+    assert.equal(state.completionChoicePending, false);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
     assert.equal(new Set(state.promptBuffer.map(prompt => prompt.promptId)).size, 60);
     assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 60);
@@ -389,7 +406,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(prompts[0].intro.card.id, prompts[0].cardId);
     assert.equal(prompts[0].source, 'noDueBatch');
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 0);
-    assert.equal(state.pendingIntro.cardId, prompts[0].cardId);
+    assert.equal(state.pendingIntro, null);
   });
 
   it('validates and consumes only the canonical prompt head', () => {

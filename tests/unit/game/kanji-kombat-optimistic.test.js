@@ -15,6 +15,7 @@ import { buildOptimisticKanjiKombatAnswer } from '../../../public/js/ui/optimist
 describe('Kanji Kombat optimistic answers', () => {
   it('accepts a matching optimistic answer after recomputing the authoritative grade', () => {
     const gm = createTestKanjiKombatGameManager();
+    const promptRef = kanjiPromptRef(gm);
     gm.run.kanjiKombat.streak = 2;
     gm.run.creatureParty.active[0].hp = 80;
     const service = new KanjiKombatService(gm);
@@ -35,6 +36,7 @@ describe('Kanji Kombat optimistic answers', () => {
         answerId,
         correct: true,
         predictionMode: KANJI_KOMBAT_PREDICTION_MODE,
+        ...promptPayload(promptRef),
       },
       predictedTranscript: predicted.transcript,
     });
@@ -53,6 +55,7 @@ describe('Kanji Kombat optimistic answers', () => {
 
   it('returns authoritative XP events when an accepted optimistic answer KOs an enemy', () => {
     const gm = createTestKanjiKombatGameManager();
+    const promptRef = kanjiPromptRef(gm);
     const service = gm.kanjiKombatService;
     service.chooseNextWork = () => ({ kind: 'completePrompt' });
     gm.combat.enemies[0].hp = 1;
@@ -76,6 +79,7 @@ describe('Kanji Kombat optimistic answers', () => {
         answerId,
         correct: true,
         predictionMode: KANJI_KOMBAT_PREDICTION_MODE,
+        ...promptPayload(promptRef),
       },
       predictedTranscript: predicted.transcript,
     });
@@ -101,6 +105,7 @@ describe('Kanji Kombat optimistic answers', () => {
       state: { combat: gm.combat, run: gm.run },
       answerId: 'choice-correct',
       actionId: 'act_kanji_streak6',
+      promptRef: kanjiPromptRef(gm),
     });
     const originalRandom = Math.random;
     Math.random = () => 0;
@@ -128,6 +133,7 @@ describe('Kanji Kombat optimistic answers', () => {
       state: { combat: gm.combat, run: gm.run },
       answerId: 'choice-correct',
       actionId: 'act_browser_kanji_exp',
+      promptRef: kanjiPromptRef(gm),
     });
 
     const result = service.verifyAndCommitOptimisticAnswer(predicted.envelope);
@@ -148,6 +154,7 @@ describe('Kanji Kombat optimistic answers', () => {
       state: { combat: gm.combat, run: gm.run },
       answerId: 'choice-correct',
       actionId: 'act_kanji_dupe',
+      promptRef: kanjiPromptRef(gm),
     });
 
     const first = service.verifyAndCommitOptimisticAnswer(predicted.envelope);
@@ -188,12 +195,12 @@ describe('Kanji Kombat optimistic answers', () => {
       state: { combat: gm.combat, run: gm.run },
       answerId: 'choice-correct',
       actionId: 'act_buffered_kanji',
+      promptRef: {
+        promptId: prompt.promptId,
+        sequence: prompt.sequence,
+        cardId: prompt.cardId,
+      },
     });
-    predicted.envelope.payload.promptRef = {
-      promptId: prompt.promptId,
-      sequence: prompt.sequence,
-      cardId: prompt.cardId,
-    };
     gm.run.kanjiKombat.currentQuiz = null;
     assert.deepEqual(predicted.envelope.payload.promptRef, {
       promptId: prompt.promptId,
@@ -244,6 +251,20 @@ function createTestKanjiKombatGameManager() {
     nextTurnSeed: 'kanji_seed_1',
     acceptedActionIds: {},
   };
+  const quiz = {
+    cardId: 'hiragana:あ',
+    choices: [
+      { id: 'choice-correct', answer: 'a', correct: true },
+      { id: 'choice-wrong', answer: 'i', correct: false },
+    ],
+  };
+  const quizPrompt = {
+    promptId: 'kkp_optimistic_quiz_1',
+    sequence: 1,
+    kind: 'quiz',
+    cardId: quiz.cardId,
+    quiz,
+  };
   const run = {
     active: true,
     mode: 'kanjiKombat',
@@ -277,13 +298,9 @@ function createTestKanjiKombatGameManager() {
       endlessMode: false,
       localDate: '2026-06-03',
       pendingIntro: null,
-      currentQuiz: {
-        cardId: 'hiragana:あ',
-        choices: [
-          { id: 'choice-correct', answer: 'a', correct: true },
-          { id: 'choice-wrong', answer: 'i', correct: false },
-        ],
-      },
+      currentQuiz: quiz,
+      promptBuffer: [quizPrompt],
+      promptBufferSeq: quizPrompt.sequence,
       report: {
         wavesCleared: 0,
         minibossesDefeated: 0,
@@ -306,4 +323,22 @@ function createTestKanjiKombatGameManager() {
   gm.combatCycleService = new CombatCycleService(gm);
   gm.kanjiKombatService = new KanjiKombatService(gm);
   return gm;
+}
+
+function kanjiPromptRef(gm) {
+  const prompt = gm.run.kanjiKombat.promptBuffer[0];
+  return {
+    promptId: prompt.promptId,
+    sequence: prompt.sequence,
+    cardId: prompt.cardId,
+  };
+}
+
+function promptPayload(promptRef) {
+  return {
+    promptId: promptRef.promptId,
+    promptSequence: promptRef.sequence,
+    cardId: promptRef.cardId,
+    promptRef,
+  };
 }

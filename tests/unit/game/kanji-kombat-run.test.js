@@ -108,9 +108,10 @@ describe('KanjiKombatService run lifecycle helpers', () => {
       knowsKatakana: true,
     });
     assert.equal(gm.run.kanjiKombat.onboardingPending, false);
-    assert.ok(gm.run.kanjiKombat.currentQuiz || gm.run.kanjiKombat.pendingIntro);
     assert.ok(gm.run.kanjiKombat.promptBuffer.length > 0);
-    assert.equal(gm.run.kanjiKombat.promptBuffer[0].kind, gm.run.kanjiKombat.currentQuiz ? 'quiz' : 'intro');
+    assert.equal(gm.run.kanjiKombat.currentQuiz, null);
+    assert.equal(gm.run.kanjiKombat.pendingIntro, null);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
     assert.equal(gm.run.kanjiKombat.report.scriptDeck, 'kanji');
     assert.equal(result.onboarding.completed, true);
     assert.equal(result.kanjiKombat, gm.run.kanjiKombat);
@@ -145,7 +146,8 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.onboardingPending, false);
     assert.equal(gm.run.kanjiKombat.currentQuiz, null);
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
-    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'completePrompt');
     assert.equal(result.next, 'completePrompt');
   });
 
@@ -177,7 +179,8 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.onboardingPending, false);
     assert.equal(gm.run.kanjiKombat.currentQuiz, null);
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
-    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'completePrompt');
     assert.equal(result.next, 'completePrompt');
   });
 
@@ -205,16 +208,17 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     ensureScriptDeckSeeded(gm.userId);
     const service = new KanjiKombatService(gm);
     service.startRunWithCreature(fakeCreature('hi'));
-    const pendingCardId = gm.run.kanjiKombat.pendingIntro.cardId;
+    const pendingCardId = gm.run.kanjiKombat.promptBuffer[0].cardId;
     const wrongCardId = loadSrsData(gm.userId)[SCRIPT_DECK].cards
       .find(card => card.id !== pendingCardId && card.type === 'hiragana').id;
 
     assert.throws(
       () => service.submitIntroChoice(wrongCardId, 'known'),
-      /Kanji Kombat intro/
+      /No pending Kanji Kombat intro/
     );
 
-    assert.equal(gm.run.kanjiKombat.pendingIntro.cardId, pendingCardId);
+    assert.equal(gm.run.kanjiKombat.pendingIntro, null);
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0].cardId, pendingCardId);
     const wrongCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === wrongCardId);
     assert.equal(wrongCard.reps || 0, 0);
   });
@@ -378,7 +382,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(ally.mp, ally.maxMp);
   });
 
-  it('starts an onboarding-complete run with a prompt buffer and legacy head mirror', () => {
+  it('starts an onboarding-complete run with a prompt buffer and inert legacy prompt fields', () => {
     const gm = buildGm();
     gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
     const service = new KanjiKombatService(gm);
@@ -388,7 +392,9 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.onboardingPending, false);
     assert.ok(gm.run.kanjiKombat.promptBuffer.length > 0);
     assert.equal(gm.run.kanjiKombat.promptBuffer.length <= 60, true);
-    assert.equal(gm.run.kanjiKombat.pendingIntro.cardId, gm.run.kanjiKombat.promptBuffer[0].cardId);
+    assert.equal(gm.run.kanjiKombat.currentQuiz, null);
+    assert.equal(gm.run.kanjiKombat.pendingIntro, null);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
   });
 
   it('intro prompt commits consume one prompt and refill the server buffer', () => {
@@ -406,7 +412,8 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(result.graded.id, head.cardId);
     assert.notEqual(gm.run.kanjiKombat.promptBuffer[0]?.promptId, head.promptId);
     assert.equal(gm.run.kanjiKombat.promptBuffer.length <= 60, true);
-    assert.equal(gm.run.kanjiKombat.pendingIntro?.promptId, gm.run.kanjiKombat.promptBuffer[0]?.promptId);
+    assert.equal(gm.run.kanjiKombat.currentQuiz, null);
+    assert.equal(gm.run.kanjiKombat.pendingIntro, null);
   });
 
   it('buffered no-due intro commits preserve the practice queue while refilling', () => {
@@ -432,11 +439,26 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     });
 
     const kk = gm.run.kanjiKombat;
-    const mirrorCardId = kk.currentQuiz?.cardId || kk.pendingIntro?.cardId || null;
     assert.equal(kk.noDuePracticeQueue.includes(head.cardId), true);
     assert.notEqual(kk.promptBuffer[0]?.promptId, head.promptId);
-    assert.equal(mirrorCardId, kk.promptBuffer[0]?.cardId || null);
-    assert.equal(kk.completionChoicePending, kk.promptBuffer[0]?.kind === 'completePrompt');
+    assert.equal(kk.currentQuiz, null);
+    assert.equal(kk.pendingIntro, null);
+    assert.equal(kk.completionChoicePending, false);
+  });
+
+  it('does not commit an intro from a stale pendingIntro mirror without an active prompt', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const card = ensureScriptDeckSeeded(gm.userId).find(candidate => candidate.id === 'hiragana:あ');
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    gm.run.kanjiKombat.promptBuffer = [];
+    gm.run.kanjiKombat.pendingIntro = { cardId: card.id, card, source: 'legacy' };
+
+    assert.throws(
+      () => service.submitIntroChoice(card.id, 'known'),
+      /No active Kanji Kombat prompt|No pending Kanji Kombat intro/
+    );
   });
 
   it('rejects stale buffered intro prompt commits without grading', () => {
@@ -530,9 +552,34 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     });
 
     assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'completePrompt');
-    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
     assert.equal(gm.run.kanjiKombat.report.completedDaily, true);
     assert.equal(getScriptDailyState(gm.userId, getLocalDateKey()).completed, true);
+  });
+
+  it('does not commit an answer from a stale currentQuiz mirror without an active prompt', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const card = ensureScriptDeckSeeded(gm.userId).find(candidate => candidate.id === 'hiragana:あ');
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    gm.run.kanjiKombat.promptBuffer = [];
+    gm.run.kanjiKombat.currentQuiz = {
+      cardId: card.id,
+      choices: [
+        { id: 'choice-correct', answer: card.answer, correct: true },
+        { id: 'choice-wrong', answer: 'wrong', correct: false },
+      ],
+    };
+    gm.combat = { active: true, allies: gm.run.creatureParty.active, enemies: [{ hp: 1, id: 'enemy' }] };
+    gm.combatCycleService = {
+      resolveKanjiKombatCursorAction: () => ({ actionType: 'kanjiKombat' }),
+    };
+
+    assert.throws(
+      () => service.submitAnswer('choice-correct'),
+      /No active Kanji Kombat prompt|No active Kanji Kombat quiz/
+    );
   });
 
   it('accepts a buffered completion prompt with keep-going and queues endless work', () => {
@@ -548,7 +595,6 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     saveSrsData(gm.userId, data);
     gm.run.mode = 'kanjiKombat';
     gm.run.kanjiKombat = createInitialKanjiKombatState({ localDate: getLocalDateKey() });
-    gm.run.kanjiKombat.completionChoicePending = true;
     gm.run.kanjiKombat.report.completedDaily = true;
     gm.run.kanjiKombat.promptBuffer = [
       { promptId: 'kkp_keep_going_complete', sequence: 1, kind: 'completePrompt', cardId: null, source: 'dailyComplete' },
@@ -564,8 +610,24 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.combat.active, true);
     assert.equal(gm.run.kanjiKombat.endlessMode, true);
     assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
-    assert.equal(gm.run.kanjiKombat.currentQuiz?.cardId, gm.run.kanjiKombat.promptBuffer[0]?.cardId);
+    assert.equal(gm.run.kanjiKombat.currentQuiz, null);
+    assert.equal(gm.run.kanjiKombat.pendingIntro, null);
     assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'quiz');
+  });
+
+  it('does not commit a completion choice from a stale legacy flag without an active prompt', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    ensureScriptDeckSeeded(gm.userId);
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    gm.run.kanjiKombat.promptBuffer = [];
+    gm.run.kanjiKombat.completionChoicePending = true;
+
+    assert.throws(
+      () => service.resolveCompletionChoice(true),
+      /No active Kanji Kombat prompt|No Kanji Kombat completion choice is pending/
+    );
   });
 
   it('validates buffered completion prompt choices before resolving', () => {
@@ -580,7 +642,6 @@ describe('KanjiKombatService run lifecycle helpers', () => {
       cardId: null,
       source: 'dailyComplete',
     }];
-    gm.run.kanjiKombat.completionChoicePending = true;
 
     assert.throws(
       () => service.resolveCompletionChoice(true, { promptId: 'kkp_wrong', sequence: 1 }),

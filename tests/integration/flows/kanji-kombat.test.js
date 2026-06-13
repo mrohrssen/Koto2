@@ -36,13 +36,13 @@ describe('Kanji Kombat integration flow', () => {
     assert.equal(gm.run.mode, 'kanjiKombat');
     assert.equal(gm.combat.mode, 'kanjiKombat');
 
-    for (let guard = 0; guard < 6 && gm.run.kanjiKombat.pendingIntro?.card; guard++) {
-      gm.submitKanjiKombatIntro(gm.run.kanjiKombat.pendingIntro.card.id, 'known');
+    for (let guard = 0; guard < 6 && activePrompt(gm)?.kind === 'intro'; guard++) {
+      submitActiveIntro(gm, 'known');
     }
-    const quiz = gm.run.kanjiKombat.currentQuiz;
+    const quiz = activeQuiz(gm);
     assert.ok(quiz, 'Kanji Kombat should have a quiz to answer after intro resolution');
     const correct = quiz.choices.find(choice => choice.correct);
-    const result = gm.submitKanjiKombatAnswer(correct.id);
+    const result = submitActiveQuizAnswer(gm, correct.id);
 
     assert.equal(result.actionType, 'kanjiKombat');
     assert.equal(result.kanjiAnswerCorrect, true);
@@ -56,7 +56,7 @@ describe('Kanji Kombat integration flow', () => {
     assert.equal(gm.run.postCombatShop == null, true);
     if (!result.combatEnded) {
       assert.ok(
-        gm.run.kanjiKombat.currentQuiz || gm.run.kanjiKombat.pendingIntro,
+        activePrompt(gm),
         'continuing Kanji Kombat combat should queue the next script prompt'
       );
     }
@@ -79,13 +79,13 @@ describe('Kanji Kombat integration flow', () => {
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
-    const introCard = gm.run.kanjiKombat.pendingIntro?.card;
+    const introCard = activeIntro(gm)?.card;
     assert.ok(introCard, 'fresh no-due run should introduce a script card');
     const before = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === introCard.id);
     assert.ok(before, 'introduced card exists in the persisted script deck');
     assert.equal(before.reps || 0, 0);
 
-    gm.submitKanjiKombatIntro(introCard.id, 'known');
+    submitActiveIntro(gm, 'known');
 
     const after = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === introCard.id);
     assert.equal(after.reps, 1);
@@ -118,12 +118,12 @@ describe('Kanji Kombat integration flow', () => {
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
-    const quiz = gm.run.kanjiKombat.currentQuiz;
+    const quiz = activeQuiz(gm);
     assert.ok(quiz, 'precondition: due script card should produce a quiz');
     const before = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === quiz.cardId);
     const correct = quiz.choices.find(choice => choice.correct);
 
-    gm.submitKanjiKombatAnswer(correct.id);
+    submitActiveQuizAnswer(gm, correct.id);
 
     const after = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === quiz.cardId);
     assert.equal(after.reps, before.reps + 1);
@@ -131,10 +131,10 @@ describe('Kanji Kombat integration flow', () => {
     assert.ok(after.last_review instanceof Date);
   });
 
-  it('hydrates saved pending intro cards before exposing state to the UI', async () => {
+  it('exposes buffered intro prompt cards to the UI without pendingIntro hydration', async () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';
-    const cards = ensureScriptDeckSeeded(userId);
+    ensureScriptDeckSeeded(userId);
     const gm = new GameManager();
     gm.userId = userId;
     gm.player = { name: 'Tester', hp: 100, maxHp: 100, credits: 0 };
@@ -148,13 +148,14 @@ describe('Kanji Kombat integration flow', () => {
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
-    gm.run.kanjiKombat.currentQuiz = null;
-    gm.run.kanjiKombat.pendingIntro = { cardId: cards[0].id };
 
     const state = gm.getState();
+    const prompt = state.run.kanjiKombat.promptBuffer[0];
 
-    assert.equal(state.run.kanjiKombat.pendingIntro.card.id, cards[0].id);
-    assert.equal(state.run.kanjiKombat.pendingIntro.card.answer, cards[0].answer);
+    assert.equal(state.run.kanjiKombat.pendingIntro, null);
+    assert.equal(prompt.kind, 'intro');
+    assert.equal(prompt.intro.card.id, prompt.cardId);
+    assert.equal(typeof prompt.intro.card.answer, 'string');
   });
 
   it('prompts before ending when the script queue is exhausted mid-wave', async () => {
@@ -187,19 +188,20 @@ describe('Kanji Kombat integration flow', () => {
       enemy.maxHp = 999;
     });
 
-    const quiz = gm.run.kanjiKombat.currentQuiz;
+    const quiz = activeQuiz(gm);
     assert.ok(quiz, 'precondition: one due quiz should be available');
     const correct = quiz.choices.find(choice => choice.correct);
-    const result = gm.submitKanjiKombatAnswer(correct.id);
+    const result = submitActiveQuizAnswer(gm, correct.id);
 
     assert.equal(result.combatEnded, false);
     assert.equal(result.completionChoicePending, true);
     assert.equal(gm.run.active, true);
     assert.equal(gm.combat.active, true);
-    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    assert.equal(activePrompt(gm)?.kind, 'completePrompt');
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
     assert.equal(gm.run.kanjiKombat.report.completedDaily, true);
 
-    const finished = gm.kanjiKombatService.resolveCompletionChoice(false);
+    const finished = resolveActiveCompletionChoice(gm, false);
 
     assert.equal(finished.combatEnded, true);
     assert.equal(finished.victory, true);
@@ -238,20 +240,21 @@ describe('Kanji Kombat integration flow', () => {
       enemy.maxHp = 999;
     });
 
-    const firstQuiz = gm.run.kanjiKombat.currentQuiz;
-    gm.submitKanjiKombatAnswer(firstQuiz.choices.find(choice => choice.correct).id);
-    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    const firstQuiz = activeQuiz(gm);
+    submitActiveQuizAnswer(gm, firstQuiz.choices.find(choice => choice.correct).id);
+    assert.equal(activePrompt(gm)?.kind, 'completePrompt');
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
 
-    const continued = gm.kanjiKombatService.resolveCompletionChoice(true);
+    const continued = resolveActiveCompletionChoice(gm, true);
 
     assert.equal(continued.combatEnded, false);
     assert.equal(gm.run.kanjiKombat.endlessMode, true);
     assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
-    assert.ok(gm.run.kanjiKombat.currentQuiz, 'endless mode should queue an early review');
+    assert.equal(activePrompt(gm)?.kind, 'quiz', 'endless mode should queue an early review');
 
-    const earlyQuiz = gm.run.kanjiKombat.currentQuiz;
+    const earlyQuiz = activeQuiz(gm);
     const before = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === earlyQuiz.cardId);
-    gm.submitKanjiKombatAnswer(earlyQuiz.choices.find(choice => choice.correct).id);
+    submitActiveQuizAnswer(gm, earlyQuiz.choices.find(choice => choice.correct).id);
     const after = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === earlyQuiz.cardId);
 
     assert.equal(after.reps, before.reps + 1);
@@ -295,3 +298,43 @@ describe('Kanji Kombat integration flow', () => {
     assert.equal(gm.run.kanjiKombat.report.scriptDeck, 'hiragana');
   });
 });
+
+function activePrompt(gm) {
+  return gm.run?.kanjiKombat?.promptBuffer?.[0] || null;
+}
+
+function promptRef(prompt) {
+  return {
+    promptId: prompt.promptId,
+    sequence: prompt.sequence,
+    cardId: prompt.cardId,
+  };
+}
+
+function activeIntro(gm) {
+  const prompt = activePrompt(gm);
+  return prompt?.kind === 'intro' ? prompt.intro : null;
+}
+
+function activeQuiz(gm) {
+  const prompt = activePrompt(gm);
+  return prompt?.kind === 'quiz' ? prompt.quiz : null;
+}
+
+function submitActiveIntro(gm, choice) {
+  const prompt = activePrompt(gm);
+  assert.equal(prompt?.kind, 'intro');
+  return gm.kanjiKombatService.submitIntroChoice(prompt.cardId, choice, promptRef(prompt));
+}
+
+function submitActiveQuizAnswer(gm, answerId) {
+  const prompt = activePrompt(gm);
+  assert.equal(prompt?.kind, 'quiz');
+  return gm.submitKanjiKombatAnswer(answerId, { promptRef: promptRef(prompt) });
+}
+
+function resolveActiveCompletionChoice(gm, keepGoing) {
+  const prompt = activePrompt(gm);
+  assert.equal(prompt?.kind, 'completePrompt');
+  return gm.kanjiKombatService.resolveCompletionChoice(keepGoing, promptRef(prompt));
+}

@@ -342,7 +342,7 @@ test('applySessionSync completionChoice happy path (keepGoing: false ends daily)
   const kk = gm.run.kanjiKombat;
   const epoch = kk.sessionEpoch;
 
-  // Manually place a completePrompt at the buffer head and mark pending
+  // Manually place a completePrompt at the buffer head.
   const completePrompt = {
     promptId: 'kkp_test_complete_01',
     sequence: 99,
@@ -351,7 +351,6 @@ test('applySessionSync completionChoice happy path (keepGoing: false ends daily)
     source: 'dailyComplete',
   };
   kk.promptBuffer.unshift(completePrompt);
-  kk.completionChoicePending = true;
   kk.report.completedDaily = true;
 
   // Combat needs to be falsy-active for finalizeDailyComplete
@@ -393,7 +392,6 @@ test('applySessionSync completionChoice happy path (keepGoing: true enters endle
     source: 'dailyComplete',
   };
   kk.promptBuffer.unshift(completePrompt);
-  kk.completionChoicePending = true;
   kk.report.completedDaily = true;
 
   // Provide a live enemy so resolveCompletionChoice doesn't try to spawn a wave
@@ -418,7 +416,7 @@ test('applySessionSync completionChoice happy path (keepGoing: true enters endle
   assert.equal(result.confirmedThroughSeq, 1);
   assert.equal(result.results.length, 1);
   // keepGoing: true → endlessMode = true and combatEnded: false OR finalized if no cards remain
-  // Either way the choice was accepted and completionChoicePending cleared
+  // Either way the choice was accepted and the legacy flag stayed inert.
   assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
   // endlessMode is set if there were more cards; finalizeDailyComplete is called otherwise.
   // Assert that the run responded to the choice (combatEnded or endlessMode, not both false + pending)

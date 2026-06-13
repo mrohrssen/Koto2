@@ -184,6 +184,7 @@ export default function createKanjiKombatRoutes() {
   });
 
   router.post('/intro', (req, res) => {
+    // legacy client path — remove after next release
     const { cardId, choice } = req.body || {};
     let promptRef = null;
     try {
@@ -209,6 +210,7 @@ export default function createKanjiKombatRoutes() {
   });
 
   router.post('/answer', (req, res) => {
+    // legacy client path — remove after next release
     const body = req.body || {};
     const optimisticAnswer = isOptimisticKanjiAnswerEnvelope(body);
     let promptRef = null;
@@ -240,6 +242,7 @@ export default function createKanjiKombatRoutes() {
   });
 
   router.post('/completion-choice', (req, res) => {
+    // legacy client path — remove after next release
     const { keepGoing } = req.body || {};
     let promptRef = null;
     try {

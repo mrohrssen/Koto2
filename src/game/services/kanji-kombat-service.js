@@ -232,9 +232,6 @@ function promptForDailyCompletion(userId, state, opts = {}) {
   if (opts.preview !== true) {
     markScriptDailyComplete(userId, state.localDate);
   }
-  state.currentQuiz = null;
-  state.pendingIntro = null;
-  state.completionChoicePending = true;
   state.report.completedDaily = true;
   return { kind: 'completePrompt' };
 }
@@ -247,20 +244,10 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   const activeType = opts.activeType || getActiveScriptType(userId, opts.onboarding);
   state.report.scriptDeck = activeType;
   if (!Array.isArray(state.noDuePracticeQueue)) state.noDuePracticeQueue = [];
-  state.completionChoicePending = state.completionChoicePending === true;
   state.endlessMode = state.endlessMode === true;
-
-  if (state.completionChoicePending) {
-    state.currentQuiz = null;
-    state.pendingIntro = null;
-    state.report.completedDaily = true;
-    return { kind: 'completePrompt' };
-  }
 
   const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
   if (daily.completed === true && !state.endlessMode) {
-    state.currentQuiz = null;
-    state.pendingIntro = null;
     state.report.completedDaily = true;
     return { kind: 'complete' };
   }
@@ -276,8 +263,6 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   if (dueCards.length > 0 && state.reviewsSinceIntro >= state.nextIntroAfter && canIntroduce) {
     state.noDueDiscoveryChainCount = 0;
     const card = newCards[0];
-    state.currentQuiz = null;
-    state.pendingIntro = { cardId: card.id, card, source: 'reviewCadence' };
     return { kind: 'intro', card, source: 'reviewCadence' };
   }
 
@@ -285,8 +270,6 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     state.noDueDiscoveryChainCount = 0;
     const card = dueCards[0];
     const quiz = buildQuizForCard(card, allCards, random);
-    state.currentQuiz = quiz;
-    state.pendingIntro = null;
     return { kind: 'quiz', card, quiz };
   }
 
@@ -295,8 +278,6 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   if (canIntroduce && noDueChainCount < NO_DUE_DISCOVERY_CHAIN_LIMIT && canContinueNoDueDiscoveryBatch) {
     state.noDueDiscoveryChainCount = (state.noDueDiscoveryChainCount || 0) + 1;
     const card = newCards[0];
-    state.currentQuiz = null;
-    state.pendingIntro = { cardId: card.id, card, source: 'noDueBatch' };
     return { kind: 'intro', card, source: 'noDueBatch' };
   }
 
@@ -306,8 +287,6 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     const card = allCards.find(candidate => candidate.id === practiceCardId);
     if (!card) continue;
     const quiz = buildQuizForCard(card, allCards, random);
-    state.currentQuiz = quiz;
-    state.pendingIntro = null;
     return { kind: 'quiz', card, quiz };
   }
 
@@ -315,8 +294,6 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     state.noDueDiscoveryChainCount = 0;
     const card = newCards[0];
     state.noDueDiscoveryChainCount = 1;
-    state.currentQuiz = null;
-    state.pendingIntro = { cardId: card.id, card, source: 'noDueBatch' };
     return { kind: 'intro', card, source: 'noDueBatch' };
   }
 
@@ -325,9 +302,6 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     if (earlyReviewCards.length > 0) {
       const card = earlyReviewCards[0];
       const quiz = buildQuizForCard(card, allCards, random);
-      state.currentQuiz = quiz;
-      state.pendingIntro = null;
-      state.completionChoicePending = false;
       return { kind: 'quiz', card, quiz, source: 'earlyReview' };
     }
   }
@@ -342,9 +316,6 @@ function createPromptId(sequence) {
 function clonePlanningState(state) {
   return JSON.parse(JSON.stringify({
     ...state,
-    currentQuiz: null,
-    pendingIntro: null,
-    completionChoicePending: false,
     promptBuffer: [],
   }));
 }
@@ -397,24 +368,8 @@ function promptFromWork(state, work) {
   return null;
 }
 
-function syncKanjiKombatLegacyPromptFields(state) {
-  const head = getKanjiKombatActivePrompt(state);
-  state.currentQuiz = head?.kind === 'quiz' ? head.quiz : null;
-  state.pendingIntro = head?.kind === 'intro'
-    ? {
-        cardId: head.cardId,
-        card: head.intro.card,
-        source: head.source || head.intro.source || null,
-        promptId: head.promptId,
-        sequence: head.sequence,
-      }
-    : null;
-  state.completionChoicePending = head?.kind === 'completePrompt';
-  return head || null;
-}
-
 function syncKanjiKombatPromptBufferState(userId, state) {
-  const head = syncKanjiKombatLegacyPromptFields(state);
+  const head = getKanjiKombatActivePrompt(state);
   if (head?.kind === 'completePrompt') {
     if (userId) markScriptDailyComplete(userId, state.localDate);
     state.report.completedDaily = true;
@@ -447,8 +402,6 @@ function getEnvelopePromptRef(payload = {}) {
 }
 
 function advancePlanningStateAfterPrompt(planningState, prompt, random = Math.random) {
-  planningState.currentQuiz = null;
-  planningState.pendingIntro = null;
   if (prompt.kind === 'quiz') {
     planningState.reviewsSinceIntro = (planningState.reviewsSinceIntro || 0) + 1;
     const practiceIndex = Array.isArray(planningState.noDuePracticeQueue)
@@ -473,9 +426,6 @@ function advancePlanningStateAfterPrompt(planningState, prompt, random = Math.ra
       );
     }
     return;
-  }
-  if (prompt.kind === 'completePrompt') {
-    planningState.completionChoicePending = true;
   }
 }
 
@@ -590,14 +540,13 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
 }
 
 export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
-  const introSource = state.pendingIntro?.source || null;
+  const introSource = opts.introSource || opts.source || null;
   const grade = choice === 'known' ? 'easy' : 'again';
   const graded = gradeScriptCard(userId, cardId, grade);
   if (choice === 'unknown') {
     recordScriptIntro(userId, state.localDate);
     state.report.newCardsIntroduced += 1;
   }
-  state.pendingIntro = null;
   state.reviewsSinceIntro = 0;
   state.nextIntroAfter = rollIntroInterval(opts.random || Math.random);
   if (introSource === 'noDueBatch') {
@@ -728,13 +677,13 @@ export class KanjiKombatService {
     this.gm.meta.kanjiKombatOnboarding = onboarding;
 
     kk.onboardingPending = false;
-    kk.currentQuiz = null;
-    kk.pendingIntro = null;
     this.refillPromptBuffer();
     const head = getKanjiKombatActivePrompt(kk);
     let next = head?.kind || 'completePrompt';
     if (!head) {
-      kk.completionChoicePending = true;
+      const completionPrompt = promptFromWork(kk, { kind: 'completePrompt' });
+      if (completionPrompt) ensurePromptBufferState(kk).push(completionPrompt);
+      syncKanjiKombatPromptBufferState(this.gm.userId, kk);
       kk.report.completedDaily = true;
       next = 'completePrompt';
     }
@@ -765,12 +714,12 @@ export class KanjiKombatService {
         : null;
     const pending = prompt
       ? { cardId: prompt.cardId, card: prompt.intro.card, source: prompt.source || prompt.intro.source || null }
-      : state.pendingIntro;
+      : null;
     if (!pending?.cardId) throw new Error('No pending Kanji Kombat intro');
     if (pending.cardId !== cardId) throw new Error('Kanji Kombat intro card mismatch');
-    state.pendingIntro = pending;
     const result = resolveIntroChoice(this.gm.userId, state, cardId, choice, {
       onboarding: ensureKanjiKombatOnboardingState(this.gm.meta),
+      introSource: pending.source,
       queueNext: prompt ? false : true,
     });
     if (prompt) {
@@ -782,18 +731,6 @@ export class KanjiKombatService {
     }
     if (!preserveBuffer) this.refillPromptBuffer({ excludeCardIds: [cardId] });
     return result;
-  }
-
-  hydratePendingIntroCard() {
-    const kk = this.gm.run?.kanjiKombat;
-    const cardId = kk?.pendingIntro?.cardId;
-    if (!cardId || kk.pendingIntro.card) return kk?.pendingIntro || null;
-
-    const card = getScriptCards(this.gm.userId).find(candidate => candidate.id === cardId);
-    if (card) {
-      kk.pendingIntro = { cardId: card.id, card };
-    }
-    return kk.pendingIntro;
   }
 
   submitAnswer(answerId, opts = {}) {
@@ -808,11 +745,11 @@ export class KanjiKombatService {
         })
       : activePrompt?.kind === 'quiz'
         ? validateKanjiKombatPromptHead(kk, {
-            kind: 'quiz',
-            cardId: kk?.currentQuiz?.cardId || activePrompt.cardId,
-          })
+          kind: 'quiz',
+          cardId: activePrompt.cardId,
+        })
         : null;
-    const quiz = prompt?.quiz || kk?.currentQuiz;
+    const quiz = prompt?.quiz || null;
     if (!quiz) throw new Error('No active Kanji Kombat quiz');
     const choice = quiz.choices.find(option => option.id === answerId);
     if (!choice) throw new Error('Invalid Kanji Kombat answer');
@@ -822,7 +759,6 @@ export class KanjiKombatService {
     if (!choice.correct) this.recordWrongAnswer();
 
     if (prompt) consumeKanjiKombatPromptHead(kk, prompt, { userId: this.gm.userId });
-    else kk.currentQuiz = null;
     this.refillPromptBuffer({ excludeCardIds: [quiz.cardId] });
     const result = this.gm.combatCycleService.resolveKanjiKombatCursorAction({
       correct: choice.correct,
@@ -887,7 +823,7 @@ export class KanjiKombatService {
           kind: 'quiz',
         })
       : null;
-    const quiz = prompt?.quiz || kk?.currentQuiz;
+    const quiz = prompt?.quiz || null;
     const choice = quiz?.choices?.find(option => option.id === answerId);
     if (!choice) {
       return buildCorrectedResponse({
@@ -961,21 +897,22 @@ export class KanjiKombatService {
   resolveCompletionChoice(keepGoing, promptRef = {}) {
     const kk = this.gm.run?.kanjiKombat;
     this.assertOnboardingComplete();
+    const activePrompt = getKanjiKombatActivePrompt(kk);
     const prompt = hasPromptReference(promptRef)
       ? validateKanjiKombatPromptHead(kk, {
           ...promptRef,
           kind: 'completePrompt',
         })
-      : null;
-    if (!kk?.completionChoicePending) {
+      : activePrompt?.kind === 'completePrompt'
+        ? validateKanjiKombatPromptHead(kk, { kind: 'completePrompt' })
+        : null;
+    if (!prompt) {
       throw new Error('No Kanji Kombat completion choice is pending');
     }
 
-    kk.completionChoicePending = false;
     kk.report.completedDaily = true;
     if (prompt) {
       consumeKanjiKombatPromptHead(kk, prompt, { userId: this.gm.userId });
-      kk.completionChoicePending = false;
     }
 
     if (!keepGoing) {
@@ -985,7 +922,6 @@ export class KanjiKombatService {
     kk.endlessMode = true;
     if (!prompt && getKanjiKombatActivePrompt(kk)?.kind === 'completePrompt') {
       consumeKanjiKombatPromptHead(kk, { kind: 'completePrompt' }, { userId: this.gm.userId });
-      kk.completionChoicePending = false;
     }
 
     let nextWave = false;
@@ -1001,7 +937,6 @@ export class KanjiKombatService {
 
     const work = this.queueNextPrompt();
     if (work?.kind === 'complete' || work?.kind === 'completePrompt') {
-      kk.completionChoicePending = false;
       return this.finalizeDailyComplete();
     }
 

@@ -224,10 +224,6 @@ export class GameManager {
         }
       }
     }
-    if (this.run?.mode === 'kanjiKombat') {
-      this.kanjiKombatService.hydratePendingIntroCard();
-    }
-
     if (this.run?.rooms?.length) {
       this.explorationService.prepareRoomRevealBuffer?.();
       currentRoom = this.run?.rooms?.[this.run?.currentRoom] || null;
