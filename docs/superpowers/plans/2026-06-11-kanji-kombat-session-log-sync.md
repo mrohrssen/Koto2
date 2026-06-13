@@ -12,37 +12,41 @@
 
 ---
 
-## Execution Status (as of 2026-06-12)
+## Execution Status (as of 2026-06-13)
 
 Executed via subagent-driven development on branch `feature/kanji-kombat-session-sync` (worktree `koto-wt-kk-session-sync`). Each task passed a spec-compliance review and a code-quality review before being marked done.
 
 | Task | Status | Commits |
 |------|--------|---------|
 | 0 — Worktree | ✅ Done | (worktree + `08e0fd97` dev-seed reset) |
-| 1 — Subway harness (red) | ✅ Done | `21be5cc7`, `efe8df84` — still red by design; closes in Task 12 |
+| 1 — Subway harness (red) | ✅ Done | `21be5cc7`, `efe8df84` — red by design; closed in Task 12 |
 | 2 — Server seed chain | ✅ Done | `92789cfe` |
-| 3 — Pre-rolled next wave | ✅ Done | `53b5cd82` |
+| 3 — Pre-rolled next wave | ✅ Done | `53b5cd82` — generalized to a wave queue in Task 12 |
 | 4 — Session epoch | ✅ Done | `adf3796f` |
 | 5 — Batch sync service | ✅ Done | `4e9b8e88`, `512541c2` (edge-case tests), `05e9225f` (contract docs) |
 | 6 — Sync route | ✅ Done | `b8870251`, `899caace` (error-response hardening) |
-| 7 — Client session module | ⚠️ Implementation done (`92ffa737`); review-mandated test strengthening pending | `92ffa737` |
-| 8 — Client API function | ⬜ Not started | |
-| 9 — Cutover: intro/completion/render | ⬜ Not started | |
-| 10 — Cutover: quiz path | ⬜ Not started | |
-| 11 — Delete old layers | ⬜ Not started | |
-| 12 — Harness green + verification | ⬜ Not started | |
+| 7 — Client session module | ✅ Done | `92ffa737`, `4928d1b8` (review-mandated test strengthening) |
+| 8 — Client API function | ✅ Done | `25ece623` |
+| 9 — Cutover: intro/completion/render | ✅ Done | `88384f91`, `fd9e6a74` (init wiring) |
+| 10 — Cutover: quiz path | ✅ Done | `c790e745`, `2f7749a4` (gating/replay/banner fixes), `890e886c` (wave-number replay suppression) |
+| 11 — Delete old layers | ✅ Done | `723542dc`, `249d7064` (replay visuals serialization) |
+| 12 — Harness green + verification | ✅ Done | `b96f23d7`, `fdb76b34`, `75fb01a1`, `3ee781ab`, `18a87acd` |
 | 13 — Phase 4 cleanup + device validation | ⬜ Not started | |
 
-Suite state at `92ffa737`: 4141 unit + 64 integration, 0 failures. Subway harness intentionally red.
+Suite state at `18a87acd`: 4182 unit + 64 integration, 0 failures. Subway harness GREEN (full session through two offline windows, zero corrections, server counts match taps).
 
-**Task 7 outstanding (from spec review of `92ffa737`):** the module itself is spec-compliant; the test file needs strengthening before Task 7 closes:
-- The "reset abandons in-flight responses" test is ineffective — mutation-testing showed removing the generation guards still passes. Rewrite so a stale in-flight response would corrupt observable state (post-reset entry not dropped, no stale `onCheckpoint`), and mutation-check it.
-- Add coverage: single-flight + mid-flight entry survival; throwing callback doesn't break the syncer; singleton lifecycle (`configureKanjiKombatSession`/`getKanjiKombatSession`/`resetKanjiKombatSession`); full backoff ladder incl. cap + attempts reset on success and `syncNow()`; session-epoch adoption asserted via next sync payload.
+**Task 12 design deviations (approved during execution — the spec's letter changed, its goal did not):**
+- **Wave queue replaces the single pre-roll.** The spec assumed clearing two waves inside one outage was "rare"; real cadence clears a wave every 1-3 answers, so every 60s window crossed multiple boundaries and soft-paused. `kk.pendingNextWave` → `kk.pendingNextWaves`, an append-only queue topped up to min(quiz prompts in buffer, 30) — each answer clears at most one wave, so wave runway = quiz runway. Queued waves carry 12-seed chains (extended to the full 30 on spawn). Entries are rolled once and consumed verbatim by client simulation and server replay; a divergent head wipes the queue and falls back to a fresh roll.
+- **Streak rewards are deterministic and client-simulated.** Spec line 78 required local streak-heal simulation but it was never implemented, and streak-6/12 rewards rolled `Math.random` during replay — every transcript after streak 6 mismatched. Random payloads (stat pick, ally join) are now pre-rolled into `kk.pendingStreakRewards` (same pattern as waves); `src/shared/combat/kanji-kombat-streak.js` is the single source of truth for streak advance + milestone effects across client prediction, server live, and server replay.
+- **KK level-ups skip move learning everywhere.** Transcript hashes cover full creature objects (moves included), so server-only move learns diverged the first hash after any level-up. KK uses the shared no-move-learning XP routines (`src/shared/combat/kanji-kombat-xp.js`); a mutation-verified parity test (`tests/unit/game/kanji-kombat-xp-parity.test.js`) pins the shared math against `creatures.js`/`creature-combat-service.js` drift.
+- Also landed in Task 12: `PROMPT_BUFFER_TARGET` 30→60 (offline runway), intro session entries preserve the client-planned buffer, client-side append-only merge of the server runway (prompt tail by sequence high-water mark; wave/reward queues never regress), checkpoint full-snaps gated on no rendered prompt, graceful pause when the local queue is empty (a dead-wave gate covers the intro/completion render chain too), and checkpoint replay visuals made visuals-only (they previously overwrote newer local state).
 
 **Review notes binding later tasks:**
 - Task 5: `applySessionSync` is NOT self-rolling-back — callers must wrap in snapshot/restore (the `/sync` route does). Quiz entries dedupe via the `gm.meta` action ledger only, not `optimistic.acceptedActionIds`; each actionId must flow through exactly one path until Task 11 deletes the legacy one. Cross-path dedupe verified safe by integration test (prompt-head validation rejects before grading).
 - Task 6: `/sync` responds HTTP 200 + `status: 'corrected'` for service-level corrections (state saved where committed, incl. transcript_mismatch grades) vs HTTP 409 for unexpected throws (state restored).
-- Wave pre-roll pins enemy difficulty at pre-roll time by design (offline determinism beats mid-session level-up freshness).
+- Wave pre-rolls pin enemy difficulty at pre-roll time by design (offline determinism beats mid-session level-up freshness) — now true for the whole queue.
+- Task 13 watch item: KK run-state size grew several-fold (60 prompts + up to 30 queued waves + reward payloads). Caps are in place; keep an eye on save/payload size if it becomes a concern.
+- Task 13 watch item: the harness always answers correctly (state-derived). Wrong-answer/streak-reset paths are unit-tested but not exercised end-to-end; consider a deliberate wrong answer every Nth quiz.
 
 ---
 
@@ -1882,7 +1886,7 @@ git commit -m "Remove Kanji Kombat sync queue and legacy prompt fallbacks"
 
 ## Task 12: Harness Green + Verification
 
-- [ ] **Step 1: Run the subway harness**
+- [x] **Step 1: Run the subway harness**
 
 ```bash
 npm run test:subway
@@ -1890,7 +1894,7 @@ npm run test:subway
 
 Expected: PASS. Debug failures with `npx playwright test ... --headed` and the browser console (`[KanjiKombat]` logs). Common failure causes to check in order: seed-chain head mismatch between client build and server replay (compare `predictedHash` reasons in the sync correction response), wave-number off-by-one in pre-roll consumption, debounce timer not firing under `context.setOffline`.
 
-- [ ] **Step 2: Full suite + manual playtest**
+- [ ] **Step 2: Full suite + manual playtest** (npm test ✅ 4182+64 green; manual throttled playtest pending — needs user go-ahead for Playwright MCP)
 
 ```bash
 npm test
