@@ -31,9 +31,15 @@ Executed via subagent-driven development on branch `feature/kanji-kombat-session
 | 10 — Cutover: quiz path | ✅ Done | `c790e745`, `2f7749a4` (gating/replay/banner fixes), `890e886c` (wave-number replay suppression) |
 | 11 — Delete old layers | ✅ Done | `723542dc`, `249d7064` (replay visuals serialization) |
 | 12 — Harness green + verification | ✅ Done | `b96f23d7`, `fdb76b34`, `75fb01a1`, `3ee781ab`, `18a87acd` |
-| 13 — Phase 4 cleanup + device validation | ⬜ Not started | |
+| 13 — Phase 4 cleanup + device validation | ✅ Done (manual device pass + master advance deferred) | `d7458b7e` (legacy prompt mirrors), `c5144c4c` (playtest guide) |
 
 Suite state at `18a87acd`: 4182 unit + 64 integration, 0 failures. Subway harness GREEN (full session through two offline windows, zero corrections, server counts match taps).
+
+Task 13 status:
+- ✅ Step 1 removed server-side legacy prompt mirror reads/writes while preserving compatibility fields and legacy endpoints for one release (`// legacy client path — remove after next release`). `npm test` stayed green.
+- ⏭ Step 2 real-device mitmproxy validation was skipped/deferred to the human; the reverted network-bench tooling was not restored.
+- ✅ Step 3 documented Kanji Kombat offline behavior in `docs/playtest-guide.md`.
+- ⏭ Master advancement and worktree cleanup are deferred to the human after dev-deploy testing; this branch should stop after merging/pushing `dev`.
 
 **Task 12 design deviations (approved during execution — the spec's letter changed, its goal did not):**
 - **Wave queue replaces the single pre-roll.** The spec assumed clearing two waves inside one outage was "rare"; real cadence clears a wave every 1-3 answers, so every 60s window crossed multiple boundaries and soft-paused. `kk.pendingNextWave` → `kk.pendingNextWaves`, an append-only queue topped up to min(quiz prompts in buffer, 30) — each answer clears at most one wave, so wave runway = quiz runway. Queued waves carry 12-seed chains (extended to the full 30 on spawn). Entries are rolled once and consumed verbatim by client simulation and server replay; a divergent head wipes the queue and falls back to a fresh roll.
@@ -1910,7 +1916,7 @@ Report results to the user with the harness output before proceeding to Task 13.
 
 ## Task 13: Phase 4 Cleanup + Real-Device Validation
 
-- [ ] **Step 1: Remove server-side legacy mirroring (only after Tasks 9-11 are fully landed)**
+- [x] **Step 1: Remove server-side legacy mirroring (only after Tasks 9-11 are fully landed)**
 
 ```bash
 grep -n "currentQuiz\|pendingIntro\|completionChoicePending" src/game/services/kanji-kombat-service.js | head -30
@@ -1924,7 +1930,7 @@ git add -A
 git commit -m "Trim Kanji Kombat legacy prompt mirrors"
 ```
 
-- [ ] **Step 2: Real-device mitmproxy pass (manual, with the user)**
+- [ ] **Step 2: Real-device mitmproxy pass (manual, with the user) — deferred**
 
 The network-bench toolkit was reverted in `7dfa95bc`; restore it temporarily for the validation run:
 
@@ -1934,7 +1940,7 @@ The network-bench toolkit was reverted in `7dfa95bc`; restore it temporarily for
 
 Follow `scripts/network-bench/README.md` to run the `unreliable-dev-ios` profile against the deployed dev build on the iOS simulator, playing a Kanji Kombat session. Success: session completes, no ignored taps, `awaiting_verification` turn totals stay near playback duration (not 42-91s). Afterwards discard the restored tooling (`git checkout -- .` / do not commit it) and report findings to the user.
 
-- [ ] **Step 3: Update the playtest guide**
+- [x] **Step 3: Update the playtest guide**
 
 Add a short "Kanji Kombat offline behavior" section to `docs/playtest-guide.md`: what the spotty-connection pause looks like, that answers keep flowing offline, and how to simulate (DevTools offline toggle).
 
@@ -1945,7 +1951,7 @@ git commit -m "Document Kanji Kombat offline playtesting"
 
 - [ ] **Step 4: Finish the branch**
 
-Use the superpowers:finishing-a-development-branch flow: merge `feature/kanji-kombat-session-sync` → `dev`, push, advance `master` (`git push origin dev:master`), remove the worktree.
+Merge `feature/kanji-kombat-session-sync` → `dev` and push `dev` after the final automated gate. Per the 2026-06-13 execution note, do **not** advance `master` and do **not** remove the worktree until the human has verified the dev deploy.
 
 ---
 
