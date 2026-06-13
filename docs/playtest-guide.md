@@ -282,6 +282,27 @@ window.__gameState.meta.kanjiKombatOnboarding
 
 ---
 
+### Kanji Kombat Offline Behavior
+
+**Expected screen:**
+- During ordinary connection drops, quiz, intro, and completion actions should still visibly acknowledge within ~250ms.
+- Answers keep flowing while offline as long as the local runway still has prompts and pre-rolled waves available.
+- If the local runway is exhausted or the unsynced log reaches the hard cap, a soft pause appears with: "Connection is spotty. Your reviews will sync when you reconnect."
+- The pause should feel like a temporary hold, not a scary error or retry panel.
+
+**Interactions:**
+1. Open browser DevTools, go to the Network tab, and set the network to Offline mid-session.
+2. Answer several cards while offline.
+3. Set the network back to Online.
+
+**What could go wrong:**
+- Offline answers block immediately instead of continuing from the local runway.
+- The spotty-connection pause appears before the runway is exhausted or the hard cap is reached.
+- Reconnect causes old prompts to replay, unless the server sends a real correction.
+- Sync status becomes noisy instead of draining quietly after the connection returns.
+
+---
+
 ### Phase 3A: Speed Review Room (Run Room)
 
 **Trigger:** In Settings, set **Force Room Type** to `Speed Review Room`, then enter/proceed to a room.
