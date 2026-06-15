@@ -21,6 +21,8 @@ import {
   validateKanjiKombatPromptHead,
 } from '../../../src/game/services/kanji-kombat-service.js';
 
+const DAILY_COMPLETE_PROMPT_KIND = 'dailyCompletePrompt';
+
 describe('kanji-kombat deck controller', () => {
   let tempDir;
   const userId = 'kanji-kombat-user';
@@ -95,7 +97,7 @@ describe('kanji-kombat deck controller', () => {
     saveSrsData(userId, data);
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
     const work = chooseNextScriptWork(userId, state, { random: () => 0.5, now: new Date('2026-05-31T00:00:00Z') });
-    assert.equal(work.kind, 'completePrompt');
+    assert.equal(work.kind, DAILY_COMPLETE_PROMPT_KIND);
     assert.equal(state.completionChoicePending, false);
     assert.equal(state.report.completedDaily, true);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, true);
@@ -387,6 +389,69 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
     assert.equal(new Set(state.promptBuffer.map(prompt => prompt.promptId)).size, 60);
     assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 60);
+  });
+
+  it('places one daily complete marker before endless early-review runway', () => {
+    const data = loadSrsData(userId);
+    const hiragana = data.script.cards.filter(c => c.type === 'hiragana');
+    for (const card of hiragana) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+      card.reps = 1;
+    }
+    hiragana[0].due = new Date('2000-01-01T00:00:00Z');
+    data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: DAILY_NEW_LIMIT, completed: false };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const prompts = fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    const markerIndexes = prompts
+      .map((prompt, index) => prompt.kind === DAILY_COMPLETE_PROMPT_KIND ? index : -1)
+      .filter(index => index !== -1);
+
+    assert.deepEqual(markerIndexes, [1]);
+    assert.equal(prompts[0]?.kind, 'quiz');
+    assert.equal(prompts[0]?.cardId, hiragana[0].id);
+    assert.equal(prompts[2]?.kind, 'quiz');
+    assert.equal(prompts[2]?.source, 'earlyReview');
+    assert.notEqual(prompts[2]?.cardId, hiragana[0].id);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
+    assert.equal(state.report.completedDaily, false);
+  });
+
+  it('does not duplicate the daily complete marker when refilling after the boundary', () => {
+    const data = loadSrsData(userId);
+    const hiragana = data.script.cards.filter(c => c.type === 'hiragana');
+    for (const card of hiragana) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+      card.reps = 1;
+    }
+    hiragana[0].due = new Date('2000-01-01T00:00:00Z');
+    data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: DAILY_NEW_LIMIT, completed: false };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      target: 5,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      target: 10,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    const markerCount = state.promptBuffer
+      .filter(prompt => prompt.kind === DAILY_COMPLETE_PROMPT_KIND)
+      .length;
+    assert.equal(markerCount, 1);
+    assert.equal(state.promptBuffer[1]?.kind, DAILY_COMPLETE_PROMPT_KIND);
+    assert.equal(state.promptBuffer[2]?.kind, 'quiz');
+    assert.equal(state.promptBuffer[2]?.source, 'earlyReview');
   });
 
   it('builds intro prompts in the buffer without recording daily intro counts', () => {
