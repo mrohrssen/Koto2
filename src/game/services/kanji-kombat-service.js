@@ -654,7 +654,7 @@ export class KanjiKombatService {
       if (!head) {
         throw new Error('Kanji Kombat is complete for the day');
       }
-      if (head.kind === 'completePrompt') {
+      if (isDailyCompletePrompt(head)) {
         throw new Error('Kanji Kombat is complete for the day');
       }
     }
@@ -691,13 +691,16 @@ export class KanjiKombatService {
     kk.onboardingPending = false;
     this.refillPromptBuffer();
     const head = getKanjiKombatActivePrompt(kk);
-    let next = head?.kind || 'completePrompt';
+    if (isDailyCompletePrompt(head)) {
+      syncKanjiKombatPromptBufferState(this.gm.userId, kk);
+    }
+    let next = head?.kind || DAILY_COMPLETE_PROMPT_KIND;
     if (!head) {
-      const completionPrompt = promptFromWork(kk, { kind: 'completePrompt' });
+      const completionPrompt = promptFromWork(kk, { kind: DAILY_COMPLETE_PROMPT_KIND });
       if (completionPrompt) ensurePromptBufferState(kk).push(completionPrompt);
       syncKanjiKombatPromptBufferState(this.gm.userId, kk);
       kk.report.completedDaily = true;
-      next = 'completePrompt';
+      next = DAILY_COMPLETE_PROMPT_KIND;
     }
     this.gm.emitState();
     return {
@@ -910,31 +913,29 @@ export class KanjiKombatService {
     const kk = this.gm.run?.kanjiKombat;
     this.assertOnboardingComplete();
     const activePrompt = getKanjiKombatActivePrompt(kk);
+    const expectedCompletionKind = isDailyCompletePrompt(activePrompt)
+      ? activePrompt.kind
+      : DAILY_COMPLETE_PROMPT_KIND;
     const prompt = hasPromptReference(promptRef)
       ? validateKanjiKombatPromptHead(kk, {
           ...promptRef,
-          kind: 'completePrompt',
+          kind: expectedCompletionKind,
         })
-      : activePrompt?.kind === 'completePrompt'
-        ? validateKanjiKombatPromptHead(kk, { kind: 'completePrompt' })
+      : isDailyCompletePrompt(activePrompt)
+        ? validateKanjiKombatPromptHead(kk, { kind: activePrompt.kind })
         : null;
-    if (!prompt) {
+    if (!isDailyCompletePrompt(prompt)) {
       throw new Error('No Kanji Kombat completion choice is pending');
     }
 
     kk.report.completedDaily = true;
-    if (prompt) {
-      consumeKanjiKombatPromptHead(kk, prompt, { userId: this.gm.userId });
-    }
+    consumeKanjiKombatPromptHead(kk, prompt, { userId: this.gm.userId });
 
     if (!keepGoing) {
       return this.finalizeDailyComplete();
     }
 
     kk.endlessMode = true;
-    if (!prompt && getKanjiKombatActivePrompt(kk)?.kind === 'completePrompt') {
-      consumeKanjiKombatPromptHead(kk, { kind: 'completePrompt' }, { userId: this.gm.userId });
-    }
 
     let nextWave = false;
     let nextWaveEnemies = null;
@@ -948,7 +949,7 @@ export class KanjiKombatService {
     }
 
     const work = this.queueNextPrompt();
-    if (work?.kind === 'complete' || work?.kind === 'completePrompt') {
+    if (work?.kind === 'complete' || isDailyCompletePromptKind(work?.kind)) {
       return this.finalizeDailyComplete();
     }
 
@@ -976,7 +977,7 @@ export class KanjiKombatService {
     if (!head) return null;
     if (head.kind === 'quiz') return { kind: 'quiz', quiz: head.quiz, card: { id: head.cardId }, buffered: true };
     if (head.kind === 'intro') return { kind: 'intro', card: head.intro.card, source: head.source, buffered: true };
-    if (head.kind === 'completePrompt') return { kind: 'completePrompt' };
+    if (isDailyCompletePrompt(head)) return { kind: DAILY_COMPLETE_PROMPT_KIND };
     return null;
   }
 
@@ -1025,7 +1026,7 @@ export class KanjiKombatService {
 
     const state = createInitialKanjiKombatState();
     const work = this.chooseNextWork(state);
-    if (work.kind === 'complete' || work.kind === 'completePrompt') {
+    if (work.kind === 'complete' || isDailyCompletePromptKind(work.kind)) {
       return {
         available: false,
         reason: 'complete_for_day',
@@ -1326,7 +1327,7 @@ export class KanjiKombatService {
         enemies: clearedEnemies
       });
     }
-    if (work.kind === 'completePrompt') {
+    if (isDailyCompletePromptKind(work.kind)) {
       this.gm.emitState();
       return {
         actionType: 'kanjiKombat',

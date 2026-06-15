@@ -82,6 +82,7 @@ import {
   shouldShowStartingMeadowHinonekoIntro,
   collectStartingMeadowHinonekoVictoryReward
 } from './tutorial-service.js';
+import { isDailyCompletePromptKind } from './kanji-kombat-service.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../bootstrap/word-knowledge.js';
 import { selectBark } from '../dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
@@ -1132,7 +1133,7 @@ export class CombatCycleService {
         koRemovals
       });
     }
-    if (nextWork?.kind === 'completePrompt') {
+    if (isDailyCompletePromptKind(nextWork?.kind)) {
       this.gm.emitState();
       return {
         actionType: 'kanjiKombat',

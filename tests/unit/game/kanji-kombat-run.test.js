@@ -12,6 +12,7 @@ import {
   SCRIPT_DECK,
 } from '../../../src/game/script-srs.js';
 import {
+  DAILY_COMPLETE_PROMPT_KIND,
   createInitialKanjiKombatState,
   getLocalDateKey,
   KanjiKombatService,
@@ -147,8 +148,8 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.currentQuiz, null);
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
     assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
-    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'completePrompt');
-    assert.equal(result.next, 'completePrompt');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, DAILY_COMPLETE_PROMPT_KIND);
+    assert.equal(result.next, DAILY_COMPLETE_PROMPT_KIND);
   });
 
   it('saves onboarding and shows completion choice when no script work is available', () => {
@@ -180,8 +181,8 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.currentQuiz, null);
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
     assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
-    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'completePrompt');
-    assert.equal(result.next, 'completePrompt');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, DAILY_COMPLETE_PROMPT_KIND);
+    assert.equal(result.next, DAILY_COMPLETE_PROMPT_KIND);
   });
 
   it('rejects intro choices while onboarding is pending without touching intro card progress', () => {
@@ -597,9 +598,22 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     gm.run.kanjiKombat = createInitialKanjiKombatState({ localDate: getLocalDateKey() });
     gm.run.kanjiKombat.report.completedDaily = true;
     gm.run.kanjiKombat.promptBuffer = [
-      { promptId: 'kkp_keep_going_complete', sequence: 1, kind: 'completePrompt', cardId: null, source: 'dailyComplete' },
+      { promptId: 'kkp_keep_going_complete', sequence: 1, kind: DAILY_COMPLETE_PROMPT_KIND, cardId: null, source: 'dailyComplete' },
+      {
+        promptId: 'kkp_keep_going_quiz',
+        sequence: 2,
+        kind: 'quiz',
+        cardId: 'hiragana:あ',
+        source: 'earlyReview',
+        quiz: {
+          cardId: 'hiragana:あ',
+          prompt: 'あ',
+          reading: 'あ',
+          choices: [{ id: 'a', answer: 'a', correct: true }],
+        },
+      },
     ];
-    gm.run.kanjiKombat.promptBufferSeq = 1;
+    gm.run.kanjiKombat.promptBufferSeq = 2;
     gm.combat = { active: true, allies: gm.run.creatureParty.active, enemies: [{ hp: 1, id: 'enemy' }] };
     const service = new KanjiKombatService(gm);
 
@@ -613,6 +627,8 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.currentQuiz, null);
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
     assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'quiz');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.promptId, 'kkp_keep_going_quiz');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.source, 'earlyReview');
   });
 
   it('does not commit a completion choice from a stale legacy flag without an active prompt', () => {

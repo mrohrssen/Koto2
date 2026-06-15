@@ -9,6 +9,7 @@ import { instantiateCreature } from '../../../src/game/creatures.js';
 import { createCombatState } from '../../../src/game/state.js';
 import { createPveOpeningCursor } from '../../../src/game/combat/action-cursor.js';
 import {
+  DAILY_COMPLETE_PROMPT_KIND,
   KanjiKombatService,
   getKanjiKombatActivePrompt,
   getLocalDateKey,
@@ -342,11 +343,11 @@ test('applySessionSync completionChoice happy path (keepGoing: false ends daily)
   const kk = gm.run.kanjiKombat;
   const epoch = kk.sessionEpoch;
 
-  // Manually place a completePrompt at the buffer head.
+  // Manually place a daily completion marker at the buffer head.
   const completePrompt = {
-    promptId: 'kkp_test_complete_01',
-    sequence: 99,
-    kind: 'completePrompt',
+    promptId: 'kkp_test_complete_kg',
+    sequence: 98,
+    kind: DAILY_COMPLETE_PROMPT_KIND,
     cardId: null,
     source: 'dailyComplete',
   };
@@ -387,11 +388,24 @@ test('applySessionSync completionChoice happy path (keepGoing: true enters endle
   const completePrompt = {
     promptId: 'kkp_test_complete_kg',
     sequence: 98,
-    kind: 'completePrompt',
+    kind: DAILY_COMPLETE_PROMPT_KIND,
     cardId: null,
     source: 'dailyComplete',
   };
   kk.promptBuffer.unshift(completePrompt);
+  kk.promptBuffer.splice(1, 0, {
+    promptId: 'kkp_sync_early_review',
+    sequence: 99,
+    kind: 'quiz',
+    cardId: 'hiragana:あ',
+    source: 'earlyReview',
+    quiz: {
+      cardId: 'hiragana:あ',
+      prompt: 'あ',
+      reading: 'あ',
+      choices: [{ id: 'a', answer: 'a', correct: true }],
+    },
+  });
   kk.report.completedDaily = true;
 
   // Provide a live enemy so resolveCompletionChoice doesn't try to spawn a wave
@@ -415,13 +429,10 @@ test('applySessionSync completionChoice happy path (keepGoing: true enters endle
   assert.equal(result.status, 'ok');
   assert.equal(result.confirmedThroughSeq, 1);
   assert.equal(result.results.length, 1);
-  // keepGoing: true → endlessMode = true and combatEnded: false OR finalized if no cards remain
-  // Either way the choice was accepted and the legacy flag stayed inert.
   assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
-  // endlessMode is set if there were more cards; finalizeDailyComplete is called otherwise.
-  // Assert that the run responded to the choice (combatEnded or endlessMode, not both false + pending)
-  const responded = result.results[0].combatEnded === true || gm.run.kanjiKombat.endlessMode === true;
-  assert.ok(responded, 'resolveCompletionChoice should end daily or enter endless mode');
+  assert.equal(result.results[0].combatEnded, false);
+  assert.equal(gm.run.kanjiKombat.endlessMode, true);
+  assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.promptId, 'kkp_sync_early_review');
 });
 
 test('applySessionSync completionChoice with non-boolean keepGoing returns corrected', () => {
