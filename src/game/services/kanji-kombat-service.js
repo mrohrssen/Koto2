@@ -373,7 +373,7 @@ function promptFromWork(state, work) {
       },
     };
   }
-  if (work.kind === DAILY_COMPLETE_PROMPT_KIND) {
+  if (isDailyCompletePromptKind(work.kind)) {
     return { ...base, kind: DAILY_COMPLETE_PROMPT_KIND, cardId: null, source: 'dailyComplete' };
   }
   return null;
@@ -503,7 +503,6 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
     ? opts.target
     : PROMPT_BUFFER_TARGET;
   if (buffer.length >= target) {
-    syncKanjiKombatPromptBufferState(userId, state);
     return buffer;
   }
 
@@ -549,7 +548,6 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
   if (planningState.report?.scriptDeck) {
     state.report.scriptDeck = planningState.report.scriptDeck;
   }
-  syncKanjiKombatPromptBufferState(userId, state);
   return buffer;
 }
 

@@ -621,6 +621,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(state.promptBuffer[0]?.kind, DAILY_COMPLETE_PROMPT_KIND);
     assert.equal(state.promptBuffer[1]?.kind, 'quiz');
     assert.equal(state.promptBuffer[1]?.source, 'earlyReview');
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
   });
 
   it('validates present prompt reference fields even when their values are falsy', () => {
