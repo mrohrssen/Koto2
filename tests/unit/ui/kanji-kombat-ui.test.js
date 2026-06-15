@@ -501,7 +501,7 @@ describe('kanji-kombat ui', () => {
         mode: 'kanjiKombat',
         kanjiKombat: {
           promptBuffer: [{
-            kind: 'completePrompt',
+            kind: 'dailyCompletePrompt',
             promptId: 'p-complete',
             sequence: 1,
             cardId: null,
@@ -548,7 +548,7 @@ describe('kanji-kombat ui', () => {
         mode: 'kanjiKombat',
         kanjiKombat: {
           promptBuffer: [{
-            kind: 'completePrompt',
+            kind: 'dailyCompletePrompt',
             promptId: 'p-complete',
             sequence: 1,
             cardId: null,
@@ -567,6 +567,22 @@ describe('kanji-kombat ui', () => {
     assert.deepEqual(calls.find(c => c[0] === 'finishCombatResult'), ['finishCombatResult', true]);
     assert.equal(calls.some(c => c[0] === 'unexpected-refresh'), false);
     assert.equal(calls.some(c => c[0] === 'unexpected-update'), false);
+  });
+
+  it('renders a legacy completePrompt marker for active saved runs', () => {
+    const handled = renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{ promptId: 'legacy_complete', sequence: 1, kind: 'completePrompt', cardId: null }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    assert.equal(handled, true);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-completion-action').length, 2);
   });
 
   it('applies accepted intro choice state after clearing the choice locally', async () => {
@@ -1290,6 +1306,164 @@ describe('kanji-kombat ui', () => {
     ]);
   });
 
+  it('continues from daily complete marker to buffered early review without spotty copy', async () => {
+    const calls = [];
+    let currentState = null;
+
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => {
+        calls.push(['syncSession', entries[0].kind, entries[0].keepGoing]);
+        return new Promise(() => {});
+      },
+      __sessionSchedule: syncSchedule,
+      updateGameState: state => {
+        currentState = state;
+        calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer[0]?.kind || null]);
+        renderKanjiKombatAction(state);
+      },
+      getGameState: () => currentState,
+      showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [
+            {
+              promptId: 'kkp_daily_done',
+              sequence: 10,
+              kind: 'dailyCompletePrompt',
+              cardId: null,
+              source: 'dailyComplete',
+            },
+            {
+              promptId: 'kkp_early_review',
+              sequence: 11,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              source: 'earlyReview',
+              quiz: {
+                cardId: 'hiragana:あ',
+                prompt: 'あ',
+                reading: 'あ',
+                choices: [{ id: 'a', answer: 'a', correct: true }],
+              },
+            },
+          ],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 }, enemies: [{ id: 'enemy', hp: 10 }] },
+    };
+
+    renderKanjiKombatAction(currentState);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-completion-action').length, 2);
+
+    const yesButton = actionArea.querySelectorAll('.kanji-kombat-completion-action')
+      .find(button => button.dataset.keepGoing === 'true');
+    const handled = await yesButton.click();
+    await flushPromises(4);
+
+    assert.equal(handled, true);
+    assert.equal(actionArea.querySelector('.kanji-kombat-prompt')?.textContent, 'あ');
+    assert.equal(currentState.run.kanjiKombat.endlessMode, true);
+    assert.equal(currentState.run.kanjiKombat.promptBuffer[0]?.promptId, 'kkp_early_review');
+    assert.equal(calls.some(call => call[0] === 'showNarration'), false);
+    assert.equal(getKanjiKombatSession().pendingCount(), 1);
+  });
+
+  it('activates a buffered next wave before rendering early review after daily boundary wave clear', async () => {
+    const calls = [];
+    let currentState = null;
+
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => {
+        calls.push(['syncSession', entries[0].kind, entries[0].keepGoing]);
+        return new Promise(() => {});
+      },
+      __sessionSchedule: syncSchedule,
+      updateGameState: state => {
+        currentState = state;
+        calls.push([
+          'updateGameState',
+          state.run.kanjiKombat.promptBuffer[0]?.kind || null,
+          state.combat.enemies[0]?.uid || state.combat.enemies[0]?.id || null,
+        ]);
+        renderKanjiKombatAction(state);
+      },
+      getGameState: () => currentState,
+      showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        creatureParty: { active: [{ id: 'hi', uid: 'ally-hi', hp: 20, maxHp: 20 }], reserves: [] },
+        kanjiKombat: {
+          wave: 2,
+          pendingNextWaves: [{
+            wave: 2,
+            isMiniboss: false,
+            enemies: [{ id: 'mizu', uid: 'enemy-wave-2', hp: 12, maxHp: 12 }],
+            combat: {
+              combatId: 'cmb_wave_2',
+              stateVersion: 0,
+              nextTurnSeed: 'seed-wave-2',
+              turnSeeds: ['seed-wave-2'],
+            },
+          }],
+          promptBuffer: [
+            {
+              promptId: 'kkp_daily_done_dead_wave',
+              sequence: 20,
+              kind: 'dailyCompletePrompt',
+              cardId: null,
+              source: 'dailyComplete',
+            },
+            {
+              promptId: 'kkp_early_review_dead_wave',
+              sequence: 21,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              source: 'earlyReview',
+              quiz: {
+                cardId: 'hiragana:あ',
+                prompt: 'あ',
+                reading: 'あ',
+                choices: [{ id: 'a', answer: 'a', correct: true }],
+              },
+            },
+          ],
+        },
+      },
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [{ id: 'hi', uid: 'ally-hi', hp: 20, maxHp: 20 }],
+        enemies: [{ id: 'old-enemy', uid: 'enemy-wave-1', hp: 0, maxHp: 10 }],
+        actionCursor: { side: 'ally', index: 0 },
+        optimistic: { combatId: 'cmb_wave_1', stateVersion: 4, nextTurnSeed: null, turnSeeds: [] },
+      },
+    };
+
+    renderKanjiKombatAction(currentState);
+    const yesButton = actionArea.querySelectorAll('.kanji-kombat-completion-action')
+      .find(button => button.dataset.keepGoing === 'true');
+    const handled = await yesButton.click();
+    await flushPromises(4);
+
+    assert.equal(handled, true);
+    assert.equal(actionArea.querySelector('.kanji-kombat-prompt')?.textContent, 'あ');
+    assert.equal(currentState.combat.enemies[0].uid, 'enemy-wave-2');
+    assert.equal(currentState.run.kanjiKombat.pendingNextWaves.length, 0);
+    assert.equal(currentState.combat.optimistic.combatId, 'cmb_wave_2');
+    assert.equal(calls.some(call => call[0] === 'showNarration'), false);
+  });
+
   it('shows spotty connection copy when no prompt is available but session is pending', async () => {
     const calls = [];
     // Never-resolving syncSession keeps pending log non-empty
@@ -1551,7 +1725,7 @@ describe('kanji-kombat ui', () => {
           promptBuffer: [{
             promptId: 'kkp_complete_queue',
             sequence: 4,
-            kind: 'completePrompt',
+            kind: 'dailyCompletePrompt',
             cardId: null,
           }],
         },
@@ -1607,7 +1781,7 @@ describe('kanji-kombat ui', () => {
         mode: 'kanjiKombat',
         kanjiKombat: {
           promptBuffer: [{
-            kind: 'completePrompt',
+            kind: 'dailyCompletePrompt',
             promptId: 'p-complete',
             sequence: 1,
             cardId: null,
