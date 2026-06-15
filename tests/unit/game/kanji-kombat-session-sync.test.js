@@ -16,6 +16,7 @@ import {
   rotateKanjiKombatSessionEpoch,
   createInitialKanjiKombatState,
   ensureKanjiKombatTurnSeeds,
+  isDailyCompletePrompt,
 } from '../../../src/game/services/kanji-kombat-service.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { createSeededRng } from '../../../src/shared/deterministic-rng.js';
@@ -166,7 +167,7 @@ function advanceToQuiz(service) {
   while (true) {
     const head = getKanjiKombatActivePrompt(kk);
     if (!head || head.kind === 'quiz') break;
-    if (head.kind === 'completePrompt') break;
+    if (isDailyCompletePrompt(head)) break;
     if (head.kind === 'intro') {
       service.submitIntroChoice(head.cardId, 'unknown', {
         promptId: head.promptId,
