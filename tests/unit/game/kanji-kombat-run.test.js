@@ -631,6 +631,42 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.source, 'earlyReview');
   });
 
+  it('persists daily completion when resolving an already-active daily marker', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    ensureScriptDeckSeeded(gm.userId);
+    const data = loadSrsData(gm.userId);
+    data.kanjiKombatDaily = { date: getLocalDateKey(), introducedCount: DAILY_NEW_LIMIT, completed: false };
+    saveSrsData(gm.userId, data);
+    gm.run.mode = 'kanjiKombat';
+    gm.run.kanjiKombat = createInitialKanjiKombatState({ localDate: getLocalDateKey() });
+    gm.run.kanjiKombat.promptBuffer = [
+      { promptId: 'kkp_already_active_complete', sequence: 1, kind: DAILY_COMPLETE_PROMPT_KIND, cardId: null, source: 'dailyComplete' },
+      {
+        promptId: 'kkp_already_active_quiz',
+        sequence: 2,
+        kind: 'quiz',
+        cardId: 'hiragana:あ',
+        source: 'earlyReview',
+        quiz: {
+          cardId: 'hiragana:あ',
+          prompt: 'あ',
+          reading: 'あ',
+          choices: [{ id: 'a', answer: 'a', correct: true }],
+        },
+      },
+    ];
+    gm.run.kanjiKombat.promptBufferSeq = 2;
+    gm.combat = { active: true, allies: gm.run.creatureParty.active, enemies: [{ hp: 1, id: 'enemy' }] };
+    const service = new KanjiKombatService(gm);
+
+    service.resolveCompletionChoice(true, { promptId: 'kkp_already_active_complete', sequence: 1 });
+
+    assert.equal(getScriptDailyState(gm.userId, getLocalDateKey()).completed, true);
+    assert.equal(gm.run.kanjiKombat.report.completedDaily, true);
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.promptId, 'kkp_already_active_quiz');
+  });
+
   it('does not commit a completion choice from a stale legacy flag without an active prompt', () => {
     const gm = buildGm();
     gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };

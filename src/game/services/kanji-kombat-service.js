@@ -492,6 +492,10 @@ export function validateKanjiKombatPromptHead(state, ref = {}) {
 
 export function consumeKanjiKombatPromptHead(state, ref = {}, opts = {}) {
   const head = validateKanjiKombatPromptHead(state, ref);
+  if (isDailyCompletePrompt(head)) {
+    if (opts.userId) markScriptDailyComplete(opts.userId, state.localDate);
+    state.report.completedDaily = true;
+  }
   state.promptBuffer.shift();
   syncKanjiKombatPromptBufferState(opts.userId, state);
   return head;
