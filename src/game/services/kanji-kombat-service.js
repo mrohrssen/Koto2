@@ -48,6 +48,17 @@ export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 3;
 export const PROMPT_BUFFER_TARGET = 60;
 export const PROMPT_BUFFER_REFILL_THRESHOLD = 10;
 const PROMPT_ID_PREFIX = 'kkp';
+export const DAILY_COMPLETE_PROMPT_KIND = 'dailyCompletePrompt';
+export const LEGACY_COMPLETE_PROMPT_KIND = 'completePrompt';
+
+export function isDailyCompletePromptKind(kind) {
+  return kind === DAILY_COMPLETE_PROMPT_KIND || kind === LEGACY_COMPLETE_PROMPT_KIND;
+}
+
+export function isDailyCompletePrompt(prompt) {
+  return isDailyCompletePromptKind(prompt?.kind);
+}
+
 const SOLO_OPENING_WAVES = 3;
 
 function createServerSeed() {
@@ -233,7 +244,7 @@ function promptForDailyCompletion(userId, state, opts = {}) {
     markScriptDailyComplete(userId, state.localDate);
   }
   state.report.completedDaily = true;
-  return { kind: 'completePrompt' };
+  return { kind: DAILY_COMPLETE_PROMPT_KIND };
 }
 
 export function chooseNextScriptWork(userId, state, opts = {}) {
@@ -362,15 +373,15 @@ function promptFromWork(state, work) {
       },
     };
   }
-  if (work.kind === 'completePrompt') {
-    return { ...base, cardId: null, source: 'dailyComplete' };
+  if (work.kind === DAILY_COMPLETE_PROMPT_KIND) {
+    return { ...base, kind: DAILY_COMPLETE_PROMPT_KIND, cardId: null, source: 'dailyComplete' };
   }
   return null;
 }
 
 function syncKanjiKombatPromptBufferState(userId, state) {
   const head = getKanjiKombatActivePrompt(state);
-  if (head?.kind === 'completePrompt') {
+  if (isDailyCompletePrompt(head)) {
     if (userId) markScriptDailyComplete(userId, state.localDate);
     state.report.completedDaily = true;
   }
@@ -427,6 +438,11 @@ function advancePlanningStateAfterPrompt(planningState, prompt, random = Math.ra
     }
     return;
   }
+  if (isDailyCompletePrompt(prompt)) {
+    planningState.endlessMode = true;
+    planningState.report.completedDaily = true;
+    return;
+  }
 }
 
 function advancePreviewDailyStateAfterPrompt(previewDailyState, prompt) {
@@ -438,7 +454,7 @@ function advancePreviewDailyStateAfterPrompt(previewDailyState, prompt) {
     );
     return;
   }
-  if (prompt.kind === 'completePrompt') {
+  if (isDailyCompletePrompt(prompt)) {
     previewDailyState.completed = true;
   }
 }
@@ -486,12 +502,6 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
   const target = Number.isInteger(opts.target) && opts.target > 0
     ? opts.target
     : PROMPT_BUFFER_TARGET;
-  const terminalIndex = buffer.findIndex(prompt => prompt.kind === 'completePrompt');
-  if (terminalIndex !== -1) {
-    buffer.splice(terminalIndex + 1);
-    syncKanjiKombatPromptBufferState(userId, state);
-    return buffer;
-  }
   if (buffer.length >= target) {
     syncKanjiKombatPromptBufferState(userId, state);
     return buffer;
@@ -507,6 +517,7 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
     ...buffer.map(prompt => prompt.cardId).filter(Boolean),
   ]);
   const excludedPracticeIds = opts.excludePracticeCardIds || baseExcludeCardIds;
+  let dailyBoundaryQueued = buffer.some(isDailyCompletePrompt);
 
   for (const prompt of buffer) {
     advancePlanningStateAfterPrompt(planningState, prompt, random);
@@ -523,13 +534,16 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
       excludePracticeCardIds: excludedPracticeIds,
     });
     if (work.kind === 'complete') break;
+    if (isDailyCompletePromptKind(work.kind)) {
+      if (dailyBoundaryQueued) break;
+      dailyBoundaryQueued = true;
+    }
     const prompt = promptFromWork(state, work);
     if (!prompt) break;
     buffer.push(prompt);
     if (prompt.cardId) excludedIds.add(prompt.cardId);
     advancePlanningStateAfterPrompt(planningState, prompt, random);
     advancePreviewDailyStateAfterPrompt(previewDailyState, prompt);
-    if (prompt.kind === 'completePrompt') break;
   }
 
   if (planningState.report?.scriptDeck) {

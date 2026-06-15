@@ -11,6 +11,7 @@ import {
   chooseNextScriptWork,
   consumeKanjiKombatPromptHead,
   createInitialKanjiKombatState,
+  DAILY_COMPLETE_PROMPT_KIND,
   fillKanjiKombatPromptBuffer,
   getKanjiKombatActivePrompt,
   getLocalDateKey,
@@ -20,8 +21,6 @@ import {
   resolveIntroChoice,
   validateKanjiKombatPromptHead,
 } from '../../../src/game/services/kanji-kombat-service.js';
-
-const DAILY_COMPLETE_PROMPT_KIND = 'dailyCompletePrompt';
 
 describe('kanji-kombat deck controller', () => {
   let tempDir;
@@ -561,7 +560,7 @@ describe('kanji-kombat deck controller', () => {
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    assert.deepEqual(prompts.map(prompt => prompt.kind), ['intro', 'quiz', 'completePrompt']);
+    assert.deepEqual(prompts.map(prompt => prompt.kind), ['intro', 'quiz', DAILY_COMPLETE_PROMPT_KIND]);
     assert.equal(prompts.filter(prompt => prompt.kind === 'intro').length, 1);
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, DAILY_NEW_LIMIT - 1);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
@@ -587,12 +586,12 @@ describe('kanji-kombat deck controller', () => {
 
     assert.equal(PROMPT_BUFFER_TARGET, 60);
     assert.equal(prompts.filter(prompt => prompt.kind === 'intro').length, 2);
-    assert.equal(prompts.at(-1).kind, 'completePrompt');
+    assert.equal(prompts.at(-1).kind, DAILY_COMPLETE_PROMPT_KIND);
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, DAILY_NEW_LIMIT - 2);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
   });
 
-  it('does not append after an existing completion prompt', () => {
+  it('does not duplicate an existing daily complete marker while appending endless review prompts', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
       card.due = new Date('2099-01-01T00:00:00Z');
@@ -615,7 +614,13 @@ describe('kanji-kombat deck controller', () => {
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    assert.deepEqual(state.promptBuffer.map(prompt => prompt.kind), ['completePrompt']);
+    const markerCount = state.promptBuffer
+      .filter(prompt => prompt.kind === DAILY_COMPLETE_PROMPT_KIND)
+      .length;
+    assert.equal(markerCount, 1);
+    assert.equal(state.promptBuffer[0]?.kind, DAILY_COMPLETE_PROMPT_KIND);
+    assert.equal(state.promptBuffer[1]?.kind, 'quiz');
+    assert.equal(state.promptBuffer[1]?.source, 'earlyReview');
   });
 
   it('validates present prompt reference fields even when their values are falsy', () => {
