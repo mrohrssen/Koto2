@@ -18,8 +18,10 @@
   - Treats `dailyCompletePrompt` as the wave/combat boundary prompt returned after a resolving answer.
 - Modify `public/js/ui/kanji-kombat.js`
   - Renders and locally consumes `dailyCompletePrompt`, including the no-pause `Yes` path.
+- Create `public/js/ui/kanji-kombat-local-wave.js`
+  - Owns local activation of a pre-rolled Kanji Kombat wave after the player chooses to continue from a daily boundary that followed a wave clear.
 - Modify `public/js/ui/combat-loop.js`
-  - Treats `dailyCompletePrompt` as the daily boundary after optimistic local quiz prediction.
+  - Reuses the shared local wave helper and treats `dailyCompletePrompt` as the daily boundary after optimistic local quiz prediction.
 - Modify `tests/unit/game/kanji-kombat-deck.test.js`
   - Covers buffer filling across the daily boundary, no marker duplication, and no persistent daily completion from preview buffering.
 - Modify `tests/unit/game/kanji-kombat-run.test.js`
@@ -230,7 +232,7 @@ function syncKanjiKombatPromptBufferState(userId, state) {
 
 - [ ] **Step 5: Advance planning state through the marker**
 
-In `advancePlanningStateAfterPrompt`, add this branch before the final `return`:
+In `advancePlanningStateAfterPrompt`, add this as a top-level branch after the existing `intro` branch:
 
 ```javascript
 if (isDailyCompletePrompt(prompt)) {
@@ -476,10 +478,13 @@ if (!head) {
 Use this pattern in `resolveCompletionChoice`:
 
 ```javascript
+const expectedCompletionKind = isDailyCompletePrompt(activePrompt)
+  ? activePrompt.kind
+  : DAILY_COMPLETE_PROMPT_KIND;
 const prompt = hasPromptReference(promptRef)
   ? validateKanjiKombatPromptHead(kk, {
       ...promptRef,
-      kind: getKanjiKombatActivePrompt(kk)?.kind,
+      kind: expectedCompletionKind,
     })
   : isDailyCompletePrompt(activePrompt)
     ? validateKanjiKombatPromptHead(kk, { kind: activePrompt.kind })
@@ -594,6 +599,7 @@ Expected: PASS for both files.
 ### Task 4: Update Client Daily Marker Rendering And Local Yes Path
 
 **Files:**
+- Create: `public/js/ui/kanji-kombat-local-wave.js`
 - Modify: `public/js/ui/kanji-kombat.js`
 - Modify: `tests/unit/ui/kanji-kombat-ui.test.js`
 
@@ -685,7 +691,103 @@ it('continues from daily complete marker to buffered early review without spotty
 });
 ```
 
-- [ ] **Step 3: Run the UI test and verify it fails**
+- [ ] **Step 3: Add a failing UI test for the wave-clear Yes path**
+
+Add this test immediately after the live-wave no-pause test:
+
+```javascript
+it('activates a buffered next wave before rendering early review after daily boundary wave clear', async () => {
+  const calls = [];
+  let currentState = null;
+
+  initKanjiKombatUI({
+    syncSession: async ({ entries }) => {
+      calls.push(['syncSession', entries[0].kind, entries[0].keepGoing]);
+      return new Promise(() => {});
+    },
+    __sessionSchedule: syncSchedule,
+    updateGameState: state => {
+      currentState = state;
+      calls.push([
+        'updateGameState',
+        state.run.kanjiKombat.promptBuffer[0]?.kind || null,
+        state.combat.enemies[0]?.uid || state.combat.enemies[0]?.id || null,
+      ]);
+      renderKanjiKombatAction(state);
+    },
+    getGameState: () => currentState,
+    showNarration: async text => calls.push(['showNarration', text]),
+    playCorrectAnswerAudio: () => {},
+  });
+
+  currentState = {
+    phase: 'combat',
+    run: {
+      mode: 'kanjiKombat',
+      creatureParty: { active: [{ id: 'hi', uid: 'ally-hi', hp: 20, maxHp: 20 }], reserves: [] },
+      kanjiKombat: {
+        wave: 2,
+        pendingNextWaves: [{
+          wave: 2,
+          isMiniboss: false,
+          enemies: [{ id: 'mizu', uid: 'enemy-wave-2', hp: 12, maxHp: 12 }],
+          combat: {
+            combatId: 'cmb_wave_2',
+            stateVersion: 0,
+            nextTurnSeed: 'seed-wave-2',
+            turnSeeds: ['seed-wave-2'],
+          },
+        }],
+        promptBuffer: [
+          {
+            promptId: 'kkp_daily_done_dead_wave',
+            sequence: 20,
+            kind: 'dailyCompletePrompt',
+            cardId: null,
+            source: 'dailyComplete',
+          },
+          {
+            promptId: 'kkp_early_review_dead_wave',
+            sequence: 21,
+            kind: 'quiz',
+            cardId: 'hiragana:あ',
+            source: 'earlyReview',
+            quiz: {
+              cardId: 'hiragana:あ',
+              prompt: 'あ',
+              reading: 'あ',
+              choices: [{ id: 'a', answer: 'a', correct: true }],
+            },
+          },
+        ],
+      },
+    },
+    combat: {
+      active: true,
+      mode: 'kanjiKombat',
+      allies: [{ id: 'hi', uid: 'ally-hi', hp: 20, maxHp: 20 }],
+      enemies: [{ id: 'old-enemy', uid: 'enemy-wave-1', hp: 0, maxHp: 10 }],
+      actionCursor: { side: 'ally', index: 0 },
+      optimistic: { combatId: 'cmb_wave_1', stateVersion: 4, nextTurnSeed: null, turnSeeds: [] },
+    },
+  };
+
+  renderKanjiKombatAction(currentState);
+  const yesButton = actionArea.querySelectorAll('.kanji-kombat-completion-action')
+    .find(button => button.dataset.keepGoing === 'true');
+  const handled = await yesButton.click();
+  await flushPromises(4);
+
+  assert.equal(handled, true);
+  assert.equal(actionArea.querySelector('.kanji-kombat-prompt')?.textContent, 'あ');
+  assert.equal(currentState.combat.enemies[0].uid, 'enemy-wave-2');
+  assert.equal(currentState.run.kanjiKombat.pendingNextWaves.length, 0);
+  assert.equal(currentState.combat.optimistic.combatId, 'cmb_wave_2');
+  assert.equal(calls.some(call => call[0] === 'showNarration'), false);
+});
+```
+
+- [ ] **Step 4: Run the UI test and verify it fails**
 
 Run:
 
@@ -693,9 +795,52 @@ Run:
 node --test tests/unit/ui/kanji-kombat-ui.test.js
 ```
 
-Expected: FAIL because `renderKanjiKombatAction` does not recognize `dailyCompletePrompt`.
+Expected: FAIL because `renderKanjiKombatAction` does not recognize `dailyCompletePrompt`, and the wave-clear path still hits the dead-wave spotty pause.
 
-- [ ] **Step 4: Update rendered prompt detection**
+- [ ] **Step 5: Create a shared local wave activation helper**
+
+Create `public/js/ui/kanji-kombat-local-wave.js`:
+
+```javascript
+import { createPveOpeningCursor } from '../../../src/game/combat/action-cursor.js';
+
+export function isKanjiKombatWaveDead(state) {
+  const enemies = state?.combat?.enemies;
+  return Array.isArray(enemies)
+    && enemies.length > 0
+    && !enemies.some(enemy => enemy && enemy.hp > 0 && enemy.befriended !== true);
+}
+
+export function applyLocalKanjiKombatWaveTransition(state) {
+  const kk = state?.run?.kanjiKombat;
+  const queue = Array.isArray(kk?.pendingNextWaves) ? kk.pendingNextWaves : [];
+  const pending = queue[0] || null;
+  if (!pending || !state.combat) return null;
+
+  kk.wave = pending.wave;
+  kk.pendingNextWaves = queue.slice(1);
+  state.combat = {
+    ...state.combat,
+    active: true,
+    enemies: pending.enemies,
+    isBoss: pending.isMiniboss === true,
+    optimistic: { ...pending.combat },
+    actionCount: 0,
+    cycleCount: 0,
+    openingResolved: false,
+    turnCount: 1,
+    actionCursor: createPveOpeningCursor({
+      allies: state.combat.allies || state.run?.creatureParty?.active || [],
+      enemies: pending.enemies,
+    }),
+  };
+  return pending;
+}
+```
+
+This helper is the single owner of local pre-rolled wave activation. Task 5 imports it from `combat-loop.js` and removes the existing private `applyLocalKanjiKombatWaveTransition` copy there.
+
+- [ ] **Step 6: Update rendered prompt detection**
 
 In `hasRenderedKanjiKombatPrompt`, no new selector is required because the marker renders the same `.kanji-kombat-completion-action` buttons. Leave that function unchanged.
 
@@ -723,7 +868,16 @@ with:
 const completionPrompt = isDailyCompletePrompt(bufferedPrompt);
 ```
 
-- [ ] **Step 5: Keep the Yes path local-first**
+- [ ] **Step 7: Keep the Yes path local-first and activate a pre-rolled wave when needed**
+
+In `public/js/ui/kanji-kombat.js`, import the shared helper:
+
+```javascript
+import {
+  applyLocalKanjiKombatWaveTransition,
+  isKanjiKombatWaveDead,
+} from './kanji-kombat-local-wave.js';
+```
 
 In the completion prompt `onChoice` handler, keep this existing logic:
 
@@ -734,9 +888,17 @@ if (keepGoing) draft.run.kanjiKombat.endlessMode = true;
 updateKanjiKombatGameState(draft);
 ```
 
-Do not add a `session.syncNow()` call to the `keepGoing: true` path. The normal session scheduler can sync it; the key behavior is that the already-buffered prompt renders immediately.
+Insert the local wave activation before `updateKanjiKombatGameState(draft)`:
 
-- [ ] **Step 6: Update existing UI fixtures**
+```javascript
+if (keepGoing && isKanjiKombatWaveDead(draft)) {
+  applyLocalKanjiKombatWaveTransition(draft);
+}
+```
+
+Do not add a `session.syncNow()` call to the `keepGoing: true` path. The normal session scheduler can sync it; the key behavior is that the already-buffered prompt renders immediately. If no pre-rolled wave is available, `applyLocalKanjiKombatWaveTransition` returns `null`, and the existing runway-exhaustion pause remains correct.
+
+- [ ] **Step 8: Update existing UI fixtures**
 
 In `tests/unit/ui/kanji-kombat-ui.test.js`, replace generated daily-boundary fixtures that currently use:
 
@@ -770,7 +932,7 @@ it('renders a legacy completePrompt marker for active saved runs', () => {
 });
 ```
 
-- [ ] **Step 7: Run UI tests and verify they pass**
+- [ ] **Step 9: Run UI tests and verify they pass**
 
 Run:
 
@@ -780,10 +942,10 @@ node --test tests/unit/ui/kanji-kombat-ui.test.js
 
 Expected: PASS for the UI file.
 
-- [ ] **Step 8: Commit UI marker handling**
+- [ ] **Step 10: Commit UI marker handling**
 
 ```bash
-/usr/bin/git add public/js/ui/kanji-kombat.js tests/unit/ui/kanji-kombat-ui.test.js
+/usr/bin/git add public/js/ui/kanji-kombat.js public/js/ui/kanji-kombat-local-wave.js tests/unit/ui/kanji-kombat-ui.test.js
 /usr/bin/git commit -m "feat: render Kanji Kombat daily boundary runway locally"
 ```
 
@@ -795,9 +957,21 @@ Expected: PASS for the UI file.
 - Modify: `public/js/ui/combat-loop.js`
 - Modify: `tests/unit/ui/combat-network-hardening.test.js`
 
-- [ ] **Step 1: Add local helper in combat loop**
+- [ ] **Step 1: Import the shared local wave helper and add a prompt-kind helper**
 
-In `public/js/ui/combat-loop.js`, near `hasKanjiKombatPromptRef`, add:
+In `public/js/ui/combat-loop.js`, replace:
+
+```javascript
+import { createPveOpeningCursor } from '../../../src/game/combat/action-cursor.js';
+```
+
+with:
+
+```javascript
+import { applyLocalKanjiKombatWaveTransition } from './kanji-kombat-local-wave.js';
+```
+
+Near `hasKanjiKombatPromptRef`, add:
 
 ```javascript
 function isKanjiKombatDailyCompletePrompt(prompt) {
@@ -805,7 +979,26 @@ function isKanjiKombatDailyCompletePrompt(prompt) {
 }
 ```
 
-- [ ] **Step 2: Update local prompt consumption**
+- [ ] **Step 2: Remove the private wave-transition helper from combat loop**
+
+Delete the private `applyLocalKanjiKombatWaveTransition` function block in `public/js/ui/combat-loop.js`. The block starts with:
+
+```javascript
+/**
+ * Consume the head of the pre-rolled next-wave queue from the local state when a
+ * wave-end answer is predicted locally.
+```
+
+and ends immediately before:
+
+```javascript
+/**
+ * Advance the local streak and apply any milestone reward to the local draft
+```
+
+After this deletion, the only `applyLocalKanjiKombatWaveTransition` definition should be the export in `public/js/ui/kanji-kombat-local-wave.js`, and `combat-loop.js` should only import and call it.
+
+- [ ] **Step 3: Update local prompt consumption**
 
 In `localStateAfterKanjiKombatPrediction`, replace:
 
@@ -819,7 +1012,56 @@ with:
 kk.completionChoicePending = isKanjiKombatDailyCompletePrompt(nextPrompt);
 ```
 
-- [ ] **Step 3: Update combat-network boundary fixture**
+- [ ] **Step 4: Update daily-boundary comments in combat loop**
+
+Replace the comment above the local wave-clear branch:
+
+```javascript
+// Guard: if the next prompt is a completePrompt (daily boundary), skip the
+// pre-roll consumption — let the checkpoint deliver the authoritative wave state.
+```
+
+with:
+
+```javascript
+// Guard: if the next prompt is a dailyCompletePrompt marker (or legacy completePrompt),
+// skip pre-roll consumption here. The completion screen renders from the predicted
+// state, and the Yes path activates the already-buffered next wave locally.
+```
+
+Replace the comment in the `allEnemiesDefeated && dailyBoundary` branch:
+
+```javascript
+// Special case: when all enemies are defeated AND the next prompt is a
+// completePrompt (daily boundary), the completion screen must render
+// immediately from the local predicted state.
+```
+
+with:
+
+```javascript
+// Special case: when all enemies are defeated AND the next prompt is a
+// dailyCompletePrompt marker, the completion screen must render immediately
+// from the local predicted state.
+```
+
+Replace the `refreshAction` callback comment:
+
+```javascript
+// When combat ends at the daily boundary (all enemies defeated, next prompt
+// is completePrompt), render the completion screen immediately from the local
+// predicted state so the UI doesn't stall waiting for the server checkpoint.
+```
+
+with:
+
+```javascript
+// When combat ends at the daily boundary (all enemies defeated, next prompt
+// is dailyCompletePrompt), render the completion screen immediately from the
+// local predicted state so the UI doesn't stall waiting for the server checkpoint.
+```
+
+- [ ] **Step 5: Update combat-network boundary fixture**
 
 In `tests/unit/ui/combat-network-hardening.test.js`, in the test named `does not consume the pre-rolled next wave when the post-answer state has completionChoicePending`, change the boundary prompt fixture to:
 
@@ -834,7 +1076,7 @@ In `tests/unit/ui/combat-network-hardening.test.js`, in the test named `does not
 
 Update nearby comments from `completePrompt` to `dailyCompletePrompt` so the test documents the current marker kind.
 
-- [ ] **Step 4: Run the focused combat UI test and verify it passes**
+- [ ] **Step 6: Run the focused combat UI test and verify it passes**
 
 Run:
 
@@ -844,7 +1086,7 @@ node --test tests/unit/ui/combat-network-hardening.test.js
 
 Expected: PASS. The daily boundary still suppresses local pre-rolled wave consumption.
 
-- [ ] **Step 5: Commit combat-loop boundary handling**
+- [ ] **Step 7: Commit combat-loop boundary handling**
 
 ```bash
 /usr/bin/git add public/js/ui/combat-loop.js tests/unit/ui/combat-network-hardening.test.js
@@ -1026,11 +1268,12 @@ Expected remaining references are either:
 Run:
 
 ```bash
+node --check public/js/ui/kanji-kombat-local-wave.js
 node --check public/js/ui/kanji-kombat.js
 node --check public/js/ui/combat-loop.js
 ```
 
-Expected: both commands print no output and exit `0`.
+Expected: all three commands print no output and exit `0`.
 
 - [ ] **Step 2: Run focused unit and integration tests**
 
