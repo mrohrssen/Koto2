@@ -753,7 +753,10 @@ export function renderKanjiKombatAction(gameState) {
         consumePromptHeadDraft(draft, bufferedPrompt);
         if (keepGoing) draft.run.kanjiKombat.endlessMode = true;
         if (keepGoing && isKanjiKombatWaveDead(draft)) {
-          applyLocalKanjiKombatWaveTransition(draft);
+          const locallyActivatedPendingWave = applyLocalKanjiKombatWaveTransition(draft);
+          if (locallyActivatedPendingWave) {
+            api.setLastLocallyPlayedKanjiKombatWave?.(locallyActivatedPendingWave.wave);
+          }
         }
         updateKanjiKombatGameState(draft);
 

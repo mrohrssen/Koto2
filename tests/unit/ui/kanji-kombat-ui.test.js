@@ -1464,6 +1464,105 @@ describe('kanji-kombat ui', () => {
     assert.equal(calls.some(call => call[0] === 'showNarration'), false);
   });
 
+  it('marks a locally activated daily-boundary wave so checkpoint replay is suppressed', async () => {
+    const calls = [];
+    let currentState = null;
+    let localHighWater = 0;
+    let releaseSync;
+    const syncGate = new Promise(resolve => { releaseSync = resolve; });
+
+    initKanjiKombatUI({
+      syncSession: async ({ entries }) => {
+        calls.push(['syncSession', entries[0].kind, entries[0].keepGoing]);
+        await syncGate;
+        return {
+          status: 'ok',
+          confirmedThroughSeq: entries.at(-1).seq,
+          logEmpty: true,
+          state: currentState,
+          results: [{ nextWave: true, nextWaveNumber: 2 }],
+        };
+      },
+      __sessionSchedule: syncSchedule,
+      updateGameState: state => {
+        currentState = state;
+        renderKanjiKombatAction(state);
+      },
+      getGameState: () => currentState,
+      playKanjiKombatNextWaveTransition: async result => calls.push(['playWaveTransition', result.nextWaveNumber]),
+      getLastLocallyPlayedKanjiKombatWave: () => localHighWater,
+      setLastLocallyPlayedKanjiKombatWave: wave => { localHighWater = wave; },
+      playCorrectAnswerAudio: () => {},
+    });
+
+    currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        creatureParty: { active: [{ id: 'hi', uid: 'ally-hi', hp: 20, maxHp: 20 }], reserves: [] },
+        kanjiKombat: {
+          wave: 1,
+          pendingNextWaves: [{
+            wave: 2,
+            isMiniboss: false,
+            enemies: [{ id: 'mizu', uid: 'enemy-wave-2', hp: 12, maxHp: 12 }],
+            combat: {
+              combatId: 'cmb_wave_2',
+              stateVersion: 0,
+              nextTurnSeed: 'seed-wave-2',
+              turnSeeds: ['seed-wave-2'],
+            },
+          }],
+          promptBuffer: [
+            {
+              promptId: 'kkp_daily_done_dead_wave',
+              sequence: 20,
+              kind: 'dailyCompletePrompt',
+              cardId: null,
+              source: 'dailyComplete',
+            },
+            {
+              promptId: 'kkp_early_review_dead_wave',
+              sequence: 21,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              source: 'earlyReview',
+              quiz: {
+                cardId: 'hiragana:あ',
+                prompt: 'あ',
+                reading: 'あ',
+                choices: [{ id: 'a', answer: 'a', correct: true }],
+              },
+            },
+          ],
+        },
+      },
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [{ id: 'hi', uid: 'ally-hi', hp: 20, maxHp: 20 }],
+        enemies: [{ id: 'old-enemy', uid: 'enemy-wave-1', hp: 0, maxHp: 10 }],
+        actionCursor: { side: 'ally', index: 0 },
+        optimistic: { combatId: 'cmb_wave_1', stateVersion: 4, nextTurnSeed: null, turnSeeds: [] },
+      },
+    };
+
+    renderKanjiKombatAction(currentState);
+    const yesButton = actionArea.querySelectorAll('.kanji-kombat-completion-action')
+      .find(button => button.dataset.keepGoing === 'true');
+    const handled = await yesButton.click();
+    await flushPromises(2);
+
+    assert.equal(handled, true);
+    assert.equal(localHighWater, 2, 'Yes should mark wave 2 as locally activated');
+
+    releaseSync();
+    await flushPromises(8);
+
+    assert.equal(calls.some(call => call[0] === 'playWaveTransition' && call[1] === 2), false,
+      'server-confirmed wave 2 transition must not replay after local Yes activation');
+  });
+
   it('shows spotty connection copy when no prompt is available but session is pending', async () => {
     const calls = [];
     // Never-resolving syncSession keeps pending log non-empty
