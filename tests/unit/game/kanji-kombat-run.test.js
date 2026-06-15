@@ -539,7 +539,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     gm.run.kanjiKombat.currentQuiz = quiz;
     gm.run.kanjiKombat.promptBuffer = [
       { promptId: 'kkp_final_quiz', sequence: 1, kind: 'quiz', cardId: card.id, quiz },
-      { promptId: 'kkp_final_complete', sequence: 2, kind: 'completePrompt', cardId: null, source: 'dailyComplete' },
+      { promptId: 'kkp_final_complete', sequence: 2, kind: DAILY_COMPLETE_PROMPT_KIND, cardId: null, source: 'dailyComplete' },
     ];
     gm.run.kanjiKombat.promptBufferSeq = 2;
     gm.combat = { active: true, allies: gm.run.creatureParty.active, enemies: [{ hp: 1, id: 'enemy' }] };
@@ -552,7 +552,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
       promptRef: { promptId: 'kkp_final_quiz', sequence: 1, cardId: card.id },
     });
 
-    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'completePrompt');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, DAILY_COMPLETE_PROMPT_KIND);
     assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
     assert.equal(gm.run.kanjiKombat.report.completedDaily, true);
     assert.equal(getScriptDailyState(gm.userId, getLocalDateKey()).completed, true);
@@ -654,7 +654,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     gm.run.kanjiKombat.promptBuffer = [{
       promptId: 'kkp_complete',
       sequence: 1,
-      kind: 'completePrompt',
+      kind: DAILY_COMPLETE_PROMPT_KIND,
       cardId: null,
       source: 'dailyComplete',
     }];

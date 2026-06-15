@@ -345,14 +345,14 @@ test('applySessionSync completionChoice happy path (keepGoing: false ends daily)
   const epoch = kk.sessionEpoch;
 
   // Manually place a daily completion marker at the buffer head.
-  const completePrompt = {
+  const dailyCompletePrompt = {
     promptId: 'kkp_test_complete_kg',
     sequence: 98,
     kind: DAILY_COMPLETE_PROMPT_KIND,
     cardId: null,
     source: 'dailyComplete',
   };
-  kk.promptBuffer.unshift(completePrompt);
+  kk.promptBuffer.unshift(dailyCompletePrompt);
   kk.report.completedDaily = true;
 
   // Combat needs to be falsy-active for finalizeDailyComplete
@@ -365,9 +365,9 @@ test('applySessionSync completionChoice happy path (keepGoing: false ends daily)
     actionId: nextActionId(),
     kind: 'completionChoice',
     keepGoing: false,
-    promptId: completePrompt.promptId,
-    sequence: completePrompt.sequence,
-    cardId: completePrompt.cardId,
+    promptId: dailyCompletePrompt.promptId,
+    sequence: dailyCompletePrompt.sequence,
+    cardId: dailyCompletePrompt.cardId,
   };
 
   const result = service.applySessionSync({ sessionEpoch: epoch, entries: [entry] });
@@ -386,14 +386,14 @@ test('applySessionSync completionChoice happy path (keepGoing: true enters endle
   const kk = gm.run.kanjiKombat;
   const epoch = kk.sessionEpoch;
 
-  const completePrompt = {
+  const dailyCompletePrompt = {
     promptId: 'kkp_test_complete_kg',
     sequence: 98,
     kind: DAILY_COMPLETE_PROMPT_KIND,
     cardId: null,
     source: 'dailyComplete',
   };
-  kk.promptBuffer.unshift(completePrompt);
+  kk.promptBuffer.unshift(dailyCompletePrompt);
   kk.promptBuffer.splice(1, 0, {
     promptId: 'kkp_sync_early_review',
     sequence: 99,
@@ -420,9 +420,9 @@ test('applySessionSync completionChoice happy path (keepGoing: true enters endle
     actionId: nextActionId(),
     kind: 'completionChoice',
     keepGoing: true,
-    promptId: completePrompt.promptId,
-    sequence: completePrompt.sequence,
-    cardId: completePrompt.cardId,
+    promptId: dailyCompletePrompt.promptId,
+    sequence: dailyCompletePrompt.sequence,
+    cardId: dailyCompletePrompt.cardId,
   };
 
   const result = service.applySessionSync({ sessionEpoch: epoch, entries: [entry] });
