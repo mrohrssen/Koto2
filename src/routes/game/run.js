@@ -8,7 +8,7 @@ import { loadWordDictionary } from '../../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
-import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
+import { rollFriendlyNpcOffers } from '../../game/services/friendly-npc-offers.js';
 import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
 import { getActionLedgerEntry } from '../../game/services/action-ledger-service.js';

@@ -32,13 +32,10 @@ import { loadNpcs } from './npc-service.js';
 import { applyCrestBonuses } from './crest-service.js';
 import { shouldOverrideSkillOffers, advanceTutorial, shouldFixRoomSequence } from './tutorial-service.js';
 import { addIngredientsToBag, COOKING_INGREDIENTS, rollRoomIngredientDrops } from './cooking-service.js';
+import { buildExploreRunway } from './explore-runway-service.js';
+import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
 import { entityToToken } from '../token-format.js';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
-const __dirname_exploration = dirname(fileURLToPath(import.meta.url));
-const DEFAULT_ITEMS_PATH = join(__dirname_exploration, '../../../data/items.json');
 const ROOM_HEAL_PERCENT = 0.05; // 5% maxHp on each room entry, skipping KO'd creatures
 const STARTING_MEADOW_AREA_ID = 'hajimari-no-hiroba';
 const STARTING_MEADOW_TUTORIAL_INGREDIENT_DROPS = Object.freeze([
@@ -71,35 +68,6 @@ function getAllPartyCreatures(creatureParty) {
     ...(creatureParty?.active || []),
     ...(creatureParty?.reserves || [])
   ].filter(Boolean);
-}
-
-/**
- * Roll 3 item offers for a friendly NPC room.
- * @param {'food'|'equipment'} category - Legacy category hint; friendly NPCs now offer equipment only
- * @param {string[]|null} areaIds - Area IDs the player has reached (cumulative); null disables filtering
- * @param {Array} [itemPool] - Optional override item pool (defaults to data/items.json)
- * @returns {Array} Up to 3 item objects matching the category
- */
-export function rollFriendlyNpcOffers(category, areaIds = null, itemPool = null) {
-  if (!itemPool) {
-    try {
-      itemPool = JSON.parse(readFileSync(DEFAULT_ITEMS_PATH, 'utf8'));
-    } catch (e) {
-      itemPool = [];
-    }
-  }
-
-  const offerCategory = 'equipment';
-
-  // Filter by category and area progression
-  const eligible = itemPool.filter(item =>
-    item.category === offerCategory &&
-    (!areaIds || !item.area || areaIds.includes(item.area))
-  );
-
-  // Randomly select up to 3 without duplicates
-  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3).map(item => ({ ...item }));
 }
 
 const AREA_BG_COUNT = 20;
@@ -152,6 +120,10 @@ export class ExplorationService {
   constructor(gameManager, { ingredientDropRandom = Math.random } = {}) {
     this.gm = gameManager;
     this.ingredientDropRandom = ingredientDropRandom;
+  }
+
+  async buildExploreRunway(opts = {}) {
+    return buildExploreRunway(this.gm, opts);
   }
 
   /**
