@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { createNewRun } from '../../../src/game/state.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { buildExploreRunway } from '../../../src/game/services/explore-runway-service.js';
+import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
 
 function makeGm(roomTypes) {
   const player = { name: 'RunwayTester', hp: 100, maxHp: 100, credits: 50 };
@@ -158,4 +159,36 @@ test('pre-rolls future ingredient drops without awarding them early', async () =
     futureEntry.entryPayload.ingredientDrops,
     gm.run.rooms[futureEntry.index].entryIngredientDrops
   );
+});
+
+test('prepares friendly NPC greeting before marking payload offline ready', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
+  gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC' };
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const friendly = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
+  assert.ok(friendly.interactionPayload.offered.length > 0);
+  assert.ok(friendly.interactionPayload.greeting?.tokens?.length > 0);
+  assert.equal(friendly.offlineReady, true);
+});
+
+test('marks skill master without offers as missing payload', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.skillMaster]);
+  gm.run.partySkills = PARTY_SKILL_TREE_IDS.map(id => ({ id, level: 5 }));
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const skillMaster = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.skillMaster);
+  assert.deepEqual(skillMaster.interactionPayload.offered, []);
+  assert.equal(skillMaster.offlineReady, false);
+  assert.ok(skillMaster.missingPayloadReasons.includes('skillMaster.offered'));
 });
