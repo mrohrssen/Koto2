@@ -26,6 +26,31 @@ describe('exploration reveal buffer state', () => {
     assert.equal(state.run.revealedRooms.length, Math.min(2, gm.run.rooms.length));
   });
 
+  it('exposes exploreRunway only for active regular exploration runs', () => {
+    const gm = makeReadyGameManager();
+    gm.run.exploreSessionEpoch = 'ese_1111111111111111';
+    gm.run.exploreRunway = {
+      sessionEpoch: 'ese_1111111111111111',
+      roomActionSeq: 0,
+      currentRoom: 0,
+      preparedAhead: 5,
+      preparedRooms: [],
+    };
+
+    const explorationState = gm.getState();
+    assert.equal(Object.hasOwn(explorationState.run, 'exploreRunway'), true);
+    assert.equal(explorationState.run.exploreRunway.sessionEpoch, 'ese_1111111111111111');
+
+    gm.run.mode = 'kanjiKombat';
+    const kanjiKombatState = gm.getState();
+    assert.equal(Object.hasOwn(kanjiKombatState.run, 'exploreRunway'), false);
+
+    gm.run.mode = null;
+    gm.run.active = false;
+    const inactiveState = gm.getState();
+    assert.equal(Object.hasOwn(inactiveState.run, 'exploreRunway'), false);
+  });
+
   it('increments roomActionSeq once for an accepted room advance', () => {
     const gm = makeReadyGameManager();
     gm.run.rooms[gm.run.currentRoom].interacted = true;

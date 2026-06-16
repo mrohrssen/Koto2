@@ -244,43 +244,44 @@ export class GameManager {
 
     const player = this.run?.player || this.player;
     const roomReveal = this.run ? buildClientRoomReveal(this.run) : null;
-    const exploreRunway = this.run?.active && this.run.mode !== 'kanjiKombat'
-      ? exploreRunwaySnapshot(this)
-      : null;
+    const runState = this.run ? {
+      mode: this.run.mode || null,
+      // Area system
+      currentArea: this.run.currentArea,
+      areasCompleted: this.run.areasCompleted,
+      areasToWin: this.run.areasToWin,
+      areaPath: this.run.areaPath,
+      areaSelectionRequired: this.run.areaSelectionRequired,
+      areaCleared: this.run.areaCleared,
+      background: this.run.background || 'floor1.webp',
+      // Room state
+      currentRoom: this.run.currentRoom,
+      totalRooms: this.run.rooms?.length || 0,
+      roomsExplored: this.run.roomsExplored,
+      currentAreaEncounters: this.run.currentAreaEncounters,
+      encountersNeeded: this.run.encountersNeeded,
+      totalEncounters: this.run.totalEncounters || 0,
+      active: this.run.active,
+      stats: this.run.stats,
+      roomActionSeq: roomReveal.roomActionSeq,
+      revealBufferSize: roomReveal.revealBufferSize,
+      revealedRooms: roomReveal.revealedRooms,
+      runStats: this.run.runStats,
+      creatureParty: this.run.creatureParty,
+      partySkills: this.run.partySkills || [],
+      itemBuffs: this.run.itemBuffs || null,
+      npcDialogue: this.run?.npcDialogue || null,
+      postCombatShop: this.run.postCombatShop || null,
+      kanjiKombat: this.run.kanjiKombat || null
+    } : null;
+
+    if (runState && this.run?.active && this.run.mode !== 'kanjiKombat') {
+      runState.exploreRunway = exploreRunwaySnapshot(this);
+    }
 
     return {
       player: player,
-      run: this.run ? {
-        mode: this.run.mode || null,
-        // Area system
-        currentArea: this.run.currentArea,
-        areasCompleted: this.run.areasCompleted,
-        areasToWin: this.run.areasToWin,
-        areaPath: this.run.areaPath,
-        areaSelectionRequired: this.run.areaSelectionRequired,
-        areaCleared: this.run.areaCleared,
-        background: this.run.background || 'floor1.webp',
-        // Room state
-        currentRoom: this.run.currentRoom,
-        totalRooms: this.run.rooms?.length || 0,
-        roomsExplored: this.run.roomsExplored,
-        currentAreaEncounters: this.run.currentAreaEncounters,
-        encountersNeeded: this.run.encountersNeeded,
-        totalEncounters: this.run.totalEncounters || 0,
-        active: this.run.active,
-        stats: this.run.stats,
-        roomActionSeq: roomReveal.roomActionSeq,
-        revealBufferSize: roomReveal.revealBufferSize,
-        revealedRooms: roomReveal.revealedRooms,
-        exploreRunway,
-        runStats: this.run.runStats,
-        creatureParty: this.run.creatureParty,
-        partySkills: this.run.partySkills || [],
-        itemBuffs: this.run.itemBuffs || null,
-        npcDialogue: this.run?.npcDialogue || null,
-        postCombatShop: this.run.postCombatShop || null,
-        kanjiKombat: this.run.kanjiKombat || null
-      } : null,
+      run: runState,
       room: currentRoom ? {
         ...currentRoom,
         actions: getRoomActions(currentRoom)
