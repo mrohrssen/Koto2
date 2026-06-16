@@ -6,6 +6,7 @@ import createCookingRoutes from '../../../src/routes/game/cooking.js';
 import createEconomyRoutes from '../../../src/routes/game/economy.js';
 import createRunRoutes from '../../../src/routes/game/run.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
+import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 
 const actionId = suffix => `run_test_${suffix}`;
 
@@ -38,6 +39,16 @@ function createRunRouter() {
     checkSentenceViolations: () => ({ violations: [] }),
     getDialogueCardAudio: async () => null,
   });
+}
+
+function attachExplorationService(gameManager, room) {
+  if (!gameManager.run) gameManager.run = {};
+  gameManager.run.currentRoom = 0;
+  gameManager.run.rooms = [room];
+  gameManager.emitState = gameManager.emitState || (() => {});
+  gameManager.explorationService = new ExplorationService(gameManager);
+  gameManager.getCurrentRoom = () => gameManager.explorationService.getCurrentRoom();
+  return gameManager;
 }
 
 function createCombatRouter() {
@@ -499,20 +510,21 @@ describe('optimistic deterministic run routes', () => {
     };
     const res = makeRes();
 
+    const gameManager = attachExplorationService({
+      run: {
+        creatureParty: {
+          active: [{ id: 'hi', hp: 10, maxHp: 10, mp: 5, maxMp: 5, level: 1 }],
+          reserves: [],
+        },
+        itemBuffs: {},
+        runSummary: { itemsCollected: 0 },
+      },
+      meta: {},
+    }, room);
+
     await handler({
       body: { actionId: actionId('friendly1'), itemId: 'sword', targetCreatureIndex: 0 },
-      gameManager: {
-        run: {
-          creatureParty: {
-            active: [{ id: 'hi', hp: 10, maxHp: 10, mp: 5, maxMp: 5, level: 1 }],
-            reserves: [],
-          },
-          itemBuffs: {},
-          runSummary: { itemsCollected: 0 },
-        },
-        meta: {},
-        getCurrentRoom: () => room,
-      },
+      gameManager,
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'room' }),
     }, res);
@@ -602,11 +614,10 @@ describe('optimistic deterministic run routes', () => {
     };
     const req = {
       body: { actionId: actionId('friendlydupe'), itemId: 'sword', targetCreatureIndex: 0 },
-      gameManager: {
+      gameManager: attachExplorationService({
         run,
         meta: { itemsDiscovered: [], actionLedger: { entries: {}, order: [] } },
-        getCurrentRoom: () => room,
-      },
+      }, room),
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'room', run: { runSummary: { ...run.runSummary } } }),
     };

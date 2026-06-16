@@ -34,6 +34,7 @@ import { shouldOverrideSkillOffers, advanceTutorial, shouldFixRoomSequence } fro
 import { addIngredientsToBag, COOKING_INGREDIENTS, rollRoomIngredientDrops } from './cooking-service.js';
 import { buildExploreRunway } from './explore-runway-service.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
+import { applyItem } from './item-service.js';
 import { entityToToken } from '../token-format.js';
 
 const ROOM_HEAL_PERCENT = 0.05; // 5% maxHp on each room entry, skipping KO'd creatures
@@ -511,7 +512,51 @@ export class ExplorationService {
     };
   }
 
+  applyExploreProceed() {
+    return this.proceedToNextRoom();
+  }
+
   // ============ ROOM INTERACTIONS ============
+
+  applyFriendlyNpcChoose({ itemId, targetCreatureIndex } = {}) {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'friendlyNpc') {
+      throw new Error('Not in a friendly NPC room');
+    }
+    if (!room.friendlyNpc.offered) {
+      throw new Error('No offers generated yet');
+    }
+    if (room.friendlyNpc.completed) {
+      throw new Error('Friendly NPC already completed');
+    }
+
+    const item = room.friendlyNpc.offered.find(i => i.id === itemId);
+    if (!item) {
+      throw new Error('Invalid item choice');
+    }
+    if (item.category !== 'equipment') {
+      throw new Error('Friendly NPC shops only offer equipment');
+    }
+
+    const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
+    const applyResult = applyItem(item, this.gm.run.creatureParty, this.gm.run.itemBuffs, targetIdx);
+    if (this.gm.run?.runSummary) {
+      this.gm.run.runSummary.itemsCollected++;
+    }
+    if (this.gm.meta && item?.id) {
+      if (!this.gm.meta.itemsDiscovered) this.gm.meta.itemsDiscovered = [];
+      if (!this.gm.meta.itemsDiscovered.includes(item.id)) {
+        this.gm.meta.itemsDiscovered.push(item.id);
+      }
+    }
+
+    room.friendlyNpc.chosenId = itemId;
+    room.friendlyNpc.completed = true;
+    room.interacted = true;
+    this.gm.emitState();
+
+    return { chosen: item, applyResult };
+  }
 
   useShrine(creatureId) {
     return this.useShrineReward(SHRINE_REWARDS.LEVEL_UP, creatureId);

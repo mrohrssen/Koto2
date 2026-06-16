@@ -10,7 +10,6 @@ import { getDiscoveryStatus } from '../../word-tracking.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { rollFriendlyNpcOffers } from '../../game/services/friendly-npc-offers.js';
 import { getAreaById } from '../../game/rooms.js';
-import { applyItem } from '../../game/services/item-service.js';
 import { getActionLedgerEntry } from '../../game/services/action-ledger-service.js';
 import { ensureRoomActionSeq } from '../../game/room-reveal-buffer.js';
 import { isActionId } from '../../shared/action-protocol.js';
@@ -1004,23 +1003,8 @@ export default function createRunRoutes({
       actionType: 'friendlyNpc.choose',
       errorStatusCode: 409,
       perform: () => {
-        // Apply item effect to run state
-        const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
-        applyItem(item, gm.run.creatureParty, gm.run.itemBuffs, targetIdx);
-        // Track for adventure report
-        if (gm.run?.runSummary) {
-          gm.run.runSummary.itemsCollected++;
-        }
-        if (gm.meta && item?.id) {
-          if (!gm.meta.itemsDiscovered) gm.meta.itemsDiscovered = [];
-          if (!gm.meta.itemsDiscovered.includes(item.id)) {
-            gm.meta.itemsDiscovered.push(item.id);
-          }
-        }
-        room.friendlyNpc.chosenId = itemId;
-        room.friendlyNpc.completed = true;
-        room.interacted = true;
-        return { chosen: item, state: req.getEnrichedGameState() };
+        const result = gm.explorationService.applyFriendlyNpcChoose({ itemId, targetCreatureIndex });
+        return { ...result, state: req.getEnrichedGameState() };
       },
     });
   });

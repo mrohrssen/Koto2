@@ -1,0 +1,177 @@
+import {
+  getActionLedgerEntry,
+  rememberActionLedgerResult,
+} from './action-ledger-service.js';
+import {
+  isExploreSessionActionId,
+  makeExploreCorrection,
+  makeExploreOk,
+} from './explore-session-contract.js';
+import { ensureRoomActionSeq } from '../room-reveal-buffer.js';
+
+export class ExploreSessionSyncService {
+  constructor(gameManager) {
+    this.gm = gameManager;
+  }
+
+  get run() {
+    return this.gm?.run || null;
+  }
+
+  get ledgerOwner() {
+    return this.gm?.meta || null;
+  }
+
+  async responseContext() {
+    let exploreRunway = null;
+    const buildExploreRunway = this.gm?.explorationService?.buildExploreRunway;
+
+    if (typeof buildExploreRunway === 'function') {
+      exploreRunway = await buildExploreRunway.call(this.gm.explorationService);
+      if (this.gm?.run && exploreRunway) {
+        this.gm.run.exploreRunway = exploreRunway;
+      }
+    }
+
+    const state = typeof this.gm?.getState === 'function' ? this.gm.getState() : null;
+    if (!exploreRunway) {
+      exploreRunway = state?.run?.exploreRunway || this.gm?.run?.exploreRunway || null;
+    }
+
+    return { state, exploreRunway };
+  }
+
+  validateEntryPosition(entry) {
+    const run = this.run;
+    if (!run?.active || !Array.isArray(run.rooms)) {
+      throw new Error('no_active_explore_run');
+    }
+
+    const currentRoomIndex = Number.isInteger(run.currentRoom) ? run.currentRoom : 0;
+    const currentRoom = run.rooms[currentRoomIndex] || null;
+    if (!currentRoom) {
+      throw new Error('no_current_room');
+    }
+
+    if (entry?.roomIndex !== currentRoomIndex) {
+      throw new Error('room_index_mismatch');
+    }
+
+    if (entry?.roomId !== currentRoom.id) {
+      throw new Error('room_id_mismatch');
+    }
+
+    if (entry?.actionSeq !== ensureRoomActionSeq(run)) {
+      throw new Error('action_seq_mismatch');
+    }
+  }
+
+  applyExploreEntry(entry) {
+    this.validateEntryPosition(entry);
+
+    switch (entry?.kind) {
+      case 'proceed':
+        return this.gm.explorationService.applyExploreProceed();
+      case 'friendlyNpc.choose': {
+        const payload = entry.payload || {};
+        return this.gm.explorationService.applyFriendlyNpcChoose({
+          itemId: payload.itemId ?? entry.itemId,
+          targetCreatureIndex: payload.targetCreatureIndex ?? entry.targetCreatureIndex,
+        });
+      }
+      default:
+        throw new Error(`unsupported_explore_entry:${entry?.kind}`);
+    }
+  }
+
+  async correction({ reason, rejectedSeq = null, confirmedThroughSeq = null, results = [] } = {}) {
+    const { state, exploreRunway } = await this.responseContext();
+    return makeExploreCorrection({
+      reason,
+      rejectedSeq,
+      confirmedThroughSeq,
+      results,
+      state,
+      exploreRunway,
+    });
+  }
+
+  async ok({ confirmedThroughSeq = null, results = [] } = {}) {
+    const { state, exploreRunway } = await this.responseContext();
+    return makeExploreOk({
+      confirmedThroughSeq,
+      results,
+      state,
+      exploreRunway,
+    });
+  }
+
+  async applySessionSync({ sessionEpoch, entries = [] } = {}) {
+    const run = this.run;
+    const replayEntries = Array.isArray(entries) ? entries : [];
+
+    if (!sessionEpoch || sessionEpoch !== run?.exploreSessionEpoch) {
+      return this.correction({
+        reason: 'session_epoch_mismatch',
+        rejectedSeq: replayEntries[0]?.seq ?? null,
+      });
+    }
+
+    const results = [];
+    let confirmedThroughSeq = null;
+
+    for (const entry of replayEntries) {
+      const validActionId = isExploreSessionActionId(entry?.actionId);
+      const existing = validActionId
+        && this.ledgerOwner
+        ? getActionLedgerEntry(this.ledgerOwner, entry.actionId)
+        : null;
+
+      if (existing?.response) {
+        if (existing.actionType !== entry.kind) {
+          return this.correction({
+            reason: 'action_id_conflict',
+            rejectedSeq: entry?.seq ?? null,
+            confirmedThroughSeq,
+            results,
+          });
+        }
+
+        results.push({
+          ...existing.response,
+          seq: entry.seq,
+          actionId: entry.actionId,
+          replayed: true,
+        });
+        confirmedThroughSeq = entry.seq;
+        continue;
+      }
+
+      let committed;
+      try {
+        committed = this.applyExploreEntry(entry);
+      } catch (error) {
+        return this.correction({
+          reason: error?.message || 'explore_entry_failed',
+          rejectedSeq: entry?.seq ?? null,
+          confirmedThroughSeq,
+          results,
+        });
+      }
+
+      const result = { seq: entry.seq, actionId: entry.actionId, ...committed };
+      results.push(result);
+      confirmedThroughSeq = entry.seq;
+
+      if (validActionId) {
+        rememberActionLedgerResult(this.ledgerOwner, {
+          actionId: entry.actionId,
+          actionType: entry.kind,
+          response: result,
+        });
+      }
+    }
+
+    return this.ok({ confirmedThroughSeq, results });
+  }
+}
