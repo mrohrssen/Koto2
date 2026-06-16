@@ -50,6 +50,20 @@ function hexToCSS(hex) {
   return '#' + hex.toString(16).padStart(6, '0');
 }
 
+function _isLiveSprite(sprite) {
+  return !!sprite
+    && !sprite.destroyed
+    && sprite.transform !== null
+    && sprite.position !== null;
+}
+
+function _stopOngoingForDeadTarget(cancel, container = null) {
+  try { cancel?.(); } catch (e) { console.error('[status-vfx] cancel threw:', e); }
+  if (container && !container.destroyed) {
+    try { container.destroy({ children: true }); } catch { /* already destroyed */ }
+  }
+}
+
 // ============ APPLIED ONE-SHOTS ============
 
 /**
@@ -174,7 +188,12 @@ function _startSleep(sprite, effectsLayer, registerUpdater) {
 
   let elapsed = 0;
 
-  const cancel = registerUpdater((deltaMS) => {
+  let cancel = () => {};
+  cancel = registerUpdater((deltaMS) => {
+    if (!_isLiveSprite(sprite)) {
+      _stopOngoingForDeadTarget(cancel, container);
+      return;
+    }
     elapsed += deltaMS;
     if (elapsed >= 800) {
       elapsed -= 800;
@@ -196,6 +215,7 @@ function _startSleep(sprite, effectsLayer, registerUpdater) {
 }
 
 function spawnZParticle(sprite, container) {
+  if (!_isLiveSprite(sprite) || container?.destroyed) return;
   const parentX = sprite.parent?.x || 0;
   const parentY = sprite.parent?.y || 0;
   const z = new Text({
@@ -239,7 +259,12 @@ function _startStun(sprite, effectsLayer, registerUpdater) {
   const RADIUS = 15;
   const SPEED = 0.003; // radians per ms
 
-  const cancel = registerUpdater((deltaMS) => {
+  let cancel = () => {};
+  cancel = registerUpdater((deltaMS) => {
+    if (!_isLiveSprite(sprite)) {
+      _stopOngoingForDeadTarget(cancel, container);
+      return;
+    }
     elapsed += deltaMS;
     const parentX = sprite.parent?.x || 0;
     const parentY = sprite.parent?.y || 0;
@@ -262,7 +287,12 @@ function _startConfuse(sprite, registerUpdater) {
   let elapsed = 0;
   const WOBBLE_SPEED = 0.005; // radians per ms -> ~3Hz
 
-  const cancel = registerUpdater((deltaMS) => {
+  let cancel = () => {};
+  cancel = registerUpdater((deltaMS) => {
+    if (!_isLiveSprite(sprite)) {
+      _stopOngoingForDeadTarget(cancel);
+      return;
+    }
     elapsed += deltaMS;
     sprite.rotation = Math.sin(elapsed * WOBBLE_SPEED) * 0.15;
   });
@@ -278,7 +308,12 @@ function _startHaste(sprite, registerUpdater) {
   // Store original tint to restore
   const originalTint = sprite.tint;
 
-  const cancel = registerUpdater((deltaMS) => {
+  let cancel = () => {};
+  cancel = registerUpdater((deltaMS) => {
+    if (!_isLiveSprite(sprite)) {
+      _stopOngoingForDeadTarget(cancel);
+      return;
+    }
     elapsed += deltaMS;
     if (elapsed >= 200) {
       elapsed -= 200;
@@ -304,7 +339,12 @@ function _startShield(sprite, effectsLayer, registerUpdater) {
   let elapsed = 0;
   const PULSE_SPEED = 0.004; // moderate pulse
 
-  const cancel = registerUpdater((deltaMS) => {
+  let cancel = () => {};
+  cancel = registerUpdater((deltaMS) => {
+    if (!_isLiveSprite(sprite)) {
+      _stopOngoingForDeadTarget(cancel, container);
+      return;
+    }
     elapsed += deltaMS;
     const parentX = sprite.parent?.x || 0;
     const parentY = sprite.parent?.y || 0;
@@ -330,7 +370,12 @@ function _startTaunt(sprite, effectsLayer, registerUpdater) {
   let elapsed = 0;
   const PULSE_SPEED = 0.008; // faster than shield
 
-  const cancel = registerUpdater((deltaMS) => {
+  let cancel = () => {};
+  cancel = registerUpdater((deltaMS) => {
+    if (!_isLiveSprite(sprite)) {
+      _stopOngoingForDeadTarget(cancel, container);
+      return;
+    }
     elapsed += deltaMS;
     const parentX = sprite.parent?.x || 0;
     const parentY = sprite.parent?.y || 0;
@@ -448,6 +493,7 @@ export async function playStatusAppliedForScene(ctx, side, uid, effectType) {
 
   const sprite = ctx.scene.getSprite(uid);
   if (!sprite) return null;
+  if (!_isLiveSprite(sprite)) return null;
 
   const effectsLayer = ctx.scene.layers?.effects;
   if (!effectsLayer) return null;

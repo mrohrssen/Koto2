@@ -328,6 +328,40 @@ describe('removeFormationSprite uid contract', () => {
     assert.throws(() => removeFormationSprite(ctx, 'player', null), /uid is required/);
     assert.throws(() => removeFormationSprite(ctx, 'player', ''), /uid is required/);
   });
+
+  it('clears scene-owned status VFX before destroying a removed sprite', async () => {
+    clearAllStatusVfxCalls.length = 0;
+
+    const formations = new FakeContainer();
+    const statusVfx = {
+      vfxByUid: new Map([
+        ['leaving-enemy', { taunt: { tag: 'ring' } }],
+        ['other-enemy', { taunt: { tag: 'keep' } }],
+      ]),
+    };
+    const scene = {
+      layers: { formations },
+      statusVfx,
+      addContainer: (c /* container */, _parent) => c,
+    };
+    const ctx = createFormationContext(scene);
+    const sprite = await spawnFormationSprite(
+      ctx,
+      'enemy',
+      { uid: 'leaving-enemy', id: 'hi' },
+      0,
+      { skipEnter: true }
+    );
+
+    removeFormationSprite(ctx, 'enemy', 'leaving-enemy');
+
+    assert.deepEqual(clearAllStatusVfxCalls, [
+      { ctx: statusVfx, side: 'enemy', uid: 'leaving-enemy' },
+    ]);
+    assert.equal(statusVfx.vfxByUid.has('leaving-enemy'), false);
+    assert.ok(statusVfx.vfxByUid.get('other-enemy')?.taunt);
+    assert.equal(sprite._destroyed, true);
+  });
 });
 
 describe('updateFormationSprite uid contract', () => {
@@ -375,9 +409,15 @@ describe('spawnFormationSprite parallel spawns (CRIT-1 regression)', () => {
   });
 
   it('re-spawning the same uid removes the prior sprite (IMP-6)', async () => {
+    clearAllStatusVfxCalls.length = 0;
+
     const formations = new FakeContainer();
+    const statusVfx = {
+      vfxByUid: new Map([['uid-dup', { taunt: { tag: 'old-ring' } }]]),
+    };
     const scene = {
       layers: { formations },
+      statusVfx,
       addContainer: (c /* container */, _parent) => c,
     };
     const ctx = createFormationContext(scene);
@@ -390,6 +430,10 @@ describe('spawnFormationSprite parallel spawns (CRIT-1 regression)', () => {
     assert.strictEqual(ctx.creatureSprites.player.size, 1, 'Map holds exactly one sprite for the uid');
     assert.strictEqual(ctx.creatureSprites.player.get('uid-dup'), second, 'stored sprite is the latest');
     assert.strictEqual(first._destroyed, true, 'prior sprite destroyed');
+    assert.deepEqual(clearAllStatusVfxCalls, [
+      { ctx: statusVfx, side: 'player', uid: 'uid-dup' },
+    ]);
+    assert.equal(statusVfx.vfxByUid.has('uid-dup'), false);
   });
 });
 

@@ -206,6 +206,42 @@ describe('clearAllStatusVfxForScene behavioral', () => {
     assert.equal(ctx.vfxByUid.has('enemy-1'), false);
     assert.ok(ctx.vfxByUid.get('enemy-2')?.taunt, 'other creatures keep their VFX');
   });
+
+  it('self-cancels ring updaters when the tracked sprite was destroyed mid-scene', async () => {
+    const sprite = makeSprite();
+    let x = 0;
+    let y = 0;
+    Object.defineProperties(sprite, {
+      x: {
+        get() {
+          if (sprite.destroyed) throw new TypeError("Cannot read properties of null (reading 'x')");
+          return x;
+        },
+        set(value) { x = value; },
+      },
+      y: {
+        get() {
+          if (sprite.destroyed) throw new TypeError("Cannot read properties of null (reading 'y')");
+          return y;
+        },
+        set(value) { y = value; },
+      },
+    });
+
+    const scene = makeScene({ sprite });
+    const ctx = createStatusVfxContext(scene);
+    const entry = await playStatusAppliedForScene(ctx, 'enemy', 'enemy-1', 'taunt');
+    const [updater] = scene._updaters;
+
+    assert.ok(entry?.container, 'taunt registers an ongoing ring container');
+    assert.equal(scene._updaters.size, 1);
+
+    sprite.destroyed = true;
+
+    assert.doesNotThrow(() => updater(1, 16));
+    assert.equal(scene._updaters.size, 0, 'dead-target updater cancels itself');
+    assert.equal(entry.container._destroyed, true, 'orphaned ring container is destroyed');
+  });
 });
 
 // --- Helpers shared by behavioral tests below -------------------------------
@@ -222,6 +258,7 @@ function makeSprite() {
     rotation: 0,
     tint: 0xFFFFFF,
     destroyed: false,
+    transform: {},
     parent: { x: 0, y: 0 },
   };
 }

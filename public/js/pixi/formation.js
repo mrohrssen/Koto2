@@ -622,6 +622,9 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   // so we don't leak a visible double.
   const prior = ctx.creatureSprites[side].get(key);
   if (prior) {
+    if (ctx.scene?.statusVfx) {
+      clearAllStatusVfxForScene(ctx.scene.statusVfx, side, key);
+    }
     _destroyShadow(prior);
     if (prior.parent) prior.parent.removeChild(prior);
     prior.destroy({ children: true, texture: false });
@@ -657,6 +660,9 @@ export function removeFormationSprite(ctx, side, uid) {
   }
   const sprite = ctx.creatureSprites[side].get(uid);
   if (!sprite) return;
+  if (ctx.scene?.statusVfx) {
+    clearAllStatusVfxForScene(ctx.scene.statusVfx, side, uid);
+  }
   ctx.creatureSprites[side].delete(uid);
   if (sprite.statusLabels) {
     for (const pill of sprite.statusLabels) {
