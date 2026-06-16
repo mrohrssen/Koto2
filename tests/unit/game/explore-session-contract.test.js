@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  EXPLORE_EFFECTS,
   EXPLORE_LEGACY_REVEAL_AHEAD,
   EXPLORE_RUNWAY_AHEAD,
   EXPLORE_SESSION_HARD_CAP,
@@ -28,6 +29,18 @@ test('exports runway and client log limits', () => {
   assert.equal(EXPLORE_SYNC_DEBOUNCE_MS, 300);
   assert.deepEqual(EXPLORE_SYNC_RETRY_DELAYS_MS, [500, 1000, 2000, 4000, 8000, 15000]);
   assert.equal(Object.isFrozen(EXPLORE_SYNC_RETRY_DELAYS_MS), true);
+});
+
+test('exports frozen effect tags', () => {
+  assert.equal(Object.isFrozen(EXPLORE_EFFECTS), true);
+  assert.deepEqual(EXPLORE_EFFECTS, {
+    CREDITS: 'credits',
+    INGREDIENTS: 'ingredients',
+    PARTY_STATS: 'partyStats',
+    PARTY_SKILLS: 'partySkills',
+    SRS: 'srs',
+    AREA_PROGRESS: 'areaProgress',
+  });
 });
 
 test('clones explore values without losing undefined', () => {
@@ -85,14 +98,54 @@ test('computes expected action seq', () => {
   assert.equal(expectedActionSeqForEntry({ baseActionSeq: '7', localProceedCount: 3 }), 3);
 });
 
-test('maps predicted effects and room dependencies', () => {
-  assert.deepEqual(predictedEffectsForAction('dealer.sell'), ['credits']);
-  assert.deepEqual(predictedEffectsForAction('campfire.feed'), ['partyStats', 'ingredients']);
-  assert.deepEqual(predictedEffectsForAction('encounter.start'), []);
-  assert.deepEqual(predictedEffectsForAction('npcBattle.start'), []);
-  assert.deepEqual(predictedEffectsForAction('boss.start'), []);
-  assert.deepEqual(roomDependenciesForType('dealer'), ['credits']);
-  assert.deepEqual(roomDependenciesForType('encounter'), ['partyStats', 'partySkills']);
+test('maps predicted effects for every plan action kind', () => {
+  const actionEffects = [
+    ['proceed', ['ingredients', 'areaProgress']],
+    ['friendlyNpc.choose', ['partyStats']],
+    ['shrine.choose', ['partyStats']],
+    ['skillMaster.choose', ['partySkills']],
+    ['npcBattleSkill.choose', ['partySkills']],
+    ['whackAMole.complete', ['credits']],
+    ['whackAMole.skip', []],
+    ['campfire.cook', ['ingredients']],
+    ['campfire.feed', ['partyStats', 'ingredients']],
+    ['campfire.skip', []],
+    ['speedReview.commit', ['srs', 'partyStats']],
+    ['speedReview.complete', ['srs', 'partyStats']],
+    ['wordDiscovery.review', ['srs']],
+    ['wordDiscovery.complete', []],
+    ['dealer.sell', ['credits']],
+    ['dealer.buy', ['credits', 'partyStats']],
+    ['dealer.leave', []],
+    ['encounter.start', []],
+    ['npcBattle.start', []],
+    ['boss.start', []],
+  ];
+
+  for (const [kind, expectedEffects] of actionEffects) {
+    assert.deepEqual(predictedEffectsForAction(kind), expectedEffects, kind);
+  }
+});
+
+test('maps room dependencies for every plan room type', () => {
+  const roomDependencies = [
+    ['encounter', ['partyStats', 'partySkills']],
+    ['boss', ['partyStats', 'partySkills']],
+    ['npcBattle', ['partyStats', 'partySkills']],
+    ['campfire', ['ingredients', 'partyStats']],
+    ['dealer', ['credits']],
+    ['speedReviewRoom', ['srs']],
+    ['wordDiscovery', ['srs']],
+    ['friendlyNpc', []],
+    ['shrine', ['partyStats']],
+    ['skillMaster', ['partySkills']],
+    ['whackAMole', []],
+    ['room', []],
+  ];
+
+  for (const [type, expectedDependencies] of roomDependencies) {
+    assert.deepEqual(roomDependenciesForType(type), expectedDependencies, type);
+  }
 });
 
 test('returns fresh effect and dependency arrays', () => {
