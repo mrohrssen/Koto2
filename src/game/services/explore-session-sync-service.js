@@ -8,6 +8,50 @@ import {
   makeExploreOk,
 } from './explore-session-contract.js';
 import { ensureRoomActionSeq } from '../room-reveal-buffer.js';
+import { hashTranscript } from '../../shared/action-protocol.js';
+
+function cloneValue(value) {
+  if (value === undefined) return undefined;
+  return globalThis.structuredClone
+    ? globalThis.structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
+}
+
+function snapshotGameManager(gameManager) {
+  return {
+    player: cloneValue(gameManager?.player),
+    run: cloneValue(gameManager?.run),
+    combat: cloneValue(gameManager?.combat),
+    meta: cloneValue(gameManager?.meta),
+  };
+}
+
+function restoreGameManager(gameManager, snapshot) {
+  if (!gameManager || !snapshot) return;
+  gameManager.player = snapshot.player;
+  gameManager.run = snapshot.run;
+  gameManager.combat = snapshot.combat;
+  gameManager.meta = snapshot.meta;
+}
+
+function fingerprintExploreEntry(entry = {}) {
+  return hashTranscript({
+    actionId: entry.actionId ?? null,
+    kind: entry.kind ?? null,
+    seq: entry.seq ?? null,
+    roomIndex: entry.roomIndex ?? null,
+    roomId: entry.roomId ?? null,
+    actionSeq: entry.actionSeq ?? null,
+    payload: entry.payload ?? null,
+    itemId: entry.itemId ?? null,
+    targetCreatureIndex: entry.targetCreatureIndex ?? null,
+  });
+}
+
+function publicReplayResponse(response = {}) {
+  const { entryFingerprint: _entryFingerprint, ...publicResponse } = response;
+  return publicResponse;
+}
 
 export class ExploreSessionSyncService {
   constructor(gameManager) {
@@ -22,23 +66,32 @@ export class ExploreSessionSyncService {
     return this.gm?.meta || null;
   }
 
-  async responseContext() {
-    let exploreRunway = null;
-    const buildExploreRunway = this.gm?.explorationService?.buildExploreRunway;
+  async responseContext({ mutate = true } = {}) {
+    const snapshot = mutate ? null : snapshotGameManager(this.gm);
 
-    if (typeof buildExploreRunway === 'function') {
-      exploreRunway = await buildExploreRunway.call(this.gm.explorationService);
-      if (this.gm?.run && exploreRunway) {
-        this.gm.run.exploreRunway = exploreRunway;
+    try {
+      let exploreRunway = null;
+      const buildExploreRunway = this.gm?.explorationService?.buildExploreRunway;
+
+      if (typeof buildExploreRunway === 'function') {
+        exploreRunway = await buildExploreRunway.call(this.gm.explorationService);
+        if (this.gm?.run && exploreRunway) {
+          this.gm.run.exploreRunway = exploreRunway;
+        }
+      }
+
+      const state = typeof this.gm?.getState === 'function' ? this.gm.getState() : null;
+      if (!exploreRunway) {
+        exploreRunway = state?.run?.exploreRunway || this.gm?.run?.exploreRunway || null;
+      }
+
+      const context = { state, exploreRunway };
+      return mutate ? context : cloneValue(context);
+    } finally {
+      if (snapshot) {
+        restoreGameManager(this.gm, snapshot);
       }
     }
-
-    const state = typeof this.gm?.getState === 'function' ? this.gm.getState() : null;
-    if (!exploreRunway) {
-      exploreRunway = state?.run?.exploreRunway || this.gm?.run?.exploreRunway || null;
-    }
-
-    return { state, exploreRunway };
   }
 
   validateEntryPosition(entry) {
@@ -84,8 +137,14 @@ export class ExploreSessionSyncService {
     }
   }
 
-  async correction({ reason, rejectedSeq = null, confirmedThroughSeq = null, results = [] } = {}) {
-    const { state, exploreRunway } = await this.responseContext();
+  async correction({
+    reason,
+    rejectedSeq = null,
+    confirmedThroughSeq = null,
+    results = [],
+    mutateContext = true,
+  } = {}) {
+    const { state, exploreRunway } = await this.responseContext({ mutate: mutateContext });
     return makeExploreCorrection({
       reason,
       rejectedSeq,
@@ -114,6 +173,7 @@ export class ExploreSessionSyncService {
       return this.correction({
         reason: 'session_epoch_mismatch',
         rejectedSeq: replayEntries[0]?.seq ?? null,
+        mutateContext: false,
       });
     }
 
@@ -131,13 +191,17 @@ export class ExploreSessionSyncService {
         });
       }
 
+      const entryFingerprint = fingerprintExploreEntry(entry);
       const existing = validActionId
         && this.ledgerOwner
         ? getActionLedgerEntry(this.ledgerOwner, entry.actionId)
         : null;
 
       if (existing?.response) {
-        if (existing.actionType !== entry.kind) {
+        if (
+          existing.actionType !== entry.kind
+          || existing.response.entryFingerprint !== entryFingerprint
+        ) {
           return this.correction({
             reason: 'action_id_conflict',
             rejectedSeq: entry?.seq ?? null,
@@ -147,7 +211,7 @@ export class ExploreSessionSyncService {
         }
 
         results.push({
-          ...existing.response,
+          ...publicReplayResponse(existing.response),
           seq: entry.seq,
           actionId: entry.actionId,
           replayed: true,
@@ -176,7 +240,7 @@ export class ExploreSessionSyncService {
         rememberActionLedgerResult(this.ledgerOwner, {
           actionId: entry.actionId,
           actionType: entry.kind,
-          response: result,
+          response: { ...result, entryFingerprint },
         });
       }
     }

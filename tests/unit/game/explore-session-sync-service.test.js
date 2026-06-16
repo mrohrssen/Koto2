@@ -164,6 +164,93 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(result.exploreRunway.roomActionSeq, 1);
   });
 
+  it('replays an exact duplicate actionId without rerunning the performer', async () => {
+    const gm = makeGm();
+    const originalProceed = gm.explorationService.applyExploreProceed.bind(gm.explorationService);
+    let proceedCalls = 0;
+    gm.explorationService.applyExploreProceed = () => {
+      proceedCalls += 1;
+      return originalProceed();
+    };
+    const service = new ExploreSessionSyncService(gm);
+    const room = gm.run.rooms[0];
+    const entry = makeEntry(gm, {
+      seq: 4,
+      actionId: 'run_es_00000004',
+      roomIndex: 0,
+      roomId: room.id,
+      actionSeq: 0,
+    });
+
+    const first = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: [entry] });
+    const replay = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: [entry] });
+
+    assert.equal(first.status, 'ok');
+    assert.equal(replay.status, 'ok');
+    assert.equal(replay.results[0].replayed, true);
+    assert.equal(replay.confirmedThroughSeq, 4);
+    assert.equal(proceedCalls, 1);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 1);
+  });
+
+  it('rejects same-kind actionId reuse with different entry identity without advancing confirmedThroughSeq', async () => {
+    const gm = makeGm([ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc]);
+    const service = new ExploreSessionSyncService(gm);
+    const firstRoom = gm.run.rooms[0];
+    const secondRoom = gm.run.rooms[1];
+
+    const recorded = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 30,
+          actionId: 'run_es_00000030',
+          kind: 'friendlyNpc.choose',
+          roomIndex: 0,
+          roomId: firstRoom.id,
+          actionSeq: 0,
+          payload: { itemId: TEST_EQUIPMENT.id, targetCreatureIndex: 0 },
+        }),
+      ],
+    });
+    assert.equal(recorded.status, 'ok');
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 31,
+          actionId: 'run_es_00000031',
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: firstRoom.id,
+          actionSeq: 0,
+        }),
+        makeEntry(gm, {
+          seq: 32,
+          actionId: 'run_es_00000030',
+          kind: 'friendlyNpc.choose',
+          roomIndex: 1,
+          roomId: secondRoom.id,
+          actionSeq: 1,
+          payload: { itemId: TEST_EQUIPMENT.id, targetCreatureIndex: 1 },
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'action_id_conflict');
+    assert.equal(result.confirmedThroughSeq, 31);
+    assert.equal(result.rejectedSeq, 32);
+    assert.equal(result.results.length, 1);
+    assert.equal(result.results[0].seq, 31);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 1);
+    assert.equal(secondRoom.friendlyNpc.completed, false);
+    assert.equal(gm.run.runSummary.itemsCollected, 1);
+  });
+
   it('stops replay at the first stale actionSeq and confirms through the last committed seq', async () => {
     const gm = makeGm([ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc]);
     const service = new ExploreSessionSyncService(gm);
@@ -229,6 +316,39 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(gm.run.runSummary.itemsCollected, 0);
     assert.equal(room.friendlyNpc.completed, false);
     assert.equal(room.friendlyNpc.chosenId, null);
+  });
+
+  it('returns stale sessionEpoch correction without mutating canonical runway state', async () => {
+    const gm = makeGm();
+    const service = new ExploreSessionSyncService(gm);
+    const originalRunway = {
+      sessionEpoch: LIVE_EPOCH,
+      roomActionSeq: 0,
+      currentRoom: 0,
+      preparedRooms: [{ roomId: 'existing' }],
+    };
+    gm.run.exploreRunway = originalRunway;
+    gm.explorationService.buildExploreRunway = async () => {
+      gm.run.exploreRunway = {
+        sessionEpoch: LIVE_EPOCH,
+        roomActionSeq: 99,
+        currentRoom: 99,
+        preparedRooms: [{ roomId: 'mutated' }],
+      };
+      gm.run.rooms[0].friendlyNpc.greeting = { id: 'mutated-greeting' };
+      return gm.run.exploreRunway;
+    };
+
+    const result = await service.applySessionSync({
+      sessionEpoch: 'ese_2222222222222222',
+      entries: [makeEntry(gm, { seq: 40 })],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'session_epoch_mismatch');
+    assert.equal(result.rejectedSeq, 40);
+    assert.deepEqual(gm.run.exploreRunway, originalRunway);
+    assert.equal(gm.run.rooms[0].friendlyNpc.greeting, undefined);
   });
 
   it('rejects an invalid explore actionId after prior commits without mutating that entry', async () => {
