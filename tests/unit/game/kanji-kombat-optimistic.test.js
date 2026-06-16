@@ -57,7 +57,7 @@ describe('Kanji Kombat optimistic answers', () => {
     const gm = createTestKanjiKombatGameManager();
     const promptRef = kanjiPromptRef(gm);
     const service = gm.kanjiKombatService;
-    service.chooseNextWork = () => ({ kind: 'completePrompt' });
+    service.chooseNextWork = () => ({ kind: 'dailyCompletePrompt' });
     gm.combat.enemies[0].hp = 1;
     gm.combat.enemies[0].level = 1;
     gm.run.creatureParty.active[0].xp = 0;

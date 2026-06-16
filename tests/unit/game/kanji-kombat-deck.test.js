@@ -11,9 +11,11 @@ import {
   chooseNextScriptWork,
   consumeKanjiKombatPromptHead,
   createInitialKanjiKombatState,
+  DAILY_COMPLETE_PROMPT_KIND,
   fillKanjiKombatPromptBuffer,
   getKanjiKombatActivePrompt,
   getLocalDateKey,
+  isDailyCompletePromptKind,
   NO_DUE_DISCOVERY_CHAIN_LIMIT,
   PROMPT_BUFFER_REFILL_THRESHOLD,
   PROMPT_BUFFER_TARGET,
@@ -95,7 +97,7 @@ describe('kanji-kombat deck controller', () => {
     saveSrsData(userId, data);
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
     const work = chooseNextScriptWork(userId, state, { random: () => 0.5, now: new Date('2026-05-31T00:00:00Z') });
-    assert.equal(work.kind, 'completePrompt');
+    assert.equal(work.kind, DAILY_COMPLETE_PROMPT_KIND);
     assert.equal(state.completionChoicePending, false);
     assert.equal(state.report.completedDaily, true);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, true);
@@ -195,7 +197,7 @@ describe('kanji-kombat deck controller', () => {
       const head = getKanjiKombatActivePrompt(state);
       assert.ok(head, 'expected a buffered prompt before daily unknown limit is reached');
       if (unknownIntros + knownIntros >= DAILY_NEW_LIMIT && head.kind !== 'quiz') break;
-      assert.notEqual(head.kind, 'completePrompt', 'known presentations must not exhaust the unknown-card daily limit');
+      assert.equal(isDailyCompletePromptKind(head.kind), false, 'known presentations must not exhaust the unknown-card daily limit');
 
       if (head.kind === 'intro') {
         const choice = unknownIntros < 3 ? 'unknown' : 'known';
@@ -449,6 +451,69 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 60);
   });
 
+  it('places one daily complete marker before endless early-review runway', () => {
+    const data = loadSrsData(userId);
+    const hiragana = data.script.cards.filter(c => c.type === 'hiragana');
+    for (const card of hiragana) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+      card.reps = 1;
+    }
+    hiragana[0].due = new Date('2000-01-01T00:00:00Z');
+    data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: DAILY_NEW_LIMIT, completed: false };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const prompts = fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    const markerIndexes = prompts
+      .map((prompt, index) => prompt.kind === DAILY_COMPLETE_PROMPT_KIND ? index : -1)
+      .filter(index => index !== -1);
+
+    assert.deepEqual(markerIndexes, [1]);
+    assert.equal(prompts[0]?.kind, 'quiz');
+    assert.equal(prompts[0]?.cardId, hiragana[0].id);
+    assert.equal(prompts[2]?.kind, 'quiz');
+    assert.equal(prompts[2]?.source, 'earlyReview');
+    assert.notEqual(prompts[2]?.cardId, hiragana[0].id);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
+    assert.equal(state.report.completedDaily, false);
+  });
+
+  it('does not duplicate the daily complete marker when refilling after the boundary', () => {
+    const data = loadSrsData(userId);
+    const hiragana = data.script.cards.filter(c => c.type === 'hiragana');
+    for (const card of hiragana) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+      card.reps = 1;
+    }
+    hiragana[0].due = new Date('2000-01-01T00:00:00Z');
+    data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: DAILY_NEW_LIMIT, completed: false };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      target: 5,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      target: 10,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    const markerCount = state.promptBuffer
+      .filter(prompt => prompt.kind === DAILY_COMPLETE_PROMPT_KIND)
+      .length;
+    assert.equal(markerCount, 1);
+    assert.equal(state.promptBuffer[1]?.kind, DAILY_COMPLETE_PROMPT_KIND);
+    assert.equal(state.promptBuffer[2]?.kind, 'quiz');
+    assert.equal(state.promptBuffer[2]?.source, 'earlyReview');
+  });
+
   it('builds intro prompts in the buffer without recording daily intro counts', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
@@ -582,7 +647,7 @@ describe('kanji-kombat deck controller', () => {
 
     assert.equal(PROMPT_BUFFER_TARGET, 60);
     assert.equal(prompts.filter(prompt => prompt.kind === 'intro').length, 2);
-    assert.equal(prompts.filter(prompt => prompt.kind === 'completePrompt').length, 0);
+    assert.equal(prompts.filter(prompt => isDailyCompletePromptKind(prompt.kind)).length, 0);
     assert.equal(prompts.at(-1).kind, 'quiz');
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, DAILY_NEW_LIMIT - 2);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
@@ -604,7 +669,7 @@ describe('kanji-kombat deck controller', () => {
     state.promptBuffer = [{
       promptId: 'stale-complete',
       sequence: 1,
-      kind: 'completePrompt',
+      kind: DAILY_COMPLETE_PROMPT_KIND,
       cardId: null,
       source: 'dailyComplete',
     }];
@@ -615,12 +680,12 @@ describe('kanji-kombat deck controller', () => {
     });
 
     assert.equal(prompts[0].kind, 'intro');
-    assert.equal(prompts.filter(prompt => prompt.kind === 'completePrompt').length, 0);
+    assert.equal(prompts.filter(prompt => isDailyCompletePromptKind(prompt.kind)).length, 0);
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 3);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
   });
 
-  it('does not append after an existing completion prompt', () => {
+  it('does not duplicate an existing daily complete marker while appending endless review prompts', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
       card.due = new Date('2099-01-01T00:00:00Z');
@@ -643,7 +708,14 @@ describe('kanji-kombat deck controller', () => {
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    assert.deepEqual(state.promptBuffer.map(prompt => prompt.kind), ['completePrompt']);
+    const markerCount = state.promptBuffer
+      .filter(prompt => prompt.kind === DAILY_COMPLETE_PROMPT_KIND)
+      .length;
+    assert.equal(markerCount, 1);
+    assert.equal(state.promptBuffer[0]?.kind, DAILY_COMPLETE_PROMPT_KIND);
+    assert.equal(state.promptBuffer[1]?.kind, 'quiz');
+    assert.equal(state.promptBuffer[1]?.source, 'earlyReview');
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
   });
 
   it('validates present prompt reference fields even when their values are falsy', () => {

@@ -5,6 +5,10 @@ import {
   configureKanjiKombatSession,
   getKanjiKombatSession,
 } from './kanji-kombat-session.js';
+import {
+  applyLocalKanjiKombatWaveTransition,
+  isKanjiKombatWaveDead,
+} from './kanji-kombat-local-wave.js';
 import { createActionId } from '../../../src/shared/action-protocol.js';
 
 const DEFAULT_API = {
@@ -55,6 +59,8 @@ const ONBOARDING_COPY = {
 
 let onboardingInProgress = false;
 const KANJI_KOMBAT_SPOTTY_CONNECTION_COPY = 'Connection is spotty. Your reviews will sync when you reconnect.';
+const DAILY_COMPLETE_PROMPT_KIND = 'dailyCompletePrompt';
+const LEGACY_COMPLETE_PROMPT_KIND = 'completePrompt';
 const PROMPT_BUFFER_REFILL_THRESHOLD = 10;
 let promptBufferRefillPromise = null;
 let latestKanjiKombatState = null;
@@ -69,6 +75,11 @@ let _promptBufferHighSeq = 0;
 // Same role as _promptBufferHighSeq: lets the checkpoint merge adopt only genuine
 // tail payloads the client has never held, even after local queues drain.
 let _streakRewardHighSeq = 0;
+
+function isDailyCompletePrompt(prompt) {
+  return prompt?.kind === DAILY_COMPLETE_PROMPT_KIND
+    || prompt?.kind === LEGACY_COMPLETE_PROMPT_KIND;
+}
 
 function enqueueSessionReplay(work) {
   sessionReplayChain = sessionReplayChain.then(work).catch(error => {
@@ -483,7 +494,7 @@ function consumePromptHeadDraft(draft, prompt) {
         sequence: next.sequence,
       }
     : null;
-  kk.completionChoicePending = next?.kind === 'completePrompt';
+  kk.completionChoicePending = isDailyCompletePrompt(next);
 }
 
 function requestPromptBufferRefillIfLow(state) {
@@ -724,7 +735,7 @@ export function renderKanjiKombatAction(gameState) {
   if (kk?.onboardingPending) return true;
   if (!kk || cursor?.side !== 'ally') return false;
   const bufferedPrompt = getActiveBufferedPrompt(kk);
-  const completionPrompt = bufferedPrompt?.kind === 'completePrompt';
+  const completionPrompt = isDailyCompletePrompt(bufferedPrompt);
   const introPrompt = bufferedPrompt?.kind === 'intro' ? bufferedPrompt : null;
   const quizPrompt = bufferedPrompt?.kind === 'quiz' ? bufferedPrompt : null;
   const hasBufferedPrompt = !!bufferedPrompt;
@@ -741,6 +752,12 @@ export function renderKanjiKombatAction(gameState) {
         const draft = structuredClone(gameState);
         consumePromptHeadDraft(draft, bufferedPrompt);
         if (keepGoing) draft.run.kanjiKombat.endlessMode = true;
+        if (keepGoing && isKanjiKombatWaveDead(draft)) {
+          const locallyActivatedPendingWave = applyLocalKanjiKombatWaveTransition(draft);
+          if (locallyActivatedPendingWave) {
+            api.setLastLocallyPlayedKanjiKombatWave?.(locallyActivatedPendingWave.wave);
+          }
+        }
         updateKanjiKombatGameState(draft);
 
         session.recordAction({

@@ -180,7 +180,7 @@ test.describe.serial('Kanji Kombat subway session', () => {
     const headPrompt = async () => {
       return page.evaluate(freshSel => {
         if (document.querySelector('.kanji-kombat-completion-action')) {
-          return { kind: 'completePrompt', promptId: null };
+          return { kind: 'dailyCompletePrompt', promptId: null };
         }
         if (document.querySelector('.kanji-kombat-intro-action')) {
           const text = document.querySelector('.kanji-kombat-prompt')?.textContent?.trim() || '';
@@ -294,7 +294,7 @@ test.describe.serial('Kanji Kombat subway session', () => {
       // Each prompt (intro card or quiz instantiation) is unique within a session.
       // A duplicate means an already-answered prompt was rendered again (client
       // rollback or server replay) — the bug under test.
-      if (prompt.promptId && prompt.kind !== 'completePrompt') {
+      if (prompt.promptId && prompt.kind !== 'dailyCompletePrompt' && prompt.kind !== 'completePrompt') {
         expect(
           seenPromptIds,
           `prompt "${prompt.promptId}" (kind=${prompt.kind}) rendered twice — an already-answered prompt was offered again`,
@@ -392,7 +392,11 @@ test.describe.serial('Kanji Kombat subway session', () => {
           `intro tap not acknowledged synchronously — action area still shows the same intro card ("${introAck.textBefore}")`,
         ).toBeTruthy();
         introChoices += 1;
-      } else if (prompt.kind === 'completePrompt') {
+      } else {
+        const isDailyCompletePrompt = prompt?.kind === 'dailyCompletePrompt' || prompt?.kind === 'completePrompt';
+        if (!isDailyCompletePrompt) {
+          throw new Error(`unexpected prompt kind: ${prompt.kind}`);
+        }
         // Ensure we're online before ending so the final report can confirm.
         if (restoreAt !== null) {
           const remaining = restoreAt - Date.now();

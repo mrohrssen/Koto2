@@ -2342,7 +2342,7 @@ describe('combat network hardening', () => {
 
   it('does not consume the pre-rolled next wave when the post-answer state has completionChoicePending', async () => {
     // Arrange a state where answering the last quiz in a wave would clear enemies,
-    // but the next buffered prompt is a completePrompt (daily boundary).
+    // but the next buffered prompt is a dailyCompletePrompt (daily boundary).
     // The client must NOT consume the pendingNextWaves head — let the checkpoint
     // deliver truth.
     configureKanjiKombatSession({
@@ -2383,7 +2383,7 @@ describe('combat network hardening', () => {
             enemies: nextWaveEnemies,
             combat: { combatId: 'cmb_daily_next', stateVersion: 3, nextTurnSeed: 's2', turnSeeds: ['s2'] },
           }],
-          // The next prompt is a completePrompt (daily session boundary).
+          // The next prompt is a dailyCompletePrompt (daily session boundary).
           promptBuffer: [
             {
               promptId: 'kkp_daily_last',
@@ -2395,7 +2395,7 @@ describe('combat network hardening', () => {
             {
               promptId: 'kkp_daily_complete',
               sequence: 2,
-              kind: 'completePrompt',
+              kind: 'dailyCompletePrompt',
               cardId: null,
             },
           ],

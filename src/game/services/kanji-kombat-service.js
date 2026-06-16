@@ -48,6 +48,17 @@ export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 3;
 export const PROMPT_BUFFER_TARGET = 60;
 export const PROMPT_BUFFER_REFILL_THRESHOLD = 10;
 const PROMPT_ID_PREFIX = 'kkp';
+export const DAILY_COMPLETE_PROMPT_KIND = 'dailyCompletePrompt';
+export const LEGACY_COMPLETE_PROMPT_KIND = 'completePrompt';
+
+export function isDailyCompletePromptKind(kind) {
+  return kind === DAILY_COMPLETE_PROMPT_KIND || kind === LEGACY_COMPLETE_PROMPT_KIND;
+}
+
+export function isDailyCompletePrompt(prompt) {
+  return isDailyCompletePromptKind(prompt?.kind);
+}
+
 const SOLO_OPENING_WAVES = 3;
 
 function createServerSeed() {
@@ -233,7 +244,7 @@ function promptForDailyCompletion(userId, state, opts = {}) {
     markScriptDailyComplete(userId, state.localDate);
   }
   state.report.completedDaily = true;
-  return { kind: 'completePrompt' };
+  return { kind: DAILY_COMPLETE_PROMPT_KIND };
 }
 
 export function chooseNextScriptWork(userId, state, opts = {}) {
@@ -362,15 +373,15 @@ function promptFromWork(state, work) {
       },
     };
   }
-  if (work.kind === 'completePrompt') {
-    return { ...base, cardId: null, source: 'dailyComplete' };
+  if (isDailyCompletePromptKind(work.kind)) {
+    return { ...base, kind: DAILY_COMPLETE_PROMPT_KIND, cardId: null, source: 'dailyComplete' };
   }
   return null;
 }
 
 function syncKanjiKombatPromptBufferState(userId, state) {
   const head = getKanjiKombatActivePrompt(state);
-  if (head?.kind === 'completePrompt') {
+  if (isDailyCompletePrompt(head)) {
     if (userId) markScriptDailyComplete(userId, state.localDate);
     state.report.completedDaily = true;
   }
@@ -427,6 +438,11 @@ function advancePlanningStateAfterPrompt(planningState, prompt, random = Math.ra
     }
     return;
   }
+  if (isDailyCompletePrompt(prompt)) {
+    planningState.endlessMode = true;
+    planningState.report.completedDaily = true;
+    return;
+  }
 }
 
 function advancePreviewDailyStateAfterPrompt(previewDailyState, prompt) {
@@ -439,7 +455,7 @@ function advancePreviewDailyStateAfterPrompt(previewDailyState, prompt) {
     );
     return;
   }
-  if (prompt.kind === 'completePrompt') {
+  if (isDailyCompletePrompt(prompt)) {
     previewDailyState.completed = true;
   }
 }
@@ -457,7 +473,7 @@ function createPreviewDailyState(userId, state, opts = {}) {
 }
 
 function isSpeculativeDailyCompletion(work, previewDailyState) {
-  return work?.kind === 'completePrompt'
+  return isDailyCompletePromptKind(work?.kind)
     && previewDailyState
     && (previewDailyState.committedIntroducedCount || 0) < DAILY_NEW_LIMIT
     && (previewDailyState.speculativeIntroducedCount || 0) > 0
@@ -503,6 +519,10 @@ export function validateKanjiKombatPromptHead(state, ref = {}) {
 
 export function consumeKanjiKombatPromptHead(state, ref = {}, opts = {}) {
   const head = validateKanjiKombatPromptHead(state, ref);
+  if (isDailyCompletePrompt(head)) {
+    if (opts.userId) markScriptDailyComplete(opts.userId, state.localDate);
+    state.report.completedDaily = true;
+  }
   state.promptBuffer.shift();
   syncKanjiKombatPromptBufferState(opts.userId, state);
   return head;
@@ -513,17 +533,11 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
   const target = Number.isInteger(opts.target) && opts.target > 0
     ? opts.target
     : PROMPT_BUFFER_TARGET;
-  const terminalIndex = buffer.findIndex(prompt => prompt.kind === 'completePrompt');
-  if (terminalIndex !== -1) {
-    if (isBufferedCompletionAuthoritative(userId, state, opts)) {
-      buffer.splice(terminalIndex + 1);
-      syncKanjiKombatPromptBufferState(userId, state);
-      return buffer;
-    }
+  const terminalIndex = buffer.findIndex(isDailyCompletePrompt);
+  if (terminalIndex !== -1 && !isBufferedCompletionAuthoritative(userId, state, opts)) {
     buffer.splice(terminalIndex);
   }
   if (buffer.length >= target) {
-    syncKanjiKombatPromptBufferState(userId, state);
     return buffer;
   }
 
@@ -537,6 +551,7 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
     ...buffer.map(prompt => prompt.cardId).filter(Boolean),
   ]);
   const excludedPracticeIds = opts.excludePracticeCardIds || baseExcludeCardIds;
+  let dailyBoundaryQueued = buffer.some(isDailyCompletePrompt);
 
   for (const prompt of buffer) {
     advancePlanningStateAfterPrompt(planningState, prompt, random);
@@ -554,19 +569,21 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
     });
     if (work.kind === 'complete') break;
     if (isSpeculativeDailyCompletion(work, previewDailyState)) break;
+    if (isDailyCompletePromptKind(work.kind)) {
+      if (dailyBoundaryQueued) break;
+      dailyBoundaryQueued = true;
+    }
     const prompt = promptFromWork(state, work);
     if (!prompt) break;
     buffer.push(prompt);
     if (prompt.cardId) excludedIds.add(prompt.cardId);
     advancePlanningStateAfterPrompt(planningState, prompt, random);
     advancePreviewDailyStateAfterPrompt(previewDailyState, prompt);
-    if (prompt.kind === 'completePrompt') break;
   }
 
   if (planningState.report?.scriptDeck) {
     state.report.scriptDeck = planningState.report.scriptDeck;
   }
-  syncKanjiKombatPromptBufferState(userId, state);
   return buffer;
 }
 
@@ -673,7 +690,7 @@ export class KanjiKombatService {
       if (!head) {
         throw new Error('Kanji Kombat is complete for the day');
       }
-      if (head.kind === 'completePrompt') {
+      if (isDailyCompletePrompt(head)) {
         throw new Error('Kanji Kombat is complete for the day');
       }
     }
@@ -710,13 +727,16 @@ export class KanjiKombatService {
     kk.onboardingPending = false;
     this.refillPromptBuffer();
     const head = getKanjiKombatActivePrompt(kk);
-    let next = head?.kind || 'completePrompt';
+    if (isDailyCompletePrompt(head)) {
+      syncKanjiKombatPromptBufferState(this.gm.userId, kk);
+    }
+    let next = head?.kind || DAILY_COMPLETE_PROMPT_KIND;
     if (!head) {
-      const completionPrompt = promptFromWork(kk, { kind: 'completePrompt' });
+      const completionPrompt = promptFromWork(kk, { kind: DAILY_COMPLETE_PROMPT_KIND });
       if (completionPrompt) ensurePromptBufferState(kk).push(completionPrompt);
       syncKanjiKombatPromptBufferState(this.gm.userId, kk);
       kk.report.completedDaily = true;
-      next = 'completePrompt';
+      next = DAILY_COMPLETE_PROMPT_KIND;
     }
     this.gm.emitState();
     return {
@@ -929,31 +949,29 @@ export class KanjiKombatService {
     const kk = this.gm.run?.kanjiKombat;
     this.assertOnboardingComplete();
     const activePrompt = getKanjiKombatActivePrompt(kk);
+    const expectedCompletionKind = isDailyCompletePrompt(activePrompt)
+      ? activePrompt.kind
+      : DAILY_COMPLETE_PROMPT_KIND;
     const prompt = hasPromptReference(promptRef)
       ? validateKanjiKombatPromptHead(kk, {
           ...promptRef,
-          kind: 'completePrompt',
+          kind: expectedCompletionKind,
         })
-      : activePrompt?.kind === 'completePrompt'
-        ? validateKanjiKombatPromptHead(kk, { kind: 'completePrompt' })
+      : isDailyCompletePrompt(activePrompt)
+        ? validateKanjiKombatPromptHead(kk, { kind: activePrompt.kind })
         : null;
-    if (!prompt) {
+    if (!isDailyCompletePrompt(prompt)) {
       throw new Error('No Kanji Kombat completion choice is pending');
     }
 
     kk.report.completedDaily = true;
-    if (prompt) {
-      consumeKanjiKombatPromptHead(kk, prompt, { userId: this.gm.userId });
-    }
+    consumeKanjiKombatPromptHead(kk, prompt, { userId: this.gm.userId });
 
     if (!keepGoing) {
       return this.finalizeDailyComplete();
     }
 
     kk.endlessMode = true;
-    if (!prompt && getKanjiKombatActivePrompt(kk)?.kind === 'completePrompt') {
-      consumeKanjiKombatPromptHead(kk, { kind: 'completePrompt' }, { userId: this.gm.userId });
-    }
 
     let nextWave = false;
     let nextWaveEnemies = null;
@@ -967,7 +985,7 @@ export class KanjiKombatService {
     }
 
     const work = this.queueNextPrompt();
-    if (work?.kind === 'complete' || work?.kind === 'completePrompt') {
+    if (work?.kind === 'complete' || isDailyCompletePromptKind(work?.kind)) {
       return this.finalizeDailyComplete();
     }
 
@@ -995,7 +1013,7 @@ export class KanjiKombatService {
     if (!head) return null;
     if (head.kind === 'quiz') return { kind: 'quiz', quiz: head.quiz, card: { id: head.cardId }, buffered: true };
     if (head.kind === 'intro') return { kind: 'intro', card: head.intro.card, source: head.source, buffered: true };
-    if (head.kind === 'completePrompt') return { kind: 'completePrompt' };
+    if (isDailyCompletePrompt(head)) return { kind: DAILY_COMPLETE_PROMPT_KIND };
     return null;
   }
 
@@ -1044,7 +1062,7 @@ export class KanjiKombatService {
 
     const state = createInitialKanjiKombatState();
     const work = this.chooseNextWork(state);
-    if (work.kind === 'complete' || work.kind === 'completePrompt') {
+    if (work.kind === 'complete' || isDailyCompletePromptKind(work.kind)) {
       return {
         available: false,
         reason: 'complete_for_day',
@@ -1345,7 +1363,7 @@ export class KanjiKombatService {
         enemies: clearedEnemies
       });
     }
-    if (work.kind === 'completePrompt') {
+    if (isDailyCompletePromptKind(work.kind)) {
       this.gm.emitState();
       return {
         actionType: 'kanjiKombat',
