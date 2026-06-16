@@ -147,7 +147,9 @@ export default function createGameRoutes(deps) {
   router.use('/kanji-kombat', createKanjiKombatRoutes());
 
   // Mount explore session routes
-  router.use('/explore', createExploreSessionRoutes());
+  router.use('/explore', createExploreSessionRoutes({
+    getDialogueCardAudio: deps.getDialogueCardAudio,
+  }));
 
   // Mount PvP routes
   router.use('/pvp', createPvpRoutes());

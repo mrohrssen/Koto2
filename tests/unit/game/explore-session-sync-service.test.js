@@ -194,6 +194,34 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(gm.run.roomActionSeq, 1);
   });
 
+  it('passes configured runway options when building an ok response context', async () => {
+    const gm = makeGm();
+    const getKnownWords = () => ['光'];
+    const getDialogueCardAudio = async () => ({ key: 'dialogue.wav' });
+    const runwayOpts = { userId: 'route-user', getKnownWords, getDialogueCardAudio };
+    const buildCalls = [];
+    gm.explorationService.buildExploreRunway = async (opts) => {
+      buildCalls.push(opts);
+      const exploreRunway = {
+        sessionEpoch: gm.run.exploreSessionEpoch,
+        roomActionSeq: gm.run.roomActionSeq,
+        currentRoom: gm.run.currentRoom,
+        preparedRooms: [],
+      };
+      gm.run.exploreRunway = exploreRunway;
+      return exploreRunway;
+    };
+    const service = new ExploreSessionSyncService(gm, { runwayOpts });
+
+    const result = await service.ok();
+
+    assert.equal(result.status, 'ok');
+    assert.equal(buildCalls.length, 1);
+    assert.equal(buildCalls[0].userId, 'route-user');
+    assert.equal(buildCalls[0].getKnownWords, getKnownWords);
+    assert.equal(buildCalls[0].getDialogueCardAudio, getDialogueCardAudio);
+  });
+
   it('rejects same-kind actionId reuse with different entry identity without advancing confirmedThroughSeq', async () => {
     const gm = makeGm([ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc]);
     const service = new ExploreSessionSyncService(gm);
@@ -347,6 +375,47 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(result.status, 'corrected');
     assert.equal(result.reason, 'session_epoch_mismatch');
     assert.equal(result.rejectedSeq, 40);
+    assert.deepEqual(gm.run.exploreRunway, originalRunway);
+    assert.equal(gm.run.rooms[0].friendlyNpc.greeting, undefined);
+  });
+
+  it('passes configured runway options when building a stale-epoch correction without mutating canonical runway state', async () => {
+    const gm = makeGm();
+    const getKnownWords = () => ['光'];
+    const getDialogueCardAudio = async () => ({ key: 'dialogue.wav' });
+    const runwayOpts = { userId: 'route-user', getKnownWords, getDialogueCardAudio };
+    const buildCalls = [];
+    const originalRunway = {
+      sessionEpoch: LIVE_EPOCH,
+      roomActionSeq: 0,
+      currentRoom: 0,
+      preparedRooms: [{ roomId: 'existing' }],
+    };
+    gm.run.exploreRunway = originalRunway;
+    gm.explorationService.buildExploreRunway = async (opts) => {
+      buildCalls.push(opts);
+      gm.run.exploreRunway = {
+        sessionEpoch: LIVE_EPOCH,
+        roomActionSeq: 99,
+        currentRoom: 99,
+        preparedRooms: [{ roomId: 'mutated' }],
+      };
+      gm.run.rooms[0].friendlyNpc.greeting = { id: 'mutated-greeting' };
+      return gm.run.exploreRunway;
+    };
+    const service = new ExploreSessionSyncService(gm, { runwayOpts });
+
+    const result = await service.applySessionSync({
+      sessionEpoch: 'ese_2222222222222222',
+      entries: [makeEntry(gm, { seq: 41 })],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'session_epoch_mismatch');
+    assert.equal(buildCalls.length, 1);
+    assert.equal(buildCalls[0].userId, 'route-user');
+    assert.equal(buildCalls[0].getKnownWords, getKnownWords);
+    assert.equal(buildCalls[0].getDialogueCardAudio, getDialogueCardAudio);
     assert.deepEqual(gm.run.exploreRunway, originalRunway);
     assert.equal(gm.run.rooms[0].friendlyNpc.greeting, undefined);
   });

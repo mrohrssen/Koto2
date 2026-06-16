@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { ExploreSessionSyncService } from '../../game/services/explore-session-sync-service.js';
 import {
   enrichedState,
@@ -21,7 +22,15 @@ function currentExploreRunway(req, state) {
   return state?.run?.exploreRunway || req.gameManager?.run?.exploreRunway || null;
 }
 
-export default function createExploreSessionRoutes() {
+function buildRunwayOpts(req, { getDialogueCardAudio } = {}) {
+  return {
+    userId: req.user?.id,
+    getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
+    getDialogueCardAudio,
+  };
+}
+
+export default function createExploreSessionRoutes({ getDialogueCardAudio } = {}) {
   const router = Router();
 
   router.post('/sync', async (req, res) => {
@@ -32,7 +41,9 @@ export default function createExploreSessionRoutes() {
 
     const snapshot = snapshotGameManager(req.gameManager);
     try {
-      const service = new ExploreSessionSyncService(req.gameManager);
+      const service = new ExploreSessionSyncService(req.gameManager, {
+        runwayOpts: buildRunwayOpts(req, { getDialogueCardAudio }),
+      });
       const result = await service.applySessionSync({ sessionEpoch, entries });
       await req.saveGame?.();
       return res.json(withAuthoritativeState(result, req));

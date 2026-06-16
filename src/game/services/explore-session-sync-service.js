@@ -54,8 +54,9 @@ function publicReplayResponse(response = {}) {
 }
 
 export class ExploreSessionSyncService {
-  constructor(gameManager) {
+  constructor(gameManager, { runwayOpts = {} } = {}) {
     this.gm = gameManager;
+    this.runwayOpts = runwayOpts && typeof runwayOpts === 'object' ? runwayOpts : {};
   }
 
   get run() {
@@ -74,7 +75,7 @@ export class ExploreSessionSyncService {
       const buildExploreRunway = this.gm?.explorationService?.buildExploreRunway;
 
       if (typeof buildExploreRunway === 'function') {
-        exploreRunway = await buildExploreRunway.call(this.gm.explorationService);
+        exploreRunway = await buildExploreRunway.call(this.gm.explorationService, this.runwayOpts);
         if (this.gm?.run && exploreRunway) {
           this.gm.run.exploreRunway = exploreRunway;
         }
