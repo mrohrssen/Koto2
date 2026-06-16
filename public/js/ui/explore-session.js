@@ -79,12 +79,19 @@ function isAcceptedAction(preparedRoom, kind) {
     && preparedRoom.acceptedActions.includes(kind);
 }
 
+function hasEffectIntersection(effects, dependencies) {
+  if (!Array.isArray(effects) || !Array.isArray(dependencies) || dependencies.length === 0) {
+    return false;
+  }
+  const dependencySet = new Set(dependencies);
+  return effects.some(effect => dependencySet.has(effect));
+}
+
 function hasIntersectingEffect(entries, dependencies) {
   if (!Array.isArray(dependencies) || dependencies.length === 0) return false;
-  const dependencySet = new Set(dependencies);
   return entries.some(entry => (
     Array.isArray(entry.predictedEffects)
-    && entry.predictedEffects.some(effect => dependencySet.has(effect))
+    && hasEffectIntersection(entry.predictedEffects, dependencies)
   ));
 }
 
@@ -287,22 +294,31 @@ export function createExploreSession({
     if (!isAcceptedAction(preparedRoom, kind)) return reject('actionNotAccepted');
 
     const nextRoom = kind === 'proceed' ? nextPreparedRoomAfter(preparedRoom) : null;
-    if (nextRoom && hasIntersectingEffect(log, dependenciesFor(nextRoom))) {
-      enterPause('dependency');
-      return reject('dependency');
+    if (kind === 'proceed') {
+      if (!nextRoom) {
+        enterPause('runwayExhausted');
+        return reject('runwayExhausted');
+      }
+      if (!isRoomReady(nextRoom)) {
+        enterPause('nextRoomNotReady');
+        return reject('nextRoomNotReady');
+      }
+      const nextDependencies = dependenciesFor(nextRoom);
+      const pendingEffects = effectsForAction(preparedRoom, kind);
+      if (
+        hasIntersectingEffect(log, nextDependencies)
+        || hasEffectIntersection(pendingEffects, nextDependencies)
+      ) {
+        enterPause('dependency');
+        return reject('dependency');
+      }
     }
 
     const entry = buildEntry(kind, payload, preparedRoom);
     log.push(entry);
 
     if (kind === 'proceed') {
-      if (!nextRoom) {
-        enterPause('runwayExhausted');
-      } else if (!isRoomReady(nextRoom)) {
-        enterPause('nextRoomNotReady');
-      } else {
-        localCurrentRoom = roomIndexFor(nextRoom);
-      }
+      localCurrentRoom = roomIndexFor(nextRoom);
     }
 
     if (log.length >= EXPLORE_SESSION_HARD_CAP) enterPause('hardCap');

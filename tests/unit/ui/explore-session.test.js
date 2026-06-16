@@ -133,7 +133,13 @@ test('action ids include a session nonce and rotate when seq resets', () => {
 
 test('local proceed advances to next prepared room and uses next actionSeq', () => {
   const session = createExploreSession({ syncRequest: async () => okResponse(2) });
-  session.adoptRunway(makeRunway());
+  session.adoptRunway(makeRunway({
+    preparedRooms: [
+      preparedRoom(0, { actionSeq: 7, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+      preparedRoom(1, { actionSeq: 8, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+      preparedRoom(2, { actionSeq: 9, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+    ],
+  }));
 
   const proceed = session.recordRoomAction('proceed');
   assert.equal(proceed.accepted, true);
@@ -186,6 +192,115 @@ test('dependency pause keeps local room when unsynced effects intersect next dep
   assert.equal(pauses.length, 1);
   assert.equal(pauses[0].reason, 'dependency');
   assert.equal(pauses[0].pendingCount, 1);
+});
+
+test('proceed predicted effects are included in dependency preflight without consuming seq', () => {
+  const pauses = [];
+  const session = createExploreSession({
+    syncRequest: async () => okResponse(1),
+    onPause: detail => pauses.push(detail),
+  });
+  session.adoptRunway(makeRunway({
+    preparedRooms: [
+      preparedRoom(0, {
+        actionSeq: 3,
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: ['ingredients'] },
+      }),
+      preparedRoom(1, {
+        actionSeq: 4,
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: [] },
+        dependencies: ['ingredients'],
+      }),
+    ],
+  }));
+
+  const proceed = session.recordRoomAction('proceed');
+
+  assert.deepEqual(proceed, { accepted: false, reason: 'dependency', pendingCount: 0 });
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.isPaused(), true);
+  assert.deepEqual(session.snapshot(), []);
+  assert.equal(pauses.length, 1);
+  assert.equal(pauses[0].reason, 'dependency');
+  assert.equal(pauses[0].pendingCount, 0);
+
+  session.adoptRunway(makeRunway({
+    sessionEpoch: 'ese_2222222222222222',
+    preparedRooms: [
+      preparedRoom(0, {
+        actionSeq: 3,
+        acceptedActions: ['friendlyNpc.choose'],
+        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+      }),
+    ],
+  }));
+  const next = session.recordRoomAction('friendlyNpc.choose', { itemId: 'after-reject' });
+  assert.equal(next.accepted, true);
+  assertExploreActionId(next.entry.actionId, 1);
+});
+
+test('proceed rejects before logging when runway is exhausted', () => {
+  const pauses = [];
+  const session = createExploreSession({
+    syncRequest: async () => okResponse(1),
+    onPause: detail => pauses.push(detail),
+  });
+  session.adoptRunway(makeRunway({
+    preparedRooms: [
+      preparedRoom(0, {
+        actionSeq: 3,
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: [] },
+      }),
+    ],
+  }));
+
+  const proceed = session.recordRoomAction('proceed');
+
+  assert.deepEqual(proceed, { accepted: false, reason: 'runwayExhausted', pendingCount: 0 });
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.isPaused(), true);
+  assert.deepEqual(session.snapshot(), []);
+  assert.equal(session.currentPreparedRoom().index, 0);
+  assert.equal(pauses.length, 1);
+  assert.equal(pauses[0].reason, 'runwayExhausted');
+  assert.equal(pauses[0].pendingCount, 0);
+});
+
+test('proceed rejects before logging when next prepared room is not ready', () => {
+  const pauses = [];
+  const session = createExploreSession({
+    syncRequest: async () => okResponse(1),
+    onPause: detail => pauses.push(detail),
+  });
+  session.adoptRunway(makeRunway({
+    preparedRooms: [
+      preparedRoom(0, {
+        actionSeq: 3,
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: [] },
+      }),
+      preparedRoom(1, {
+        actionSeq: 4,
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: [] },
+        offlineReady: false,
+      }),
+    ],
+  }));
+
+  const proceed = session.recordRoomAction('proceed');
+
+  assert.deepEqual(proceed, { accepted: false, reason: 'nextRoomNotReady', pendingCount: 0 });
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.isPaused(), true);
+  assert.deepEqual(session.snapshot(), []);
+  assert.equal(session.currentPreparedRoom().index, 0);
+  assert.equal(pauses.length, 1);
+  assert.equal(pauses[0].reason, 'nextRoomNotReady');
+  assert.equal(pauses[0].pendingCount, 0);
 });
 
 test('hard cap pauses, rejects overflow, and resumes after pending count drops to resume mark', async () => {
