@@ -432,6 +432,7 @@ function advancePlanningStateAfterPrompt(planningState, prompt, random = Math.ra
 function advancePreviewDailyStateAfterPrompt(previewDailyState, prompt) {
   if (!previewDailyState) return;
   if (prompt.kind === 'intro') {
+    previewDailyState.speculativeIntroducedCount = (previewDailyState.speculativeIntroducedCount || 0) + 1;
     previewDailyState.introducedCount = Math.min(
       DAILY_NEW_LIMIT,
       (previewDailyState.introducedCount || 0) + 1
@@ -445,11 +446,37 @@ function advancePreviewDailyStateAfterPrompt(previewDailyState, prompt) {
 
 function createPreviewDailyState(userId, state, opts = {}) {
   const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
+  const introducedCount = daily.introducedCount || 0;
   return {
     date: daily.date || state.localDate,
-    introducedCount: daily.introducedCount || 0,
+    introducedCount,
+    committedIntroducedCount: daily.committedIntroducedCount ?? introducedCount,
+    speculativeIntroducedCount: daily.speculativeIntroducedCount || 0,
     completed: daily.completed === true,
   };
+}
+
+function isSpeculativeDailyCompletion(work, previewDailyState) {
+  return work?.kind === 'completePrompt'
+    && previewDailyState
+    && (previewDailyState.committedIntroducedCount || 0) < DAILY_NEW_LIMIT
+    && (previewDailyState.speculativeIntroducedCount || 0) > 0
+    && (previewDailyState.introducedCount || 0) >= DAILY_NEW_LIMIT;
+}
+
+function isBufferedCompletionAuthoritative(userId, state, opts = {}) {
+  if (state?.endlessMode) return false;
+  const daily = getScriptDailyState(userId, state.localDate);
+  if (daily.completed === true || (daily.introducedCount || 0) >= DAILY_NEW_LIMIT) {
+    return true;
+  }
+
+  const activeType = opts.activeType || getActiveScriptType(userId, opts.onboarding);
+  const now = opts.now || new Date();
+  const hasDueCards = getDueScriptCards(userId, activeType, now).length > 0;
+  const hasNewCards = getNewScriptCards(userId, activeType).length > 0;
+  const hasPracticeCards = Array.isArray(state.noDuePracticeQueue) && state.noDuePracticeQueue.length > 0;
+  return !hasDueCards && !hasNewCards && !hasPracticeCards;
 }
 
 export function getKanjiKombatActivePrompt(state) {
@@ -488,9 +515,12 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
     : PROMPT_BUFFER_TARGET;
   const terminalIndex = buffer.findIndex(prompt => prompt.kind === 'completePrompt');
   if (terminalIndex !== -1) {
-    buffer.splice(terminalIndex + 1);
-    syncKanjiKombatPromptBufferState(userId, state);
-    return buffer;
+    if (isBufferedCompletionAuthoritative(userId, state, opts)) {
+      buffer.splice(terminalIndex + 1);
+      syncKanjiKombatPromptBufferState(userId, state);
+      return buffer;
+    }
+    buffer.splice(terminalIndex);
   }
   if (buffer.length >= target) {
     syncKanjiKombatPromptBufferState(userId, state);
@@ -523,6 +553,7 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
       excludePracticeCardIds: excludedPracticeIds,
     });
     if (work.kind === 'complete') break;
+    if (isSpeculativeDailyCompletion(work, previewDailyState)) break;
     const prompt = promptFromWork(state, work);
     if (!prompt) break;
     buffer.push(prompt);
