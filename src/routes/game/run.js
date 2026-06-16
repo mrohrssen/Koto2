@@ -376,6 +376,8 @@ export default function createRunRoutes({
     }
   });
 
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/proceed', async (req, res) => {
     const gameManager = req.gameManager;
     return runOptimisticAction(req, res, {
@@ -411,6 +413,8 @@ export default function createRunRoutes({
   });
 
   // Skill Master: choose one offer
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/skill-master-choose', async (req, res) => {
     const { skillId } = req.body || {};
     if (!skillId) return sendRunActionError(req, res, 'skillId required');
@@ -464,6 +468,8 @@ export default function createRunRoutes({
   });
 
   // NPC Battle: choose one skill offer
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/npc-battle-skill-choose', async (req, res) => {
     return runOptimisticAction(req, res, {
       actionType: 'npcBattleSkill.choose',
@@ -520,6 +526,8 @@ export default function createRunRoutes({
     }
   });
 
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/shrine-choose', async (req, res) => {
     const { rewardType, creatureKey, creatureId } = req.body || {};
     if (!rewardType) {
@@ -675,6 +683,8 @@ export default function createRunRoutes({
   });
 
   // Mark word discovery room as complete
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/complete-discovery', (req, res) => {
     return runOptimisticAction(req, res, {
       actionType: 'wordDiscovery.complete',
@@ -727,6 +737,8 @@ export default function createRunRoutes({
     }
   });
 
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/speed-review-room/complete', (req, res) => {
     const { roomId } = req.body || {};
     if (!roomId) {
@@ -830,6 +842,8 @@ export default function createRunRoutes({
   });
 
   // Whack-a-Mole: complete game and award credits
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/whack-a-mole-complete', async (req, res) => {
     return runOptimisticAction(req, res, {
       actionType: 'whackAMole.complete',
@@ -871,6 +885,8 @@ export default function createRunRoutes({
   });
 
   // Whack-a-Mole: skip (player declined)
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/whack-a-mole-skip', (req, res) => {
     return runOptimisticAction(req, res, {
       actionType: 'whackAMole.skip',
@@ -928,6 +944,8 @@ export default function createRunRoutes({
   });
 
   // Friendly NPC: choose one offered item
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/friendly-npc-choose', async (req, res) => {
     const gm = req.gameManager;
     const actionId = req.body?.actionId;

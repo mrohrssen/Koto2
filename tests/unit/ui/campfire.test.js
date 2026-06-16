@@ -350,7 +350,7 @@ describe('campfire UI', () => {
 
     await actionArea.querySelectorAll('.ui-btn')[1].click();
 
-    assert.deepEqual(messages, ['Campfire choice did not save. Please try again.']);
+    assert.deepEqual(messages, ['Connection is spotty. Your progress will sync when you reconnect.']);
     assert.deepEqual(session.actions, [{ kind: 'campfire.skip', payload: {} }]);
     assert.match(renderedHtml(actionArea), /Would you like to cook\?/);
   });
@@ -371,7 +371,7 @@ describe('campfire UI', () => {
     openCooking();
     await actionArea.querySelector('.campfire-skip-btn').click();
 
-    assert.deepEqual(messages, ['Campfire choice did not save. Please try again.']);
+    assert.deepEqual(messages, ['Connection is spotty. Your progress will sync when you reconnect.']);
     assert.deepEqual(session.actions, [{ kind: 'campfire.skip', payload: {} }]);
     assert.equal(updateUiCalls, 0);
     assert.ok(actionArea.querySelector('.campfire-panel'));

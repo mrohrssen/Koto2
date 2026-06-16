@@ -53,6 +53,8 @@ export default function createCookingRoutes() {
     }
   });
 
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/campfire/cook', (req, res) => runCampfireAction(req, res, {
     actionType: 'campfire.cook',
     perform: () => {
@@ -61,6 +63,8 @@ export default function createCookingRoutes() {
     },
   }));
 
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/campfire/feed', (req, res) => runCampfireAction(req, res, {
     actionType: 'campfire.feed',
     perform: () => {
@@ -71,6 +75,8 @@ export default function createCookingRoutes() {
     },
   }));
 
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/campfire/skip', (req, res) => runCampfireAction(req, res, {
     actionType: 'campfire.skip',
     perform: () => {

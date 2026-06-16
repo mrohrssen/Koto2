@@ -10,7 +10,7 @@ let selected = {};
 let activeTab = 'ingredients';
 let displayMode = 'entry';
 const DISPLAY_ONLY = { recordExposure: false };
-const CAMPFIRE_FAILURE_COPY = 'Campfire choice did not save. Please try again.';
+const CAMPFIRE_FAILURE_COPY = 'Connection is spotty. Your progress will sync when you reconnect.';
 const RARITY_RANK = {
   common: 1,
   uncommon: 2,

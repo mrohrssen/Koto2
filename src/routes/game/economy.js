@@ -44,6 +44,8 @@ export default function createEconomyRoutes() {
   });
 
   // Dealer room: sell a creature
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/dealer-sell', async (req, res) => {
     const { creatureId } = req.body;
     return runDealerAction(req, res, {
@@ -58,6 +60,8 @@ export default function createEconomyRoutes() {
   });
 
   // Dealer room: buy offered creature
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/dealer-buy', async (req, res) => {
     const { creatureId } = req.body;
     return runDealerAction(req, res, {
@@ -72,6 +76,8 @@ export default function createEconomyRoutes() {
   });
 
   // Dealer room: leave
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/dealer-leave', async (req, res) => {
     return runDealerAction(req, res, {
       actionType: 'dealer.leave',

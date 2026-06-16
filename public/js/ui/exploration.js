@@ -29,12 +29,6 @@ import {
 import { showIngredientDropPopups, showWordLevelUp } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import {
-  createPendingRunAction,
-  confirmPendingRunAction,
-  correctPendingRunAction,
-  isMatchingRunActionResponse,
-} from './optimistic-run-action.js';
-import {
   advanceStateToBufferedNextRoom,
   getCurrentRoom as getCurrentBufferedRoom,
   getNextRoom,
@@ -80,63 +74,8 @@ let startEncounter = null;
 let startNewRun = null;
 let returnToHub = null;
 let showAdventureReport = null;
-let pendingRunActionId = null;
 let exploreSessionOnlineDrainTarget = null;
 let exploreSessionVisibilityDrainTarget = null;
-
-function beginPendingRunAction({ actionType, applyLocal }) {
-  if (pendingRunActionId) return null;
-  const pending = createPendingRunAction({
-    state: getGameState(),
-    actionType,
-    applyLocal,
-  });
-  pendingRunActionId = pending.actionId;
-  updateGameState(pending.state);
-  return pending;
-}
-
-function clearPendingRunAction(pending) {
-  if (!pending || pendingRunActionId === pending.actionId) {
-    pendingRunActionId = null;
-  }
-}
-
-function isCurrentPendingRunAction(pending) {
-  return !!pending && pendingRunActionId === pending.actionId;
-}
-
-function reconcilePendingRunAction(pending, result, { refreshUi = true } = {}) {
-  if (!isCurrentPendingRunAction(pending) || !isMatchingRunActionResponse(pending, result)) return false;
-  if (result?.status === 'corrected') {
-    updateGameState(correctPendingRunAction(pending, result));
-    if (refreshUi) updateUI();
-    clearPendingRunAction(pending);
-    return true;
-  }
-  if (result?.state) {
-    updateGameState(confirmPendingRunAction(pending, result));
-    if (refreshUi) updateUI();
-    clearPendingRunAction(pending);
-    return true;
-  }
-  return false;
-}
-
-function applyPendingRunCorrection(pending, result) {
-  if (!isCurrentPendingRunAction(pending) || !isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
-  updateGameState(correctPendingRunAction(pending, result));
-  updateUI();
-  clearPendingRunAction(pending);
-  return true;
-}
-
-function isInitialSkillPickChoiceResult(pending, result) {
-  if (!isMatchingRunActionResponse(pending, result) || !result?.state) return false;
-  const previousState = pending?.originalState;
-  const wasInitialPick = isInitialSkillPickState(previousState);
-  return wasInitialPick && result.state.phase !== 'skillMaster';
-}
 
 function isInitialSkillPickState(state = getGameState?.()) {
   const room = state?.room || getActiveRoomFromRun(state?.run);
@@ -162,32 +101,7 @@ async function resetSceneForInitialRoomEntry(state) {
   }
   hideEnemy();
 }
-
-async function reconcileInitialSkillPickRoomEntry(pending, result) {
-  if (!isCurrentPendingRunAction(pending)) return false;
-  if (!isInitialSkillPickChoiceResult(pending, result)) return false;
-  updateGameState(confirmPendingRunAction(pending, result));
-  clearPendingRunAction(pending);
-  try {
-    await resetSceneForInitialRoomEntry(getGameState());
-  } catch (err) {
-    console.warn('[SkillMaster] Failed to reset scene for initial room entry:', err);
-  }
-  updateUI();
-  return true;
-}
-
-function rollbackPendingRunAction(pending, { refreshUi = true } = {}) {
-  if (!isCurrentPendingRunAction(pending)) return false;
-  updateGameState(pending.originalState);
-  if (refreshUi) updateUI();
-  clearPendingRunAction(pending);
-  return true;
-}
-
-const WORD_DISCOVERY_SAVE_FAILURE_COPY = 'Word discovery did not save. Please try again.';
-const SPEED_REVIEW_SAVE_FAILURE_COPY = 'Speed review did not save. Please try again.';
-const WHACK_A_MOLE_SAVE_FAILURE_COPY = 'Game Master choice did not save. Please try again.';
+const EXPLORE_SPOTTY_COPY = 'Connection is spotty. Your progress will sync when you reconnect.';
 
 function applyExploreSessionRunway(response) {
   if (!response || !Object.hasOwn(response, 'exploreRunway')) return;
@@ -230,7 +144,7 @@ function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
     ? ` Waiting for ${missingDetails.join(', ')}.`
     : '';
   sceneModule?.showNarration?.(
-    `Connection is spotty. Your progress will sync when you reconnect.${detail}`,
+    `${EXPLORE_SPOTTY_COPY}${detail}`,
     { autoDismiss: 1800 }
   );
 }
@@ -266,14 +180,6 @@ export function wireExploreSessionRecoveryDrains({
       }
     });
   }
-}
-
-function showWordDiscoverySaveFailure() {
-  sceneModule?.showNarration?.(WORD_DISCOVERY_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
-}
-
-function showWhackAMoleSaveFailure() {
-  sceneModule?.showNarration?.(WHACK_A_MOLE_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
 }
 
 function uniqueObjects(values) {
@@ -315,51 +221,23 @@ function updateSupportRoomDraft(mutator, { phase = 'room', advance = false } = {
   return draft;
 }
 
-function applyWordDiscoveryCorrection(pending, result) {
-  if (!isCurrentPendingRunAction(pending) || !isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
-  updateGameState(correctPendingRunAction(pending, result));
-  updateUI();
-  clearPendingRunAction(pending);
-  showWordDiscoverySaveFailure();
-  return true;
-}
-
 async function completeWordDiscoveryOptimistically({ learnedWords = [] } = {}) {
-  const pending = beginPendingRunAction({
-    actionType: 'wordDiscovery.complete',
-    applyLocal: draft => {
-      const draftRoom = draft.room || getCurrentBufferedRoom(draft);
-      if (draftRoom?.wordDiscovery) draftRoom.wordDiscovery.completed = true;
-      if (draftRoom) draftRoom.interacted = true;
-      draft.phase = 'room';
-    },
-  });
-  if (!pending) return null;
-
-  let result = null;
-  try {
-    result = await apiCompleteDiscovery({ actionId: pending.actionId });
-  } catch (error) {
-    console.warn('[Discovery] Failed to complete room:', error);
-  }
-
-  if (result?.status === 'corrected') {
-    applyWordDiscoveryCorrection(pending, result);
+  const queued = getExploreSession()?.recordRoomAction('wordDiscovery.complete', { learnedWords });
+  if (!queued?.accepted) {
+    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
     return null;
   }
 
-  if (result?.state) {
-    if (!reconcilePendingRunAction(pending, result, { refreshUi: false })) return null;
-    if (learnedWords.length > 0) {
-      apiPostCombatRefresh?.(learnedWords).catch(() => {});
-    }
-    updateUI();
-    return result;
-  }
+  updateSupportRoomDraft(room => {
+    if (room?.wordDiscovery) room.wordDiscovery.completed = true;
+    if (room) room.interacted = true;
+  }, { phase: 'room' });
 
-  rollbackPendingRunAction(pending);
-  showWordDiscoverySaveFailure();
-  return null;
+  if (learnedWords.length > 0) {
+    apiPostCombatRefresh?.(learnedWords).catch(() => {});
+  }
+  updateUI();
+  return queued;
 }
 
 function clearActionArea() {
@@ -1129,39 +1007,24 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
       return { status: 'queued', actionId: sessionResult.entry.actionId };
     }
     if (sessionResult && !sessionResult.accepted) {
+      showExploreSoftPause({ reason: sessionResult.reason });
       return null;
     }
 
-    const fromRoom = state.run?.currentRoom;
-    const actionSeq = state.run?.roomActionSeq;
-    const pending = beginPendingRunAction({
-      actionType: 'run.proceed',
-      applyLocal: draft => {
-        advanceStateToBufferedNextRoom(draft);
-      },
-    });
-    if (!pending) return null;
-
-    clearActionArea();
-    const verification = apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })
-      .then(result => ({ result }))
-      .catch(error => ({ error }));
-
     try {
-      await playRoomTransition(pending.state, { ingredientDrops: [] });
-      const { result, error } = await verification;
-      if (error) throw error;
-      if (!reconcilePendingRunAction(pending, result, { refreshUi })) {
-        rollbackPendingRunAction(pending, { refreshUi });
-        return result || null;
-      }
+      const result = await apiProceed();
+      if (!result?.state) return result || null;
+      updateGameState(result.state);
+      clearActionArea();
       const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
+      await playRoomTransition(result.state, { ingredientDrops });
+      if (refreshUi) updateUI();
       if (ingredientDrops.length > 0) {
         showIngredientDropPopups(ingredientDrops);
       }
       return result || null;
     } catch {
-      rollbackPendingRunAction(pending, { refreshUi });
+      showExploreSoftPause();
       return null;
     }
   }
@@ -1456,7 +1319,7 @@ async function chooseShrineReward(rewardType, creatureKey) {
     const queued = getExploreSession()?.recordRoomAction('shrine.choose', { rewardType, creatureKey });
     if (!queued?.accepted) {
       shrineState.choosing = false;
-      sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 2200 });
+      showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
       renderShrine();
       return;
     }
@@ -1473,7 +1336,7 @@ async function chooseShrineReward(rewardType, creatureKey) {
   } catch {
     shrineState.choosing = false;
     actions.clear();
-    sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 1800 });
+    showExploreSoftPause();
     renderShrine();
   }
 }
@@ -1656,60 +1519,28 @@ function getActiveSpeedReviewRoom(gameState) {
   return null;
 }
 
-function showSpeedReviewSaveFailure() {
-  sceneModule?.showNarration?.(SPEED_REVIEW_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
-}
-
 async function completeSpeedReviewRoomOptimistically(room, { throwOnFailure = false } = {}) {
-  const pending = beginPendingRunAction({
-    actionType: 'speedReview.complete',
-    applyLocal: draft => {
-      const draftRoom = draft.room || getCurrentBufferedRoom(draft);
-      if (draftRoom?.speedReviewRoom) {
-        draftRoom.speedReviewRoom.completed = true;
-        draftRoom.speedReviewRoom.reviewedCards = Math.max(
-          draftRoom.speedReviewRoom.reviewedCards || 0,
-          draftRoom.speedReviewRoom.targetCards || 0
-        );
-      }
-      if (draftRoom) draftRoom.interacted = true;
-      draft.phase = 'room';
-    },
-  });
-  if (!pending) {
-    if (throwOnFailure) throw new Error(SPEED_REVIEW_SAVE_FAILURE_COPY);
-    showSpeedReviewSaveFailure();
+  const queued = getExploreSession()?.recordRoomAction('speedReview.complete', { roomId: room?.id });
+  if (!queued?.accepted) {
+    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+    if (throwOnFailure) throw new Error(EXPLORE_SPOTTY_COPY);
     return null;
   }
 
-  let completeResult = null;
-  try {
-    completeResult = await apiCompleteSpeedReviewRoom(room.id, { actionId: pending.actionId });
-  } catch (error) {
-    console.warn('[SpeedReviewRoom] Completion failed:', error);
-  }
+  updateSupportRoomDraft(draftRoom => {
+    if (draftRoom?.speedReviewRoom) {
+      draftRoom.speedReviewRoom.completed = true;
+      draftRoom.speedReviewRoom.reviewedCards = Math.max(
+        draftRoom.speedReviewRoom.reviewedCards || 0,
+        draftRoom.speedReviewRoom.targetCards || 0
+      );
+    }
+    if (draftRoom) draftRoom.interacted = true;
+  }, { phase: 'room' });
 
-  if (completeResult?.status === 'corrected') {
-    if (!isCurrentPendingRunAction(pending)) return null;
-    updateGameState(correctPendingRunAction(pending, completeResult));
-    updateUI();
-    clearPendingRunAction(pending);
-    if (throwOnFailure) throw new Error(SPEED_REVIEW_SAVE_FAILURE_COPY);
-    showSpeedReviewSaveFailure();
-    return null;
-  }
-
-  if (completeResult?.state) {
-    if (!reconcilePendingRunAction(pending, completeResult, { refreshUi: false })) return null;
-    speedReviewRoomLaunchState.roomId = null;
-    updateUI();
-    return completeResult;
-  }
-
-  rollbackPendingRunAction(pending);
-  if (throwOnFailure) throw new Error(SPEED_REVIEW_SAVE_FAILURE_COPY);
-  showSpeedReviewSaveFailure();
-  return null;
+  speedReviewRoomLaunchState.roomId = null;
+  updateUI();
+  return queued;
 }
 
 export async function renderSpeedReviewRoom() {
@@ -1837,7 +1668,7 @@ function markWhackAMoleRoomComplete(room, { score = null, skipped = false } = {}
 async function completeWhackAMoleOptimistically(score) {
   const queued = getExploreSession()?.recordRoomAction('whackAMole.complete', { score });
   if (!queued?.accepted) {
-    showWhackAMoleSaveFailure();
+    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
     return null;
   }
 
@@ -1850,7 +1681,7 @@ async function completeWhackAMoleOptimistically(score) {
 async function skipWhackAMoleOptimistically() {
   const queued = getExploreSession()?.recordRoomAction('whackAMole.skip', {});
   if (!queued?.accepted) {
-    showWhackAMoleSaveFailure();
+    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
     return null;
   }
 
@@ -2187,7 +2018,7 @@ async function chooseSkillMasterSkill(skillId) {
 
   const queued = getExploreSession()?.recordRoomAction('skillMaster.choose', { skillId });
   if (!queued?.accepted) {
-    sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
     renderSkillMaster();
     return false;
   }
@@ -2209,39 +2040,27 @@ async function chooseSkillMasterSkill(skillId) {
 }
 
 async function chooseInitialSkillMasterSkill(skillId) {
-  const pending = beginPendingRunAction({
-    actionType: 'skillMaster.choose',
-    applyLocal: draft => {
-      draft.run ||= {};
-      draft.run.pendingSkillChoice = skillId;
-    },
-  });
-  if (!pending) {
-    sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-    renderSkillMaster();
-    return false;
-  }
-
   let result;
   try {
-    result = await apiSkillMasterChoose?.(skillId, { actionId: pending.actionId });
+    result = await apiSkillMasterChoose?.(skillId);
   } catch (err) {
     console.error('[SkillMaster] Failed to choose initial skill:', err);
-    rollbackPendingRunAction(pending, { refreshUi: false });
-    sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+    showExploreSoftPause();
     renderSkillMaster();
     return false;
   }
 
-  if (applyPendingRunCorrection(pending, result)) {
-    sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-    return false;
+  const nextState = result?.authoritativeState || result?.state;
+  if (nextState) {
+    updateGameState(nextState);
+    if (nextState.phase !== 'skillMaster') {
+      await resetSceneForInitialRoomEntry(nextState);
+    }
+    updateUI();
+    return true;
   }
-  if (await reconcileInitialSkillPickRoomEntry(pending, result)) return true;
-  if (reconcilePendingRunAction(pending, result)) return true;
 
-  rollbackPendingRunAction(pending, { refreshUi: false });
-  sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+  showExploreSoftPause();
   renderSkillMaster();
   return false;
 }
@@ -2518,7 +2337,7 @@ export async function renderFriendlyNpc() {
         });
         if (!queued?.accepted) {
           friendlyNpcState.choosing = false;
-          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 2200 });
+          showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
           renderFriendlyNpc();
           return;
         }
@@ -2733,7 +2552,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       const queued = getExploreSession()?.recordRoomAction('npcBattleSkill.choose', { skillId });
       if (!queued?.accepted) {
         npcBattleSkillState.choosing = false;
-        sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+        showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
         renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
         return;
       }

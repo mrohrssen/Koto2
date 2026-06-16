@@ -392,7 +392,7 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(currentState.room.interacted, false);
     assert.deepEqual(narrationCalls, [
       {
-        text: 'Game Master choice did not save. Please try again.',
+        text: 'Connection is spotty. Your progress will sync when you reconnect.',
         opts: { autoDismiss: 1800 },
       },
     ]);
@@ -445,7 +445,7 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(currentState.room.interacted, false);
     assert.deepEqual(narrationCalls, [
       {
-        text: 'Game Master choice did not save. Please try again.',
+        text: 'Connection is spotty. Your progress will sync when you reconnect.',
         opts: { autoDismiss: 1800 },
       },
     ]);

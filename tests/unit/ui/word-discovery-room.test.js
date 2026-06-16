@@ -20,22 +20,21 @@ describe('word discovery optimistic room flow', () => {
     'function getActiveSpeedReviewRoom'
   );
 
-  it('records review progress on the explore session and keeps verified completion', () => {
+  it('records review progress and completion on the explore session', () => {
     assert.match(wordDiscoverySource, /getExploreSession\(\)\?\.recordRoomAction\('wordDiscovery\.review'/);
     assert.match(wordDiscoverySource, /const grade = detail\.knew \? 'good' : 'again'/);
     assert.match(wordDiscoverySource, /word: detail\.word,\s*grade,/);
     assert.doesNotMatch(wordDiscoverySource, /apiSwipeWord\(currentWord\.word, 'again', true/);
-    assert.match(explorationSource, /actionType: 'wordDiscovery\.complete'/);
-    assert.match(explorationSource, /apiCompleteDiscovery\(\{ actionId: pending\.actionId \}\)/);
+    assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.complete', \{ learnedWords \}\)/);
+    assert.doesNotMatch(explorationSource, /apiCompleteDiscovery\(\{ actionId: pending\.actionId \}\)/);
   });
 
   it('keeps completed word discovery proceed on the reveal-buffer helper', () => {
     assert.match(wordDiscoverySource, /discovery\.completed[\s\S]*proceedWithRevealBuffer\(\)/);
   });
 
-  it('restores authoritative state and shows approved retry copy on corrections', () => {
-    assert.match(explorationSource, /result\?\.status === 'corrected'/);
-    assert.match(explorationSource, /correctPendingRunAction\(pending, result\)/);
-    assert.match(explorationSource, /Word discovery did not save\. Please try again\./);
+  it('soft pauses when completion cannot be queued', () => {
+    assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.complete', \{ learnedWords \}\)[\s\S]*showExploreSoftPause/);
+    assert.doesNotMatch(explorationSource, /Word discovery did not save\. Please try again\./);
   });
 });
