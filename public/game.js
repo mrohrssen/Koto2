@@ -122,9 +122,9 @@ import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
-import { getBattleRewardAnchor, showIngredientDropPopups, showWordLevelUp } from './js/ui/word-level-up.js';
+import { getBattleRewardAnchor, showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
-import { playNpcBattleIntro, playRoomTransition, playTutorialBossInterjection } from './js/ui/room-transition.js';
+import { playNpcBattleIntro, playTutorialBossInterjection } from './js/ui/room-transition.js';
 import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crystals.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
@@ -134,11 +134,7 @@ import {
   confirmPendingRunAction,
   isMatchingRunActionResponse,
 } from './js/ui/optimistic-run-action.js';
-import {
-  advanceStateToBufferedNextRoom,
-  getCurrentRoom,
-  getNextRoom,
-} from './js/ui/room-reveal-buffer.js';
+import { getCurrentRoom } from './js/ui/room-reveal-buffer.js';
 import {
   initAnalytics,
   setAnalyticsUser,
@@ -777,60 +773,9 @@ let autoProceedInFlight = false;
 async function autoProceed() {
   if (autoProceedInFlight) return;
   autoProceedInFlight = true;
-  let pending = null;
   try {
-    const fromRoom = gameState.run?.currentRoom;
-    const actionSeq = gameState.run?.roomActionSeq;
-    const nextRoom = getNextRoom(gameState);
-    if (nextRoom) {
-      pending = createPendingRunAction({
-        state: gameState,
-        actionType: 'run.proceed',
-        applyLocal: draft => {
-          advanceStateToBufferedNextRoom(draft);
-        },
-      });
-      actions.clear();
-
-      const verification = apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })
-        .then(result => ({ result }))
-        .catch(error => ({ error }));
-
-      await playRoomTransition(pending.state, { ingredientDrops: [] });
-      const { result, error } = await verification;
-      if (error) throw error;
-      if (!isMatchingRunActionResponse(pending, result)) {
-        throw new Error('Auto-proceed response did not match pending action');
-      }
-
-      if (result?.status === 'corrected') {
-        updateGameState(correctPendingRunAction(pending, result));
-        updateUI();
-        return;
-      }
-
-      updateGameState(confirmPendingRunAction(pending, result));
-      const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
-      if (ingredientDrops.length > 0) {
-        showIngredientDropPopups(ingredientDrops);
-      }
-      updateUI();
-      return;
-    }
-
-    const result = await apiProceed();
-    if (result?.state) {
-      updateGameState(result.state);
-      await playRoomTransition(result.state, {
-        ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
-      });
-      updateUI();
-    }
+    await explorationUI.proceedWithRevealBuffer();
   } catch (error) {
-    if (pending) {
-      updateGameState(pending.originalState);
-      updateUI();
-    }
     console.warn('[autoProceed] Failed to proceed:', error);
   } finally {
     autoProceedInFlight = false;

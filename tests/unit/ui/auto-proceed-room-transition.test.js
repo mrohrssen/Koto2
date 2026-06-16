@@ -35,17 +35,28 @@ const startEncounterSrc = sourceBetween(
   'async function returnToHub()'
 );
 
-test('autoProceed routes ingredient drops through room travel', () => {
+test('autoProceed delegates room travel to session-aware exploration proceed', () => {
+  const guardIndex = autoProceedSrc.indexOf('if (autoProceedInFlight) return');
+  const setIndex = autoProceedSrc.indexOf('autoProceedInFlight = true');
+  const delegateIndex = autoProceedSrc.indexOf('await explorationUI.proceedWithRevealBuffer()');
+  const catchIndex = autoProceedSrc.indexOf('catch (error)');
+  const finallyIndex = autoProceedSrc.indexOf('finally {', catchIndex);
+  const clearIndex = autoProceedSrc.indexOf('autoProceedInFlight = false', finallyIndex);
+
+  assert.ok(guardIndex >= 0, 'autoProceed should keep the in-flight guard');
+  assert.ok(setIndex > guardIndex, 'autoProceed should set the in-flight guard before proceeding');
+  assert.ok(delegateIndex > setIndex, 'autoProceed should delegate to the session-aware proceed helper');
+  assert.ok(finallyIndex > delegateIndex, 'autoProceed should clear the guard in finally');
+  assert.ok(clearIndex > finallyIndex, 'autoProceed should reset the in-flight guard in finally');
+  assert.match(autoProceedSrc, /console\.warn\('\[autoProceed\] Failed to proceed:', error\)/);
   assert.doesNotMatch(
-    gameSrc,
+    autoProceedSrc,
     /explorationUI\.showProceedIngredientDrops/,
     'autoProceed must not call the removed ingredient popup helper'
   );
-  assert.match(
-    gameSrc,
-    /await\s+playRoomTransition\(result\.state,\s*\{\s*ingredientDrops:\s*result\.ingredientDrops\s*\|\|\s*result\.room\?\.ingredientDrops\s*\|\|\s*\[\],\s*\}\s*\)/s,
-    'autoProceed should pass proceed ingredient drops into playRoomTransition'
-  );
+  assert.doesNotMatch(autoProceedSrc, /apiProceed\(\{\s*actionId/, 'autoProceed should not call legacy verified proceed');
+  assert.doesNotMatch(autoProceedSrc, /createPendingRunAction/, 'autoProceed should not duplicate optimistic proceed logic');
+  assert.doesNotMatch(autoProceedSrc, /playRoomTransition\(/, 'autoProceed should let exploration handle room transition');
 });
 
 test('proceedWithRevealBuffer queues buffered proceed through explore session before legacy fallback', () => {
