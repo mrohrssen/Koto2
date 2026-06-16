@@ -231,17 +231,20 @@ export function createExploreSession({
     }
     if (!isAcceptedAction(preparedRoom, kind)) return reject('actionNotAccepted');
 
+    const nextRoom = kind === 'proceed' ? nextPreparedRoomAfter(preparedRoom) : null;
+    if (nextRoom && hasIntersectingEffect(log, dependenciesFor(nextRoom))) {
+      enterPause('dependency');
+      return reject('dependency');
+    }
+
     const entry = buildEntry(kind, payload, preparedRoom);
     log.push(entry);
 
     if (kind === 'proceed') {
-      const nextRoom = nextPreparedRoomAfter(preparedRoom);
       if (!nextRoom) {
         enterPause('runwayExhausted');
       } else if (!isRoomReady(nextRoom)) {
         enterPause('nextRoomNotReady');
-      } else if (hasIntersectingEffect(log, dependenciesFor(nextRoom))) {
-        enterPause('dependency');
       } else {
         localCurrentRoom = roomIndexFor(nextRoom);
       }
@@ -293,12 +296,16 @@ export function createExploreSession({
   }
 
   function syncNow() {
+    if (debounceTimer != null) {
+      cancel(debounceTimer);
+      debounceTimer = null;
+    }
     if (retryTimer != null) {
       cancel(retryTimer);
       retryTimer = null;
     }
     attempts = 0;
-    scheduleDrain(0);
+    return drain();
   }
 
   function reset() {

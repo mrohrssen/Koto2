@@ -153,12 +153,14 @@ test('dependency pause keeps local room when unsynced effects intersect next dep
   assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'berry' }).accepted, true);
   const proceed = session.recordRoomAction('proceed');
 
-  assert.equal(proceed.accepted, true);
+  assert.deepEqual(proceed, { accepted: false, reason: 'dependency', pendingCount: 1 });
+  assert.equal(session.pendingCount(), 1);
   assert.equal(session.isPaused(), true);
   assert.equal(session.currentPreparedRoom().index, 0);
+  assert.deepEqual(session.snapshot().map(entry => entry.kind), ['friendlyNpc.choose']);
   assert.equal(pauses.length, 1);
   assert.equal(pauses[0].reason, 'dependency');
-  assert.equal(pauses[0].pendingCount, 2);
+  assert.equal(pauses[0].pendingCount, 1);
 });
 
 test('hard cap pauses, rejects overflow, and resumes after pending count drops to resume mark', async () => {
@@ -239,6 +241,29 @@ test('sync batches entries with sessionEpoch and adopts checkpoint runway', asyn
   assert.equal(session.pendingCount(), 0);
   assert.equal(checkpoints.length, 1);
   assert.equal(session.currentPreparedRoom().index, 1);
+});
+
+test('syncNow immediately drains pending entries without firing the scheduler', async () => {
+  const scheduler = makeManualScheduler();
+  const calls = [];
+  const session = createExploreSession({
+    syncRequest: async payload => {
+      calls.push(payload);
+      return okResponse(payload.entries.at(-1).seq);
+    },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'iron-charm' });
+  assert.equal(calls.length, 0);
+
+  await session.syncNow();
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].entries.length, 1);
+  assert.equal(session.pendingCount(), 0);
 });
 
 test('network failure retries with backoff and keeps the log', async () => {
@@ -373,4 +398,3 @@ test('singleton lifecycle: configure / get / reset', () => {
   resetExploreSession();
   assert.equal(getExploreSession(), null);
 });
-
