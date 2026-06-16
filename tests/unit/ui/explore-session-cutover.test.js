@@ -216,15 +216,14 @@ describe('explore session proceed cutover', () => {
       }),
       apiProceed: async options => {
         proceedCalls.push(options);
-        return { actionId: options.actionId, state: advancedState };
+        return { state: advancedState };
       },
     });
 
     const result = await proceedWithRevealBuffer();
 
     assert.equal(proceedCalls.length, 1);
-    assert.equal(proceedCalls[0].fromRoom, 0);
-    assert.equal(proceedCalls[0].actionSeq, 100);
+    assert.equal(proceedCalls[0], undefined);
     assert.equal(harness.currentState, advancedState);
     assert.equal(transitionCalls.length, 1);
     assert.equal(transitionCalls[0].state.run.currentRoom, 1);
@@ -247,15 +246,14 @@ describe('explore session proceed cutover', () => {
       }),
       apiProceed: async options => {
         proceedCalls.push(options);
-        return { actionId: options.actionId, state: advancedState };
+        return { state: advancedState };
       },
     });
 
     const result = await proceedWithRevealBuffer();
 
     assert.equal(proceedCalls.length, 1);
-    assert.equal(proceedCalls[0].fromRoom, 0);
-    assert.equal(proceedCalls[0].actionSeq, 100);
+    assert.equal(proceedCalls[0], undefined);
     assert.equal(result.state, advancedState);
     assert.equal(transitionCalls.length, 1);
   });

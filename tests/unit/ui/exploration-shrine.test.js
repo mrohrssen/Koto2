@@ -83,6 +83,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 });
 
 const { init, renderShrine } = await import('../../../public/js/ui/exploration.js');
+const { getExploreSession } = await import('../../../public/js/ui/explore-session.js');
 
 describe('renderShrine encounter flow', () => {
   beforeEach(() => {
@@ -93,16 +94,19 @@ describe('renderShrine encounter flow', () => {
   });
 
   function initShrine(overrides = {}) {
+    const roomId = overrides.roomId || 'shrine-test-room';
+    const shrineRoom = {
+      id: roomId,
+      type: 'shrine',
+      interacted: false,
+      shrine: { completed: false, used: false }
+    };
     init({
       getGameState: () => ({
         phase: 'shrine',
-        room: {
-          id: overrides.roomId || 'shrine-test-room',
-          type: 'shrine',
-          interacted: false,
-          shrine: { completed: false, used: false }
-        },
+        room: shrineRoom,
         run: {
+          currentRoom: 0,
           creatureParty: {
             active: [
               { id: 'hi', uid: 'active-hi', name: '火', nameEn: 'Hi', level: 2, hp: 10, maxHp: 20, mp: 1, maxMp: 10 }
@@ -111,7 +115,21 @@ describe('renderShrine encounter flow', () => {
               { id: 'mizu', uid: 'reserve-mizu', name: '水', nameEn: 'Mizu', level: 3, hp: 12, maxHp: 30, mp: 2, maxMp: 15 },
               { id: 'ki', uid: 'reserve-ki', name: '木', nameEn: 'Ki', level: 4, hp: 0, maxHp: 40, mp: 0, maxMp: 20 }
             ]
-          }
+          },
+          exploreRunway: {
+            sessionEpoch: `ese_${roomId.replace(/[^a-z0-9]/gi, '').slice(0, 12).padEnd(12, '0')}`,
+            currentRoom: 0,
+            preparedRooms: [{
+              index: 0,
+              roomId,
+              actionSeq: 30,
+              room: shrineRoom,
+              acceptedActions: ['shrine.choose'],
+              actionEffects: { 'shrine.choose': [] },
+              dependencies: [],
+              offlineReady: true,
+            }],
+          },
         }
       }),
       updateGameState: overrides.updateGameState || (() => {}),
@@ -131,6 +149,7 @@ describe('renderShrine encounter flow', () => {
         ]
       })),
       apiChooseShrineReward: overrides.apiChooseShrineReward || (async () => ({ state: { updated: true } })),
+      apiSyncExploreSession: async entries => ({ status: 'ok', confirmedThroughSeq: entries.at(-1)?.seq ?? null }),
     });
   }
 
@@ -193,30 +212,18 @@ describe('renderShrine encounter flow', () => {
   });
 
   it('chooses party-wide rewards without target selection', async () => {
-    let chosen = null;
-    initShrine({
-      roomId: 'shrine-party-reward-room',
-      apiChooseShrineReward: async (rewardType, creatureKey) => {
-        chosen = { rewardType, creatureKey };
-        return { state: { updated: true } };
-      }
-    });
+    initShrine({ roomId: 'shrine-party-reward-room' });
 
     await renderShrine();
     await renderedChoices.onSelect(0);
 
-    assert.deepEqual(chosen, { rewardType: 'heal_all', creatureKey: null });
+    const [recordedAction] = getExploreSession().snapshot();
+    assert.equal(recordedAction?.kind, 'shrine.choose');
+    assert.deepEqual(recordedAction?.payload, { rewardType: 'heal_all', creatureKey: null });
   });
 
   it('renders living active and reserve targets for level-up and omits fainted creatures', async () => {
-    let chosen = null;
-    initShrine({
-      roomId: 'shrine-level-target-room',
-      apiChooseShrineReward: async (rewardType, creatureKey) => {
-        chosen = { rewardType, creatureKey };
-        return { state: { updated: true } };
-      }
-    });
+    initShrine({ roomId: 'shrine-level-target-room' });
 
     await renderShrine();
     await renderedChoices.onSelect(2);
@@ -225,6 +232,8 @@ describe('renderShrine encounter flow', () => {
     assert.deepEqual(renderedChoices.cards.map(card => card.title), ['Hi Lv.2 -> Lv.3', 'Mizu Lv.3 -> Lv.4']);
 
     await renderedChoices.onSelect(1);
-    assert.deepEqual(chosen, { rewardType: 'level_up', creatureKey: 'reserve-mizu' });
+    const [recordedAction] = getExploreSession().snapshot();
+    assert.equal(recordedAction?.kind, 'shrine.choose');
+    assert.deepEqual(recordedAction?.payload, { rewardType: 'level_up', creatureKey: 'reserve-mizu' });
   });
 });

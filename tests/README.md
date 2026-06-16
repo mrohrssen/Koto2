@@ -32,3 +32,13 @@ npm run test:integration  # Tier 2 only
 npm run test:smoke    # Tier 3 (on-demand, not a gate)
 npm run test:coverage # View coverage report
 ```
+
+### Explore Subway Runway Smoke
+
+Run this after the explore session runway cutover:
+
+```bash
+EXPLORE_SUBWAY_SMOKE=1 KOTO_BASE_URL=http://localhost:5173 npx playwright test tests/smoke/explore-subway-runway.test.js
+```
+
+The test is skipped by default because it requires the local Vite + Express dev server and the seeded `devtester` account.

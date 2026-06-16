@@ -62,15 +62,15 @@ test('autoProceed delegates room travel to session-aware exploration proceed', (
 test('proceedWithRevealBuffer queues buffered proceed through explore session before legacy fallback', () => {
   const sessionIndex = proceedWithRevealBufferSrc.indexOf("recordRoomAction('proceed'");
   const applyIndex = proceedWithRevealBufferSrc.indexOf('applyExploreSessionProceedResult');
-  const legacyIndex = proceedWithRevealBufferSrc.indexOf('apiProceed({');
+  const legacyIndex = proceedWithRevealBufferSrc.indexOf('const result = await apiProceed();');
 
   assert.ok(sessionIndex >= 0, 'proceedWithRevealBuffer should queue proceed in the explore session');
   assert.ok(applyIndex > sessionIndex, 'proceedWithRevealBuffer should apply the accepted session result locally');
-  assert.ok(legacyIndex > applyIndex, 'legacy verified apiProceed fallback should remain after the session path');
+  assert.ok(legacyIndex > applyIndex, 'legacy apiProceed fallback should remain after the session path');
 
   assert.match(proceedWithRevealBufferSrc, /recordRoomAction\('proceed'/);
   assert.match(proceedWithRevealBufferSrc, /applyExploreSessionProceedResult/);
-  assert.match(proceedWithRevealBufferSrc, /advanceStateToBufferedNextRoom\(draft\)/);
+  assert.match(explorationSrc, /function applyExploreSessionProceedResult[\s\S]*advanceStateToBufferedNextRoom\(draft\)/);
 });
 
 test('exploration wires explore session recovery drains', () => {

@@ -85,6 +85,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 });
 
 const { init, renderFriendlyNpc } = await import('../../../public/js/ui/exploration.js');
+const { getExploreSession } = await import('../../../public/js/ui/explore-session.js');
 
 describe('renderFriendlyNpc item prompt', () => {
   beforeEach(() => {
@@ -401,8 +402,7 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(renderedChoices.heading, 'Choose an item');
   });
 
-  it('shows player item request as a You dialogue card before applying the item', async () => {
-    let itemApplied = false;
+  it('shows player item request as a You dialogue card before recording the item choice', async () => {
     const room = {
       id: 'friendly-npc-player-request-room',
       type: 'friendlyNpc',
@@ -415,7 +415,24 @@ describe('renderFriendlyNpc item prompt', () => {
         phase: 'friendlyNpc',
         room,
         meta: { tutorialStep: 0 },
-        run: { creatureParty: { active: [] } },
+        run: {
+          currentRoom: 0,
+          creatureParty: { active: [] },
+          exploreRunway: {
+            sessionEpoch: 'ese_friendlytest111',
+            currentRoom: 0,
+            preparedRooms: [{
+              index: 0,
+              roomId: room.id,
+              actionSeq: 20,
+              room,
+              acceptedActions: ['friendlyNpc.choose'],
+              actionEffects: { 'friendlyNpc.choose': [] },
+              dependencies: [],
+              offlineReady: true,
+            }],
+          },
+        },
       }),
       updateGameState: () => {},
       updateUI: () => {},
@@ -432,10 +449,7 @@ describe('renderFriendlyNpc item prompt', () => {
           },
         ],
       }),
-      apiChooseFriendlyNpcItem: async () => {
-        itemApplied = true;
-        return { state: { updated: true } };
-      },
+      apiSyncExploreSession: async entries => ({ status: 'ok', confirmedThroughSeq: entries.at(-1)?.seq ?? null }),
     });
 
     await renderFriendlyNpc();
@@ -444,7 +458,9 @@ describe('renderFriendlyNpc item prompt', () => {
     const youLine = dialogueCards.find(card => card.speaker === 'You');
     assert.ok(youLine);
     assert.match(youLine.html || youLine.text || '', /ください|りんご/);
-    assert.equal(itemApplied, true);
+    const [recordedAction] = getExploreSession().snapshot();
+    assert.equal(recordedAction?.kind, 'friendlyNpc.choose');
+    assert.deepEqual(recordedAction?.payload, { itemId: 'test-apple', targetCreatureIndex: 0 });
   });
 
   it('labels friendly NPC item target selection with Choose target', async () => {

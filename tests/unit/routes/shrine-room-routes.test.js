@@ -87,12 +87,14 @@ describe('Shrine room routes', () => {
     const req = {
       body: { rewardType: 'level_up', creatureKey: 'reserve-mizu' },
       gameManager: {
-        useShrineReward: (rewardType, creatureKey) => ({
-          type: 'shrine_reward',
-          rewardType,
-          affectedCreatures: [],
-          levelUp: { creatureKey }
-        })
+        explorationService: {
+          applyShrineChoose: ({ rewardType, creatureKey }) => ({
+            type: 'shrine_reward',
+            rewardType,
+            affectedCreatures: [],
+            levelUp: { creatureKey }
+          })
+        }
       },
       saveGame: () => { saved = true; },
       getEnrichedGameState: () => ({ phase: 'room' })
