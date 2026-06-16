@@ -133,6 +133,34 @@ export class ExploreSessionSyncService {
           targetCreatureIndex: payload.targetCreatureIndex ?? entry.targetCreatureIndex,
         });
       }
+      case 'shrine.choose':
+        return this.gm.explorationService.applyShrineChoose(entry.payload || {});
+      case 'skillMaster.choose':
+        return this.gm.explorationService.applySkillMasterChoose(entry.payload || {});
+      case 'npcBattleSkill.choose':
+        return this.gm.explorationService.applyNpcBattleSkillChoose(entry.payload || {});
+      case 'dealer.sell':
+        return this.gm.explorationService.applyDealerSell(entry.payload || {});
+      case 'dealer.buy':
+        return this.gm.explorationService.applyDealerBuy(entry.payload || {});
+      case 'dealer.leave':
+        return this.gm.explorationService.applyDealerLeave(entry.payload || {});
+      case 'whackAMole.complete':
+        return this.gm.explorationService.applyWhackAMoleComplete(entry.payload || {});
+      case 'whackAMole.skip':
+        return this.gm.explorationService.applyWhackAMoleSkip(entry.payload || {});
+      case 'campfire.skip':
+        return this.gm.explorationService.applyCampfireSkip(entry.payload || {});
+      case 'campfire.cook':
+        return this.gm.explorationService.applyCampfireCook(entry.payload || {});
+      case 'campfire.feed':
+        return this.gm.explorationService.applyCampfireFeed(entry.payload || {});
+      case 'speedReview.commit':
+        return this.gm.explorationService.applySpeedReviewCommit(entry.payload || {});
+      case 'speedReview.complete':
+        return this.gm.explorationService.applySpeedReviewComplete(entry.payload || {});
+      case 'wordDiscovery.complete':
+        return this.gm.explorationService.applyWordDiscoveryComplete(entry.payload || {});
       default:
         throw new Error(`unsupported_explore_entry:${entry?.kind}`);
     }

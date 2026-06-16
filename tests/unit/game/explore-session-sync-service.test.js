@@ -103,6 +103,32 @@ function makeEntry(gm, overrides = {}) {
   };
 }
 
+async function expectSupportReplayOnce({ roomType, kind, payload = {}, installPerformer, assertApplied }) {
+  const gm = makeGm();
+  gm.run.rooms[0] = createRoom(roomType, AREA_ID, 1, 3);
+  gm.run.roomActionSeq = 2;
+  let calls = 0;
+  installPerformer(gm, () => { calls += 1; });
+  const service = new ExploreSessionSyncService(gm);
+  const entry = {
+    seq: 1,
+    actionId: `run_es_${kind.replace(/[^a-z]/gi, '').slice(0, 8)}1`,
+    kind,
+    roomIndex: 0,
+    roomId: gm.run.rooms[0].id,
+    actionSeq: 2,
+    payload,
+  };
+
+  const first = await service.applySessionSync({ sessionEpoch: gm.run.exploreSessionEpoch, entries: [entry] });
+  const replay = await service.applySessionSync({ sessionEpoch: gm.run.exploreSessionEpoch, entries: [entry] });
+
+  assert.equal(first.status, 'ok');
+  assert.equal(replay.results[0].replayed, true);
+  assert.equal(calls, 1);
+  assertApplied(gm);
+}
+
 describe('ExploreSessionSyncService', () => {
   it('returns correction for stale sessionEpoch with rejectedSeq', async () => {
     const gm = makeGm();
@@ -491,5 +517,197 @@ describe('ExploreSessionSyncService', () => {
     assert.deepEqual(gm.meta.itemsDiscovered, [TEST_EQUIPMENT.id]);
     assert.equal(result.results[0].chosen.id, TEST_EQUIPMENT.id);
     assert.equal(result.results[0].applyResult.applied, true);
+  });
+
+  it('commits dealer leave idempotently through explore sync', async () => {
+    const gm = makeGm();
+    gm.run.rooms[0] = createRoom(ROOM_TYPES.dealer, AREA_ID, 1, 3);
+    gm.run.roomActionSeq = 2;
+    gm.run.rooms[0].dealer.offeredCreatures = [];
+    let calls = 0;
+    gm.explorationService.applyDealerLeave = () => {
+      calls += 1;
+      gm.run.rooms[0].dealer.visited = true;
+      gm.run.rooms[0].interacted = true;
+      return { success: true };
+    };
+    const service = new ExploreSessionSyncService(gm);
+    const entry = {
+      seq: 1,
+      actionId: 'run_es_00001001',
+      kind: 'dealer.leave',
+      roomIndex: 0,
+      roomId: gm.run.rooms[0].id,
+      actionSeq: 2,
+      payload: {},
+    };
+
+    const first = await service.applySessionSync({ sessionEpoch: gm.run.exploreSessionEpoch, entries: [entry] });
+    const replay = await service.applySessionSync({ sessionEpoch: gm.run.exploreSessionEpoch, entries: [entry] });
+
+    assert.equal(first.status, 'ok');
+    assert.equal(replay.results[0].replayed, true);
+    assert.equal(calls, 1);
+    assert.equal(gm.run.rooms[0].interacted, true);
+  });
+
+  it('campfire.skip replays without double mutation', async () => {
+    await expectSupportReplayOnce({
+      roomType: ROOM_TYPES.campfire,
+      kind: 'campfire.skip',
+      installPerformer: (gm, count) => {
+        gm.explorationService.applyCampfireSkip = () => {
+          count();
+          gm.run.rooms[0].campfire.completed = true;
+          gm.run.rooms[0].interacted = true;
+          return { skipped: true };
+        };
+      },
+      assertApplied: gm => assert.equal(gm.run.rooms[0].campfire.completed, true),
+    });
+  });
+
+  it('whackAMole.skip replays without double mutation', async () => {
+    await expectSupportReplayOnce({
+      roomType: ROOM_TYPES.whackAMole,
+      kind: 'whackAMole.skip',
+      installPerformer: (gm, count) => {
+        gm.explorationService.applyWhackAMoleSkip = () => {
+          count();
+          gm.run.rooms[0].whackAMole.completed = true;
+          gm.run.rooms[0].interacted = true;
+          return { skipped: true };
+        };
+      },
+      assertApplied: gm => assert.equal(gm.run.rooms[0].interacted, true),
+    });
+  });
+
+  it('speedReview.complete replays without double mutation', async () => {
+    await expectSupportReplayOnce({
+      roomType: ROOM_TYPES.speedReviewRoom,
+      kind: 'speedReview.complete',
+      payload: { roomId: 'hajimari-no-hiroba_room1' },
+      installPerformer: (gm, count) => {
+        gm.explorationService.applySpeedReviewComplete = () => {
+          count();
+          gm.run.rooms[0].speedReviewRoom.completed = true;
+          gm.run.rooms[0].interacted = true;
+          return { completed: true };
+        };
+      },
+      assertApplied: gm => assert.equal(gm.run.rooms[0].speedReviewRoom.completed, true),
+    });
+  });
+
+  it('wordDiscovery.complete replays without double mutation', async () => {
+    await expectSupportReplayOnce({
+      roomType: ROOM_TYPES.wordDiscovery,
+      kind: 'wordDiscovery.complete',
+      installPerformer: (gm, count) => {
+        gm.explorationService.applyWordDiscoveryComplete = () => {
+          count();
+          gm.run.rooms[0].wordDiscovery.completed = true;
+          gm.run.rooms[0].interacted = true;
+          return { completed: true };
+        };
+      },
+      assertApplied: gm => assert.equal(gm.run.rooms[0].wordDiscovery.completed, true),
+    });
+  });
+
+  it('replays every Task 8 support-room action kind', async () => {
+    const cases = [
+      {
+        roomType: ROOM_TYPES.shrine,
+        kind: 'shrine.choose',
+        payload: { rewardType: 'heal_all' },
+        method: 'applyShrineChoose',
+      },
+      {
+        roomType: ROOM_TYPES.skillMaster,
+        kind: 'skillMaster.choose',
+        payload: { skillId: 'counterMaster' },
+        method: 'applySkillMasterChoose',
+      },
+      {
+        roomType: ROOM_TYPES.npcBattle,
+        kind: 'npcBattleSkill.choose',
+        payload: { skillId: 'counterMaster' },
+        method: 'applyNpcBattleSkillChoose',
+        prepare: gm => {
+          gm.run.rooms[0].npcBattle = {
+            skillSelectionPending: true,
+            offered: [{ id: 'counterMaster', level: 1 }],
+          };
+        },
+      },
+      {
+        roomType: ROOM_TYPES.dealer,
+        kind: 'dealer.sell',
+        payload: { creatureId: 'hi-1' },
+        method: 'applyDealerSell',
+      },
+      {
+        roomType: ROOM_TYPES.dealer,
+        kind: 'dealer.buy',
+        payload: { creatureId: 'dealer-hi' },
+        method: 'applyDealerBuy',
+      },
+      {
+        roomType: ROOM_TYPES.campfire,
+        kind: 'campfire.cook',
+        payload: { ingredients: [{ id: 'mizu', quantity: 1 }] },
+        method: 'applyCampfireCook',
+      },
+      {
+        roomType: ROOM_TYPES.campfire,
+        kind: 'campfire.feed',
+        payload: { targetCreatureIndex: 0 },
+        method: 'applyCampfireFeed',
+      },
+      {
+        roomType: ROOM_TYPES.speedReviewRoom,
+        kind: 'speedReview.commit',
+        payload: { roomId: 'hajimari-no-hiroba_room1', word: '明るい', commitIndex: 0 },
+        method: 'applySpeedReviewCommit',
+      },
+    ];
+
+    for (const testCase of cases) {
+      const gm = makeGm();
+      gm.run.rooms[0] = createRoom(testCase.roomType, AREA_ID, 1, 3);
+      gm.run.roomActionSeq = 2;
+      testCase.prepare?.(gm);
+      let calls = 0;
+      gm.explorationService[testCase.method] = payload => {
+        calls += 1;
+        gm.run.rooms[0].interacted = true;
+        return { ok: true, payload };
+      };
+      const service = new ExploreSessionSyncService(gm);
+      const entry = {
+        seq: 1,
+        actionId: `run_es_${String(cases.indexOf(testCase) + 3000).padStart(8, '0')}`,
+        kind: testCase.kind,
+        roomIndex: 0,
+        roomId: gm.run.rooms[0].id,
+        actionSeq: 2,
+        payload: testCase.payload,
+      };
+
+      const first = await service.applySessionSync({
+        sessionEpoch: gm.run.exploreSessionEpoch,
+        entries: [entry],
+      });
+      const replay = await service.applySessionSync({
+        sessionEpoch: gm.run.exploreSessionEpoch,
+        entries: [entry],
+      });
+
+      assert.equal(first.status, 'ok', testCase.kind);
+      assert.equal(replay.results[0].replayed, true, testCase.kind);
+      assert.equal(calls, 1, testCase.kind);
+    }
   });
 });

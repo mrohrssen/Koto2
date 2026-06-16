@@ -255,3 +255,73 @@ export function applyCookedDish(dish, creatureParty, targetIndex, context = {}) 
   }
   return { applied: true, results };
 }
+
+function getHighestPartyLevel(party) {
+  const all = [...(party?.active || []), ...(party?.reserves || [])].filter(Boolean);
+  return all.reduce((max, creature) => Math.max(max, creature.level || 1), 1);
+}
+
+export function ensureCookingRunState(gm) {
+  if (!gm?.run) throw new Error('no_active_run');
+  if (!gm.run.cooking) gm.run.cooking = { ingredients: {}, cookedThisRun: [] };
+  if (!gm.run.cooking.ingredients) gm.run.cooking.ingredients = {};
+  if (!Array.isArray(gm.run.cooking.cookedThisRun)) gm.run.cooking.cookedThisRun = [];
+  if (!gm.meta) gm.initMeta?.();
+  if (!gm.meta) gm.meta = {};
+  if (!Array.isArray(gm.meta.cookingRecipesDiscovered)) gm.meta.cookingRecipesDiscovered = [];
+}
+
+export function applyCampfireCook(gm, { ingredients = [] } = {}) {
+  ensureCookingRunState(gm);
+  const room = gm.getCurrentRoom();
+  if (!room || room.type !== 'campfire') throw new Error('not_campfire_room');
+  if (!room.campfire) room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
+  if (room.campfire.cookedDish) return { dish: room.campfire.cookedDish, alreadyCooked: true };
+  if (!hasIngredients(gm.run.cooking.ingredients, ingredients)) throw new Error('not_enough_ingredients');
+
+  const result = resolveCookingSelection(ingredients);
+  consumeIngredientsFromBag(gm.run.cooking.ingredients, result.consumed);
+  room.campfire.cookedDish = result.dish;
+  room.campfire.consumed = result.consumed;
+  room.campfire.resultKind = result.kind;
+
+  return { dish: result.dish, consumed: result.consumed, resultKind: result.kind };
+}
+
+export function applyCampfireFeed(gm, { targetCreatureIndex } = {}) {
+  ensureCookingRunState(gm);
+  const room = gm.getCurrentRoom();
+  if (!room || room.type !== 'campfire') throw new Error('not_campfire_room');
+  if (!room.campfire?.cookedDish) throw new Error('no_cooked_dish_to_feed');
+  if (room.campfire.fed) return { dish: room.campfire.cookedDish, alreadyFed: true };
+
+  const targetIndex = Number(targetCreatureIndex);
+  if (!Number.isInteger(targetIndex)) throw new Error('target_creature_required');
+  const applyResult = applyCookedDish(room.campfire.cookedDish, gm.run.creatureParty, targetIndex, {
+    enemyLevel: getHighestPartyLevel(gm.run.creatureParty),
+  });
+  if (!applyResult.applied) throw new Error('dish_could_not_be_applied');
+
+  if (room.campfire.resultKind === 'recipe') {
+    const discovered = gm.meta.cookingRecipesDiscovered ||= [];
+    if (!discovered.includes(room.campfire.cookedDish.id)) discovered.push(room.campfire.cookedDish.id);
+  }
+  gm.run.cooking.cookedThisRun.push({ id: room.campfire.cookedDish.id, targetCreatureIndex: targetIndex });
+  room.campfire.fed = true;
+  room.campfire.completed = true;
+  room.interacted = true;
+
+  return { dish: room.campfire.cookedDish, applyResult };
+}
+
+export function applyCampfireSkip(gm) {
+  const room = gm?.getCurrentRoom?.();
+  if (!room || room.type !== 'campfire') throw new Error('not_campfire_room');
+  if (!room.campfire) room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
+
+  room.campfire.completed = true;
+  room.campfire.skipped = true;
+  room.interacted = true;
+
+  return { skipped: true };
+}

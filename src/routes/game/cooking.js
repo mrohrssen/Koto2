@@ -1,12 +1,11 @@
 import express from 'express';
 import {
-  addIngredientsToBag,
-  applyCookedDish,
-  consumeIngredientsFromBag,
+  applyCampfireCook,
+  applyCampfireFeed,
+  applyCampfireSkip,
   getCookableRecipeHints,
   getIngredientCount,
-  hasIngredients,
-  resolveCookingSelection,
+  ensureCookingRunState,
   COOKING_INGREDIENTS,
   COOKING_RECIPES,
 } from '../../game/services/cooking-service.js';
@@ -45,7 +44,7 @@ export default function createCookingRoutes() {
   router.get('/campfire', (req, res) => {
     try {
       const gm = req.gameManager;
-      ensureCookingState(gm);
+      ensureCookingRunState(gm);
       const room = gm.getCurrentRoom();
       if (!room || room.type !== 'campfire') throw new Error('Not in a campfire room');
       res.json(buildCampfireState(req));
@@ -57,21 +56,7 @@ export default function createCookingRoutes() {
   router.post('/campfire/cook', (req, res) => runCampfireAction(req, res, {
     actionType: 'campfire.cook',
     perform: () => {
-      const gm = req.gameManager;
-      ensureCookingState(gm);
-      const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'campfire') throw new Error('Not in a campfire room');
-      if (!room.campfire) room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
-      if (room.campfire.cookedDish) return buildCampfireState(req);
-
-      const selection = req.body?.ingredients || [];
-      if (!hasIngredients(gm.run.cooking.ingredients, selection)) throw new Error('Not enough ingredients');
-      const result = resolveCookingSelection(selection);
-      consumeIngredientsFromBag(gm.run.cooking.ingredients, result.consumed);
-      room.campfire.cookedDish = result.dish;
-      room.campfire.consumed = result.consumed;
-      room.campfire.resultKind = result.kind;
-
+      applyCampfireCook(req.gameManager, { ingredients: req.body?.ingredients || [] });
       return buildCampfireState(req);
     },
   }));
@@ -79,59 +64,22 @@ export default function createCookingRoutes() {
   router.post('/campfire/feed', (req, res) => runCampfireAction(req, res, {
     actionType: 'campfire.feed',
     perform: () => {
-      const gm = req.gameManager;
-      ensureCookingState(gm);
-      const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'campfire') throw new Error('Not in a campfire room');
-      if (!room.campfire?.cookedDish) throw new Error('No cooked dish to feed');
-      if (room.campfire.fed) return { state: req.getEnrichedGameState(), dish: room.campfire.cookedDish };
-
-      const targetIndex = Number(req.body?.targetCreatureIndex);
-      if (!Number.isInteger(targetIndex)) throw new Error('Target creature required');
-      const applyResult = applyCookedDish(room.campfire.cookedDish, gm.run.creatureParty, targetIndex, {
-        enemyLevel: getHighestPartyLevel(gm.run.creatureParty),
+      const { dish, applyResult } = applyCampfireFeed(req.gameManager, {
+        targetCreatureIndex: req.body?.targetCreatureIndex,
       });
-      if (!applyResult.applied) throw new Error('Dish could not be applied');
-
-      if (room.campfire.resultKind === 'recipe') {
-        const discovered = gm.meta.cookingRecipesDiscovered ||= [];
-        if (!discovered.includes(room.campfire.cookedDish.id)) discovered.push(room.campfire.cookedDish.id);
-      }
-      gm.run.cooking.cookedThisRun.push({ id: room.campfire.cookedDish.id, targetCreatureIndex: targetIndex });
-      room.campfire.fed = true;
-      room.campfire.completed = true;
-      room.interacted = true;
-
-      return { state: req.getEnrichedGameState(), dish: room.campfire.cookedDish, applyResult };
+      return { state: req.getEnrichedGameState(), dish, applyResult };
     },
   }));
 
   router.post('/campfire/skip', (req, res) => runCampfireAction(req, res, {
     actionType: 'campfire.skip',
     perform: () => {
-      const gm = req.gameManager;
-      ensureCookingState(gm);
-      const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'campfire') throw new Error('Not in a campfire room');
-      if (!room.campfire) room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
-
-      room.campfire.completed = true;
-      room.campfire.skipped = true;
-      room.interacted = true;
-
+      applyCampfireSkip(req.gameManager);
       return { state: req.getEnrichedGameState(), skipped: true };
     },
   }));
 
   return router;
-}
-
-function ensureCookingState(gm) {
-  if (!gm.run.cooking) gm.run.cooking = { ingredients: {}, cookedThisRun: [] };
-  if (!gm.run.cooking.ingredients) gm.run.cooking.ingredients = {};
-  if (!Array.isArray(gm.run.cooking.cookedThisRun)) gm.run.cooking.cookedThisRun = [];
-  if (!gm.meta) gm.initMeta();
-  if (!Array.isArray(gm.meta.cookingRecipesDiscovered)) gm.meta.cookingRecipesDiscovered = [];
 }
 
 function decorateDrops(drops) {
@@ -176,9 +124,4 @@ function buildCampfireState(req) {
     noTokens: getEligibleFrameTokens(getGameMasterNoFrame(), knownSet, { dict }),
     state: req.getEnrichedGameState(),
   };
-}
-
-function getHighestPartyLevel(party) {
-  const all = [...(party?.active || []), ...(party?.reserves || [])].filter(Boolean);
-  return all.reduce((max, creature) => Math.max(max, creature.level || 1), 1);
 }

@@ -31,7 +31,14 @@ import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
 import { applyCrestBonuses } from './crest-service.js';
 import { shouldOverrideSkillOffers, advanceTutorial, shouldFixRoomSequence } from './tutorial-service.js';
-import { addIngredientsToBag, COOKING_INGREDIENTS, rollRoomIngredientDrops } from './cooking-service.js';
+import {
+  addIngredientsToBag,
+  applyCampfireCook as applyCampfireCookMutation,
+  applyCampfireFeed as applyCampfireFeedMutation,
+  applyCampfireSkip as applyCampfireSkipMutation,
+  COOKING_INGREDIENTS,
+  rollRoomIngredientDrops
+} from './cooking-service.js';
 import { buildExploreRunway } from './explore-runway-service.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
 import { applyItem } from './item-service.js';
@@ -558,6 +565,10 @@ export class ExplorationService {
     return { chosen: item, applyResult };
   }
 
+  applyShrineChoose({ rewardType, creatureKey, creatureId } = {}) {
+    return this.useShrineReward(rewardType, creatureKey || creatureId || null);
+  }
+
   useShrine(creatureId) {
     return this.useShrineReward(SHRINE_REWARDS.LEVEL_UP, creatureId);
   }
@@ -784,6 +795,10 @@ export class ExplorationService {
     return { type: 'word_discovery_complete', xpGrants, levelUps };
   }
 
+  applyWordDiscoveryComplete() {
+    return this.completeWordDiscovery();
+  }
+
   /**
    * Complete whack-a-mole game and award XP per successful flip to all party
    */
@@ -834,6 +849,10 @@ export class ExplorationService {
     return { type: 'whack_a_mole_complete', score: clampedScore, creditsAwarded, xpGrants, levelUps };
   }
 
+  applyWhackAMoleComplete({ score } = {}) {
+    return this.completeWhackAMole(score);
+  }
+
   skipWhackAMole() {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'whackAMole') {
@@ -848,6 +867,22 @@ export class ExplorationService {
 
     const proceedResult = this.proceedToNextRoom();
     return { type: 'whack_a_mole_skipped', ...proceedResult };
+  }
+
+  applyWhackAMoleSkip() {
+    return this.skipWhackAMole();
+  }
+
+  applyCampfireCook(payload = {}) {
+    return applyCampfireCookMutation(this.gm, payload);
+  }
+
+  applyCampfireFeed(payload = {}) {
+    return applyCampfireFeedMutation(this.gm, payload);
+  }
+
+  applyCampfireSkip() {
+    return applyCampfireSkipMutation(this.gm);
   }
 
   // ============ SKILL MASTER ROOM ============
@@ -975,6 +1010,53 @@ export class ExplorationService {
     };
   }
 
+  applySkillMasterChoose({ skillId } = {}) {
+    if (!skillId) throw new Error('skill_id_required');
+    return this.chooseSkillMasterOffer(skillId);
+  }
+
+  applyNpcBattleSkillChoose({ skillId } = {}) {
+    if (!skillId) throw new Error('skill_id_required');
+
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== ROOM_TYPES.npcBattle) {
+      throw new Error('Not in an NPC battle room');
+    }
+    if (!room.npcBattle?.skillSelectionPending) {
+      throw new Error('NPC battle skill selection not pending');
+    }
+    if (room.npcBattle.chosenSkillId) {
+      throw new Error('Skill already chosen for this room');
+    }
+
+    if (!Array.isArray(room.npcBattle.offered)) {
+      logger.warn('[npc-battle-skill-choose] offered not set — generating on demand',
+        { skillId, npcBattle: JSON.stringify(room.npcBattle) });
+      this.gm.run.partySkills = normalizePartySkills(this.gm.run?.partySkills || []);
+      room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 })
+        .map(({ id, level }) => ({ id, level }));
+    }
+
+    const canonicalSkillId = canonicalPartySkillTreeId(skillId);
+    const offeredIds = room.npcBattle.offered.map(canonicalPartySkillTreeId).filter(Boolean);
+    if (!canonicalSkillId || !offeredIds.includes(canonicalSkillId)) {
+      logger.warn('[npc-battle-skill-choose] skillId not in offered',
+        { skillId, offeredIds, typeof_skillId: typeof skillId });
+      throw new Error('Invalid skill choice');
+    }
+
+    if (!this.gm.run) throw new Error('No active run');
+    this.gm.run.partySkills = applyPartySkillChoice(this.gm.run.partySkills || [], canonicalSkillId);
+    syncPartySkillHpBonuses(this.gm.run.creatureParty, this.gm.run.partySkills);
+
+    room.npcBattle.chosenSkillId = canonicalSkillId;
+    room.npcBattle.skillSelectionPending = false;
+    room.interacted = true;
+
+    this.gm.emitState();
+    return { chosenId: canonicalSkillId, partySkills: this.gm.run.partySkills };
+  }
+
   // ============ DEALER ROOM ============
 
   /**
@@ -1082,6 +1164,11 @@ export class ExplorationService {
     };
   }
 
+  applyDealerSell({ creatureId } = {}) {
+    if (!creatureId) throw new Error('creature_id_required');
+    return this.dealerSell(creatureId);
+  }
+
   /**
    * Buy the dealer's offered creature
    */
@@ -1152,6 +1239,11 @@ export class ExplorationService {
     };
   }
 
+  applyDealerBuy({ creatureId } = {}) {
+    if (!creatureId) throw new Error('creature_id_required');
+    return this.dealerBuy(creatureId);
+  }
+
   /**
    * Leave the dealer room without further interaction
    */
@@ -1168,6 +1260,10 @@ export class ExplorationService {
     this.gm.emitState();
 
     return { success: true };
+  }
+
+  applyDealerLeave() {
+    return this.leaveDealer();
   }
 
   /**
@@ -1419,6 +1515,14 @@ export class ExplorationService {
     this.gm.emitState();
 
     return this._buildSpeedReviewRoomResponse(room);
+  }
+
+  applySpeedReviewCommit(payload = {}) {
+    return this.recordSpeedReviewRoomCommit(payload);
+  }
+
+  applySpeedReviewComplete(payload = {}) {
+    return this.completeSpeedReviewRoom(payload);
   }
 
 }

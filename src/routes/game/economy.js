@@ -73,14 +73,15 @@ export default function createEconomyRoutes() {
 
   // Dealer room: leave
   router.post('/dealer-leave', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const result = gameManager.leaveDealer();
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+    return runDealerAction(req, res, {
+      actionType: 'dealer.leave',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 400,
+      perform: () => {
+        const result = req.gameManager.leaveDealer();
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   return router;

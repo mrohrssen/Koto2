@@ -183,6 +183,40 @@ describe('optimistic deterministic run routes', () => {
     assert.deepEqual(duplicateRes.body.state, { phase: 'dealer', buyCalls: 1 });
   });
 
+  it('/dealer-leave does not re-run duplicate optimistic actionId', async () => {
+    const handler = getHandler(createEconomyRouter(), 'post', '/dealer-leave');
+    const meta = { actionLedger: { entries: {}, order: [] } };
+    let leaveCalls = 0;
+    let saveCalls = 0;
+    const req = {
+      body: { actionId: actionId('dealerleave') },
+      gameManager: {
+        meta,
+        leaveDealer: () => {
+          leaveCalls += 1;
+          return { success: true, leaveCalls };
+        },
+      },
+      saveGame: () => { saveCalls += 1; },
+      getEnrichedGameState: () => ({ phase: 'room', leaveCalls }),
+    };
+
+    const firstRes = makeRes();
+    await handler(req, firstRes);
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(firstRes.statusCode, 200);
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(leaveCalls, 1);
+    assert.equal(saveCalls, 1);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, actionId('dealerleave'));
+    assert.equal(duplicateRes.body.actionType, 'dealer.leave');
+    assert.equal(duplicateRes.body.success, true);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', leaveCalls: 1 });
+  });
+
   it('wraps skill-master choices with accepted optimistic status when actionId is present', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/skill-master-choose');
     const res = makeRes();
@@ -191,7 +225,7 @@ describe('optimistic deterministic run routes', () => {
       body: { actionId: actionId('skill1'), skillId: 'buffMaster' },
       gameManager: {
         explorationService: {
-          chooseSkillMasterOffer: skillId => ({ chosen: skillId }),
+          applySkillMasterChoose: ({ skillId }) => ({ chosen: skillId }),
         },
       },
       saveGame: () => {},
@@ -213,7 +247,7 @@ describe('optimistic deterministic run routes', () => {
       body: { skillId: 'buffMaster' },
       gameManager: {
         explorationService: {
-          chooseSkillMasterOffer: skillId => ({ chosen: skillId }),
+          applySkillMasterChoose: ({ skillId }) => ({ chosen: skillId }),
         },
       },
       saveGame: () => {},
@@ -384,8 +418,10 @@ describe('optimistic deterministic run routes', () => {
     await handler({
       body: { actionId: actionId('bad'), rewardType: 'level_up' },
       gameManager: {
-        useShrineReward: () => {
-          throw new Error('Shrine already completed');
+        explorationService: {
+          applyShrineChoose: () => {
+            throw new Error('Shrine already completed');
+          },
         },
       },
       saveGame: () => {},
@@ -407,7 +443,7 @@ describe('optimistic deterministic run routes', () => {
       body: { actionId: actionId('missingskill') },
       gameManager: {
         explorationService: {
-          chooseSkillMasterOffer: () => {
+          applySkillMasterChoose: () => {
             throw new Error('should not be called');
           },
         },
@@ -433,7 +469,7 @@ describe('optimistic deterministic run routes', () => {
         run,
         meta: { actionLedger: { entries: {}, order: [] } },
         explorationService: {
-          chooseSkillMasterOffer: skillId => {
+          applySkillMasterChoose: ({ skillId }) => {
             choiceCount += 1;
             run.partySkills.push({ id: skillId, level: 1 });
             return { chosen: skillId };
@@ -461,7 +497,9 @@ describe('optimistic deterministic run routes', () => {
     await handler({
       body: { actionId: actionId('shrine1'), rewardType: 'heal_all' },
       gameManager: {
-        useShrineReward: rewardType => ({ rewardType, type: 'shrine_reward' }),
+        explorationService: {
+          applyShrineChoose: ({ rewardType }) => ({ rewardType, type: 'shrine_reward' }),
+        },
       },
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'room' }),
@@ -482,9 +520,11 @@ describe('optimistic deterministic run routes', () => {
       gameManager: {
         run,
         meta: { actionLedger: { entries: {}, order: [] } },
-        useShrineReward: rewardType => {
-          run.shrineUses += 1;
-          return { rewardType, type: 'shrine_reward' };
+        explorationService: {
+          applyShrineChoose: ({ rewardType }) => {
+            run.shrineUses += 1;
+            return { rewardType, type: 'shrine_reward' };
+          },
         },
       },
       saveGame: () => {},
@@ -644,10 +684,7 @@ describe('optimistic deterministic run routes', () => {
 
     await handler({
       body: { actionId: actionId('npcskill1'), skillId: 'buffMaster' },
-      gameManager: {
-        run,
-        getCurrentRoom: () => room,
-      },
+      gameManager: attachExplorationService({ run }, room),
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [...run.partySkills] } }),
     }, res);
@@ -673,10 +710,7 @@ describe('optimistic deterministic run routes', () => {
     const req = {
       body: {},
       user: { id: 'test-user' },
-      gameManager: {
-        run,
-        getCurrentRoom: () => room,
-      },
+      gameManager: attachExplorationService({ run }, room),
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [...run.partySkills] } }),
     };
@@ -715,11 +749,10 @@ describe('optimistic deterministic run routes', () => {
     };
     const req = {
       body: { actionId: actionId('npcskilldupe'), skillId: 'hpMaster' },
-      gameManager: {
+      gameManager: attachExplorationService({
         run,
         meta: { actionLedger: { entries: {}, order: [] } },
-        getCurrentRoom: () => room,
-      },
+      }, room),
       saveGame: () => {},
       getEnrichedGameState: () => ({
         phase: 'room',
@@ -778,10 +811,7 @@ describe('optimistic deterministic run routes', () => {
 
     await handler({
       body: { skillId: 'buffMaster' },
-      gameManager: {
-        run,
-        getCurrentRoom: () => room,
-      },
+      gameManager: attachExplorationService({ run }, room),
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'room' }),
     }, res);
@@ -807,11 +837,10 @@ describe('optimistic deterministic run routes', () => {
 
     await handler({
       body: { actionId: actionId('npcskillbad'), skillId: 'invalid-skill' },
-      gameManager: {
+      gameManager: attachExplorationService({
         run,
         meta: { actionLedger: { entries: {}, order: [] } },
-        getCurrentRoom: () => room,
-      },
+      }, room),
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'npc_skill_selection', run: { currentRoom: 4, partySkills: [] } }),
     }, res);
@@ -1093,7 +1122,7 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.statusCode, 409);
     assert.equal(res.body.status, 'corrected');
     assert.equal(res.body.actionId, actionId('campbad'));
-    assert.equal(res.body.reason, 'Not enough ingredients');
+    assert.equal(res.body.reason, 'not_enough_ingredients');
     assert.deepEqual(res.body.authoritativeState, { phase: 'campfire', run: { currentRoom: 4 } });
   });
 

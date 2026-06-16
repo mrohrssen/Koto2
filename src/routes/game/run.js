@@ -29,12 +29,9 @@ import {
 } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import {
-  applyPartySkillChoice,
-  canonicalPartySkillTreeId,
   normalizePartySkills,
   rollSkillMasterOffers,
-  getPartySkillOfferDisplay,
-  syncPartySkillHpBonuses
+  getPartySkillOfferDisplay
 } from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 import { SPRITE_VERSION } from '../../shared/asset-versions.js';
@@ -422,7 +419,7 @@ export default function createRunRoutes({
       actionType: 'skillMaster.choose',
       errorStatusCode: 409,
       perform: () => {
-        const result = req.gameManager.explorationService.chooseSkillMasterOffer(skillId);
+        const result = req.gameManager.explorationService.applySkillMasterChoose({ skillId });
         return { ...result, state: req.getEnrichedGameState() };
       },
     });
@@ -474,45 +471,8 @@ export default function createRunRoutes({
       perform: () => {
         const { skillId } = req.body || {};
         if (!skillId) throw new Error('skillId required');
-
-        const gm = req.gameManager;
-        const room = gm.getCurrentRoom();
-        if (!room || room.type !== 'npcBattle') {
-          throw new Error('Not in an NPC battle room');
-        }
-        if (!room.npcBattle?.skillSelectionPending) {
-          throw new Error('NPC battle skill selection not pending');
-        }
-        if (room.npcBattle.chosenSkillId) {
-          throw new Error('Skill already chosen for this room');
-        }
-
-        // Generate offers if they were never set (race: client used fallback data)
-        if (!Array.isArray(room.npcBattle.offered)) {
-          console.warn('[npc-battle-skill-choose] offered not set — generating on demand',
-            { skillId, npcBattle: JSON.stringify(room.npcBattle) });
-          gm.run.partySkills = normalizePartySkills(gm.run?.partySkills || []);
-          room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 })
-            .map(({ id, level }) => ({ id, level }));
-        }
-
-        const canonicalSkillId = canonicalPartySkillTreeId(skillId);
-        const offeredIds = room.npcBattle.offered.map(canonicalPartySkillTreeId).filter(Boolean);
-        if (!canonicalSkillId || !offeredIds.includes(canonicalSkillId)) {
-          console.warn('[npc-battle-skill-choose] skillId not in offered',
-            { skillId, offeredIds, typeof_skillId: typeof skillId });
-          throw new Error('Invalid skill choice');
-        }
-
-        if (!gm.run) throw new Error('No active run');
-        gm.run.partySkills = applyPartySkillChoice(gm.run.partySkills || [], canonicalSkillId);
-        syncPartySkillHpBonuses(gm.run.creatureParty, gm.run.partySkills);
-
-        room.npcBattle.chosenSkillId = canonicalSkillId;
-        room.npcBattle.skillSelectionPending = false;
-        room.interacted = true;
-
-        return { chosenId: canonicalSkillId, partySkills: gm.run.partySkills, state: req.getEnrichedGameState() };
+        const result = req.gameManager.explorationService.applyNpcBattleSkillChoose({ skillId });
+        return { ...result, state: req.getEnrichedGameState() };
       },
     });
   });
@@ -570,7 +530,11 @@ export default function createRunRoutes({
       actionType: 'shrine.choose',
       errorStatusCode: 409,
       perform: () => {
-        const result = req.gameManager.useShrineReward(rewardType, creatureKey || creatureId || null);
+        const result = req.gameManager.explorationService.applyShrineChoose({
+          rewardType,
+          creatureKey,
+          creatureId,
+        });
         return { ...result, state: req.getEnrichedGameState() };
       },
     });
