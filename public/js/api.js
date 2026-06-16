@@ -877,6 +877,13 @@ async function syncKanjiKombatSession({ sessionEpoch, entries }) {
   });
 }
 
+async function syncExploreSession({ sessionEpoch, entries }) {
+  return apiCall('/explore/sync', 'POST', { sessionEpoch, entries }, null, {
+    bypassLoadingGate: true,
+    returnErrorBody: true,
+  });
+}
+
 async function getKanjiKombatLeaderboard(period = '24h') {
   const safePeriod = period === 'weekly' ? 'weekly' : '24h';
   return apiCall(`/kanji-kombat/leaderboard?period=${safePeriod}`, 'GET');
@@ -1079,6 +1086,7 @@ export {
   submitKanjiKombatCompletionChoice,
   refillKanjiKombatPromptBuffer,
   syncKanjiKombatSession,
+  syncExploreSession,
   getKanjiKombatLeaderboard,
   getCreatureCollection,
   rollPostCombatShop,

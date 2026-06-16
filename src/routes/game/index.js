@@ -16,6 +16,7 @@ import createFusionRoutes from './fusion.js';
 import createTutorialRoutes from './tutorial.js';
 import createKanaRoutes from './kana.js';
 import createKanjiKombatRoutes from './kanji-kombat.js';
+import createExploreSessionRoutes from './explore-session.js';
 import { createPvpRoutes } from './pvp.js';
 import createCookingRoutes from './cooking.js';
 
@@ -144,6 +145,9 @@ export default function createGameRoutes(deps) {
 
   // Mount Kanji Kombat routes
   router.use('/kanji-kombat', createKanjiKombatRoutes());
+
+  // Mount explore session routes
+  router.use('/explore', createExploreSessionRoutes());
 
   // Mount PvP routes
   router.use('/pvp', createPvpRoutes());
