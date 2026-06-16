@@ -645,6 +645,95 @@ describe('ExploreSessionSyncService', () => {
     });
   });
 
+  it('wordDiscovery.review replays without double grading', async () => {
+    const gm = makeGm();
+    gm.run.rooms[0] = createRoom(ROOM_TYPES.wordDiscovery, AREA_ID, 1, 3);
+    gm.run.roomActionSeq = 2;
+    let reviewCount = 0;
+    gm.explorationService.applyWordDiscoveryReview = ({ word, grade }) => {
+      reviewCount += 1;
+      return { ok: true, word, grade };
+    };
+    const service = new ExploreSessionSyncService(gm);
+    const entry = {
+      seq: 1,
+      actionId: 'run_es_00002001',
+      kind: 'wordDiscovery.review',
+      roomIndex: 0,
+      roomId: gm.run.rooms[0].id,
+      actionSeq: 2,
+      payload: { word: '明るい', grade: 'good' },
+    };
+
+    const first = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+    const replay = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+
+    assert.equal(first.status, 'ok');
+    assert.equal(reviewCount, 1);
+    assert.equal(replay.results[0].replayed, true);
+  });
+
+  it('wordDiscovery.review fallback records pending review intent once', async () => {
+    const gm = makeGm();
+    gm.run.rooms[0] = createRoom(ROOM_TYPES.wordDiscovery, AREA_ID, 1, 3);
+    gm.run.roomActionSeq = 2;
+    const service = new ExploreSessionSyncService(gm);
+    const entry = {
+      seq: 1,
+      actionId: 'run_es_00002002',
+      kind: 'wordDiscovery.review',
+      roomIndex: 0,
+      roomId: gm.run.rooms[0].id,
+      actionSeq: 2,
+      payload: { word: '明るい', grade: 'good' },
+    };
+
+    const first = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+    const replay = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+
+    assert.equal(first.status, 'ok');
+    assert.deepEqual(gm.run.pendingWordDiscoveryReviews, [{ word: '明るい', grade: 'good' }]);
+    assert.equal(replay.results[0].replayed, true);
+    assert.deepEqual(gm.run.pendingWordDiscoveryReviews, [{ word: '明るい', grade: 'good' }]);
+  });
+
+  it('wordDiscovery.review fallback rejects invalid review payloads', async () => {
+    const gm = makeGm();
+    gm.run.rooms[0] = createRoom(ROOM_TYPES.wordDiscovery, AREA_ID, 1, 3);
+    gm.run.roomActionSeq = 2;
+    const service = new ExploreSessionSyncService(gm);
+    const entry = {
+      seq: 1,
+      actionId: 'run_es_00002003',
+      kind: 'wordDiscovery.review',
+      roomIndex: 0,
+      roomId: gm.run.rooms[0].id,
+      actionSeq: 2,
+      payload: { word: '明るい', grade: 'later' },
+    };
+
+    const result = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'invalid_word_discovery_review');
+    assert.equal(gm.run.pendingWordDiscoveryReviews, undefined);
+  });
+
   it('replays every Task 8 support-room action kind', async () => {
     const cases = [
       {

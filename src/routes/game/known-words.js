@@ -32,29 +32,85 @@ export function invalidateKnownWordsDict() {
   _wordDict = null;
 }
 
+export function performKnownWordReview(req, {
+  word,
+  grade,
+  isDiscovery,
+  reviewFusionCoreRandom = Math.random,
+} = {}) {
+  if (!word || !['good', 'again'].includes(grade)) {
+    throw new Error('word and grade (good|again) required');
+  }
+
+  const userId = req.user?.id || 'default';
+  const settings = req.getSettings?.() || {};
+  const dailyLimit = settings.dailyWordLimit ?? 10;
+
+  if (isDiscovery) {
+    const status = getDiscoveryStatus(userId, dailyLimit);
+    if (status.atLimit) {
+      return { ok: false, atLimit: true, todayCount: status.todayCount };
+    }
+  }
+
+  // Capture pre-review state before auto-create so first-time "again"
+  // reviews cannot farm Fusion Core drops.
+  const existingCards = getDeckCards(userId, 'vocab');
+  const preReviewCard = existingCards.find(card => card.id === word) || null;
+  const fusionCoreEligible = isReviewFusionCoreEligible({
+    grade,
+    isDiscovery,
+    preReviewCard,
+  });
+
+  // Auto-create card if it doesn't exist (allows fast-tracking words).
+  if (!preReviewCard) {
+    createCard(userId, 'vocab', word, { word });
+  }
+  const updatedCard = gradeCard(userId, 'vocab', word, grade);
+
+  // Track review for leaderboard.
+  addReview(userId);
+
+  const baseResponse = {
+    ok: true,
+    mastered: grade === 'good',
+    card: {
+      state: updatedCard.state,
+      due: updatedCard.due,
+      lapses: updatedCard.lapses,
+    },
+  };
+
+  const response = isDiscovery
+    ? {
+        ...baseResponse,
+        ...incrementDiscoveryCount(userId, dailyLimit),
+      }
+    : baseResponse;
+
+  const meta = req.gameManager?.getMeta?.() || req.gameManager?.meta;
+  if (!meta) return response;
+
+  const fusionCoreDrop = rollReviewFusionCoreDrop(meta, {
+    eligible: fusionCoreEligible,
+    random: reviewFusionCoreRandom,
+  });
+  if (!fusionCoreDrop) return response;
+
+  req.saveGame?.();
+  return {
+    ...response,
+    fusionCoreDrop,
+    state: req.getEnrichedGameState?.(),
+  };
+}
+
 export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } = {}) {
   const router = Router();
   const runKnownWordReviewAction = createOptimisticActionRunner({
     owner: getOptimisticActionLedgerOwner,
   });
-
-  function attachFusionCoreDrop(req, response, eligible) {
-    const meta = req.gameManager?.getMeta?.();
-    if (!meta) return response;
-
-    const fusionCoreDrop = rollReviewFusionCoreDrop(meta, {
-      eligible,
-      random: reviewFusionCoreRandom
-    });
-    if (!fusionCoreDrop) return response;
-
-    req.saveGame?.();
-    return {
-      ...response,
-      fusionCoreDrop,
-      state: req.getEnrichedGameState?.()
-    };
-  }
 
   // GET /api/game/known-words — now uses FSRS as source of truth
   router.get('/', (req, res) => {
@@ -80,58 +136,12 @@ export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } 
       return res.status(400).json({ error: 'word and grade (good|again) required' });
     }
 
-    const userId = req.user?.id || 'default';
-    const settings = req.getSettings?.() || {};
-    const dailyLimit = settings.dailyWordLimit ?? 10;
-
-    const performReview = () => {
-      // If discovery mode, check limit before processing
-      if (isDiscovery) {
-        const status = getDiscoveryStatus(userId, dailyLimit);
-        if (status.atLimit) {
-          return { ok: false, atLimit: true, todayCount: status.todayCount };
-        }
-      }
-
-      // Capture pre-review state before auto-create so first-time "again"
-      // reviews cannot farm Fusion Core drops.
-      const existingCards = getDeckCards(req.user.id, 'vocab');
-      const preReviewCard = existingCards.find(c => c.id === word) || null;
-      const fusionCoreEligible = isReviewFusionCoreEligible({
-        grade,
-        isDiscovery,
-        preReviewCard
-      });
-
-      // Auto-create card if it doesn't exist (allows fast-tracking words).
-      if (!preReviewCard) {
-        createCard(req.user.id, 'vocab', word, { word });
-      }
-      const updatedCard = gradeCard(req.user.id, 'vocab', word, grade);
-
-      // Track review for leaderboard
-      addReview(userId);
-
-      // If discovery mode, increment counter and return discovery-specific fields
-      if (isDiscovery) {
-        const counts = incrementDiscoveryCount(userId, dailyLimit);
-        const response = {
-          ok: true,
-          mastered: grade === 'good',
-          card: { state: updatedCard.state, due: updatedCard.due, lapses: updatedCard.lapses },
-          todayCount: counts.todayCount,
-          atLimit: counts.atLimit
-        };
-        return attachFusionCoreDrop(req, response, fusionCoreEligible);
-      }
-
-      const response = {
-        ok: true,
-        mastered: grade === 'good',
-        card: { state: updatedCard.state, due: updatedCard.due, lapses: updatedCard.lapses }
-      };
-      return attachFusionCoreDrop(req, response, fusionCoreEligible);
-    };
+    const performReview = () => performKnownWordReview(req, {
+      word,
+      grade,
+      isDiscovery,
+      reviewFusionCoreRandom,
+    });
 
     if (isDiscovery && req.body?.actionId) {
       return runKnownWordReviewAction(req, res, {

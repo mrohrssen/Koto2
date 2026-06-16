@@ -7,7 +7,7 @@ import { tmpdir } from 'os';
 import express from 'express';
 import request from 'supertest';
 import { State } from 'ts-fsrs';
-import { createKnownWordsRoutes } from '../../src/routes/game/known-words.js';
+import { createKnownWordsRoutes, performKnownWordReview } from '../../src/routes/game/known-words.js';
 import { clearDiscoveryTracking } from '../../src/word-tracking.js';
 
 describe('known-words review — auto-create card', () => {
@@ -159,6 +159,32 @@ describe('known-words review — Fusion Core drops', () => {
     assert.equal(res.status, 200);
     assert.equal(res.body.fusionCoreDrop, undefined);
     assert.equal(meta.fusionCores, 0);
+  });
+
+  it('exports the review performer with injected Fusion Core random', () => {
+    const meta = { fusionCores: 0 };
+    const req = {
+      user: { id: userId },
+      gameManager: { getMeta: () => meta },
+      getSettings: () => ({ dailyWordLimit: 10 }),
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ meta: { ...meta } }),
+    };
+
+    const result = performKnownWordReview(req, {
+      word: '知る',
+      grade: 'good',
+      reviewFusionCoreRandom: () => 0,
+    });
+
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.fusionCoreDrop, {
+      awarded: true,
+      fusionCores: 1,
+      message: 'Obtained 1x Fusion Core!'
+    });
+    assert.equal(result.state.meta.fusionCores, 1);
+    assert.equal(meta.fusionCores, 1);
   });
 });
 

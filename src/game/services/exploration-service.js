@@ -799,6 +799,17 @@ export class ExplorationService {
     return this.completeWordDiscovery();
   }
 
+  applyWordDiscoveryReview({ word, grade } = {}) {
+    if (!word || !['good', 'again'].includes(grade)) {
+      throw new Error('invalid_word_discovery_review');
+    }
+    if (!this.gm.run?.pendingWordDiscoveryReviews) {
+      this.gm.run.pendingWordDiscoveryReviews = [];
+    }
+    this.gm.run.pendingWordDiscoveryReviews.push({ word, grade });
+    return { ok: true, word, grade };
+  }
+
   /**
    * Complete whack-a-mole game and award XP per successful flip to all party
    */

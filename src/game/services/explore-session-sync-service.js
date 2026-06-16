@@ -159,6 +159,8 @@ export class ExploreSessionSyncService {
         return this.gm.explorationService.applySpeedReviewCommit(entry.payload || {});
       case 'speedReview.complete':
         return this.gm.explorationService.applySpeedReviewComplete(entry.payload || {});
+      case 'wordDiscovery.review':
+        return this.gm.explorationService.applyWordDiscoveryReview(entry.payload || {});
       case 'wordDiscovery.complete':
         return this.gm.explorationService.applyWordDiscoveryComplete(entry.payload || {});
       default:

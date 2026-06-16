@@ -140,17 +140,20 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(campfireSource, /Failed to (cook|feed|skip)|Could not (cook|feed|skip)/);
   });
 
-  it('sends action ids for word discovery review and completion choices', () => {
+  it('records word discovery review choices on the explore session and completes through the legacy verifier', () => {
     assert.match(apiSource, /reviewVocabWord\(word, grade, isDiscovery = false, options = \{\}\)/);
     assert.match(apiSource, /if \(options\?\.actionId\) body\.actionId = options\.actionId/);
     assert.match(apiSource, /verifiedRunAction\('\/complete-discovery', \{ actionId: options\.actionId \}\)/);
     assert.match(gameSource, /apiSwipeWord: \(word, grade, isDiscovery, options = \{\}\) => reviewVocabWord\(word, grade, isDiscovery, options\)/);
-    assert.match(explorationSource, /apiSwipeWord\(currentWord\.word, 'again', true, \{ actionId: pending\.actionId \}\)/);
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('wordDiscovery\.review'/);
+    assert.match(explorationSource, /const grade = detail\.knew \? 'good' : 'again'/);
+    assert.match(explorationSource, /word: detail\.word,\s*grade,/);
+    assert.doesNotMatch(explorationSource, /apiSwipeWord\(currentWord\.word, 'again', true/);
     assert.match(explorationSource, /apiCompleteDiscovery\(\{ actionId: pending\.actionId \}\)/);
   });
 
   it('uses corrected word discovery responses as authoritative retryable failures', () => {
-    assert.match(explorationSource, /actionType: 'wordDiscovery\.review'/);
+    assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.review'/);
     assert.match(explorationSource, /actionType: 'wordDiscovery\.complete'/);
     assert.match(explorationSource, /result\?\.status === 'corrected'/);
     assert.match(explorationSource, /correctPendingRunAction\(pending, result\)/);

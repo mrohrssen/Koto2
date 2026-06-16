@@ -1600,61 +1600,30 @@ export async function renderWordDiscovery() {
   // Set up swipe handler - we need to use the actions module's init callback mechanism
   // The actions module was initialized with cardSwipe callback, but we need discovery-specific behavior
   // Store original and override temporarily
-  const handleDiscoverySwipe = async (direction) => {
-    console.log(`[Discovery] Swiped ${direction} on "${currentWord.word}"`);
-    const pending = beginPendingRunAction({
-      actionType: 'wordDiscovery.review',
-      applyLocal: draft => {
-        const draftRoom = draft.room || getCurrentBufferedRoom(draft);
-        const draftDiscovery = draftRoom?.wordDiscovery;
-        if (draftDiscovery) {
-          draftDiscovery.wordsLearned = Math.min(
-            (draftDiscovery.wordsLearned || 0) + 1,
-            discoveryState.words.length
-          );
-        }
-      },
+  const handleDiscoverySwipe = async (rawDetail) => {
+    const detail = typeof rawDetail === 'object' && rawDetail !== null
+      ? { word: currentWord.word, knew: rawDetail.direction === 'right', ...rawDetail }
+      : { word: currentWord.word, knew: rawDetail === 'right' };
+    const grade = detail.knew ? 'good' : 'again';
+    console.log(`[Discovery] Swiped ${rawDetail} on "${currentWord.word}"`);
+    const queued = getExploreSession()?.recordRoomAction('wordDiscovery.review', {
+      word: detail.word,
+      grade,
     });
-    if (!pending) return;
-
-    let result = null;
-    try {
-      // Grade as 'again' (first exposure — learning)
-      result = await apiSwipeWord(currentWord.word, 'again', true, { actionId: pending.actionId });
-      console.log(`[Discovery] Review sent: word="${currentWord.word}", grade=again`);
-
-      if (result?.status === 'corrected') {
-        applyWordDiscoveryCorrection(pending, result);
-        return;
-      }
-
-      if (!result) {
-        rollbackPendingRunAction(pending);
-        showWordDiscoverySaveFailure();
-        return;
-      }
-
-      if (result.state && isCurrentPendingRunAction(pending)) {
-        updateGameState(confirmPendingRunAction(pending, result));
-      } else if (result.state) {
-        return;
-      }
-
-      // Check if we hit the limit
-      if (result.atLimit) {
-        discoveryState.atLimit = true;
-        discoveryState.todayCount = result.todayCount;
-      }
-
-      clearPendingRunAction(pending);
-    } catch (e) {
-      console.warn('[Discovery] Failed to submit review:', e);
-      rollbackPendingRunAction(pending);
-      showWordDiscoverySaveFailure();
+    if (!queued?.accepted) {
+      showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
       return;
     }
 
-    discoveryState.wordsLearned++;
+    const nextWordsLearned = Math.min(discoveryState.wordsLearned + 1, discoveryState.words.length);
+    updateSupportRoomDraft(room => {
+      const draftDiscovery = room?.wordDiscovery;
+      if (draftDiscovery) {
+        draftDiscovery.wordsLearned = nextWordsLearned;
+      }
+    }, { phase: 'wordDiscovery' });
+
+    discoveryState.wordsLearned = nextWordsLearned;
     console.log(`[Discovery] Progress: ${discoveryState.wordsLearned}/${discoveryState.words.length} words learned`);
 
     renderWordDiscovery();
