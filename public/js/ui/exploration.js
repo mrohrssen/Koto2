@@ -189,7 +189,8 @@ function applyExploreSessionRunway(response) {
   if (state?.run) state.run.exploreRunway = response.exploreRunway ?? null;
 }
 
-function onExploreSessionCheckpoint(response) {
+function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
+  if (logEmpty === false) return;
   if (response?.state) updateGameState(response.state);
   applyExploreSessionRunway(response);
 }
@@ -977,7 +978,16 @@ function preparedRoomForRunwayCursor(runway, currentRoom) {
 
 function isExploreRunwaySessionCapable(runway, run) {
   if (!runway?.sessionEpoch) return false;
-  return Boolean(preparedRoomForRunwayCursor(runway, run?.currentRoom));
+  const currentRoom = run?.currentRoom;
+  const currentPreparedRoom = preparedRoomForRunwayCursor(runway, currentRoom);
+  if (!currentPreparedRoom) return false;
+  if (!Array.isArray(currentPreparedRoom.acceptedActions)
+    || !currentPreparedRoom.acceptedActions.includes('proceed')) {
+    return false;
+  }
+  const preparedRooms = Array.isArray(runway?.preparedRooms) ? runway.preparedRooms : [];
+  const nextPreparedRoom = preparedRooms.find(preparedRoom => preparedRoom?.index > currentRoom) || null;
+  return Boolean(nextPreparedRoom) && nextPreparedRoom.offlineReady !== false;
 }
 
 function alignExploreRunwayCursor(draft) {

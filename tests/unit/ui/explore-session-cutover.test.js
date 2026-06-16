@@ -111,8 +111,8 @@ function preparedRoom(index, overrides = {}) {
   };
 }
 
-function makeState({ currentRoom = 0, exploreRunway } = {}) {
-  const rooms = [room(0), room(1), room(2)];
+function makeState({ currentRoom = 0, exploreRunway, roomCount = 3 } = {}) {
+  const rooms = Array.from({ length: roomCount }, (_, index) => room(index));
   return {
     player: { id: 'player-1' },
     phase: 'room',
@@ -129,15 +129,12 @@ function makeState({ currentRoom = 0, exploreRunway } = {}) {
 }
 
 function makeRunway(overrides = {}) {
+  const roomCount = overrides.roomCount ?? 3;
   return {
     sessionEpoch: 'ese_cutover111111',
     roomActionSeq: 100,
     currentRoom: 0,
-    preparedRooms: [
-      preparedRoom(0, { actionSeq: 100 }),
-      preparedRoom(1, { actionSeq: 101 }),
-      preparedRoom(2, { actionSeq: 102 }),
-    ],
+    preparedRooms: Array.from({ length: roomCount }, (_, index) => preparedRoom(index, { actionSeq: 100 + index })),
     ...overrides,
   };
 }
@@ -182,6 +179,14 @@ function makeEventTarget() {
   };
 }
 
+async function waitFor(predicate) {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    if (predicate()) return;
+    await Promise.resolve();
+  }
+  assert.fail('condition was not met');
+}
+
 describe('explore session proceed cutover', () => {
   beforeEach(() => {
     transitionCalls.length = 0;
@@ -224,6 +229,34 @@ describe('explore session proceed cutover', () => {
     assert.equal(result.state, advancedState);
   });
 
+  it('falls back to legacy apiProceed when the current prepared room cannot proceed', async () => {
+    const advancedState = makeState({ currentRoom: 1, exploreRunway: null });
+    const proceedCalls = [];
+    initCutoverHarness({
+      initialState: makeState({
+        currentRoom: 0,
+        exploreRunway: makeRunway({
+          preparedRooms: [
+            preparedRoom(0, { acceptedActions: ['campfire.cook'] }),
+            preparedRoom(1),
+          ],
+        }),
+      }),
+      apiProceed: async options => {
+        proceedCalls.push(options);
+        return { actionId: options.actionId, state: advancedState };
+      },
+    });
+
+    const result = await proceedWithRevealBuffer();
+
+    assert.equal(proceedCalls.length, 1);
+    assert.equal(proceedCalls[0].fromRoom, 0);
+    assert.equal(proceedCalls[0].actionSeq, 100);
+    assert.equal(result.state, advancedState);
+    assert.equal(transitionCalls.length, 1);
+  });
+
   it('queues consecutive offline proceeds for the advanced room instead of duplicating the stale runway room', async () => {
     const harness = initCutoverHarness({
       initialState: makeState({ currentRoom: 0, exploreRunway: makeRunway() }),
@@ -247,6 +280,44 @@ describe('explore session proceed cutover', () => {
     assert.equal(harness.currentState.run.currentRoom, 2);
     assert.equal(harness.currentState.run.exploreRunway.currentRoom, 2);
     assert.deepEqual(transitionCalls.map(call => call.state.run.currentRoom), [1, 2]);
+  });
+
+  it('does not apply non-empty checkpoints that would rewind pending optimistic proceeds', async () => {
+    const syncRequests = [];
+    initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, roomCount: 4, exploreRunway: makeRunway({ roomCount: 4 }) }),
+      apiSyncExploreSession: payload => new Promise(resolve => {
+        syncRequests.push({ payload, resolve });
+      }),
+    });
+
+    await proceedWithRevealBuffer();
+    void getExploreSession().syncNow();
+    await waitFor(() => syncRequests.length === 1);
+
+    await proceedWithRevealBuffer();
+    const checkpointRunway = makeRunway({ currentRoom: 1, roomActionSeq: 101, roomCount: 4 });
+    syncRequests[0].resolve({
+      status: 'ok',
+      confirmedThroughSeq: 1,
+      results: [],
+      state: makeState({ currentRoom: 1, roomCount: 4, exploreRunway: checkpointRunway }),
+      exploreRunway: checkpointRunway,
+    });
+    await waitFor(() => syncRequests.length === 2);
+
+    await proceedWithRevealBuffer();
+
+    assert.deepEqual(
+      getExploreSession().snapshot().map(entry => ({
+        roomIndex: entry.roomIndex,
+        actionSeq: entry.actionSeq,
+      })),
+      [
+        { roomIndex: 1, actionSeq: 101 },
+        { roomIndex: 2, actionSeq: 102 },
+      ]
+    );
   });
 
   it('wires recovery drains once per target and skips hidden visibility drains', async () => {

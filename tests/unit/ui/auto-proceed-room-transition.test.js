@@ -29,6 +29,12 @@ const proceedWithRevealBufferSrc = sourceBetween(
   'async function proceedToNextRoom()'
 );
 
+const startEncounterSrc = sourceBetween(
+  gameSrc,
+  'async function startEncounter()',
+  'async function returnToHub()'
+);
+
 test('autoProceed routes ingredient drops through room travel', () => {
   assert.doesNotMatch(
     gameSrc,
@@ -67,4 +73,22 @@ test('exploration wires explore session recovery drains', () => {
     /visibilitychange[\s\S]*syncNow\(\)/,
     'visibility restore should drain the explore session'
   );
+});
+
+test('startEncounter resets in-flight flags when explore drain or encounter API fails', () => {
+  const tryIndex = startEncounterSrc.indexOf('try {');
+  const drainIndex = startEncounterSrc.indexOf("await exploreSession.syncNow({ reason: 'combatStart' })");
+  const creatureApiIndex = startEncounterSrc.indexOf('result = await apiStartCreatureEncounter()');
+  const catchIndex = startEncounterSrc.indexOf('catch (error)');
+  const finallyIndex = startEncounterSrc.indexOf('finally {', catchIndex);
+  const resetIndex = startEncounterSrc.indexOf('encounterStarting = false', finallyIndex);
+  const sceneResetIndex = startEncounterSrc.indexOf('sceneTransitionActive = false', finallyIndex);
+
+  assert.ok(tryIndex >= 0, 'startEncounter should wrap setup in try/finally');
+  assert.ok(drainIndex > tryIndex, 'explore drain should be inside the try block');
+  assert.ok(creatureApiIndex > tryIndex, 'encounter API selection should be inside the try block');
+  assert.ok(catchIndex > creatureApiIndex, 'startEncounter should catch drain/API failures');
+  assert.ok(finallyIndex > catchIndex, 'startEncounter should reset flags in finally');
+  assert.ok(resetIndex > finallyIndex, 'encounterStarting should reset in finally');
+  assert.ok(sceneResetIndex > finallyIndex, 'sceneTransitionActive should reset in finally');
 });

@@ -1562,33 +1562,31 @@ let encounterStarting = false;
 async function startEncounter() {
   if (encounterStarting) return;
   encounterStarting = true;
-  diagnostics.logAction('start_encounter', { floor: gameState.run?.floor });
-  const hasCreatures = gameState.run?.creatureParty?.active?.length > 0;
-  const exploreSession = getExploreSession?.();
-  if (exploreSession?.pendingCount?.() > 0) {
-    await exploreSession.syncNow({ reason: 'combatStart' });
-    if (exploreSession.pendingCount() > 0) {
-      narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
-      encounterStarting = false;
+  try {
+    diagnostics.logAction('start_encounter', { floor: gameState.run?.floor });
+    const hasCreatures = gameState.run?.creatureParty?.active?.length > 0;
+    const exploreSession = getExploreSession?.();
+    if (exploreSession?.pendingCount?.() > 0) {
+      await exploreSession.syncNow({ reason: 'combatStart' });
+      if (exploreSession.pendingCount() > 0) {
+        narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
+        return;
+      }
+    }
+
+    let result;
+    if (hasCreatures) {
+      result = await apiStartCreatureEncounter();
+    } else if (gameState.phase === 'room_encounter') {
+      result = await apiRoomEncounter();
+    } else {
+      result = await apiStartEncounter();
+    }
+
+    if (!result?.state) {
       return;
     }
-  }
 
-  let result;
-  if (hasCreatures) {
-    result = await apiStartCreatureEncounter();
-  } else if (gameState.phase === 'room_encounter') {
-    result = await apiRoomEncounter();
-  } else {
-    result = await apiStartEncounter();
-  }
-
-  if (!result?.state) {
-    encounterStarting = false;
-    return;
-  }
-
-  try {
     updateGameState(result.state);
 
     // Store bootstrap NPC dialogue for use after combat (defeatLine)
@@ -1670,6 +1668,9 @@ async function startEncounter() {
 
     await delay(300);
     startCombatLoop();
+  } catch (error) {
+    console.warn('[StartEncounter] Failed to start encounter:', error?.message || error);
+    narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
   } finally {
     encounterStarting = false;
     sceneTransitionActive = false;
