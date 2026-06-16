@@ -199,6 +199,74 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(result.results.length, 1);
   });
 
+  it('rejects a missing explore actionId without mutating state', async () => {
+    const gm = makeGm();
+    const service = new ExploreSessionSyncService(gm);
+    const room = gm.run.rooms[0];
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 12,
+          actionId: undefined,
+          kind: 'friendlyNpc.choose',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+          payload: { itemId: TEST_EQUIPMENT.id, targetCreatureIndex: 0 },
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'invalid_explore_action_id');
+    assert.equal(result.confirmedThroughSeq, null);
+    assert.equal(result.rejectedSeq, 12);
+    assert.deepEqual(result.results, []);
+    assert.equal(gm.run.currentRoom, 0);
+    assert.equal(gm.run.roomActionSeq, 0);
+    assert.equal(gm.run.runSummary.itemsCollected, 0);
+    assert.equal(room.friendlyNpc.completed, false);
+    assert.equal(room.friendlyNpc.chosenId, null);
+  });
+
+  it('rejects an invalid explore actionId after prior commits without mutating that entry', async () => {
+    const gm = makeGm([ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc]);
+    const service = new ExploreSessionSyncService(gm);
+    const firstRoom = gm.run.rooms[0];
+    const secondRoom = gm.run.rooms[1];
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 20,
+          actionId: 'run_es_00000020',
+          roomIndex: 0,
+          roomId: firstRoom.id,
+          actionSeq: 0,
+        }),
+        makeEntry(gm, {
+          seq: 21,
+          actionId: 'not_run_es_00000021',
+          roomIndex: 1,
+          roomId: secondRoom.id,
+          actionSeq: 1,
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'invalid_explore_action_id');
+    assert.equal(result.confirmedThroughSeq, 20);
+    assert.equal(result.rejectedSeq, 21);
+    assert.equal(result.results.length, 1);
+    assert.equal(result.results[0].seq, 20);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 1);
+  });
+
   it('friendlyNpc.choose applies equipment through ExplorationService.applyFriendlyNpcChoose', async () => {
     const gm = makeGm();
     const originalChoose = gm.explorationService.applyFriendlyNpcChoose.bind(gm.explorationService);

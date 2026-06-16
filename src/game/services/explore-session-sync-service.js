@@ -122,6 +122,15 @@ export class ExploreSessionSyncService {
 
     for (const entry of replayEntries) {
       const validActionId = isExploreSessionActionId(entry?.actionId);
+      if (!validActionId) {
+        return this.correction({
+          reason: 'invalid_explore_action_id',
+          rejectedSeq: entry?.seq ?? null,
+          confirmedThroughSeq,
+          results,
+        });
+      }
+
       const existing = validActionId
         && this.ledgerOwner
         ? getActionLedgerEntry(this.ledgerOwner, entry.actionId)
