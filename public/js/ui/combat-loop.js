@@ -52,7 +52,7 @@ import {
   buildOptimisticCombatTurn,
   buildOptimisticKanjiKombatAnswer,
 } from './optimistic-combat-turn.js';
-import { createPveOpeningCursor } from '../../../src/game/combat/action-cursor.js';
+import { applyLocalKanjiKombatWaveTransition } from './kanji-kombat-local-wave.js';
 import { applyKillXpToParty } from '../../../src/shared/combat/kanji-kombat-xp.js';
 import { applyKanjiKombatAnswerStreakProgress } from '../../../src/shared/combat/kanji-kombat-streak.js';
 import { createSeededRng } from '../../../src/shared/deterministic-rng.js';
@@ -513,6 +513,10 @@ function hasKanjiKombatPromptRef(promptRef) {
   return !!promptRef && typeof promptRef === 'object' && Object.keys(promptRef).length > 0;
 }
 
+function isKanjiKombatDailyCompletePrompt(prompt) {
+  return prompt?.kind === 'dailyCompletePrompt' || prompt?.kind === 'completePrompt';
+}
+
 function matchesKanjiKombatPromptRef(prompt, promptRef = {}) {
   if (!prompt || prompt.kind !== 'quiz' || !hasKanjiKombatPromptRef(promptRef)) return false;
   if (Object.hasOwn(promptRef, 'promptId') && prompt.promptId !== promptRef.promptId) return false;
@@ -595,7 +599,7 @@ function localStateAfterKanjiKombatPrediction(state, optimistic, promptRef = {})
             sequence: nextPrompt.sequence,
           }
         : null;
-      kk.completionChoicePending = nextPrompt?.kind === 'completePrompt';
+      kk.completionChoicePending = isKanjiKombatDailyCompletePrompt(nextPrompt);
     } else if (head) {
       promptHeadBlockedCurrentQuizFallback = true;
     }
@@ -752,50 +756,6 @@ function applyLocalKanjiKombatDeferredKillXp(state, transcript, seed) {
 }
 
 /**
- * Consume the head of the pre-rolled next-wave queue from the local state when a
- * wave-end answer is predicted locally.  Returns the pending object (with .enemies)
- * when consumed, or null when the queue is empty (the prompt buffer outlived the
- * wave runway — graceful pause).  Subsequent boundaries during the same offline
- * window consume subsequent queue entries.
- * Deferred kill-XP for the wave-clearing blow is applied earlier, per answer, by
- * applyLocalKanjiKombatDeferredKillXp (mirroring the server's per-answer
- * _collectDeferredKillXpEvents which runs before spawnNextWave).
- * Mutates `state` in place (caller owns a deep clone).
- *
- * @param {object} state  - The local game state (deep-cloned by caller).
- */
-function applyLocalKanjiKombatWaveTransition(state) {
-  const kk = state?.run?.kanjiKombat;
-  const queue = Array.isArray(kk?.pendingNextWaves) ? kk.pendingNextWaves : [];
-  const pending = queue[0] || null;
-  if (!pending || !state.combat) return null;
-
-  kk.wave = pending.wave;
-  kk.pendingNextWaves = queue.slice(1);
-  // Reset all wave-tracking fields to match what the server's spawnNextWave produces.
-  // Spreading ...state.combat here would carry over stale actionCursor, actionCount,
-  // cycleCount, openingResolved, and turnCount from the previous wave, causing the
-  // client's predicted combat transcript to diverge from the server's.
-  state.combat = {
-    ...state.combat,
-    active: true,
-    enemies: pending.enemies,
-    isBoss: pending.isMiniboss === true,
-    optimistic: { ...pending.combat },
-    // Fresh per-wave counters (mirrors createCombatState + spawnNextWave on the server)
-    actionCount: 0,
-    cycleCount: 0,
-    openingResolved: false,
-    turnCount: 1,
-    actionCursor: createPveOpeningCursor({
-      allies: state.combat.allies || [],
-      enemies: pending.enemies,
-    }),
-  };
-  return pending;
-}
-
-/**
  * Advance the local streak and apply any milestone reward to the local draft
  * state after a predicted answer, via the same shared module the server's
  * submitAnswer uses (random milestone payloads arrive pre-rolled from the
@@ -913,8 +873,9 @@ async function runOptimisticKanjiKombatAnswer({
   });
 
   // Handle wave-end victory prediction locally using the pre-rolled next wave.
-  // Guard: if the next prompt is a completePrompt (daily boundary), skip the
-  // pre-roll consumption — let the checkpoint deliver the authoritative wave state.
+  // Guard: if the next prompt is a dailyCompletePrompt marker (or legacy completePrompt),
+  // skip pre-roll consumption here. The completion screen renders from the predicted
+  // state, and the Yes path activates the already-buffered next wave locally.
   if (localWaveClear) {
     const waveTransition = applyLocalKanjiKombatWaveTransition(localState);
     // Server order on a wave clear: turn → deferred kill-XP → spawnNextWave →
@@ -957,8 +918,8 @@ async function runOptimisticKanjiKombatAnswer({
     combatActive = isRecoveredCombatActive(localState);
     logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
     // Special case: when all enemies are defeated AND the next prompt is a
-    // completePrompt (daily boundary), the completion screen must render
-    // immediately from the local predicted state.  We cannot call
+    // dailyCompletePrompt marker, the completion screen must render immediately
+    // from the local predicted state.  We cannot call
     // startMoveSelection (that would re-enter the combat loop before the
     // server confirms combatEnded), so we use the refreshAction callback to
     // render the UI directly.  The server checkpoint will later deliver the
@@ -2283,8 +2244,8 @@ async function executeCreatureMovesTurn(choices, options = {}) {
             promptRef: options.kanjiPromptRef,
             turnTiming,
             // When combat ends at the daily boundary (all enemies defeated, next prompt
-            // is completePrompt), render the completion screen immediately from the local
-            // predicted state so the UI doesn't stall waiting for the server checkpoint.
+            // is dailyCompletePrompt), render the completion screen immediately from the
+            // local predicted state so the UI doesn't stall waiting for the server checkpoint.
             refreshAction: () => kanjiKombatUI.renderKanjiKombatAction(getGameState()),
           })
         : !options.request && await runOptimisticCreatureCombatTurn({

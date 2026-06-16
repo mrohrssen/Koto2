@@ -63,7 +63,7 @@ function createKanjiKombatTestService() {
 }
 
 /** Fills kk.promptBuffer with `quiz` quiz prompts plus optional non-quiz entries. */
-function setPromptBuffer(service, { quiz = 0, intro = 0, completePrompt = 0 } = {}) {
+function setPromptBuffer(service, { quiz = 0, intro = 0, dailyCompletePrompt = 0 } = {}) {
   const buffer = [];
   let seq = 1;
   for (let i = 0; i < quiz; i++) {
@@ -72,8 +72,8 @@ function setPromptBuffer(service, { quiz = 0, intro = 0, completePrompt = 0 } = 
   for (let i = 0; i < intro; i++) {
     buffer.push({ kind: 'intro', promptId: `kkp_i${i}`, sequence: seq++, cardId: `icard-${i}`, intro: { card: {} } });
   }
-  for (let i = 0; i < completePrompt; i++) {
-    buffer.push({ kind: 'completePrompt', promptId: `kkp_c${i}`, sequence: seq++, cardId: null });
+  for (let i = 0; i < dailyCompletePrompt; i++) {
+    buffer.push({ kind: 'dailyCompletePrompt', promptId: `kkp_c${i}`, sequence: seq++, cardId: null });
   }
   service.gm.run.kanjiKombat.promptBuffer = buffer;
 }
@@ -83,7 +83,7 @@ function setPromptBuffer(service, { quiz = 0, intro = 0, completePrompt = 0 } = 
 test('ensurePendingNextWaves tops the queue up to the quiz prompt count', () => {
   const service = createKanjiKombatTestService();
   service.spawnNextWave();
-  setPromptBuffer(service, { quiz: 5, intro: 2, completePrompt: 1 });
+  setPromptBuffer(service, { quiz: 5, intro: 2, dailyCompletePrompt: 1 });
   const queue = service.ensurePendingNextWaves();
   assert.equal(queue, service.gm.run.kanjiKombat.pendingNextWaves,
     'returned queue should be the kk.pendingNextWaves array');

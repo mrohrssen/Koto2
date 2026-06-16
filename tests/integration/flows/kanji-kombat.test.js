@@ -197,7 +197,9 @@ describe('Kanji Kombat integration flow', () => {
     assert.equal(result.completionChoicePending, true);
     assert.equal(gm.run.active, true);
     assert.equal(gm.combat.active, true);
-    assert.equal(activePrompt(gm)?.kind, 'completePrompt');
+    assert.equal(activePrompt(gm)?.kind, 'dailyCompletePrompt');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[1]?.kind, 'quiz');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[1]?.source, 'earlyReview');
     assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
     assert.equal(gm.run.kanjiKombat.report.completedDaily, true);
 
@@ -242,7 +244,9 @@ describe('Kanji Kombat integration flow', () => {
 
     const firstQuiz = activeQuiz(gm);
     submitActiveQuizAnswer(gm, firstQuiz.choices.find(choice => choice.correct).id);
-    assert.equal(activePrompt(gm)?.kind, 'completePrompt');
+    assert.equal(activePrompt(gm)?.kind, 'dailyCompletePrompt');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[1]?.kind, 'quiz');
+    assert.equal(gm.run.kanjiKombat.promptBuffer[1]?.source, 'earlyReview');
     assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
 
     const continued = resolveActiveCompletionChoice(gm, true);
@@ -303,6 +307,10 @@ function activePrompt(gm) {
   return gm.run?.kanjiKombat?.promptBuffer?.[0] || null;
 }
 
+function isDailyCompletePrompt(prompt) {
+  return prompt?.kind === 'dailyCompletePrompt' || prompt?.kind === 'completePrompt';
+}
+
 function promptRef(prompt) {
   return {
     promptId: prompt.promptId,
@@ -335,6 +343,6 @@ function submitActiveQuizAnswer(gm, answerId) {
 
 function resolveActiveCompletionChoice(gm, keepGoing) {
   const prompt = activePrompt(gm);
-  assert.equal(prompt?.kind, 'completePrompt');
+  assert.equal(isDailyCompletePrompt(prompt), true);
   return gm.kanjiKombatService.resolveCompletionChoice(keepGoing, promptRef(prompt));
 }
