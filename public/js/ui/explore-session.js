@@ -25,8 +25,24 @@ function notify(callback, ...args) {
   }
 }
 
-function actionIdForSeq(seq) {
-  return `run_es_${String(seq).padStart(8, '0')}`;
+let sessionNonceCounter = 0;
+
+function createSessionNonce() {
+  sessionNonceCounter += 1;
+  const counter = sessionNonceCounter.toString(36);
+  let random = '';
+  if (globalThis.crypto?.getRandomValues) {
+    const bytes = new Uint8Array(6);
+    globalThis.crypto.getRandomValues(bytes);
+    random = Array.from(bytes, byte => (byte % 36).toString(36)).join('');
+  } else {
+    random = Math.random().toString(36).slice(2, 10);
+  }
+  return `${counter}${random || Date.now().toString(36)}`.slice(0, 20);
+}
+
+function actionIdForSeq(seq, nonce) {
+  return `run_es_${nonce}_${String(seq).padStart(8, '0')}`;
 }
 
 function preparedRoomsFor(runway) {
@@ -91,23 +107,35 @@ export function createExploreSession({
   let syncing = false;
   let debounceTimer = null;
   let retryTimer = null;
+  let activeDrainPromise = null;
+  let activeDrainToken = 0;
+  let forceDrainRequested = false;
   let attempts = 0;
   let paused = false;
   let pauseReason = null;
   let generation = 0;
+  let actionNonce = createSessionNonce();
 
   function pendingCount() { return log.length; }
   function isPaused() { return paused; }
 
-  function clearTimers() {
+  function cancelDebounceTimer() {
     if (debounceTimer != null) {
       cancel(debounceTimer);
       debounceTimer = null;
     }
+  }
+
+  function cancelRetryTimer() {
     if (retryTimer != null) {
       cancel(retryTimer);
       retryTimer = null;
     }
+  }
+
+  function clearTimers() {
+    cancelDebounceTimer();
+    cancelRetryTimer();
   }
 
   function currentPreparedRoom() {
@@ -154,12 +182,17 @@ export function createExploreSession({
       ? runway.currentRoom
       : firstRoomIndex;
 
+    if (fromSync) replayPendingProceedCursor();
+
     if (!fromSync && epochChanged) {
       generation += 1;
+      activeDrainToken += 1;
+      activeDrainPromise = null;
       clearTimers();
       log = [];
       syncing = false;
       attempts = 0;
+      forceDrainRequested = false;
       maybeResumeAfterDrain();
     }
 
@@ -176,8 +209,29 @@ export function createExploreSession({
     return preparedRoomsFor(runway).find(room => roomIndexFor(room) > index) || null;
   }
 
+  function preparedRoomForEntry(entry) {
+    return preparedRoomsFor(runway).find(room => (
+      roomIndexFor(room) === entry?.roomIndex
+      && roomIdFor(room) === entry?.roomId
+    )) || null;
+  }
+
+  function replayPendingProceedCursor() {
+    const pendingProceeds = log
+      .filter(entry => entry.kind === 'proceed')
+      .sort((a, b) => a.seq - b.seq);
+
+    for (const entry of pendingProceeds) {
+      const room = preparedRoomForEntry(entry);
+      const nextRoom = room ? nextPreparedRoomAfter(room) : null;
+      if (nextRoom && isRoomReady(nextRoom)) {
+        localCurrentRoom = roomIndexFor(nextRoom);
+      }
+    }
+  }
+
   function scheduleDrain(delay) {
-    if (debounceTimer != null) cancel(debounceTimer);
+    cancelDebounceTimer();
     debounceTimer = schedule(() => {
       debounceTimer = null;
       return drain();
@@ -185,7 +239,8 @@ export function createExploreSession({
   }
 
   function scheduleRetry() {
-    if (retryTimer != null) cancel(retryTimer);
+    cancelDebounceTimer();
+    cancelRetryTimer();
     const index = Math.min(attempts, EXPLORE_SYNC_RETRY_DELAYS_MS.length - 1);
     attempts += 1;
     retryTimer = schedule(() => {
@@ -198,7 +253,7 @@ export function createExploreSession({
     const seq = nextSeq++;
     return {
       seq,
-      actionId: actionIdForSeq(seq),
+      actionId: actionIdForSeq(seq, actionNonce),
       kind,
       roomIndex: roomIndexFor(preparedRoom),
       roomId: roomIdFor(preparedRoom),
@@ -256,21 +311,50 @@ export function createExploreSession({
     return { accepted: true, pendingCount: log.length, entry: cloneValue(entry) };
   }
 
-  async function drain() {
-    if (syncing || log.length === 0) return;
+  function drain({ force = false } = {}) {
+    if (force) forceDrainRequested = true;
+    if (activeDrainPromise) return activeDrainPromise;
 
-    const myGeneration = generation;
+    const token = activeDrainToken + 1;
+    activeDrainToken = token;
+    activeDrainPromise = runDrainLoop(token).finally(() => {
+      if (activeDrainToken === token) {
+        activeDrainPromise = null;
+        syncing = false;
+        forceDrainRequested = false;
+      }
+    });
+    return activeDrainPromise;
+  }
+
+  async function runDrainLoop(token) {
+    if (log.length === 0) return;
     syncing = true;
+
+    while (log.length > 0 && activeDrainToken === token) {
+      const result = await drainOnce(token);
+      if (!result?.ok || log.length === 0) return;
+      if (forceDrainRequested || result.appendedAfterSnapshot) continue;
+      scheduleDrain(0);
+      return;
+    }
+  }
+
+  async function drainOnce(token) {
+    const myGeneration = generation;
+    cancelDebounceTimer();
     const entries = log.map(entry => cloneValue(entry));
+    const snapshotMaxSeq = entries.reduce((max, entry) => Math.max(max, entry.seq), 0);
 
     try {
       const response = await syncRequest({ sessionEpoch, entries });
-      if (myGeneration !== generation) return;
+      if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
       if (!response || (response.status !== 'ok' && response.status !== 'corrected')) {
         throw new Error(response?.error || 'explore session sync failed');
       }
 
       attempts = 0;
+      let appendedAfterSnapshot = false;
 
       if (response.status === 'corrected') {
         log = [];
@@ -281,35 +365,31 @@ export function createExploreSession({
           ? response.confirmedThroughSeq
           : -1;
         log = log.filter(entry => entry.seq > confirmed);
+        appendedAfterSnapshot = log.some(entry => entry.seq > snapshotMaxSeq);
         notify(onCheckpoint, response, { logEmpty: log.length === 0 });
         if (response.exploreRunway) adoptRunwayInternal(response.exploreRunway, { fromSync: true });
       }
 
       maybeResumeAfterDrain();
-      if (log.length > 0) scheduleDrain(0);
+      return { ok: true, appendedAfterSnapshot };
     } catch {
-      if (myGeneration !== generation) return;
+      if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
       scheduleRetry();
-    } finally {
-      if (myGeneration === generation) syncing = false;
+      return { ok: false };
     }
   }
 
   function syncNow() {
-    if (debounceTimer != null) {
-      cancel(debounceTimer);
-      debounceTimer = null;
-    }
-    if (retryTimer != null) {
-      cancel(retryTimer);
-      retryTimer = null;
-    }
+    cancelDebounceTimer();
+    cancelRetryTimer();
     attempts = 0;
-    return drain();
+    return drain({ force: true });
   }
 
   function reset() {
     generation += 1;
+    activeDrainToken += 1;
+    activeDrainPromise = null;
     clearTimers();
     runway = null;
     sessionEpoch = null;
@@ -320,6 +400,8 @@ export function createExploreSession({
     attempts = 0;
     paused = false;
     pauseReason = null;
+    forceDrainRequested = false;
+    actionNonce = createSessionNonce();
   }
 
   return {

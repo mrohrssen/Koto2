@@ -74,6 +74,11 @@ function okResponse(confirmedThroughSeq, overrides = {}) {
   return { status: 'ok', confirmedThroughSeq, results: [], ...overrides };
 }
 
+function assertExploreActionId(actionId, seq) {
+  assert.match(actionId, /^run_es_[a-z0-9]+_[0-9]{8}$/);
+  assert.equal(actionId.endsWith(String(seq).padStart(8, '0')), true);
+}
+
 test('exports explore session contract constants', () => {
   assert.equal(EXPLORE_SESSION_HARD_CAP, 50);
   assert.equal(EXPLORE_SESSION_RESUME_AT, 40);
@@ -96,7 +101,7 @@ test('records actions with room identity and predicted effects', () => {
 
   const [entry] = session.snapshot();
   assert.equal(entry.seq, 1);
-  assert.equal(entry.actionId, 'run_es_00000001');
+  assertExploreActionId(entry.actionId, 1);
   assert.equal(entry.kind, 'friendlyNpc.choose');
   assert.equal(entry.roomIndex, 0);
   assert.equal(entry.roomId, 'room-0');
@@ -104,6 +109,26 @@ test('records actions with room identity and predicted effects', () => {
   assert.deepEqual(entry.payload, { itemId: 'iron-charm', targetCreatureIndex: 0 });
   assert.deepEqual(entry.predictedEffects, ['partyStats']);
   assert.equal(typeof entry.createdAt, 'number');
+});
+
+test('action ids include a session nonce and rotate when seq resets', () => {
+  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  session.adoptRunway(makeRunway());
+  const first = session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' }).entry.actionId;
+  assertExploreActionId(first, 1);
+
+  session.reset();
+  session.adoptRunway(makeRunway());
+  const afterReset = session.recordRoomAction('friendlyNpc.choose', { itemId: 'after-reset' }).entry.actionId;
+  assertExploreActionId(afterReset, 1);
+  assert.notEqual(afterReset, first);
+
+  const configured = configureExploreSession({ syncRequest: async () => okResponse(1) });
+  configured.adoptRunway(makeRunway());
+  const configuredId = configured.recordRoomAction('friendlyNpc.choose', { itemId: 'configured' }).entry.actionId;
+  assertExploreActionId(configuredId, 1);
+  assert.notEqual(configuredId, afterReset);
+  resetExploreSession();
 });
 
 test('local proceed advances to next prepared room and uses next actionSeq', () => {
@@ -264,6 +289,110 @@ test('syncNow immediately drains pending entries without firing the scheduler', 
   assert.equal(calls.length, 1);
   assert.equal(calls[0].entries.length, 1);
   assert.equal(session.pendingCount(), 0);
+});
+
+test('syncNow during an in-flight sync waits and drains entries appended during that sync', async () => {
+  const scheduler = makeManualScheduler();
+  let releaseFirst;
+  const firstGate = new Promise(resolve => { releaseFirst = resolve; });
+  const calls = [];
+  const session = createExploreSession({
+    syncRequest: async payload => {
+      calls.push(payload);
+      if (calls.length === 1) {
+        await firstGate;
+        return okResponse(1);
+      }
+      return okResponse(payload.entries.at(-1).seq);
+    },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' });
+  const scheduledDrain = scheduler.fire();
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'second' });
+
+  let syncNowSettled = false;
+  const syncNowDrain = session.syncNow().then(() => { syncNowSettled = true; });
+  await Promise.resolve();
+  assert.equal(calls.length, 1);
+  assert.equal(syncNowSettled, false);
+
+  releaseFirst();
+  await syncNowDrain;
+  await scheduledDrain;
+
+  assert.equal(syncNowSettled, true);
+  assert.deepEqual(calls.map(call => call.entries.map(entry => entry.seq)), [[1], [2]]);
+  assert.equal(session.pendingCount(), 0);
+});
+
+test('checkpoint adoption preserves optimistic cursor from remaining pending proceed entries', async () => {
+  const scheduler = makeManualScheduler();
+  let releaseFirst;
+  let releaseSecond;
+  let secondStarted;
+  const firstGate = new Promise(resolve => { releaseFirst = resolve; });
+  const secondGate = new Promise(resolve => { releaseSecond = resolve; });
+  const secondStartedPromise = new Promise(resolve => { secondStarted = resolve; });
+  const initialRunway = makeRunway({
+    preparedRooms: [
+      preparedRoom(0, { actionSeq: 7, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+      preparedRoom(1, { actionSeq: 8, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+      preparedRoom(2, { actionSeq: 9, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+    ],
+  });
+  const checkpointRunway = makeRunway({
+    currentRoom: 1,
+    preparedRooms: [
+      preparedRoom(1, { actionSeq: 8, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+      preparedRoom(2, { actionSeq: 9, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+    ],
+  });
+  const finalRunway = makeRunway({
+    currentRoom: 2,
+    preparedRooms: [
+      preparedRoom(2, { actionSeq: 9, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
+    ],
+  });
+  const calls = [];
+  const session = createExploreSession({
+    syncRequest: async payload => {
+      calls.push(payload);
+      if (calls.length === 1) {
+        await firstGate;
+        return okResponse(1, { exploreRunway: checkpointRunway });
+      }
+      secondStarted();
+      await secondGate;
+      return okResponse(2, { exploreRunway: finalRunway });
+    },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(initialRunway);
+
+  assert.equal(session.recordRoomAction('proceed').accepted, true);
+  assert.equal(session.currentPreparedRoom().index, 1);
+  const draining = scheduler.fire();
+
+  assert.equal(session.recordRoomAction('proceed').accepted, true);
+  assert.equal(session.currentPreparedRoom().index, 2);
+
+  releaseFirst();
+  await secondStartedPromise;
+
+  assert.deepEqual(calls.map(call => call.entries.map(entry => entry.seq)), [[1], [2]]);
+  assert.equal(session.pendingCount(), 1);
+  assert.equal(session.currentPreparedRoom().index, 2);
+
+  releaseSecond();
+  await draining;
+
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.currentPreparedRoom().index, 2);
 });
 
 test('network failure retries with backoff and keeps the log', async () => {
