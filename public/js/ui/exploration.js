@@ -186,11 +186,25 @@ const WHACK_A_MOLE_SAVE_FAILURE_COPY = 'Game Master choice did not save. Please 
 function applyExploreSessionRunway(response) {
   if (!response || !Object.hasOwn(response, 'exploreRunway')) return;
   const state = getGameState?.();
-  if (state?.run) state.run.exploreRunway = response.exploreRunway ?? null;
+  if (!state?.run) return;
+  if (response.exploreRunway == null) {
+    state.run.exploreRunway = null;
+    return;
+  }
+  const runway = cloneStateForExploreSession(response.exploreRunway);
+  runway.currentRoom = state.run.currentRoom;
+  const preparedRoom = preparedRoomForRunwayCursor(runway, state.run.currentRoom);
+  if (Number.isInteger(preparedRoom?.actionSeq)) {
+    runway.roomActionSeq = preparedRoom.actionSeq;
+  }
+  state.run.exploreRunway = runway;
 }
 
 function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
-  if (logEmpty === false) return;
+  if (logEmpty === false) {
+    applyExploreSessionRunway(response);
+    return;
+  }
   if (response?.state) updateGameState(response.state);
   applyExploreSessionRunway(response);
 }

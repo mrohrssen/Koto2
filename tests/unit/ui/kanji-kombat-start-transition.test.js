@@ -61,7 +61,7 @@ test('Kanji Kombat start recovers committed combat after a missing start respons
     'function showCollectionSelect'
   );
 
-  assert.match(helperSource, /apiGetGameState\(\)/);
+  assert.match(helperSource, /apiGetGameStateAfterExploreDrain\('kanjiKombatStartRecovery'\)/);
   assert.match(helperSource, /isKanjiKombatCombatState\(recoveredState\)/);
   assert.match(helperSource, /await enterKanjiKombatCombat\(recoveredState\)/);
   assert.match(setupSource, /else if \(!result\?\.state\) \{\s*await recoverKanjiKombatStartState\(\);/);

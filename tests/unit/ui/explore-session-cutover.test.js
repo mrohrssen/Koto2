@@ -327,6 +327,66 @@ describe('explore session proceed cutover', () => {
     );
   });
 
+  it('keeps refreshed runway from partial checkpoints without rewinding optimistic room state', async () => {
+    const syncRequests = [];
+    const legacyProceedCalls = [];
+    const harness = initCutoverHarness({
+      initialState: makeState({
+        currentRoom: 0,
+        roomCount: 4,
+        exploreRunway: makeRunway({ roomCount: 3 }),
+      }),
+      apiProceed: async options => {
+        legacyProceedCalls.push(options);
+        return null;
+      },
+      apiSyncExploreSession: payload => new Promise(resolve => {
+        syncRequests.push({ payload, resolve });
+      }),
+    });
+
+    await proceedWithRevealBuffer();
+    void getExploreSession().syncNow();
+    await waitFor(() => syncRequests.length === 1);
+
+    await proceedWithRevealBuffer();
+    assert.equal(harness.currentState.run.currentRoom, 2);
+    assert.equal(
+      harness.currentState.run.exploreRunway.preparedRooms.some(entry => entry.index === 3),
+      false
+    );
+
+    const refreshedRunway = makeRunway({ currentRoom: 1, roomActionSeq: 101, roomCount: 4 });
+    syncRequests[0].resolve({
+      status: 'ok',
+      confirmedThroughSeq: 1,
+      results: [],
+      state: makeState({ currentRoom: 1, roomCount: 4, exploreRunway: refreshedRunway }),
+      exploreRunway: refreshedRunway,
+    });
+    await waitFor(() => syncRequests.length === 2);
+
+    assert.equal(harness.currentState.run.currentRoom, 2);
+    assert.equal(
+      harness.currentState.run.exploreRunway.preparedRooms.some(entry => entry.index === 3),
+      true
+    );
+
+    await proceedWithRevealBuffer();
+
+    assert.equal(legacyProceedCalls.length, 0);
+    assert.deepEqual(
+      getExploreSession().snapshot().map(entry => ({
+        roomIndex: entry.roomIndex,
+        actionSeq: entry.actionSeq,
+      })),
+      [
+        { roomIndex: 1, actionSeq: 101 },
+        { roomIndex: 2, actionSeq: 102 },
+      ]
+    );
+  });
+
   it('wires recovery drains once per target and skips hidden visibility drains', async () => {
     initCutoverHarness({ initialState: makeState({ currentRoom: 0, exploreRunway: null }) });
     let syncCalls = 0;
