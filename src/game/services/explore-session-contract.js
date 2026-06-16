@@ -7,7 +7,7 @@ export const EXPLORE_LEGACY_REVEAL_AHEAD = 1;
 export const EXPLORE_SESSION_HARD_CAP = 50;
 export const EXPLORE_SESSION_RESUME_AT = 40;
 export const EXPLORE_SYNC_DEBOUNCE_MS = 300;
-export const EXPLORE_SYNC_RETRY_DELAYS_MS = [500, 1000, 2000, 4000, 8000, 15000];
+export const EXPLORE_SYNC_RETRY_DELAYS_MS = Object.freeze([500, 1000, 2000, 4000, 8000, 15000]);
 
 export const EXPLORE_EFFECTS = Object.freeze({
   CREDITS: 'credits',
@@ -20,6 +20,9 @@ export const EXPLORE_EFFECTS = Object.freeze({
 
 const ACTION_EFFECTS = Object.freeze({
   proceed: [EXPLORE_EFFECTS.INGREDIENTS, EXPLORE_EFFECTS.AREA_PROGRESS],
+  'encounter.start': [],
+  'npcBattle.start': [],
+  'boss.start': [],
   'friendlyNpc.choose': [EXPLORE_EFFECTS.PARTY_STATS],
   'shrine.choose': [EXPLORE_EFFECTS.PARTY_STATS],
   'skillMaster.choose': [EXPLORE_EFFECTS.PARTY_SKILLS],
@@ -96,8 +99,8 @@ export function roomDependenciesForType(type) {
 }
 
 export function expectedActionSeqForEntry({ baseActionSeq, localProceedCount } = {}) {
-  const base = Math.max(0, Number.isFinite(baseActionSeq) ? baseActionSeq : 0);
-  const proceeds = Math.max(0, Number.isFinite(localProceedCount) ? localProceedCount : 0);
+  const base = Number.isInteger(baseActionSeq) && baseActionSeq >= 0 ? baseActionSeq : 0;
+  const proceeds = Number.isInteger(localProceedCount) && localProceedCount >= 0 ? localProceedCount : 0;
   return base + proceeds;
 }
 
