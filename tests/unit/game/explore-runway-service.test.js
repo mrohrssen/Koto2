@@ -185,6 +185,14 @@ test('awards pre-rolled ingredient drops when entering the prepared room', async
   for (const drop of preRolledDrops) {
     assert.equal(gm.run.cooking.ingredients[drop.id], (beforeIngredients[drop.id] || 0) + drop.quantity);
   }
+
+  const followupRunway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+  const currentEntry = followupRunway.preparedRooms.find(entry => entry.index === gm.run.currentRoom);
+  assert.deepEqual(currentEntry.entryPayload.ingredientDrops, []);
 });
 
 test('prepares campfire yes and no response frames', async () => {

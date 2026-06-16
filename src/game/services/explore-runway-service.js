@@ -93,7 +93,9 @@ function buildEntryPayload(gm, room) {
   return {
     background: room?.subArea?.background || gm?.run?.currentArea?.background || gm?.run?.background || null,
     subArea: room?.subArea ? cloneExploreValue(room.subArea) : null,
-    ingredientDrops: Array.isArray(room?.entryIngredientDrops) ? cloneExploreValue(room.entryIngredientDrops) : [],
+    ingredientDrops: !room?.entryIngredientDropsAwarded && Array.isArray(room?.entryIngredientDrops)
+      ? cloneExploreValue(room.entryIngredientDrops)
+      : [],
     narrationFrame: null,
   };
 }

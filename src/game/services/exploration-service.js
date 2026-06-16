@@ -244,6 +244,8 @@ export class ExplorationService {
     if (this.gm.run.runSummary) {
       this.gm.run.runSummary.itemsCollected += drops.reduce((sum, drop) => sum + drop.quantity, 0);
     }
+    const room = this.gm.run.rooms?.[this.gm.run.currentRoom];
+    if (room) room.entryIngredientDropsAwarded = true;
     return drops;
   }
 
