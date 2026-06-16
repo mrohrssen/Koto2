@@ -1708,7 +1708,7 @@ function showVictoryModal(result) {
 // Returns a Promise that resolves when the player dismisses the report via
 // "return to hub" (returnToHubCb fires loadGameState + updateUI). Awaited by
 // stopCombatLoop so BattleScene stays up through the defeat screen.
-async function showAdventureReport(isVictory) {
+async function showAdventureReport(isVictory, outcome = isVictory ? 'victory' : 'defeat') {
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   const endingState = gameState;
@@ -1724,7 +1724,7 @@ async function showAdventureReport(isVictory) {
           endTime: Date.now()
         }
       }
-    }, isVictory ? 'victory' : 'defeat'),
+    }, outcome),
     ...(summary.durationMs ? { duration_sec: Math.round(summary.durationMs / 1000) } : {})
   }, 'first_run_ended');
   return new Promise((resolve) => {
@@ -1996,9 +1996,17 @@ function setupEventListeners() {
   // Menu items (menu auto-closes via delegation in modals.initMenu)
   dom.settingsBtn.addEventListener('click', () => modalsUI.openSettings());
   dom.resetRunBtn.addEventListener('click', async () => {
-    if (confirm('Forfeit current run?')) {
-      await returnToHub();
+    if (gameState.run) {
+      if (confirm('Forfeit current run and view report?')) {
+        if (combatLoopUI.isCombatActive()) {
+          combatLoopUI.cleanupCombat();
+        }
+        await showAdventureReport(false, 'forfeit');
+      }
+      return;
     }
+
+    await returnToHub();
   });
 }
 
