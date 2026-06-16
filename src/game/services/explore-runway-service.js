@@ -8,6 +8,8 @@ import { generateDealerCreatures, getCreatureBuyPrice, getCreatureSellPrice } fr
 import { getDueCards } from '../internal-srs.js';
 import { getWordDict, hydrateCards } from '../bootstrap/word-knowledge.js';
 import {
+  getGameMasterNoFrame,
+  getGameMasterYesFrame,
   getShopGreetingFrames,
   getShopPurchaseFrames,
   getShrineGreetingFrames,
@@ -179,6 +181,18 @@ function skillSelectFrame() {
     || null;
 }
 
+function gameMasterYesFrame() {
+  return getGameMasterYesFrame()
+    || getFallbackDialogueFrames().find(frame => frame.category === 'gameMaster_yes')
+    || null;
+}
+
+function gameMasterNoFrame() {
+  return getGameMasterNoFrame()
+    || getFallbackDialogueFrames().find(frame => frame.category === 'gameMaster_no')
+    || null;
+}
+
 function ingredientDropsForRoom(room) {
   const ingredientsById = new Map(COOKING_INGREDIENTS.map(ingredient => [ingredient.id, ingredient]));
   return rollRoomIngredientDrops().map(drop => {
@@ -292,8 +306,9 @@ function buildSkillMasterPayload(gm, room, opts) {
   };
 }
 
-function buildCampfirePayload(gm, room) {
+function buildCampfirePayload(gm, room, opts) {
   const ingredients = gm?.run?.cooking?.ingredients || {};
+  const knownSet = knownSetForOpts(opts);
   return {
     kind: 'campfire',
     ingredients: cloneExploreValue(ingredients),
@@ -303,8 +318,8 @@ function buildCampfirePayload(gm, room) {
     cookableRecipeHints: getCookableRecipeHints(ingredients),
     recipes: cloneExploreValue(COOKING_RECIPES),
     room: cloneExploreValue(room),
-    yesTokens: null,
-    noTokens: null,
+    yesTokens: getEligibleFrameTokens(gameMasterYesFrame(), knownSet, { dict: getWordDict() }),
+    noTokens: getEligibleFrameTokens(gameMasterNoFrame(), knownSet, { dict: getWordDict() }),
   };
 }
 
@@ -403,7 +418,7 @@ function buildInteractionPayload(gm, room, opts) {
     case ROOM_TYPES.skillMaster:
       return buildSkillMasterPayload(gm, room, opts);
     case ROOM_TYPES.campfire:
-      return buildCampfirePayload(gm, room);
+      return buildCampfirePayload(gm, room, opts);
     case ROOM_TYPES.dealer:
       return buildDealerPayload(gm, room);
     case ROOM_TYPES.speedReviewRoom:
@@ -434,6 +449,10 @@ function missingPayloadReasonsFor(room, interactionPayload) {
     if (!interactionPayload?.skillSelectPrompt?.tokens?.length) {
       missing.push('skillMaster.skillSelectPrompt');
     }
+  }
+  if (room?.type === ROOM_TYPES.campfire) {
+    if (!interactionPayload?.yesTokens?.tokens?.length) missing.push('campfire.yesTokens');
+    if (!interactionPayload?.noTokens?.tokens?.length) missing.push('campfire.noTokens');
   }
   if (room?.type === ROOM_TYPES.speedReviewRoom) {
     if (!Array.isArray(interactionPayload?.snapshotWords) || interactionPayload.snapshotWords.length === 0) {

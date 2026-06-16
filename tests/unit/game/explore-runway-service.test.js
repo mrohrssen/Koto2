@@ -161,6 +161,22 @@ test('pre-rolls future ingredient drops without awarding them early', async () =
   );
 });
 
+test('prepares campfire yes and no response frames', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.campfire]);
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const campfire = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.campfire);
+  assert.equal(campfire.interactionPayload.kind, 'campfire');
+  assert.ok(campfire.interactionPayload.yesTokens?.tokens?.length > 0);
+  assert.ok(campfire.interactionPayload.noTokens?.tokens?.length > 0);
+  assert.equal(campfire.offlineReady, true);
+});
+
 test('prepares friendly NPC greeting before marking payload offline ready', async () => {
   const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
   gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC' };
