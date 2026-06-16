@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { createNewRun } from '../../../src/game/state.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { buildExploreRunway } from '../../../src/game/services/explore-runway-service.js';
+import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
 
 function makeGm(roomTypes) {
@@ -161,6 +162,31 @@ test('pre-rolls future ingredient drops without awarding them early', async () =
   );
 });
 
+test('awards pre-rolled ingredient drops when entering the prepared room', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc, ROOM_TYPES.campfire]);
+  gm.narrate = () => {};
+  gm.emitState = () => {};
+  gm.explorationService = new ExplorationService(gm);
+
+  await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const futureIndex = gm.run.currentRoom + 1;
+  const preRolledDrops = structuredClone(gm.run.rooms[futureIndex].entryIngredientDrops);
+  const beforeIngredients = structuredClone(gm.run.cooking.ingredients);
+  gm.run.rooms[gm.run.currentRoom].interacted = true;
+
+  const result = gm.explorationService.proceedToNextRoom();
+
+  assert.deepEqual(result.ingredientDrops, preRolledDrops);
+  for (const drop of preRolledDrops) {
+    assert.equal(gm.run.cooking.ingredients[drop.id], (beforeIngredients[drop.id] || 0) + drop.quantity);
+  }
+});
+
 test('prepares campfire yes and no response frames', async () => {
   const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.campfire]);
 
@@ -195,6 +221,39 @@ test('prepares friendly NPC greeting before marking payload offline ready', asyn
   }
   assert.ok(friendly.interactionPayload.greeting?.tokens?.length > 0);
   assert.equal(friendly.offlineReady, true);
+});
+
+test('rerolls stale non-equipment friendly NPC offers before preparing runway payload', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
+  gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC' };
+  gm.run.rooms[1].friendlyNpc.offered = [
+    { id: 'old-tea', category: 'food', word: '茶', reading: 'ちゃ', meaning: 'tea' },
+  ];
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const friendly = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
+  assert.ok(friendly.interactionPayload.offered.length > 0);
+  assert.ok(friendly.interactionPayload.offered.every(item => item.category === 'equipment'));
+  assert.equal(friendly.offlineReady, true);
+});
+
+test('uses iterable known words when selecting frame-safe runway payloads', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
+  gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC' };
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => new Set(['来る']),
+    getDialogueCardAudio: async () => null,
+  });
+
+  const friendly = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
+  assert.deepEqual(friendly.interactionPayload.greeting.words, ['よく', '来る']);
 });
 
 test('marks skill master without offers as missing payload', async () => {

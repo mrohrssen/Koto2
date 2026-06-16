@@ -237,7 +237,8 @@ function buildFriendlyNpcPayload(gm, room, opts) {
     room.friendlyNpc = { offerCategory: 'equipment', offered: null, chosenId: null, completed: false };
   }
 
-  if (!Array.isArray(room.friendlyNpc.offered)) {
+  const hasConsumableOffer = (room.friendlyNpc.offered || []).some(item => item?.category !== 'equipment');
+  if (!Array.isArray(room.friendlyNpc.offered) || hasConsumableOffer) {
     room.friendlyNpc.offerCategory = 'equipment';
     room.friendlyNpc.offered = rollFriendlyNpcOffers('equipment', areaIdsForRun(gm?.run));
   }
@@ -464,7 +465,12 @@ function missingPayloadReasonsFor(room, interactionPayload) {
 
 async function resolveKnownSet(opts) {
   const knownWords = await Promise.resolve(opts?.getKnownWords?.() || []);
-  return new Set(Array.isArray(knownWords) ? knownWords : []);
+  if (knownWords instanceof Set) return knownWords;
+  if (Array.isArray(knownWords)) return new Set(knownWords);
+  if (knownWords && typeof knownWords[Symbol.iterator] === 'function') {
+    return new Set(Array.from(knownWords));
+  }
+  return new Set();
 }
 
 export async function buildExploreRunway(gm, opts = {}) {
