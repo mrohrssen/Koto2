@@ -24,7 +24,20 @@ import { getCrestMultipliers, applyCrestBonuses } from './services/crest-service
 import { getTutorialStep, advanceTutorial as advanceTutorialStep } from './services/tutorial-service.js';
 import { ensureCreatureCounts } from './services/creature-collection-service.js';
 import { exposeWords as exposeWords_fn } from './bootstrap/word-knowledge.js';
+import { EXPLORE_RUNWAY_AHEAD } from './services/explore-session-contract.js';
 export { applyDebugSuperAttack, cleanupDebugSuperAttack } from './debug-super-attack.js';
+
+function exploreRunwaySnapshot(gm) {
+  const cached = gm.run?.exploreRunway;
+  if (cached?.sessionEpoch === gm.run?.exploreSessionEpoch) return cached;
+  return {
+    sessionEpoch: gm.run?.exploreSessionEpoch || null,
+    roomActionSeq: gm.run?.roomActionSeq || 0,
+    currentRoom: gm.run?.currentRoom || 0,
+    preparedAhead: EXPLORE_RUNWAY_AHEAD,
+    preparedRooms: [],
+  };
+}
 
 // ============ GAME MANAGER ============
 
@@ -231,6 +244,9 @@ export class GameManager {
 
     const player = this.run?.player || this.player;
     const roomReveal = this.run ? buildClientRoomReveal(this.run) : null;
+    const exploreRunway = this.run?.active && this.run.mode !== 'kanjiKombat'
+      ? exploreRunwaySnapshot(this)
+      : null;
 
     return {
       player: player,
@@ -256,6 +272,7 @@ export class GameManager {
         roomActionSeq: roomReveal.roomActionSeq,
         revealBufferSize: roomReveal.revealBufferSize,
         revealedRooms: roomReveal.revealedRooms,
+        exploreRunway,
         runStats: this.run.runStats,
         creatureParty: this.run.creatureParty,
         partySkills: this.run.partySkills || [],

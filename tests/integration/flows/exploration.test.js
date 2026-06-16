@@ -29,7 +29,26 @@ describe('exploration flow', () => {
     assert.ok(Array.isArray(res.body.run.revealedRooms), 'client state should include the reveal buffer');
     assert.ok(res.body.run.revealedRooms.length <= 2, 'reveal buffer should include current room plus at most one future room');
     assert.equal(res.body.run.revealedRooms[0].index, res.body.run.currentRoom);
+    assert.ok(res.body.run.exploreRunway, 'client state should include exploreRunway');
+    assert.equal(res.body.run.exploreRunway.preparedAhead, 5);
+    assert.ok(
+      res.body.run.exploreRunway.preparedRooms.length <= 6,
+      'runway includes current room plus at most five ahead'
+    );
+    assert.equal(res.body.run.exploreRunway.preparedRooms[0].index, res.body.run.currentRoom);
+    assert.equal(res.body.run.revealedRooms.length <= 2, true, 'legacy reveal remains current plus one');
     assert.equal(typeof res.body.run.roomActionSeq, 'number');
+  });
+
+  it('rotates explore session epoch on state fetch during active regular explore', async () => {
+    const first = await client.get('/api/game/state');
+    const firstEpoch = first.body.run?.exploreRunway?.sessionEpoch;
+    const second = await client.get('/api/game/state');
+    const secondEpoch = second.body.run?.exploreRunway?.sessionEpoch;
+
+    assert.match(firstEpoch, /^ese_[0-9a-f]{16}$/);
+    assert.match(secondEpoch, /^ese_[0-9a-f]{16}$/);
+    assert.notEqual(secondEpoch, firstEpoch);
   });
 
   it('proceeds into a queued encounter room', async () => {
