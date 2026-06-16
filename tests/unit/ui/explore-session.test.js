@@ -559,6 +559,50 @@ test('corrected response clears the log, notifies, and adopts response runway', 
   assert.equal(session.currentPreparedRoom().index, 1);
 });
 
+test('corrected response with null exploreRunway clears stale prepared room', async () => {
+  const scheduler = makeManualScheduler();
+  const corrections = [];
+  const session = createExploreSession({
+    syncRequest: async () => ({
+      status: 'corrected',
+      reason: 'run_inactive',
+      confirmedThroughSeq: null,
+      exploreRunway: null,
+    }),
+    onCorrection: response => corrections.push(response),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'iron-charm' });
+  await scheduler.fire();
+
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(corrections.length, 1);
+  assert.equal(corrections[0].reason, 'run_inactive');
+  assert.equal(session.currentPreparedRoom(), null);
+});
+
+test('ok response with null exploreRunway clears stale prepared room after confirming entries', async () => {
+  const scheduler = makeManualScheduler();
+  const checkpoints = [];
+  const session = createExploreSession({
+    syncRequest: async payload => okResponse(payload.entries.at(-1).seq, { exploreRunway: null }),
+    onCheckpoint: response => checkpoints.push(response),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'iron-charm' });
+  await scheduler.fire();
+
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(checkpoints.length, 1);
+  assert.equal(session.currentPreparedRoom(), null);
+});
+
 test('reset abandons in-flight responses', async () => {
   const scheduler = makeManualScheduler();
   let release;

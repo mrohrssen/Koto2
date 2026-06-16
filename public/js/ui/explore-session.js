@@ -377,7 +377,9 @@ export function createExploreSession({
       if (response.status === 'corrected') {
         log = [];
         notify(onCorrection, response);
-        if (response.exploreRunway) adoptRunwayInternal(response.exploreRunway, { fromSync: true });
+        if (Object.hasOwn(response, 'exploreRunway')) {
+          adoptRunwayInternal(response.exploreRunway, { fromSync: true });
+        }
       } else {
         const confirmed = Number.isInteger(response.confirmedThroughSeq)
           ? response.confirmedThroughSeq
@@ -385,7 +387,9 @@ export function createExploreSession({
         log = log.filter(entry => entry.seq > confirmed);
         appendedAfterSnapshot = log.some(entry => entry.seq > snapshotMaxSeq);
         notify(onCheckpoint, response, { logEmpty: log.length === 0 });
-        if (response.exploreRunway) adoptRunwayInternal(response.exploreRunway, { fromSync: true });
+        if (Object.hasOwn(response, 'exploreRunway')) {
+          adoptRunwayInternal(response.exploreRunway, { fromSync: true });
+        }
       }
 
       maybeResumeAfterDrain();
