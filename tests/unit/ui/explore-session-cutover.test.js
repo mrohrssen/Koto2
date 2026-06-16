@@ -113,6 +113,9 @@ function preparedRoom(index, overrides = {}) {
 
 function makeState({ currentRoom = 0, exploreRunway, roomCount = 3 } = {}) {
   const rooms = Array.from({ length: roomCount }, (_, index) => room(index));
+  const revealedRooms = [currentRoom, currentRoom + 1]
+    .filter(index => index >= 0 && index < rooms.length)
+    .map(index => ({ index, room: rooms[index] }));
   return {
     player: { id: 'player-1' },
     phase: 'room',
@@ -122,7 +125,7 @@ function makeState({ currentRoom = 0, exploreRunway, roomCount = 3 } = {}) {
       currentRoom,
       roomActionSeq: 100 + currentRoom,
       rooms,
-      revealedRooms: rooms.map((entry, index) => ({ index, room: entry })),
+      revealedRooms,
       exploreRunway,
     },
   };
@@ -263,6 +266,10 @@ describe('explore session proceed cutover', () => {
     });
 
     const first = await proceedWithRevealBuffer();
+    assert.ok(
+      harness.currentState.run.revealedRooms.some(entry => entry.index === 2),
+      'first queued proceed should materialize one room ahead from the runway'
+    );
     const second = await proceedWithRevealBuffer();
 
     assert.deepEqual(

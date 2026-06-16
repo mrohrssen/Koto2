@@ -976,6 +976,12 @@ function preparedRoomForRunwayCursor(runway, currentRoom) {
   return preparedRooms.find(preparedRoom => preparedRoom?.index === currentRoom) || null;
 }
 
+function nextPreparedRoomAfterRunwayCursor(runway, currentRoom) {
+  if (!Number.isInteger(currentRoom)) return null;
+  const preparedRooms = Array.isArray(runway?.preparedRooms) ? runway.preparedRooms : [];
+  return preparedRooms.find(preparedRoom => preparedRoom?.index === currentRoom + 1) || null;
+}
+
 function isExploreRunwaySessionCapable(runway, run) {
   if (!runway?.sessionEpoch) return false;
   const currentRoom = run?.currentRoom;
@@ -985,9 +991,28 @@ function isExploreRunwaySessionCapable(runway, run) {
     || !currentPreparedRoom.acceptedActions.includes('proceed')) {
     return false;
   }
-  const preparedRooms = Array.isArray(runway?.preparedRooms) ? runway.preparedRooms : [];
-  const nextPreparedRoom = preparedRooms.find(preparedRoom => preparedRoom?.index > currentRoom) || null;
+  const nextPreparedRoom = nextPreparedRoomAfterRunwayCursor(runway, currentRoom);
   return Boolean(nextPreparedRoom) && nextPreparedRoom.offlineReady !== false;
+}
+
+function ensureRevealedRoomFromPreparedRoom(draft, preparedRoom) {
+  if (!draft?.run || !Number.isInteger(preparedRoom?.index) || !preparedRoom?.room) return;
+  if (!Array.isArray(draft.run.revealedRooms)) draft.run.revealedRooms = [];
+  const room = cloneStateForExploreSession(preparedRoom.room);
+  const existing = draft.run.revealedRooms.find(entry => entry?.index === preparedRoom.index);
+  if (existing) {
+    existing.room = room;
+  } else {
+    draft.run.revealedRooms.push({ index: preparedRoom.index, room });
+    draft.run.revealedRooms.sort((a, b) => (a?.index ?? 0) - (b?.index ?? 0));
+  }
+}
+
+function materializeRunwayRoomsAroundCursor(draft, currentRoom = draft?.run?.currentRoom) {
+  const runway = draft?.run?.exploreRunway;
+  if (!runway) return;
+  ensureRevealedRoomFromPreparedRoom(draft, preparedRoomForRunwayCursor(runway, currentRoom));
+  ensureRevealedRoomFromPreparedRoom(draft, nextPreparedRoomAfterRunwayCursor(runway, currentRoom));
 }
 
 function alignExploreRunwayCursor(draft) {
@@ -1007,8 +1032,11 @@ export function applyExploreSessionProceedResult(result) {
   const currentState = getGameState?.();
   if (!currentState) return null;
   const draft = cloneStateForExploreSession(currentState);
+  const nextPreparedRoom = nextPreparedRoomAfterRunwayCursor(draft.run?.exploreRunway, draft.run?.currentRoom);
+  ensureRevealedRoomFromPreparedRoom(draft, nextPreparedRoom);
   advanceStateToBufferedNextRoom(draft);
   alignExploreRunwayCursor(draft);
+  materializeRunwayRoomsAroundCursor(draft);
   updateGameState(draft);
   return draft;
 }
@@ -1016,10 +1044,10 @@ export function applyExploreSessionProceedResult(result) {
 export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   const state = getGameState();
   const nextRoom = getNextRoom(state);
-  if (nextRoom) {
-    const session = getExploreSession();
-    const runway = state.run?.exploreRunway || null;
-    const canUseExploreSession = isExploreRunwaySessionCapable(runway, state.run);
+  const session = getExploreSession();
+  const runway = state.run?.exploreRunway || null;
+  const canUseExploreSession = isExploreRunwaySessionCapable(runway, state.run);
+  if (nextRoom || canUseExploreSession) {
     if (canUseExploreSession) session?.adoptRunway(runway);
     const sessionResult = canUseExploreSession
       ? session?.recordRoomAction('proceed', {})
