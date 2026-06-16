@@ -22,7 +22,7 @@ function makeRes() {
   };
 }
 
-function makeStateReq({ buildExploreRunway, saveGame } = {}) {
+function makeStateReq({ app = {}, buildExploreRunway, saveGame } = {}) {
   const previousRunway = {
     sessionEpoch: 'ese_aaaaaaaaaaaaaaaa',
     roomActionSeq: 4,
@@ -38,7 +38,7 @@ function makeStateReq({ buildExploreRunway, saveGame } = {}) {
   };
 
   return {
-    app: { locals: { getDialogueCardAudio: async () => null } },
+    app,
     user: { id: 'route-user' },
     gameManager: {
       run,
@@ -59,6 +59,30 @@ function makeStateReq({ buildExploreRunway, saveGame } = {}) {
 }
 
 describe('game state route', () => {
+  it('forwards configured dialogue card audio dependency into explore runway builds', async () => {
+    const getDialogueCardAudio = async () => ({ key: 'audio.wav' });
+    let buildOpts = null;
+    const handler = getHandler(createGameStateRoutes({ getDialogueCardAudio }), 'get', '/state');
+    const req = makeStateReq({
+      buildExploreRunway: async (opts) => {
+        buildOpts = opts;
+        return {
+          sessionEpoch: req.gameManager.run.exploreSessionEpoch,
+          roomActionSeq: 4,
+          currentRoom: 2,
+          preparedAhead: 5,
+          preparedRooms: [],
+        };
+      },
+    });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(buildOpts.getDialogueCardAudio, getDialogueCardAudio);
+  });
+
   it('returns a clean error and restores explore session state when runway build fails', async () => {
     const handler = getHandler(createGameStateRoutes(), 'get', '/state');
     const req = makeStateReq({
@@ -97,6 +121,23 @@ describe('game state route', () => {
 
     assert.equal(res.statusCode, 500);
     assert.equal(res.body.error, 'save failed');
+    assert.equal(req.gameManager.run.exploreSessionEpoch, 'ese_aaaaaaaaaaaaaaaa');
+    assert.equal(req.gameManager.run.exploreRunway, req.previousRunway);
+  });
+
+  it('returns a clean error and restores explore session state when async saving rejects', async () => {
+    const handler = getHandler(createGameStateRoutes(), 'get', '/state');
+    const req = makeStateReq({
+      saveGame: async () => {
+        throw new Error('async save failed');
+      },
+    });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 500);
+    assert.equal(res.body.error, 'async save failed');
     assert.equal(req.gameManager.run.exploreSessionEpoch, 'ese_aaaaaaaaaaaaaaaa');
     assert.equal(req.gameManager.run.exploreRunway, req.previousRunway);
   });

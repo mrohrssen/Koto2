@@ -73,7 +73,9 @@ export default function createGameRoutes(deps) {
   });
 
   // Mount game state routes
-  router.use(createGameStateRoutes());
+  router.use(createGameStateRoutes({
+    getDialogueCardAudio: deps.getDialogueCardAudio
+  }));
 
   // Mount player routes
   router.use(createPlayerRoutes());

@@ -8,7 +8,7 @@ import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
  * gameManager, getEnrichedGameState come from req (set by game/index.js middleware)
  * @returns {Router}
  */
-export default function createGameStateRoutes() {
+export default function createGameStateRoutes({ getDialogueCardAudio } = {}) {
   const router = Router();
 
   // Get current game state
@@ -21,15 +21,15 @@ export default function createGameStateRoutes() {
     try {
       if (run?.mode === 'kanjiKombat' && run?.active) {
         rotateKanjiKombatSessionEpoch(run.kanjiKombat);
-        req.saveGame();
+        await req.saveGame();
       } else if (run?.active) {
         rotateExploreSessionEpoch(run);
         run.exploreRunway = await req.gameManager.explorationService.buildExploreRunway({
           userId: req.user?.id,
           getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
-          getDialogueCardAudio: req.app?.locals?.getDialogueCardAudio,
+          getDialogueCardAudio,
         });
-        req.saveGame();
+        await req.saveGame();
       }
       res.json(req.getEnrichedGameState());
     } catch (error) {
