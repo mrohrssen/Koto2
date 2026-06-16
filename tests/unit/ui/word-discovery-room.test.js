@@ -20,10 +20,12 @@ describe('word discovery optimistic room flow', () => {
     'function getActiveSpeedReviewRoom'
   );
 
-  it('creates pending optimistic actions for review progress and completion', () => {
-    assert.match(wordDiscoverySource, /actionType: 'wordDiscovery\.review'/);
+  it('records review progress on the explore session and keeps verified completion', () => {
+    assert.match(wordDiscoverySource, /getExploreSession\(\)\?\.recordRoomAction\('wordDiscovery\.review'/);
+    assert.match(wordDiscoverySource, /const grade = detail\.knew \? 'good' : 'again'/);
+    assert.match(wordDiscoverySource, /word: detail\.word,\s*grade,/);
+    assert.doesNotMatch(wordDiscoverySource, /apiSwipeWord\(currentWord\.word, 'again', true/);
     assert.match(explorationSource, /actionType: 'wordDiscovery\.complete'/);
-    assert.match(wordDiscoverySource, /apiSwipeWord\(currentWord\.word, 'again', true, \{ actionId: pending\.actionId \}\)/);
     assert.match(explorationSource, /apiCompleteDiscovery\(\{ actionId: pending\.actionId \}\)/);
   });
 
