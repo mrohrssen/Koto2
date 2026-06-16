@@ -13,19 +13,32 @@ export default function createGameStateRoutes() {
 
   // Get current game state
   router.get('/state', async (req, res) => {
-    if (req.gameManager.run?.mode === 'kanjiKombat' && req.gameManager.run?.active) {
-      rotateKanjiKombatSessionEpoch(req.gameManager.run.kanjiKombat);
-      req.saveGame();
-    } else if (req.gameManager.run?.active) {
-      rotateExploreSessionEpoch(req.gameManager.run);
-      req.gameManager.run.exploreRunway = await req.gameManager.explorationService.buildExploreRunway({
-        userId: req.user?.id,
-        getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
-        getDialogueCardAudio: req.app?.locals?.getDialogueCardAudio,
-      });
-      req.saveGame();
+    const run = req.gameManager.run;
+    const shouldRestoreExplore = run?.active && run.mode !== 'kanjiKombat';
+    const previousExploreSessionEpoch = shouldRestoreExplore ? run.exploreSessionEpoch : null;
+    const previousExploreRunway = shouldRestoreExplore ? run.exploreRunway : null;
+
+    try {
+      if (run?.mode === 'kanjiKombat' && run?.active) {
+        rotateKanjiKombatSessionEpoch(run.kanjiKombat);
+        req.saveGame();
+      } else if (run?.active) {
+        rotateExploreSessionEpoch(run);
+        run.exploreRunway = await req.gameManager.explorationService.buildExploreRunway({
+          userId: req.user?.id,
+          getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
+          getDialogueCardAudio: req.app?.locals?.getDialogueCardAudio,
+        });
+        req.saveGame();
+      }
+      res.json(req.getEnrichedGameState());
+    } catch (error) {
+      if (shouldRestoreExplore) {
+        run.exploreSessionEpoch = previousExploreSessionEpoch;
+        run.exploreRunway = previousExploreRunway;
+      }
+      res.status(500).json({ error: error.message });
     }
-    res.json(req.getEnrichedGameState());
   });
 
   return router;

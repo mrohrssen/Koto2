@@ -28,12 +28,21 @@ import { EXPLORE_RUNWAY_AHEAD } from './services/explore-session-contract.js';
 export { applyDebugSuperAttack, cleanupDebugSuperAttack } from './debug-super-attack.js';
 
 function exploreRunwaySnapshot(gm) {
+  const run = gm.run;
   const cached = gm.run?.exploreRunway;
-  if (cached?.sessionEpoch === gm.run?.exploreSessionEpoch) return cached;
+  const currentRoom = run?.currentRoom || 0;
+  const roomActionSeq = run?.roomActionSeq || 0;
+  if (
+    cached?.sessionEpoch === run?.exploreSessionEpoch
+    && cached?.roomActionSeq === roomActionSeq
+    && cached?.currentRoom === currentRoom
+  ) {
+    return cached;
+  }
   return {
-    sessionEpoch: gm.run?.exploreSessionEpoch || null,
-    roomActionSeq: gm.run?.roomActionSeq || 0,
-    currentRoom: gm.run?.currentRoom || 0,
+    sessionEpoch: run?.exploreSessionEpoch || null,
+    roomActionSeq,
+    currentRoom,
     preparedAhead: EXPLORE_RUNWAY_AHEAD,
     preparedRooms: [],
   };

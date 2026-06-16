@@ -51,6 +51,29 @@ describe('exploration reveal buffer state', () => {
     assert.equal(Object.hasOwn(inactiveState.run, 'exploreRunway'), false);
   });
 
+  it('falls back when cached exploreRunway lags behind room progress', () => {
+    const gm = makeReadyGameManager();
+    gm.run.exploreSessionEpoch = 'ese_2222222222222222';
+    gm.run.exploreRunway = {
+      sessionEpoch: 'ese_2222222222222222',
+      roomActionSeq: 0,
+      currentRoom: 0,
+      preparedAhead: 5,
+      preparedRooms: [{ index: 0, room: { type: gm.run.rooms[0].type } }],
+    };
+
+    gm.run.rooms[gm.run.currentRoom].interacted = true;
+    gm.proceedToNextRoom();
+
+    const state = gm.getState();
+    assert.equal(state.run.currentRoom, 1);
+    assert.equal(state.run.roomActionSeq, 1);
+    assert.equal(state.run.exploreRunway.sessionEpoch, 'ese_2222222222222222');
+    assert.equal(state.run.exploreRunway.currentRoom, 1);
+    assert.equal(state.run.exploreRunway.roomActionSeq, 1);
+    assert.deepEqual(state.run.exploreRunway.preparedRooms, []);
+  });
+
   it('increments roomActionSeq once for an accepted room advance', () => {
     const gm = makeReadyGameManager();
     gm.run.rooms[gm.run.currentRoom].interacted = true;
