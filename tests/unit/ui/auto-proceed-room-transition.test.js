@@ -43,7 +43,7 @@ test('autoProceed routes ingredient drops through room travel', () => {
 });
 
 test('proceedWithRevealBuffer queues buffered proceed through explore session before legacy fallback', () => {
-  const sessionIndex = proceedWithRevealBufferSrc.indexOf("getExploreSession()?.recordRoomAction('proceed'");
+  const sessionIndex = proceedWithRevealBufferSrc.indexOf("recordRoomAction('proceed'");
   const applyIndex = proceedWithRevealBufferSrc.indexOf('applyExploreSessionProceedResult');
   const legacyIndex = proceedWithRevealBufferSrc.indexOf('apiProceed({');
 
@@ -51,7 +51,7 @@ test('proceedWithRevealBuffer queues buffered proceed through explore session be
   assert.ok(applyIndex > sessionIndex, 'proceedWithRevealBuffer should apply the accepted session result locally');
   assert.ok(legacyIndex > applyIndex, 'legacy verified apiProceed fallback should remain after the session path');
 
-  assert.match(proceedWithRevealBufferSrc, /getExploreSession\(\)\?\.recordRoomAction\('proceed'/);
+  assert.match(proceedWithRevealBufferSrc, /recordRoomAction\('proceed'/);
   assert.match(proceedWithRevealBufferSrc, /applyExploreSessionProceedResult/);
   assert.match(proceedWithRevealBufferSrc, /advanceStateToBufferedNextRoom\(draft\)/);
 });

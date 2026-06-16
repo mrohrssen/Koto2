@@ -969,12 +969,36 @@ function cloneStateForExploreSession(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function preparedRoomForRunwayCursor(runway, currentRoom) {
+  if (!Number.isInteger(currentRoom)) return null;
+  const preparedRooms = Array.isArray(runway?.preparedRooms) ? runway.preparedRooms : [];
+  return preparedRooms.find(preparedRoom => preparedRoom?.index === currentRoom) || null;
+}
+
+function isExploreRunwaySessionCapable(runway, run) {
+  if (!runway?.sessionEpoch) return false;
+  return Boolean(preparedRoomForRunwayCursor(runway, run?.currentRoom));
+}
+
+function alignExploreRunwayCursor(draft) {
+  const runway = draft?.run?.exploreRunway;
+  if (!runway) return;
+  const currentRoom = draft?.run?.currentRoom;
+  runway.currentRoom = currentRoom;
+  const preparedRoom = preparedRoomForRunwayCursor(runway, currentRoom);
+  if (Number.isInteger(preparedRoom?.actionSeq)) {
+    runway.roomActionSeq = preparedRoom.actionSeq;
+    draft.run.roomActionSeq = preparedRoom.actionSeq;
+  }
+}
+
 export function applyExploreSessionProceedResult(result) {
   if (!result?.accepted) return null;
   const currentState = getGameState?.();
   if (!currentState) return null;
   const draft = cloneStateForExploreSession(currentState);
   advanceStateToBufferedNextRoom(draft);
+  alignExploreRunwayCursor(draft);
   updateGameState(draft);
   return draft;
 }
@@ -985,8 +1009,11 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   if (nextRoom) {
     const session = getExploreSession();
     const runway = state.run?.exploreRunway || null;
-    session?.adoptRunway(runway);
-    const sessionResult = runway ? getExploreSession()?.recordRoomAction('proceed', {}) : null;
+    const canUseExploreSession = isExploreRunwaySessionCapable(runway, state.run);
+    if (canUseExploreSession) session?.adoptRunway(runway);
+    const sessionResult = canUseExploreSession
+      ? session?.recordRoomAction('proceed', {})
+      : null;
     if (sessionResult?.accepted) {
       const draft = applyExploreSessionProceedResult(sessionResult);
       clearActionArea();
