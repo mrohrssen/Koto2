@@ -3,19 +3,12 @@ import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-clie
 import { showItemTargetPicker } from './item-target-picker.js';
 import { renderButtons } from './ui-components.js';
 import { itemSpriteUrl, spriteUrl } from '../assets/asset-urls.js';
-import {
-  createPendingRunAction,
-  confirmPendingRunAction,
-  correctPendingRunAction,
-  isMatchingRunActionResponse,
-} from './optimistic-run-action.js';
 
 let callbacks = {};
 let campfireState = null;
 let selected = {};
 let activeTab = 'ingredients';
 let displayMode = 'entry';
-let pendingCampfireActionId = null;
 const DISPLAY_ONLY = { recordExposure: false };
 const CAMPFIRE_FAILURE_COPY = 'Campfire choice did not save. Please try again.';
 
@@ -24,20 +17,20 @@ export function init(cbs) {
 }
 
 export async function show() {
-  campfireState = await callbacks.apiGetCampfire();
+  const prepared = callbacks.getExploreSession?.()?.currentPreparedRoom();
+  const payload = prepared?.interactionPayload;
+  campfireState = normalizeCampfireState(payload || await callbacks.apiGetCampfire());
   selected = {};
   activeTab = 'ingredients';
-  pendingCampfireActionId = null;
   displayMode = campfireState?.room?.cookedDish ? 'cooking' : 'entry';
   render();
 }
 
 export function renderForTest(state, cbs = {}) {
   callbacks = cbs;
-  campfireState = state;
+  campfireState = normalizeCampfireState(state);
   selected = {};
   activeTab = 'ingredients';
-  pendingCampfireActionId = null;
   displayMode = campfireState?.room?.cookedDish ? 'cooking' : 'entry';
   render();
 }
@@ -74,33 +67,6 @@ function getCurrentGameState() {
   return callbacks.getGameState?.() || campfireState?.state || { run: {} };
 }
 
-function markPendingCampfireAction(draft, details) {
-  draft.run ||= {};
-  draft.run.pendingCampfireAction = details;
-}
-
-function beginCampfireAction({ actionType, details }) {
-  if (pendingCampfireActionId) return null;
-  const pending = createPendingRunAction({
-    state: getCurrentGameState(),
-    actionType,
-    applyLocal: draft => markPendingCampfireAction(draft, details),
-  });
-  pendingCampfireActionId = pending.actionId;
-  callbacks.updateGameState?.(pending.state);
-  return pending;
-}
-
-function clearPendingCampfireAction(pending) {
-  if (!pending || pendingCampfireActionId === pending.actionId) {
-    pendingCampfireActionId = null;
-  }
-}
-
-function isCurrentPendingCampfireAction(pending) {
-  return !!pending && pendingCampfireActionId === pending.actionId;
-}
-
 function showCampfireFailure() {
   if (callbacks.showCampfireFailure) {
     callbacks.showCampfireFailure(CAMPFIRE_FAILURE_COPY);
@@ -111,50 +77,67 @@ function showCampfireFailure() {
   }
 }
 
+function recordCampfireAction(kind, payload = {}) {
+  const session = callbacks.getExploreSession?.();
+  let result = null;
+  if (kind === 'campfire.cook') {
+    result = session?.recordRoomAction('campfire.cook', payload);
+  } else if (kind === 'campfire.feed') {
+    result = session?.recordRoomAction('campfire.feed', payload);
+  } else if (kind === 'campfire.skip') {
+    result = session?.recordRoomAction('campfire.skip', payload);
+  }
+  if (!result?.accepted) {
+    showCampfireFailure();
+    return null;
+  }
+  return result;
+}
+
 function resetDisplayModeFromState() {
   displayMode = campfireState?.room?.cookedDish ? 'cooking' : 'entry';
 }
 
-function isCampfireActiveState(state) {
-  return state?.phase === 'campfire';
+function cloneValue(value) {
+  if (value === undefined) return undefined;
+  return typeof structuredClone === 'function'
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
 }
 
-function applyCampfireCorrection(pending, result) {
-  if (!isCurrentPendingCampfireAction(pending) || !isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
-  const correctedState = correctPendingRunAction(pending, result);
-  callbacks.updateGameState?.(correctedState);
-  clearPendingCampfireAction(pending);
-  showCampfireFailure();
-  if (!isCampfireActiveState(correctedState)) {
-    clearCampfireUi();
-    callbacks.updateUI?.();
-    return true;
-  }
-  resetDisplayModeFromState();
-  render();
-  return true;
+function normalizeCampfireState(state) {
+  if (!state?.room?.campfire) return state;
+  return { ...state, room: state.room.campfire };
 }
 
-function confirmCampfireAction(pending, result, { refreshUi = false } = {}) {
-  if (!pending || !result?.state) return false;
-  if (result.actionId && (!isCurrentPendingCampfireAction(pending) || !isMatchingRunActionResponse(pending, result))) return false;
-  const confirmedState = result.actionId
-    ? confirmPendingRunAction(pending, result)
-    : result.state;
-  callbacks.updateGameState?.(confirmedState);
-  if (refreshUi) callbacks.updateUI?.();
-  clearPendingCampfireAction(pending);
-  return true;
+function uniqueObjects(values) {
+  return values.filter((value, index, list) => (
+    value && list.findIndex(candidate => candidate === value) === index
+  ));
 }
 
-function rollbackCampfireAction(pending) {
-  if (!isCurrentPendingCampfireAction(pending)) return false;
-  callbacks.updateGameState?.(pending.originalState);
-  clearPendingCampfireAction(pending);
-  showCampfireFailure();
-  resetDisplayModeFromState();
-  render();
-  return true;
+function activeRoomDrafts(draft) {
+  const run = draft?.run;
+  const currentRoom = run?.currentRoom;
+  return uniqueObjects([
+    draft?.room,
+    Number.isInteger(currentRoom)
+      ? run?.revealedRooms?.find(entry => entry?.index === currentRoom)?.room
+      : null,
+    Number.isInteger(currentRoom) && Array.isArray(run?.rooms)
+      ? run.rooms[currentRoom]
+      : null,
+  ]);
+}
+
+function updateCampfireGameState(mutator, { phase = null } = {}) {
+  const currentState = getCurrentGameState();
+  if (!currentState) return null;
+  const draft = cloneValue(currentState);
+  activeRoomDrafts(draft).forEach(room => mutator(room, draft));
+  if (phase) draft.phase = phase;
+  callbacks.updateGameState?.(draft);
+  return draft;
 }
 
 function escapeAttribute(value) {
@@ -518,30 +501,35 @@ async function cookSelected(event) {
   }
 
   const ingredients = Object.entries(selected).map(([id, quantity]) => ({ id, quantity }));
-  const pending = beginCampfireAction({
-    actionType: 'campfire.cook',
-    details: { type: 'cook' },
-  });
-  if (!pending) return;
+  const queued = recordCampfireAction('campfire.cook', { ingredients });
+  if (!queued) return;
 
-  let result = null;
-  try {
-    result = await callbacks.apiCookAtCampfire(ingredients, { actionId: pending.actionId });
-  } catch {
-    rollbackCampfireAction(pending);
-    return;
+  const recipe = getRecipeGuidance().candidateRecipes.find(candidate => selectionCompletesRecipe(candidate));
+  const cookedDish = cloneValue(recipe || selectedUnits()[0] || { id: 'campfire-dish', word: '料理', reading: 'りょうり', meaning: 'cooking' });
+  const consumed = cloneValue(recipe?.ingredients || ingredients);
+  campfireState.room ||= {};
+  campfireState.room.cookedDish = cookedDish;
+  campfireState.room.consumed = consumed;
+  campfireState.room.resultKind = recipe ? 'recipe' : 'ingredient';
+  campfireState.ingredients ||= {};
+  for (const ingredient of consumed) {
+    const nextCount = (campfireState.ingredients?.[ingredient.id] || 0) - ingredient.quantity;
+    if (nextCount > 0) campfireState.ingredients[ingredient.id] = nextCount;
+    else delete campfireState.ingredients[ingredient.id];
   }
-
-  if (applyCampfireCorrection(pending, result)) return;
-  if (result?.room) {
-    campfireState = result;
-  }
+  updateCampfireGameState((room, draft) => {
+    draft.run ||= {};
+    draft.run.cooking ||= {};
+    draft.run.cooking.ingredients = cloneValue(campfireState.ingredients || {});
+    room.campfire ||= {};
+    room.campfire.cookedDish = cloneValue(cookedDish);
+    room.campfire.consumed = cloneValue(consumed);
+    room.campfire.resultKind = recipe ? 'recipe' : 'ingredient';
+  }, { phase: 'campfire' });
+  selected = {};
+  displayMode = 'cooking';
   if (campfireState?.room?.cookedDish) {
     recordIngredientExposure(campfireState.room.cookedDish);
-  }
-  if (!confirmCampfireAction(pending, result)) {
-    rollbackCampfireAction(pending);
-    return;
   }
   render();
 }
@@ -551,37 +539,21 @@ function clearActionArea() {
   if (actionArea) actionArea.innerHTML = '';
 }
 
-async function finishCompletedCampfireAction(pending, result) {
-  if (applyCampfireCorrection(pending, result)) return;
-  if (!confirmCampfireAction(pending, result)) {
-    rollbackCampfireAction(pending);
-    return;
-  }
-
-  cleanup();
-  if (callbacks.completeCampfireAndProceed) {
-    await callbacks.completeCampfireAndProceed(result.state);
-  } else {
-    callbacks.updateGameState?.(result.state);
-    callbacks.updateUI?.();
-  }
-}
-
 async function skipCampfire() {
-  const pending = beginCampfireAction({
-    actionType: 'campfire.skip',
-    details: { type: 'skip' },
-  });
-  if (!pending) return;
+  const queued = recordCampfireAction('campfire.skip', {});
+  if (!queued) return;
+  campfireState.room ||= {};
+  campfireState.room.completed = true;
+  campfireState.room.skipped = true;
+  updateCampfireGameState(room => {
+    room.campfire ||= {};
+    room.campfire.completed = true;
+    room.campfire.skipped = true;
+    room.interacted = true;
+  }, { phase: 'room' });
   clearActionArea();
-  let result = null;
-  try {
-    result = await callbacks.apiSkipCampfire({ actionId: pending.actionId });
-  } catch {
-    rollbackCampfireAction(pending);
-    return;
-  }
-  await finishCompletedCampfireAction(pending, result);
+  cleanup();
+  callbacks.updateUI?.();
 }
 
 function renderCookedDish(dish) {
@@ -589,18 +561,20 @@ function renderCookedDish(dish) {
   const party = state?.run?.creatureParty?.active || state?.creatureParty?.active || [];
 
   showItemTargetPicker(party, async (targetIndex) => {
-    const pending = beginCampfireAction({
-      actionType: 'campfire.feed',
-      details: { type: 'feed', targetCreatureIndex: targetIndex },
-    });
-    if (!pending) return;
-    let result = null;
-    try {
-      result = await callbacks.apiFeedCampfireDish(targetIndex, { actionId: pending.actionId });
-    } catch {
-      rollbackCampfireAction(pending);
-      return;
-    }
-    await finishCompletedCampfireAction(pending, result);
+    const queued = recordCampfireAction('campfire.feed', { targetCreatureIndex: targetIndex });
+    if (!queued) return;
+    campfireState.room ||= {};
+    campfireState.room.fed = true;
+    campfireState.room.completed = true;
+    campfireState.room.targetCreatureIndex = targetIndex;
+    updateCampfireGameState(room => {
+      room.campfire ||= {};
+      room.campfire.fed = true;
+      room.campfire.completed = true;
+      room.campfire.targetCreatureIndex = targetIndex;
+      room.interacted = true;
+    }, { phase: 'room' });
+    clearCampfireUi();
+    callbacks.updateUI?.();
   });
 }

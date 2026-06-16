@@ -1,5 +1,6 @@
-import { describe, it, mock, beforeEach } from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { registerHooks } from 'node:module';
 
 const sceneManagerState = { currentScene: null };
 let renderedButtons = [];
@@ -7,110 +8,237 @@ const roomTransitionCalls = [];
 let dialogueCalls = [];
 let whackAMoleDeps = null;
 
-function makeWhackAMoleState(room) {
+globalThis.__wamTest = {
+  sceneManagerState,
+  renderedButtons,
+  roomTransitionCalls,
+  get dialogueCalls() { return dialogueCalls; },
+  setWhackAMoleDeps: deps => { whackAMoleDeps = deps; },
+};
+
+function makeWhackAMoleState(room, {
+  nextRoom = null,
+  acceptedActions = ['whackAMole.complete', 'whackAMole.skip'],
+  interactionPayload = null,
+} = {}) {
+  const revealedRooms = [{ index: 0, room }];
+  const preparedRooms = [{
+    index: 0,
+    roomId: room.id,
+    room,
+    actionSeq: 1,
+    offlineReady: true,
+    acceptedActions,
+    interactionPayload: interactionPayload || { kind: 'whackAMole' },
+  }];
+  if (nextRoom) {
+    revealedRooms.push({ index: 1, room: nextRoom });
+    preparedRooms.push({
+      index: 1,
+      roomId: nextRoom.id,
+      room: nextRoom,
+      actionSeq: 2,
+      offlineReady: true,
+      acceptedActions: ['proceed'],
+      interactionPayload: { kind: nextRoom.type || 'room' },
+    });
+  }
   return {
     phase: 'whackAMole',
     room,
     run: {
       currentRoom: 0,
-      totalRooms: 1,
-      revealedRooms: [{ index: 0, room }],
+      totalRooms: nextRoom ? 2 : 1,
+      rooms: nextRoom ? [room, nextRoom] : [room],
+      revealedRooms,
+      exploreRunway: {
+        sessionEpoch: 'wam-test-epoch',
+        currentRoom: 0,
+        roomActionSeq: 1,
+        preparedRooms,
+      },
     },
   };
 }
 
-await mock.module('../../../public/js/scenes/scene-manager.js', {
-  namedExports: { getSceneManager: () => sceneManagerState },
-});
-await mock.module('../../../public/js/scenes/exploration-scene.js', {
-  namedExports: { ExplorationScene: class {} },
-});
-await mock.module('../../../public/js/ui/speed-review.js', { namedExports: {} });
-await mock.module('../../../public/js/ui/whack-a-mole.js', {
-  namedExports: {
-    WhackAMoleGame: class {
+const mockSources = new Map(Object.entries({
+  '../scenes/scene-manager.js': 'export const getSceneManager = () => globalThis.__wamTest.sceneManagerState;',
+  '../scenes/exploration-scene.js': 'export class ExplorationScene {}',
+  './speed-review.js': '',
+  './whack-a-mole.js': `
+    export class WhackAMoleGame {
       constructor(pool, deps) {
         this.pool = pool;
-        whackAMoleDeps = deps;
+        globalThis.__wamTest.setWhackAMoleDeps(deps);
       }
-
       start() {}
-    },
+    }
+  `,
+  '../audio.js': 'export const playSFX = () => {};',
+  '../native/index.js': 'export const hapticLight = () => {};',
+  './sprite-utils.js': `
+    export const creatureBgUrl = () => '';
+    export const itemSpriteHtml = () => '';
+    export const creatureStaticPath = () => '';
+    export const SPRITE_VERSION = 'test';
+  `,
+  './combat-dom.js': `
+    export const hideEnemy = () => {};
+    export const showFormation = () => {};
+    export const hideFormation = () => {};
+  `,
+  './exploration-dom.js': 'export const showNpcInDisplay = () => {};',
+  './i18n.js': `
+    export const t = (...a) => a.join(' ');
+    export const isJapanified = () => false;
+  `,
+  './chests.js': '',
+  './crests-equip.js': '',
+  './item-effect-pills.js': 'export const buildItemEffectPills = () => "";',
+  './room-transition.js': `
+    export const playRoomTransition = async (state, opts) => {
+      globalThis.__wamTest.roomTransitionCalls.push({ state, opts });
+    };
+  `,
+  './ui-components.js': `
+    export const renderButtons = buttons => {
+      globalThis.__wamTest.renderedButtons.length = 0;
+      globalThis.__wamTest.renderedButtons.push(...buttons);
+    };
+    export const renderChoices = () => {};
+  `,
+  './event-popup.js': `
+    export const buff = () => {};
+    export const itemGained = () => {};
+  `,
+  './dom-effects.js': `
+    export const pop = () => {};
+    export const flashElement = () => {};
+  `,
+  '../api.js': `
+    export const savePvpTeam = async () => {};
+    export const getPvpTeams = async () => [];
+  `,
+  './bootstrap-client.js': `
+    export const renderJpSentence = tokens => tokens.map(t => t.text || t.base || '').join('');
+    export const getKnownWords = () => new Set();
+    export const entityToToken = value => value;
+  `,
+  './npc-dialogue-card.js': `
+    export const showNpcDialogueCard = async options => {
+      globalThis.__wamTest.dialogueCalls.push(options);
+    };
+  `,
+  './tutorial-copy.js': `
+    export const getTutorialNarration = () => [];
+    export const getFormationNarration = () => '';
+    export const getPostHinonekoReviewNarration = () => [];
+    export const getFusionCoreNarration = () => [];
+    export const getPostFusionNarration = () => [];
+  `,
+  '../../../public/js/scenes/scene-manager.js': 'export const getSceneManager = () => globalThis.__wamTest.sceneManagerState;',
+  '../../../public/js/scenes/exploration-scene.js': 'export class ExplorationScene {}',
+  '../../../public/js/ui/speed-review.js': '',
+  '../../../public/js/ui/whack-a-mole.js': `
+    export class WhackAMoleGame {
+      constructor(pool, deps) {
+        this.pool = pool;
+        globalThis.__wamTest.setWhackAMoleDeps(deps);
+      }
+      start() {}
+    }
+  `,
+  '../../../public/js/audio.js': 'export const playSFX = () => {};',
+  '../../../public/js/native/index.js': 'export const hapticLight = () => {};',
+  '../../../public/js/ui/sprite-utils.js': `
+    export const creatureBgUrl = () => '';
+    export const itemSpriteHtml = () => '';
+    export const creatureStaticPath = () => '';
+    export const SPRITE_VERSION = 'test';
+  `,
+  '../../../public/js/ui/combat-dom.js': `
+    export const hideEnemy = () => {};
+    export const showFormation = () => {};
+    export const hideFormation = () => {};
+  `,
+  '../../../public/js/ui/exploration-dom.js': 'export const showNpcInDisplay = () => {};',
+  '../../../public/js/ui/i18n.js': `
+    export const t = (...a) => a.join(' ');
+    export const isJapanified = () => false;
+  `,
+  '../../../public/js/ui/chests.js': '',
+  '../../../public/js/ui/crests-equip.js': '',
+  '../../../public/js/ui/item-effect-pills.js': 'export const buildItemEffectPills = () => "";',
+  '../../../public/js/ui/room-transition.js': `
+    export const playRoomTransition = async (state, opts) => {
+      globalThis.__wamTest.roomTransitionCalls.push({ state, opts });
+    };
+  `,
+  '../../../public/js/ui/ui-components.js': `
+    export const renderButtons = buttons => {
+      globalThis.__wamTest.renderedButtons.length = 0;
+      globalThis.__wamTest.renderedButtons.push(...buttons);
+    };
+    export const renderChoices = () => {};
+  `,
+  '../../../public/js/ui/event-popup.js': `
+    export const buff = () => {};
+    export const itemGained = () => {};
+  `,
+  '../../../public/js/ui/dom-effects.js': `
+    export const pop = () => {};
+    export const flashElement = () => {};
+  `,
+  '../../../public/js/api.js': `
+    export const savePvpTeam = async () => {};
+    export const getPvpTeams = async () => [];
+  `,
+  '../../../public/js/ui/bootstrap-client.js': `
+    export const renderJpSentence = tokens => tokens.map(t => t.text || t.base || '').join('');
+    export const getKnownWords = () => new Set();
+    export const entityToToken = value => value;
+  `,
+  '../../../public/js/ui/npc-dialogue-card.js': `
+    export const showNpcDialogueCard = async options => {
+      globalThis.__wamTest.dialogueCalls.push(options);
+    };
+  `,
+  '../../../public/js/ui/tutorial-copy.js': `
+    export const getTutorialNarration = () => [];
+    export const getFormationNarration = () => '';
+    export const getPostHinonekoReviewNarration = () => [];
+    export const getFusionCoreNarration = () => [];
+    export const getPostFusionNarration = () => [];
+  `,
+}));
+
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (mockSources.has(specifier)) {
+      return { url: `mock:${encodeURIComponent(specifier)}`, shortCircuit: true };
+    }
+    return nextResolve(specifier, context);
   },
-});
-await mock.module('../../../public/js/audio.js', { namedExports: { playSFX: () => {} } });
-await mock.module('../../../public/js/native/index.js', { namedExports: { hapticLight: () => {} } });
-await mock.module('../../../public/js/ui/sprite-utils.js', {
-  namedExports: {
-    creatureBgUrl: () => '', itemSpriteHtml: () => '', creatureStaticPath: () => '',
-    SPRITE_VERSION: 'test',
-  },
-});
-await mock.module('../../../public/js/ui/combat-dom.js', {
-  namedExports: { hideEnemy: () => {}, showFormation: () => {}, hideFormation: () => {} },
-});
-await mock.module('../../../public/js/ui/exploration-dom.js', {
-  namedExports: { showNpcInDisplay: () => {} },
-});
-await mock.module('../../../public/js/ui/i18n.js', {
-  namedExports: { t: (...a) => a.join(' '), isJapanified: () => false },
-});
-await mock.module('../../../public/js/ui/chests.js', { namedExports: {} });
-await mock.module('../../../public/js/ui/crests-equip.js', { namedExports: {} });
-await mock.module('../../../public/js/ui/item-effect-pills.js', {
-  namedExports: { buildItemEffectPills: () => '' },
-});
-await mock.module('../../../public/js/ui/room-transition.js', {
-  namedExports: {
-    playRoomTransition: async (state, opts) => {
-      roomTransitionCalls.push({ state, opts });
-    },
-  },
-});
-await mock.module('../../../public/js/ui/ui-components.js', {
-  namedExports: {
-    renderButtons: buttons => { renderedButtons = buttons; },
-    renderChoices: () => {},
-  },
-});
-await mock.module('../../../public/js/ui/event-popup.js', {
-  namedExports: { buff: () => {}, itemGained: () => {} },
-});
-await mock.module('../../../public/js/ui/dom-effects.js', {
-  namedExports: { pop: () => {}, flashElement: () => {} },
-});
-await mock.module('../../../public/js/api.js', {
-  namedExports: { savePvpTeam: async () => {}, getPvpTeams: async () => [] },
-});
-await mock.module('../../../public/js/ui/bootstrap-client.js', {
-  namedExports: {
-    renderJpSentence: tokens => tokens.map(t => t.text || t.base || '').join(''),
-    getKnownWords: () => new Set(),
-    entityToToken: value => value,
-  },
-});
-await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
-  namedExports: { showNpcDialogueCard: async options => { dialogueCalls.push(options); } },
-});
-await mock.module('../../../public/js/ui/tutorial-copy.js', {
-  namedExports: {
-    getTutorialNarration: () => [],
-    getFormationNarration: () => '',
-    getPostHinonekoReviewNarration: () => [],
-    getFusionCoreNarration: () => [],
-    getPostFusionNarration: () => [],
+  load(url, context, nextLoad) {
+    if (url.startsWith('mock:')) {
+      const specifier = decodeURIComponent(url.slice('mock:'.length));
+      return { format: 'module', source: mockSources.get(specifier), shortCircuit: true };
+    }
+    return nextLoad(url, context);
   },
 });
 
 const { init, renderExploring, renderRunEnded, renderWhackAMole } = await import('../../../public/js/ui/exploration.js');
+const { getExploreSession, resetExploreSession } = await import('../../../public/js/ui/explore-session.js');
 
 describe('renderWhackAMole decline flow', () => {
   beforeEach(() => {
-    renderedButtons = [];
+    renderedButtons.length = 0;
     roomTransitionCalls.length = 0;
     sceneManagerState.currentScene = null;
     dialogueCalls = [];
     whackAMoleDeps = null;
+    resetExploreSession();
   });
 
   it('treats completed Kanji Kombat run-ended state as a victory report', () => {
@@ -139,9 +267,6 @@ describe('renderWhackAMole decline flow', () => {
 
   it('clears the prompt buttons immediately when the player declines', async () => {
     let actionContent = 'buttons visible';
-    let resolveSkip;
-    const skipPromise = new Promise(resolve => { resolveSkip = resolve; });
-
     init({
       getGameState: () => makeWhackAMoleState({
         id: 'wam-1',
@@ -160,7 +285,7 @@ describe('renderWhackAMole decline flow', () => {
         yesTokens: null,
         noTokens: null,
       }),
-      apiSkipWhackAMole: () => skipPromise,
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
     });
 
     await renderWhackAMole();
@@ -168,12 +293,10 @@ describe('renderWhackAMole decline flow', () => {
 
     const decline = renderedButtons[1].onClick();
     assert.equal(actionContent, '');
-
-    resolveSkip({ state: null });
     await decline;
   });
 
-  it('decline sends an optimistic action id and advances from the accepted state', async () => {
+  it('decline records a session action and advances locally', async () => {
     const whackRoom = {
       id: 'wam-skip-accepted',
       type: 'whackAMole',
@@ -181,31 +304,7 @@ describe('renderWhackAMole decline flow', () => {
       whackAMole: { completed: false },
     };
     const nextRoom = { id: 'after-wam-skip', type: 'empty' };
-    const acceptedState = {
-      phase: 'room',
-      room: nextRoom,
-      run: {
-        currentRoom: 1,
-        rooms: [whackRoom, nextRoom],
-        revealedRooms: [
-          { index: 0, room: whackRoom },
-          { index: 1, room: nextRoom },
-        ],
-      },
-    };
-    let currentState = {
-      phase: 'whackAMole',
-      room: whackRoom,
-      run: {
-        currentRoom: 0,
-        rooms: [whackRoom, nextRoom],
-        revealedRooms: [
-          { index: 0, room: whackRoom },
-          { index: 1, room: nextRoom },
-        ],
-      },
-    };
-    let skipOptions = null;
+    let currentState = makeWhackAMoleState(whackRoom, { nextRoom });
     let updateUiCalls = 0;
 
     init({
@@ -222,59 +321,44 @@ describe('renderWhackAMole decline flow', () => {
         yesTokens: null,
         noTokens: null,
       }),
-      apiSkipWhackAMole: async options => {
-        skipOptions = options;
-        return {
-          status: 'accepted',
-          actionId: options.actionId,
-          actionType: 'whackAMole.skip',
-          state: acceptedState,
-        };
-      },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
     });
 
     await renderWhackAMole();
     await renderedButtons[1].onClick();
 
-    assert.ok(skipOptions?.actionId);
-    assert.match(skipOptions.actionId, /^run_/);
-    assert.deepEqual(currentState, acceptedState);
+    assert.deepEqual(getExploreSession().snapshot().map(entry => ({
+      kind: entry.kind,
+      payload: entry.payload,
+      roomIndex: entry.roomIndex,
+      roomId: entry.roomId,
+    })), [{
+      kind: 'whackAMole.skip',
+      payload: {},
+      roomIndex: 0,
+      roomId: 'wam-skip-accepted',
+    }]);
+    assert.equal(currentState.phase, 'no_save');
+    assert.equal(currentState.run.currentRoom, 1);
+    assert.equal(currentState.room.id, 'after-wam-skip');
+    assert.equal(currentState.run.revealedRooms[0].room.interacted, true);
+    assert.equal(currentState.run.revealedRooms[0].room.whackAMole.completed, true);
+    assert.equal(currentState.run.revealedRooms[0].room.whackAMole.skipped, true);
     assert.equal(updateUiCalls, 1);
   });
 
-  it('decline correction restores authoritative Whack-a-Mole state and shows retry copy', async () => {
+  it('decline rejection leaves state in place and shows retry copy', async () => {
     const whackRoom = {
-      id: 'wam-skip-corrected',
+      id: 'wam-skip-rejected',
       type: 'whackAMole',
       interacted: false,
       whackAMole: { completed: false },
     };
-    const nextRoom = { id: 'after-wam-corrected', type: 'empty' };
-    const authoritativeState = {
-      phase: 'whackAMole',
-      room: whackRoom,
-      run: {
-        currentRoom: 0,
-        rooms: [whackRoom, nextRoom],
-        revealedRooms: [
-          { index: 0, room: whackRoom },
-          { index: 1, room: nextRoom },
-        ],
-      },
-    };
-    let currentState = {
-      phase: 'whackAMole',
-      room: whackRoom,
-      run: {
-        currentRoom: 0,
-        rooms: [whackRoom, nextRoom],
-        revealedRooms: [
-          { index: 0, room: whackRoom },
-          { index: 1, room: nextRoom },
-        ],
-      },
-    };
-    let skipOptions = null;
+    const nextRoom = { id: 'after-wam-rejected', type: 'empty' };
+    let currentState = makeWhackAMoleState(whackRoom, {
+      nextRoom,
+      acceptedActions: ['whackAMole.complete'],
+    });
     let updateUiCalls = 0;
     const narrationCalls = [];
 
@@ -296,43 +380,35 @@ describe('renderWhackAMole decline flow', () => {
         yesTokens: null,
         noTokens: null,
       }),
-      apiSkipWhackAMole: async options => {
-        skipOptions = options;
-        return {
-          status: 'corrected',
-          actionId: options.actionId,
-          actionType: 'whackAMole.skip',
-          reason: 'No whack-a-mole room here',
-          authoritativeState,
-        };
-      },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
     });
 
     await renderWhackAMole();
     await renderedButtons[1].onClick();
 
-    assert.ok(skipOptions?.actionId);
-    assert.match(skipOptions.actionId, /^run_/);
-    assert.deepEqual(currentState, authoritativeState);
+    assert.deepEqual(getExploreSession().snapshot(), []);
+    assert.equal(currentState.phase, 'whackAMole');
+    assert.equal(currentState.run.currentRoom, 0);
+    assert.equal(currentState.room.interacted, false);
     assert.deepEqual(narrationCalls, [
       {
         text: 'Game Master choice did not save. Please try again.',
         opts: { autoDismiss: 1800 },
       },
     ]);
-    assert.equal(updateUiCalls, 1);
+    assert.equal(updateUiCalls, 0);
   });
 
-  it('completion shows retry copy when another run action is already pending', async () => {
+  it('completion shows retry copy when the session rejects the action', async () => {
     const whackRoom = {
-      id: 'wam-complete-pending',
+      id: 'wam-complete-rejected',
       type: 'whackAMole',
       interacted: false,
       whackAMole: { completed: false },
     };
-    let currentState = makeWhackAMoleState(whackRoom);
-    let resolveComplete;
-    let firstActionId = null;
+    let currentState = makeWhackAMoleState(whackRoom, {
+      acceptedActions: ['whackAMole.skip'],
+    });
     const narrationCalls = [];
 
     init({
@@ -354,71 +430,7 @@ describe('renderWhackAMole decline flow', () => {
         noTokens: null,
       }),
       apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
-      apiCompleteWhackAMole: async (_score, options) => {
-        firstActionId = options.actionId;
-        return new Promise(resolve => { resolveComplete = resolve; });
-      },
-    });
-
-    await renderWhackAMole();
-    await renderedButtons[0].onClick();
-
-    assert.ok(whackAMoleDeps);
-    const firstCompletion = whackAMoleDeps.apiCompleteWhackAMole(3);
-    const secondCompletion = await whackAMoleDeps.apiCompleteWhackAMole(4);
-
-    assert.equal(secondCompletion, null);
-    assert.deepEqual(narrationCalls, [
-      {
-        text: 'Game Master choice did not save. Please try again.',
-        opts: { autoDismiss: 1800 },
-      },
-    ]);
-
-    resolveComplete({
-      status: 'accepted',
-      actionId: firstActionId,
-      actionType: 'whackAMole.complete',
-      state: { phase: 'room', room: whackRoom, run: { currentRoom: 0 } },
-    });
-    await firstCompletion;
-  });
-
-  it('completion rolls back and shows retry copy when accepted response action id does not match', async () => {
-    const whackRoom = {
-      id: 'wam-complete-mismatch',
-      type: 'whackAMole',
-      interacted: false,
-      whackAMole: { completed: false },
-    };
-    let currentState = makeWhackAMoleState(whackRoom);
-    const narrationCalls = [];
-
-    init({
-      getGameState: () => currentState,
-      updateGameState: state => { currentState = state; },
-      updateUI: () => {},
-      actions: {
-        setContent: () => {},
-        clear: () => {},
-      },
-      scene: {
-        showNarration: (text, opts) => {
-          narrationCalls.push({ text, opts });
-        },
-      },
-      apiGetWhackAMoleDialogue: async () => ({
-        dialogue: null,
-        yesTokens: null,
-        noTokens: null,
-      }),
-      apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
-      apiCompleteWhackAMole: async () => ({
-        status: 'accepted',
-        actionId: 'run_wrong_action',
-        actionType: 'whackAMole.complete',
-        state: { phase: 'room', room: whackRoom, run: { currentRoom: 0 } },
-      }),
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
     });
 
     await renderWhackAMole();
@@ -428,6 +440,7 @@ describe('renderWhackAMole decline flow', () => {
     const result = await whackAMoleDeps.apiCompleteWhackAMole(3);
 
     assert.equal(result, null);
+    assert.deepEqual(getExploreSession().snapshot(), []);
     assert.equal(currentState.phase, 'whackAMole');
     assert.equal(currentState.room.interacted, false);
     assert.deepEqual(narrationCalls, [
@@ -438,27 +451,14 @@ describe('renderWhackAMole decline flow', () => {
     ]);
   });
 
-  it('decline rolls back and shows retry copy when accepted response action id does not match', async () => {
+  it('completion records a session action and marks the room complete locally', async () => {
     const whackRoom = {
-      id: 'wam-skip-mismatch',
+      id: 'wam-complete-accepted',
       type: 'whackAMole',
       interacted: false,
       whackAMole: { completed: false },
     };
-    const nextRoom = { id: 'after-wam-mismatch', type: 'empty' };
-    let currentState = {
-      phase: 'whackAMole',
-      room: whackRoom,
-      run: {
-        currentRoom: 0,
-        rooms: [whackRoom, nextRoom],
-        revealedRooms: [
-          { index: 0, room: whackRoom },
-          { index: 1, room: nextRoom },
-        ],
-      },
-    };
-    const narrationCalls = [];
+    let currentState = makeWhackAMoleState(whackRoom);
 
     init({
       getGameState: () => currentState,
@@ -478,25 +478,32 @@ describe('renderWhackAMole decline flow', () => {
         yesTokens: null,
         noTokens: null,
       }),
-      apiSkipWhackAMole: async () => ({
-        status: 'accepted',
-        actionId: 'run_wrong_skip',
-        actionType: 'whackAMole.skip',
-        state: { phase: 'room', room: nextRoom, run: { currentRoom: 1 } },
-      }),
+      apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
     });
 
     await renderWhackAMole();
-    await renderedButtons[1].onClick();
+    await renderedButtons[0].onClick();
 
-    assert.equal(currentState.phase, 'whackAMole');
-    assert.equal(currentState.room.interacted, false);
-    assert.deepEqual(narrationCalls, [
-      {
-        text: 'Game Master choice did not save. Please try again.',
-        opts: { autoDismiss: 1800 },
-      },
-    ]);
+    assert.ok(whackAMoleDeps);
+    const result = await whackAMoleDeps.apiCompleteWhackAMole(3);
+
+    assert.equal(result.accepted, true);
+    assert.deepEqual(getExploreSession().snapshot().map(entry => ({
+      kind: entry.kind,
+      payload: entry.payload,
+      roomIndex: entry.roomIndex,
+      roomId: entry.roomId,
+    })), [{
+      kind: 'whackAMole.complete',
+      payload: { score: 3 },
+      roomIndex: 0,
+      roomId: 'wam-complete-accepted',
+    }]);
+    assert.equal(currentState.phase, 'room');
+    assert.equal(currentState.room.interacted, true);
+    assert.equal(currentState.room.whackAMole.completed, true);
+    assert.equal(currentState.room.whackAMole.score, 3);
   });
 
   it('shows the Game Master greeting with the standard dialogue card', async () => {
@@ -566,7 +573,7 @@ describe('renderWhackAMole decline flow', () => {
   });
 
   it('passes normal proceed ingredient drops into the room transition', async () => {
-    renderedButtons = [];
+    renderedButtons.length = 0;
     roomTransitionCalls.length = 0;
 
     const ingredientDrops = [{ ingredient: { nameEn: 'Water' }, quantity: 1 }];

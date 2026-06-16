@@ -20,11 +20,17 @@ function sourceBetween(source, start, end) {
 }
 
 describe('optimistic run action integration', () => {
-  it('sends action ids for deterministic exploration choices', () => {
-    assert.match(explorationSource, /apiSkillMasterChoose\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
-    assert.match(explorationSource, /apiChooseShrineReward\?\.\(rewardType, creatureKey, \{ actionId: pending\.actionId \}\)/);
-    assert.match(explorationSource, /apiChooseFriendlyNpcItem\?\.\(item\.id, creatureIndex, \{ actionId: pending\.actionId \}\)/);
-    assert.match(explorationSource, /onSkillChosen\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
+  it('records deterministic support-room exploration choices on the explore session', () => {
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('friendlyNpc\.choose'/);
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('shrine\.choose'/);
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('skillMaster\.choose'/);
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('npcBattleSkill\.choose'/);
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.complete'/);
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.skip'/);
+    assert.doesNotMatch(explorationSource, /apiSkillMasterChoose\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
+    assert.doesNotMatch(explorationSource, /apiChooseShrineReward\?\.\(rewardType, creatureKey, \{ actionId: pending\.actionId \}\)/);
+    assert.doesNotMatch(explorationSource, /apiChooseFriendlyNpcItem\?\.\(item\.id, creatureIndex, \{ actionId: pending\.actionId \}\)/);
+    assert.doesNotMatch(explorationSource, /onSkillChosen\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
     assert.match(explorationSource, /apiProceed\(\{ actionId: pending\.actionId, fromRoom, actionSeq \}\)/);
   });
 
@@ -94,13 +100,13 @@ describe('optimistic run action integration', () => {
     assert.match(wordDiscoveryCorrectionSource, /!isCurrentPendingRunAction\(pending\)/);
   });
 
-  it('keeps dealer local changes to pending markers until the server responds', () => {
-    assert.match(economySource, /pendingDealerPurchase = creatureId/);
-    assert.match(economySource, /pendingDealerSale = creatureId/);
-    assert.match(economySource, /apiDealerBuy\(creatureId, \{ actionId: pending\.actionId \}\)/);
-    assert.match(economySource, /apiDealerSell\(creatureId, \{ actionId: pending\.actionId \}\)/);
-    assert.match(economySource, /if \(pendingDealerActionId\) return/);
-    assert.match(economySource, /setDealerControlsDisabled\(true\)/);
+  it('records dealer choices on the explore session', () => {
+    assert.match(economySource, /recordRoomAction\('dealer\.sell'/);
+    assert.match(economySource, /recordRoomAction\('dealer\.buy'/);
+    assert.match(economySource, /recordRoomAction\('dealer\.leave'/);
+    assert.doesNotMatch(economySource, /pendingDealerActionId/);
+    assert.doesNotMatch(economySource, /apiDealerBuy\(creatureId, \{ actionId: pending\.actionId \}\)/);
+    assert.doesNotMatch(economySource, /apiDealerSell\(creatureId, \{ actionId: pending\.actionId \}\)/);
   });
 
   it('exports generic verified run action API and option-aware wrappers', () => {
@@ -117,18 +123,18 @@ describe('optimistic run action integration', () => {
     assert.match(apiSource, /verifiedRunAction,\n\s+confirmCreatures/);
   });
 
-  it('sends action ids for campfire cook, feed, and skip choices', () => {
-    assert.match(campfireSource, /apiCookAtCampfire\(ingredients, \{ actionId: pending\.actionId \}\)/);
-    assert.match(campfireSource, /apiFeedCampfireDish\(targetIndex, \{ actionId: pending\.actionId \}\)/);
-    assert.match(campfireSource, /apiSkipCampfire\(\{ actionId: pending\.actionId \}\)/);
-    assert.match(campfireSource, /actionType: 'campfire\.cook'/);
-    assert.match(campfireSource, /actionType: 'campfire\.feed'/);
-    assert.match(campfireSource, /actionType: 'campfire\.skip'/);
+  it('records campfire cook, feed, and skip choices on the explore session', () => {
+    assert.match(campfireSource, /recordRoomAction\('campfire\.cook'/);
+    assert.match(campfireSource, /recordRoomAction\('campfire\.feed'/);
+    assert.match(campfireSource, /recordRoomAction\('campfire\.skip'/);
+    assert.doesNotMatch(campfireSource, /pendingCampfireActionId/);
+    assert.doesNotMatch(campfireSource, /apiCookAtCampfire\(ingredients, \{ actionId: pending\.actionId \}\)/);
+    assert.doesNotMatch(campfireSource, /apiFeedCampfireDish\(targetIndex, \{ actionId: pending\.actionId \}\)/);
+    assert.doesNotMatch(campfireSource, /apiSkipCampfire\(\{ actionId: pending\.actionId \}\)/);
   });
 
-  it('uses corrected campfire responses as authoritative retryable failures', () => {
-    assert.match(campfireSource, /result\?\.status !== 'corrected'/);
-    assert.match(campfireSource, /correctPendingRunAction\(pending, result\)/);
+  it('uses rejected campfire session actions as retryable failures', () => {
+    assert.match(campfireSource, /if \(!result\?\.accepted\) \{/);
     assert.match(campfireSource, /Campfire choice did not save\. Please try again\./);
     assert.doesNotMatch(campfireSource, /Failed to (cook|feed|skip)|Could not (cook|feed|skip)/);
   });
@@ -238,27 +244,26 @@ describe('optimistic run action integration', () => {
     assert.match(combatLoopSource, /request: \(\) => apiSubmitKanjiKombatAnswer\(withKanjiKombatPromptRef\(answerId, promptRef\)\)/);
   });
 
-  it('routes Whack-a-Mole completion and skip through verified run actions', () => {
+  it('keeps legacy Whack-a-Mole API wrappers available as fallback surfaces', () => {
     assert.match(apiSource, /async function completeWhackAMole\(score, options = \{\}\)/);
     assert.match(apiSource, /verifiedRunAction\('\/whack-a-mole-complete', \{ score, actionId: options\.actionId \}\)/);
     assert.match(apiSource, /async function skipWhackAMole\(options = \{\}\)/);
     assert.match(apiSource, /verifiedRunAction\('\/whack-a-mole-skip', \{ actionId: options\.actionId \}\)/);
   });
 
-  it('sends action ids and correction copy for Whack-a-Mole choices', () => {
+  it('records Whack-a-Mole choices through the explore session', () => {
     assert.match(explorationSource, /const WHACK_A_MOLE_SAVE_FAILURE_COPY = 'Game Master choice did not save\. Please try again\.'/);
-    assert.match(explorationSource, /actionType: 'whackAMole\.complete'/);
-    assert.match(explorationSource, /actionType: 'whackAMole\.skip'/);
-    assert.match(explorationSource, /apiCompleteWhackAMole\(score, \{ actionId: pending\.actionId \}\)/);
-    assert.match(explorationSource, /apiSkipWhackAMole\(\{ actionId: pending\.actionId \}\)/);
-    assert.match(explorationSource, /correctPendingRunAction\(pending, result\)/);
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.complete'/);
+    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.skip'/);
+    assert.doesNotMatch(explorationSource, /apiCompleteWhackAMole\(score, \{ actionId: pending\.actionId \}\)/);
+    assert.doesNotMatch(explorationSource, /apiSkipWhackAMole\(\{ actionId: pending\.actionId \}\)/);
     assert.match(
       explorationSource,
-      /async function completeWhackAMoleOptimistically\(score\) \{[\s\S]*?if \(!pending\) \{\s*showWhackAMoleSaveFailure\(\);\s*return null;\s*\}/
+      /async function completeWhackAMoleOptimistically\(score\) \{[\s\S]*?if \(!queued\?\.accepted\) \{\s*showWhackAMoleSaveFailure\(\);\s*return null;\s*\}/
     );
     assert.match(
       explorationSource,
-      /async function skipWhackAMoleOptimistically\(\) \{[\s\S]*?if \(!pending\) \{\s*showWhackAMoleSaveFailure\(\);\s*return null;\s*\}/
+      /async function skipWhackAMoleOptimistically\(\) \{[\s\S]*?if \(!queued\?\.accepted\) \{\s*showWhackAMoleSaveFailure\(\);\s*return null;\s*\}/
     );
   });
 
@@ -323,40 +328,38 @@ describe('optimistic run action integration', () => {
     assert.match(npcSkillCallbackSource, /return result/);
   });
 
-  it('handles corrected NPC battle skill responses as save failures before accepted reconcile', () => {
+  it('handles rejected NPC battle skill session actions as save failures', () => {
     const npcBattleStart = explorationSource.indexOf('export async function renderNpcBattleSkillSelection');
     assert.notEqual(npcBattleStart, -1, 'Missing NPC battle skill selection renderer');
     const npcBattleSkillSource = explorationSource.slice(npcBattleStart);
 
-    const correctionIndex = npcBattleSkillSource.indexOf('applyPendingRunCorrection(pending, result)');
-    const reconcileIndex = npcBattleSkillSource.indexOf('reconcilePendingRunAction(pending, result)');
-    assert.ok(correctionIndex >= 0, 'corrected NPC battle skill responses should be handled explicitly');
-    assert.ok(reconcileIndex > correctionIndex, 'accepted reconcile should happen after corrected-response handling');
+    assert.match(npcBattleSkillSource, /getExploreSession\(\)\?\.recordRoomAction\('npcBattleSkill\.choose'/);
+    assert.match(npcBattleSkillSource, /if \(!queued\?\.accepted\)/);
     assert.match(npcBattleSkillSource, /Skill choice did not save\. Please choose again\./);
-    assert.match(npcBattleSkillSource, /if \(reconcilePendingRunAction\(pending, result\)\)/);
+    assert.doesNotMatch(npcBattleSkillSource, /onSkillChosen\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
   });
 
-  it('handles corrected deterministic choice responses with retry copy', () => {
+  it('handles rejected deterministic session choices with retry copy', () => {
     const shrineSource = sourceBetween(
       explorationSource,
       'async function chooseShrineReward(rewardType, creatureKey)',
       '/** Quiz phase'
     );
-    assert.match(shrineSource, /if \(applyPendingRunCorrection\(pending, result\)\)[\s\S]*Reward choice did not save\. Please choose again\.[\s\S]*renderShrine\(\)/);
+    assert.match(shrineSource, /if \(!queued\?\.accepted\)[\s\S]*Reward choice did not save\. Please choose again\.[\s\S]*renderShrine\(\)/);
 
     const skillMasterSource = sourceBetween(
       explorationSource,
       'export async function renderSkillMaster()',
       '/** Tutorial step 0'
     );
-    assert.match(skillMasterSource, /if \(applyPendingRunCorrection\(pending, result\)\)[\s\S]*Skill choice did not save\. Please choose again\.[\s\S]*renderSkillMaster\(\)/);
+    assert.match(skillMasterSource, /if \(!queued\?\.accepted\)[\s\S]*Skill choice did not save\. Please choose again\.[\s\S]*renderSkillMaster\(\)/);
 
     const friendlyNpcSource = sourceBetween(
       explorationSource,
       'export async function renderFriendlyNpc()',
       '// ============ NPC BATTLE SKILL REWARD ============'
     );
-    assert.match(friendlyNpcSource, /if \(applyPendingRunCorrection\(pending, result\)\)[\s\S]*Item choice did not save\. Please choose again\.[\s\S]*renderFriendlyNpc\(\)/);
+    assert.match(friendlyNpcSource, /if \(!queued\?\.accepted\)[\s\S]*Item choice did not save\. Please choose again\.[\s\S]*renderFriendlyNpc\(\)/);
   });
 
   it('keeps PvP team save feedback confirmed by the server', () => {
@@ -400,7 +403,7 @@ describe('optimistic run action integration', () => {
       'function renderTutorialSkillMaster(offers)',
       '// ============ FRIENDLY NPC ROOM ============'
     );
-    assert.match(tutorialSkillMasterSource, /Skill choice did not save\. Please choose again\./);
+    assert.match(tutorialSkillMasterSource, /chooseSkillMasterSkill\(s\.id\)/);
     assert.doesNotMatch(tutorialSkillMasterSource, /Could not apply skill choice|Failed to choose skill/);
 
     const friendlyNpcSource = sourceBetween(

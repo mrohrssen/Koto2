@@ -3,87 +3,76 @@ import * as narrationBox from './narration-box.js';
 import { t } from './i18n.js';
 import { credits as creditsPopup, animateCounter } from './event-popup.js';
 import { pop } from './dom-effects.js';
-import {
-  createPendingRunAction,
-  confirmPendingRunAction,
-  correctPendingRunAction,
-  isMatchingRunActionResponse,
-} from './optimistic-run-action.js';
 
 let getGameState = null;
 let updateGameState = null;
 let updateUI = null;
-let apiShopSkip = null;
-let apiDealerSell = null;
-let apiDealerBuy = null;
-let apiDealerLeave = null;
+let getExploreSession = null;
 let apiGetDealerState = null;
-let pendingDealerActionId = null;
 
-function beginPendingDealerAction({ actionType, applyLocal }) {
-  if (pendingDealerActionId) return null;
-  const pending = createPendingRunAction({
-    state: getGameState(),
-    actionType,
-    applyLocal,
-  });
-  pendingDealerActionId = pending.actionId;
-  updateGameState(pending.state);
-  return pending;
-}
-
-function clearPendingDealerAction(pending) {
-  if (!pending || pendingDealerActionId === pending.actionId) {
-    pendingDealerActionId = null;
+function recordDealerAction(kind, payload = {}) {
+  const session = getExploreSession?.();
+  let result = null;
+  if (kind === 'dealer.sell') {
+    result = session?.recordRoomAction('dealer.sell', payload);
+  } else if (kind === 'dealer.buy') {
+    result = session?.recordRoomAction('dealer.buy', payload);
+  } else if (kind === 'dealer.leave') {
+    result = session?.recordRoomAction('dealer.leave', payload);
   }
+  return result?.accepted ? result : null;
 }
 
-function reconcilePendingDealerAction(pending, result) {
-  if (!isMatchingRunActionResponse(pending, result)) return false;
-  if (result?.status === 'corrected') {
-    updateGameState(correctPendingRunAction(pending, result));
-    updateUI();
-    clearPendingDealerAction(pending);
-    return true;
-  }
-  if (result?.state) {
-    updateGameState(confirmPendingRunAction(pending, result));
-    updateUI();
-    clearPendingDealerAction(pending);
-    return true;
-  }
-  return false;
+function cloneValue(value) {
+  if (value === undefined) return undefined;
+  return typeof structuredClone === 'function'
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
 }
 
-function rollbackPendingDealerAction(pending) {
-  if (!pending) return;
-  updateGameState(pending.originalState);
-  updateUI();
-  clearPendingDealerAction(pending);
+function uniqueObjects(values) {
+  return values.filter((value, index, list) => (
+    value && list.findIndex(candidate => candidate === value) === index
+  ));
 }
 
-function setDealerControlsDisabled(disabled) {
-  document
-    .querySelectorAll('.dealer-buy-btn, .dealer-sell-btn, .dealer-leave-btn')
-    .forEach(control => {
-      control.disabled = disabled;
-    });
+function activeRoomDrafts(draft) {
+  const run = draft?.run;
+  const currentRoom = run?.currentRoom;
+  return uniqueObjects([
+    draft?.room,
+    Number.isInteger(currentRoom)
+      ? run?.revealedRooms?.find(entry => entry?.index === currentRoom)?.room
+      : null,
+    Number.isInteger(currentRoom) && Array.isArray(run?.rooms)
+      ? run.rooms[currentRoom]
+      : null,
+  ]);
+}
+
+function updateDealerRoomState(mutator, { phase = null } = {}) {
+  const currentState = getGameState?.();
+  if (!currentState) return null;
+  const draft = cloneValue(currentState);
+  activeRoomDrafts(draft).forEach(room => mutator(room, draft));
+  if (phase) draft.phase = phase;
+  updateGameState(draft);
+  return draft;
 }
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
   updateUI = callbacks.updateUI;
-  apiShopSkip = callbacks.apiShopSkip;
-  apiDealerSell = callbacks.apiDealerSell;
-  apiDealerBuy = callbacks.apiDealerBuy;
-  apiDealerLeave = callbacks.apiDealerLeave;
+  getExploreSession = callbacks.getExploreSession;
   apiGetDealerState = callbacks.apiGetDealerState;
 }
 
 /** Render dealer room UI */
 export async function renderDealerRoom(actionsModule) {
-  const dealerData = await apiGetDealerState();
+  const prepared = getExploreSession?.()?.currentPreparedRoom();
+  const payload = prepared?.interactionPayload;
+  const dealerData = payload || await apiGetDealerState();
   if (!dealerData || dealerData.error) {
     console.error('Failed to load dealer state:', dealerData?.error);
     return;
@@ -166,41 +155,28 @@ export async function renderDealerRoom(actionsModule) {
   // Wire buy buttons
   document.querySelectorAll('.dealer-buy-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
-      if (pendingDealerActionId) return;
       e.target.disabled = true;
-      let pending = null;
-      try {
-        const creatureId = e.target.dataset.creatureId;
-        pending = beginPendingDealerAction({
-          actionType: 'dealer.buy',
-          applyLocal: draft => {
-            draft.run.pendingDealerPurchase = creatureId;
-          },
-        });
-        if (!pending) {
-          e.target.disabled = false;
-          return;
-        }
-        setDealerControlsDisabled(true);
-        const result = await apiDealerBuy(creatureId, { actionId: pending.actionId });
-        const reconciled = reconcilePendingDealerAction(pending, result);
-        if (result?.success) {
-          const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
-          if (creditsEl && result.creditsSpent) {
-            creditsPopup(creditsEl, -result.creditsSpent);
-            const prevCredits = (result.creditsRemaining || 0) + result.creditsSpent;
-            animateCounter(creditsEl, prevCredits, result.creditsRemaining, 400, { flashColor: '#F44336' });
-          }
-          const buyBtn = document.querySelector(`.dealer-buy-btn[data-creature-id="${creatureId}"]`);
-          const card = buyBtn?.closest('.dealer-offer-card');
-          if (card) pop(card, 1.1);
-        }
-        if (!reconciled) rollbackPendingDealerAction(pending);
-        renderDealerRoom(actionsModule);
-      } catch (error) {
-        rollbackPendingDealerAction(pending);
-        console.error('Dealer buy failed:', error);
-        setDealerControlsDisabled(false);
+      const creatureId = e.target.dataset.creatureId;
+      const queued = recordDealerAction('dealer.buy', { creatureId });
+      if (!queued) {
+        e.target.disabled = false;
+        return;
+      }
+      const creature = offeredCreatures.find(candidate => candidate.id === creatureId);
+      updateDealerRoomState(room => {
+        room.dealer ||= {};
+        room.dealer.purchasedCreature = creatureId;
+      });
+      const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
+      if (creditsEl && creature?.buyPrice) {
+        creditsPopup(creditsEl, -creature.buyPrice);
+        const remaining = Math.max(0, credits - creature.buyPrice);
+        animateCounter(creditsEl, credits, remaining, 400, { flashColor: '#F44336' });
+      }
+      const card = e.target.closest('.dealer-offer-card');
+      if (card) {
+        pop(card, 1.1);
+        card.remove();
       }
     });
   });
@@ -209,46 +185,40 @@ export async function renderDealerRoom(actionsModule) {
   document.querySelector('.dealer-inventory-list')?.addEventListener('click', async (e) => {
     const sellBtn = e.target.closest('.dealer-sell-btn');
     if (!sellBtn || sellBtn.disabled) return;
-    if (pendingDealerActionId) return;
 
     const creatureId = sellBtn.dataset.creatureId;
     sellBtn.disabled = true;
-    let pending = null;
-    try {
-      pending = beginPendingDealerAction({
-        actionType: 'dealer.sell',
-        applyLocal: draft => {
-          draft.run.pendingDealerSale = creatureId;
-        },
-      });
-      if (!pending) {
-        sellBtn.disabled = false;
-        return;
-      }
-      setDealerControlsDisabled(true);
-      const result = await apiDealerSell(creatureId, { actionId: pending.actionId });
-      const reconciled = reconcilePendingDealerAction(pending, result);
-      if (result?.success) {
-        const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
-        if (creditsEl && result.creditsGained) {
-          creditsPopup(creditsEl, result.creditsGained);
-          const prevCredits = (result.creditsRemaining || 0) - result.creditsGained;
-          animateCounter(creditsEl, prevCredits, result.creditsRemaining, 400, { flashColor: '#FFD700' });
-        }
-      }
-      if (!reconciled) rollbackPendingDealerAction(pending);
-      renderDealerRoom(actionsModule);
-    } catch (error) {
-      rollbackPendingDealerAction(pending);
-      console.error('Dealer sell failed:', error);
-      setDealerControlsDisabled(false);
+    const queued = recordDealerAction('dealer.sell', { creatureId });
+    if (!queued) {
+      sellBtn.disabled = false;
+      return;
     }
+    const sellPrice = Number(sellBtn.dataset.sellPrice) || 0;
+    updateDealerRoomState(room => {
+      room.dealer ||= {};
+      room.dealer.soldCreatures ||= [];
+      if (!room.dealer.soldCreatures.includes(creatureId)) {
+        room.dealer.soldCreatures.push(creatureId);
+      }
+    });
+    const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
+    if (creditsEl && sellPrice) {
+      creditsPopup(creditsEl, sellPrice);
+      animateCounter(creditsEl, credits, credits + sellPrice, 400, { flashColor: '#FFD700' });
+    }
+    sellBtn.closest('.dealer-inventory-item')?.remove();
   });
 
   // Wire leave button
   document.querySelector('.dealer-leave-btn')?.addEventListener('click', async () => {
-    const result = await apiDealerLeave();
-    if (result?.state) { updateGameState(result.state); }
-    updateUI();
+    const queued = recordDealerAction('dealer.leave', {});
+    if (queued) {
+      updateDealerRoomState(room => {
+        room.dealer ||= {};
+        room.dealer.visited = true;
+        room.interacted = true;
+      }, { phase: 'room' });
+      updateUI();
+    }
   });
 }

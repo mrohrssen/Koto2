@@ -270,6 +270,43 @@ function showWhackAMoleSaveFailure() {
   sceneModule?.showNarration?.(WHACK_A_MOLE_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
 }
 
+function uniqueObjects(values) {
+  return values.filter((value, index, list) => (
+    value && list.findIndex(candidate => candidate === value) === index
+  ));
+}
+
+function activeRoomDrafts(draft) {
+  const run = draft?.run;
+  const currentRoom = run?.currentRoom;
+  return uniqueObjects([
+    draft?.room,
+    Number.isInteger(currentRoom)
+      ? run?.revealedRooms?.find(entry => entry?.index === currentRoom)?.room
+      : null,
+    Number.isInteger(currentRoom) && Array.isArray(run?.rooms)
+      ? run.rooms[currentRoom]
+      : null,
+  ]);
+}
+
+function updateSupportRoomDraft(mutator, { phase = 'room', advance = false } = {}) {
+  const currentState = getGameState?.();
+  if (!currentState) return null;
+  const draft = cloneStateForExploreSession(currentState);
+  activeRoomDrafts(draft).forEach(room => mutator(room, draft));
+  if (advance) {
+    materializeRunwayRoomsAroundCursor(draft);
+    advanceStateToBufferedNextRoom(draft);
+    alignExploreRunwayCursor(draft);
+    materializeRunwayRoomsAroundCursor(draft);
+  } else if (phase) {
+    draft.phase = phase;
+  }
+  updateGameState(draft);
+  return draft;
+}
+
 function applyWordDiscoveryCorrection(pending, result) {
   if (!isCurrentPendingRunAction(pending) || !isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
   updateGameState(correctPendingRunAction(pending, result));
@@ -500,6 +537,7 @@ export function init(callbacks) {
     apiCookAtCampfire,
     apiFeedCampfireDish,
     apiSkipCampfire,
+    getExploreSession,
     playTTS: callbacks.playTTS,
     prefetchTTS: callbacks.prefetchTTS,
     getGameState,
@@ -1279,6 +1317,8 @@ export async function renderShrine() {
   getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
+  const prepared = getExploreSession()?.currentPreparedRoom();
+  const payload = prepared?.interactionPayload;
   const roomId = room?.id || room?.type || 'unknown';
 
   if (shrineState.roomId !== roomId) {
@@ -1308,7 +1348,7 @@ export async function renderShrine() {
     shrineState.fetched = true;
     const fetchRoomId = roomId;
     try {
-      const resp = await apiGetShrineOffers?.();
+      const resp = payload || await apiGetShrineOffers?.();
       if (shrineState.roomId !== fetchRoomId) return;
       shrineState.rewards = Array.isArray(resp?.rewards) ? resp.rewards : [
         { id: 'heal_all', title: 'Heal all creatures', description: 'Restore 50% HP to living creatures.' },
@@ -1396,37 +1436,26 @@ function renderShrineLevelTargets(rewardType) {
 async function chooseShrineReward(rewardType, creatureKey) {
   if (shrineState.choosing) return;
   shrineState.choosing = true;
-  let pending = null;
   try {
     playSFX('creature-equip');
-    pending = beginPendingRunAction({
-      actionType: 'shrine.choose',
-      applyLocal: draft => {
-        draft.run.pendingShrineReward = { rewardType, creatureKey };
-      },
+    const queued = getExploreSession()?.recordRoomAction('shrine.choose', { rewardType, creatureKey });
+    if (!queued?.accepted) {
+      shrineState.choosing = false;
+      sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 2200 });
+      renderShrine();
+      return;
+    }
+    updateSupportRoomDraft(room => {
+      room.shrine ||= {};
+      room.shrine.completed = true;
+      room.shrine.used = true;
+      room.shrine.chosenReward = { rewardType, creatureKey };
+      room.interacted = true;
     });
-    if (!pending) {
-      shrineState.choosing = false;
-      return;
-    }
-    const result = await apiChooseShrineReward?.(rewardType, creatureKey, { actionId: pending.actionId });
-    if (applyPendingRunCorrection(pending, result)) {
-      shrineState.choosing = false;
-      sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 2200 });
-      renderShrine();
-      return;
-    }
-    if (reconcilePendingRunAction(pending, result)) {
-      shrineState.choosing = false;
-      actions.clear();
-    } else {
-      rollbackPendingRunAction(pending);
-      shrineState.choosing = false;
-      sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 2200 });
-      renderShrine();
-    }
+    shrineState.choosing = false;
+    actions.clear();
+    updateUI();
   } catch {
-    rollbackPendingRunAction(pending);
     shrineState.choosing = false;
     actions.clear();
     sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 1800 });
@@ -1810,99 +1839,41 @@ function cancelActiveWhackAMoleGame() {
   activeWhackAMoleRoomId = null;
 }
 
-function applyWhackAMoleRoomCompletionDraft(draft, { score = null } = {}) {
-  const draftRoom = draft.room || getCurrentBufferedRoom(draft);
-  if (draftRoom?.whackAMole && score !== null) {
-    draftRoom.whackAMole.score = Math.max(0, Math.floor(score || 0));
-    draftRoom.whackAMole.completed = true;
+function markWhackAMoleRoomComplete(room, { score = null, skipped = false } = {}) {
+  if (!room) return;
+  room.whackAMole ||= {};
+  if (score !== null) {
+    room.whackAMole.score = Math.max(0, Math.floor(score || 0));
   }
-  if (draftRoom) draftRoom.interacted = true;
-  draft.phase = 'room';
+  room.whackAMole.completed = true;
+  room.whackAMole.skipped = skipped;
+  room.interacted = true;
 }
 
 async function completeWhackAMoleOptimistically(score) {
-  const pending = beginPendingRunAction({
-    actionType: 'whackAMole.complete',
-    applyLocal: draft => {
-      applyWhackAMoleRoomCompletionDraft(draft, { score });
-    },
-  });
-  if (!pending) {
+  const queued = getExploreSession()?.recordRoomAction('whackAMole.complete', { score });
+  if (!queued?.accepted) {
     showWhackAMoleSaveFailure();
     return null;
   }
 
-  let result = null;
-  try {
-    result = await apiCompleteWhackAMole(score, { actionId: pending.actionId });
-  } catch (error) {
-    console.warn('[WhackAMole] Failed to complete room:', error);
-  }
-
-  if (result?.status === 'corrected') {
-    if (isCurrentPendingRunAction(pending) && isMatchingRunActionResponse(pending, result)) {
-      updateGameState(correctPendingRunAction(pending, result));
-      updateUI();
-      clearPendingRunAction(pending);
-    } else if (isCurrentPendingRunAction(pending)) {
-      rollbackPendingRunAction(pending);
-    } else {
-      return null;
-    }
-    showWhackAMoleSaveFailure();
-    return null;
-  }
-
-  if (result?.state && reconcilePendingRunAction(pending, result, { refreshUi: false })) {
-    return result;
-  }
-
-  rollbackPendingRunAction(pending);
-  showWhackAMoleSaveFailure();
-  return null;
+  updateSupportRoomDraft(room => {
+    markWhackAMoleRoomComplete(room, { score });
+  }, { phase: 'room' });
+  return queued;
 }
 
 async function skipWhackAMoleOptimistically() {
-  const pending = beginPendingRunAction({
-    actionType: 'whackAMole.skip',
-    applyLocal: draft => {
-      applyWhackAMoleRoomCompletionDraft(draft);
-      advanceStateToBufferedNextRoom(draft);
-    },
-  });
-  if (!pending) {
+  const queued = getExploreSession()?.recordRoomAction('whackAMole.skip', {});
+  if (!queued?.accepted) {
     showWhackAMoleSaveFailure();
     return null;
   }
 
-  let result = null;
-  try {
-    result = await apiSkipWhackAMole({ actionId: pending.actionId });
-  } catch (error) {
-    console.warn('[WhackAMole] Failed to skip room:', error);
-  }
-
-  if (result?.status === 'corrected') {
-    if (isCurrentPendingRunAction(pending) && isMatchingRunActionResponse(pending, result)) {
-      updateGameState(correctPendingRunAction(pending, result));
-      updateUI();
-      clearPendingRunAction(pending);
-    } else if (isCurrentPendingRunAction(pending)) {
-      rollbackPendingRunAction(pending);
-    } else {
-      return null;
-    }
-    showWhackAMoleSaveFailure();
-    return null;
-  }
-
-  if (result?.state && reconcilePendingRunAction(pending, result, { refreshUi: false })) {
-    return result;
-  }
-
-  rollbackPendingRunAction(pending);
-  showWhackAMoleSaveFailure();
-  return null;
+  updateSupportRoomDraft(room => {
+    markWhackAMoleRoomComplete(room, { skipped: true });
+  }, { advance: true });
+  return queued;
 }
 
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
@@ -1910,6 +1881,8 @@ export async function renderWhackAMole() {
   getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = getCurrentBufferedRoom(gameState);
+  const prepared = getExploreSession()?.currentPreparedRoom();
+  const payload = prepared?.interactionPayload;
   const roomId = room?.id || room?.type || 'whackAMole';
 
   if (whackAMoleState.roomId !== roomId) {
@@ -1922,6 +1895,7 @@ export async function renderWhackAMole() {
       dialogue: null,
       yesLabel: 'Yes',
       noLabel: 'No',
+      pool: null,
       introShown: false
     };
   }
@@ -1939,20 +1913,30 @@ export async function renderWhackAMole() {
 
   if (!whackAMoleState.fetched) {
     try {
-      const resp = await apiGetWhackAMoleDialogue();
+      const hasPayloadDetails = Boolean(
+        payload?.dialogue || payload?.labels || payload?.yesTokens || payload?.noTokens || payload?.pool
+      );
+      const resp = hasPayloadDetails ? payload : await apiGetWhackAMoleDialogue();
       if (resp) {
         whackAMoleState.fetched = true;
         whackAMoleState.dialogue = resp.dialogue || null;
-        whackAMoleState.yesLabel = resp.yesTokens?.tokens?.length
-          ? renderJpSentence(resp.yesTokens.tokens, getKnownWords(), null, resp.yesTokens.overrides || {}, false)
-          : 'Yes';
-        whackAMoleState.noLabel = resp.noTokens?.tokens?.length
-          ? renderJpSentence(resp.noTokens.tokens, getKnownWords(), null, resp.noTokens.overrides || {}, false)
-          : 'No';
+        const yesTokens = resp.yesTokens || resp.labels?.yesTokens || resp.labels?.yes;
+        const noTokens = resp.noTokens || resp.labels?.noTokens || resp.labels?.no;
+        whackAMoleState.yesLabel = yesTokens?.tokens?.length
+          ? renderJpSentence(yesTokens.tokens, getKnownWords(), null, yesTokens.overrides || {}, false)
+          : (resp.labels?.yesLabel || resp.yesLabel || 'Yes');
+        whackAMoleState.noLabel = noTokens?.tokens?.length
+          ? renderJpSentence(noTokens.tokens, getKnownWords(), null, noTokens.overrides || {}, false)
+          : (resp.labels?.noLabel || resp.noLabel || 'No');
+        whackAMoleState.pool = Array.isArray(resp.pool) ? resp.pool : null;
       }
     } catch (err) {
       // Leave fetched=false so a later rerender can retry.
     }
+  }
+
+  if (payload?.pool && !whackAMoleState.pool) {
+    whackAMoleState.pool = payload.pool;
   }
 
   if (!whackAMoleState.introShown && whackAMoleState.dialogue?.tokens?.length) {
@@ -1973,12 +1957,17 @@ export async function renderWhackAMole() {
       onClick: async () => {
         // Fetch pool and start game directly (no intermediate start screen)
         let pool;
-        try {
-          const resp = await apiGetWhackAMolePool();
-          pool = resp.pool;
-        } catch (err) {
-          actions.setContent('<div class="wam-error">Failed to load game data</div>');
-          return;
+        if (Array.isArray(whackAMoleState.pool)) {
+          pool = whackAMoleState.pool;
+        } else {
+          try {
+            const resp = await apiGetWhackAMolePool();
+            pool = resp.pool;
+            whackAMoleState.pool = Array.isArray(pool) ? pool : null;
+          } catch (err) {
+            actions.setContent('<div class="wam-error">Failed to load game data</div>');
+            return;
+          }
         }
 
         if (!pool || pool.length < 9) {
@@ -2049,6 +2038,8 @@ export async function renderSkillMaster() {
   const run = gameState.run;
   const isInitialPick = run?.initialSkillPick && !run.initialSkillPick.chosenId;
   const room = isInitialPick ? null : (gameState.room || getActiveRoomFromRun(run));
+  const prepared = getExploreSession()?.currentPreparedRoom();
+  const payload = prepared?.interactionPayload;
   // Detect initial pick on the server side: phase is skillMaster but the
   // current room is NOT a skillMaster room (initialSkillPick is not sent
   // to the frontend, so we infer it).
@@ -2116,7 +2107,7 @@ export async function renderSkillMaster() {
     const fetchCacheKey = cacheKey;
     let resp;
     try {
-      resp = await apiSkillMasterOffers?.();
+      resp = payload || await apiSkillMasterOffers?.();
     } catch (err) {
       // Allow retry on next render and avoid caching a bad state
       skillMasterState.fetched = false;
@@ -2198,39 +2189,35 @@ export async function renderSkillMaster() {
         subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
       })),
       onSelect: async (index) => {
-        const skillId = offers[index].id;
-        const pending = beginPendingRunAction({
-          actionType: 'skillMaster.choose',
-          applyLocal: draft => {
-            draft.run.pendingSkillChoice = skillId;
-          },
-        });
-        if (!pending) return;
-        let result;
-        try {
-          result = await apiSkillMasterChoose?.(skillId, { actionId: pending.actionId });
-        } catch (err) {
-          rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 1800 });
-          renderSkillMaster();
-          return;
-        }
-        if (applyPendingRunCorrection(pending, result)) {
-          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-          renderSkillMaster();
-          return;
-        }
-        if (await reconcileInitialSkillPickRoomEntry(pending, result)) {
-          return;
-        }
-        if (!reconcilePendingRunAction(pending, result)) {
-          rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-          renderSkillMaster();
-        }
+        const skillId = offers[index]?.id;
+        if (skillId) await chooseSkillMasterSkill(skillId);
       },
     });
   }
+}
+
+async function chooseSkillMasterSkill(skillId) {
+  const queued = getExploreSession()?.recordRoomAction('skillMaster.choose', { skillId });
+  if (!queued?.accepted) {
+    sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+    renderSkillMaster();
+    return false;
+  }
+
+  updateSupportRoomDraft((room, draft) => {
+    if (draft.run?.initialSkillPick && !draft.run.initialSkillPick.chosenId) {
+      draft.run.initialSkillPick.chosenId = skillId;
+    }
+    if (room?.skillMaster) {
+      room.skillMaster.chosenId = skillId;
+      room.skillMaster.completed = true;
+      room.interacted = true;
+    }
+  });
+  skillMasterState.chosenId = skillId;
+  actions.clear();
+  updateUI();
+  return true;
 }
 
 /** Tutorial step 0: show all 3 skills but only the first is clickable (glows). */
@@ -2275,35 +2262,7 @@ function renderTutorialSkillMaster(offers) {
           c.style.pointerEvents = 'none';
         });
 
-        let result;
-        const pending = beginPendingRunAction({
-          actionType: 'skillMaster.choose',
-          applyLocal: draft => {
-            draft.run.pendingSkillChoice = s.id;
-          },
-        });
-        if (!pending) return;
-        try {
-          result = await apiSkillMasterChoose?.(s.id, { actionId: pending.actionId });
-        } catch {
-          rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 1800 });
-          renderSkillMaster();
-          return;
-        }
-        if (applyPendingRunCorrection(pending, result)) {
-          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-          renderSkillMaster();
-          return;
-        }
-        if (await reconcileInitialSkillPickRoomEntry(pending, result)) {
-          return;
-        }
-        if (!reconcilePendingRunAction(pending, result)) {
-          rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-          renderSkillMaster();
-        }
+        await chooseSkillMasterSkill(s.id);
       });
     }
 
@@ -2375,6 +2334,8 @@ export async function renderFriendlyNpc() {
   getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
+  const prepared = getExploreSession()?.currentPreparedRoom();
+  const payload = prepared?.interactionPayload;
   const roomId = room?.id || room?.type || 'unknown';
   const roomCacheKey = `${roomId}:${gameState.run?.stats?.startTime ?? ''}`;
 
@@ -2410,7 +2371,7 @@ export async function renderFriendlyNpc() {
     const fetchRoomId = roomCacheKey;
     let resp;
     try {
-      resp = await apiGetFriendlyNpcOffers?.();
+      resp = payload || await apiGetFriendlyNpcOffers?.();
     } catch (err) {
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
@@ -2525,42 +2486,25 @@ export async function renderFriendlyNpc() {
       const isPartyWide = item.effect?.healAllPercent || item.effect?.mpRestorePercent;
 
       const applyItem = async (creatureIndex) => {
-        const pending = beginPendingRunAction({
-          actionType: 'friendlyNpc.choose',
-          applyLocal: draft => {
-            draft.run.pendingFriendlyNpcItem = { itemId: item.id, targetCreatureIndex: creatureIndex };
-          },
+        const queued = getExploreSession()?.recordRoomAction('friendlyNpc.choose', {
+          itemId: item.id,
+          targetCreatureIndex: creatureIndex,
         });
-        if (!pending) {
-          friendlyNpcState.choosing = false;
-          return;
-        }
-        let result;
-        try {
-          result = await apiChooseFriendlyNpcItem?.(item.id, creatureIndex, { actionId: pending.actionId });
-        } catch (err) {
-          rollbackPendingRunAction(pending);
-          friendlyNpcState.choosing = false;
-          actions.clear();
-          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 1800 });
-          renderFriendlyNpc();
-          return;
-        }
-        if (applyPendingRunCorrection(pending, result)) {
+        if (!queued?.accepted) {
           friendlyNpcState.choosing = false;
           sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderFriendlyNpc();
           return;
         }
-        if (reconcilePendingRunAction(pending, result)) {
-          friendlyNpcState.choosing = false;
-          actions.clear();
-        } else {
-          rollbackPendingRunAction(pending);
-          friendlyNpcState.choosing = false;
-          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 2200 });
-          renderFriendlyNpc();
-        }
+        updateSupportRoomDraft(room => {
+          room.friendlyNpc ||= {};
+          room.friendlyNpc.completed = true;
+          room.friendlyNpc.chosenItem = { itemId: item.id, targetCreatureIndex: creatureIndex };
+          room.interacted = true;
+        });
+        friendlyNpcState.choosing = false;
+        actions.clear();
+        updateUI();
       };
 
       if (isPartyWide || party.filter(Boolean).length <= 1) {
@@ -2617,8 +2561,11 @@ let npcBattleSkillState = {
  * @param {object} opts - { onSkillChosen(skillId), fetchOffers() }
  */
 export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers } = {}) {
+  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
+  const prepared = getExploreSession()?.currentPreparedRoom();
+  const payload = prepared?.interactionPayload;
   const roomId = room?.id || room?.type || 'unknown-npcbattle';
 
   // Reset per-room cache when room changes
@@ -2663,7 +2610,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     const fetchRoomId = roomId;
     let resp;
     try {
-      resp = await fetchOffers?.();
+      resp = payload || await fetchOffers?.();
     } catch (err) {
       npcBattleSkillState.fetched = false;
       npcBattleSkillState.offered = null;
@@ -2755,51 +2702,28 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     onSelect: async (index) => {
       if (npcBattleSkillState.choosing) return;
       npcBattleSkillState.choosing = true;
-      const skillId = offers[index].id;
-      const pending = beginPendingRunAction({
-        actionType: 'npcBattleSkill.choose',
-        applyLocal: draft => {
-          if (!draft.run) return;
-          const activeRoom = draft.room || getActiveRoomFromRun(draft.run);
-          if (activeRoom?.npcBattle) {
-            activeRoom.npcBattle.chosenSkillId = skillId;
-            activeRoom.npcBattle.skillSelectionPending = false;
-            activeRoom.interacted = true;
-          }
-          draft.phase = 'room';
-        },
+      const skillId = offers[index]?.id;
+      if (!skillId) {
+        npcBattleSkillState.choosing = false;
+        return;
+      }
+      const queued = getExploreSession()?.recordRoomAction('npcBattleSkill.choose', { skillId });
+      if (!queued?.accepted) {
+        npcBattleSkillState.choosing = false;
+        sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+        return;
+      }
+
+      updateSupportRoomDraft(room => {
+        room.npcBattle ||= {};
+        room.npcBattle.chosenSkillId = skillId;
+        room.npcBattle.skillSelectionPending = false;
+        room.interacted = true;
       });
-      if (!pending) {
-        npcBattleSkillState.choosing = false;
-        return;
-      }
-
-      let result;
-      try {
-        result = await onSkillChosen?.(skillId, { actionId: pending.actionId });
-      } catch (err) {
-        rollbackPendingRunAction(pending);
-        npcBattleSkillState.choosing = false;
-        sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
-        return;
-      }
-
-      if (applyPendingRunCorrection(pending, result)) {
-        npcBattleSkillState.choosing = false;
-        sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
-        return;
-      }
-      if (reconcilePendingRunAction(pending, result)) {
-        npcBattleSkillState.choosing = false;
-        return;
-      }
-
-      rollbackPendingRunAction(pending);
       npcBattleSkillState.choosing = false;
-      sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
-      renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+      actions.clear();
+      updateUI();
     },
   });
 }

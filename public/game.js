@@ -2380,6 +2380,7 @@ async function initGame() {
     getGameState: () => gameState,
     updateGameState,
     updateUI,
+    getExploreSession,
     apiShopSkip,
     apiDealerSell,
     apiDealerBuy,
