@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { rollFriendlyNpcOffers } from '../../../src/game/services/exploration-service.js';
+import { rollFriendlyNpcOffers } from '../../../src/game/services/friendly-npc-offers.js';
 
 const MOCK_ITEMS = [
   { id: 'ocha', category: 'food', area: 'hajimari-no-hiroba', word: 'お茶', reading: 'おちゃ', meaning: 'tea', rarity: 'common', type: 'mpRestore', effect: {}, description: 'test' },

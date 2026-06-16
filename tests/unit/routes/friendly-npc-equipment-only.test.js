@@ -5,6 +5,7 @@ import { createApp } from '../../../src/app.js';
 import { clearManagersForTest, getManager } from '../../../src/game/manager-registry.js';
 import { createNewPlayer, createNewRun } from '../../../src/game/state.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
+import { loadDialoguePools } from '../../../src/game/dialogue-loader.js';
 
 function setupFriendlyNpcRun() {
   const gm = getManager('test-user');
@@ -75,6 +76,43 @@ describe('friendly NPC equipment-only offers', () => {
       .expect(200);
 
     assert.deepEqual(response.body.greeting.audio, { userId: 'test-user', key: 'kodomo.wav' });
+    assert.deepEqual(response.body.offered[0].requestAudio, { userId: 'test-user', key: 'you.wav' });
+  });
+
+  it('hydrates missing item request tokens for existing equipment offers', async () => {
+    loadDialoguePools(`${process.cwd()}/data`);
+    const app = createApp({
+      authBypass: true,
+      routeOverrides: {
+        getDialogueCardAudio: async ({ userId, speakerKey }) => ({ userId, key: `${speakerKey}.wav` })
+      }
+    });
+    const gm = setupFriendlyNpcRun();
+    const room = gm.getCurrentRoom();
+    room.npc = { id: 'kodomo', speakerId: 3 };
+    room.friendlyNpc.greeting = {
+      tokens: [{ surface: 'hello' }],
+      words: []
+    };
+    room.friendlyNpc.offered = [
+      {
+        id: 'training-sword',
+        category: 'equipment',
+        word: '剣',
+        reading: 'けん',
+        meaning: 'sword'
+      }
+    ];
+
+    const response = await request(app)
+      .post('/api/game/friendly-npc-offers')
+      .send({})
+      .expect(200);
+
+    assert.ok(response.body.offered[0].tokens?.length > 0);
+    assert.ok(response.body.offered[0].words?.length > 0);
+    assert.ok(gm.getCurrentRoom().friendlyNpc.offered[0].tokens?.length > 0);
+    assert.ok(gm.getCurrentRoom().friendlyNpc.offered[0].words?.length > 0);
     assert.deepEqual(response.body.offered[0].requestAudio, { userId: 'test-user', key: 'you.wav' });
   });
 

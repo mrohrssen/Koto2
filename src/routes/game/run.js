@@ -200,6 +200,33 @@ export default function createRunRoutes({
     return next;
   }
 
+  function hydrateFriendlyNpcOfferDisplayPayload(room, userId) {
+    const knownWords = getKnownWordsFromFsrs(userId);
+    const knownSet = new Set(knownWords);
+    const shopFrames = getShopPurchaseFrames();
+
+    for (const item of room.friendlyNpc.offered || []) {
+      if (!item?.word) continue;
+      if (!item.tokens?.length || !item.words?.length) {
+        const candidates = shopFrames.map(frame => assembleFrame(frame, { item }, { dict: getWordDict() }));
+        const best = selectBestFrame(candidates, knownSet, { dict: getWordDict() });
+        if (best) {
+          item.tokens = best.tokens || [];
+          item.words = best.words || [];
+        }
+      }
+      if (!item.nameToken) {
+        item.nameToken = entityToToken(item);
+      }
+    }
+
+    if (!room.friendlyNpc.greeting) {
+      const greetingFrames = getShopGreetingFrames();
+      const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
+      room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
+    }
+  }
+
   /** Fire-and-forget: queue missing creature + NPC dialogues for current run */
   function queueBackgroundDialogues(req) {
     const userKeys = req.userKeys || {};
@@ -910,31 +937,11 @@ export default function createRunRoutes({
         const currentAreaId = gm.run.currentArea?.id;
         const areaIds = [...new Set([...areaPath, currentAreaId].filter(Boolean))];
         room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, areaIds, allItems);
-
-        // Assemble pre-tokenized frames with items and select best per i+1
-        const knownWords = getKnownWordsFromFsrs(req.user.id);
-        const knownSet = new Set(knownWords);
-        const shopFrames = getShopPurchaseFrames();
-
-        for (const item of room.friendlyNpc.offered) {
-          if (!item.word) continue;
-          const candidates = shopFrames.map(frame => assembleFrame(frame, { item }, { dict: getWordDict() }));
-          const best = selectBestFrame(candidates, knownSet, { dict: getWordDict() });
-          item.tokens = best?.tokens || [];
-          item.words = best?.words || [];
-        }
-
-        // Select best greeting frame via i+1
-        const greetingFrames = getShopGreetingFrames();
-        const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
-        room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
-
-        // Attach entity token for each item's card display
-        for (const item of room.friendlyNpc.offered) {
-          if (!item.word) continue;
-          item.nameToken = entityToToken(item);
-        }
-
+      }
+      const beforeHydrate = JSON.stringify(room.friendlyNpc.offered || []);
+      const hadGreeting = !!room.friendlyNpc.greeting;
+      hydrateFriendlyNpcOfferDisplayPayload(room, req.user.id);
+      if (!room.friendlyNpc.offered || hasConsumableOffer || beforeHydrate !== JSON.stringify(room.friendlyNpc.offered || []) || !hadGreeting) {
         req.saveGame();
       }
       const offeredWithAudio = await Promise.all(

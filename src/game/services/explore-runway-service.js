@@ -7,7 +7,12 @@ import { finalizeRandomRoom, resolveSupportRoom, ROOM_TYPES } from '../rooms.js'
 import { generateDealerCreatures, getCreatureBuyPrice, getCreatureSellPrice } from '../creatures.js';
 import { getDueCards } from '../internal-srs.js';
 import { getWordDict, hydrateCards } from '../bootstrap/word-knowledge.js';
-import { getShopGreetingFrames, getShrineGreetingFrames, getSkillSelectFrame } from '../dialogue-loader.js';
+import {
+  getShopGreetingFrames,
+  getShopPurchaseFrames,
+  getShrineGreetingFrames,
+  getSkillSelectFrame,
+} from '../dialogue-loader.js';
 import {
   assembleFrame,
   entityToToken,
@@ -162,6 +167,12 @@ function shopGreetingFrames() {
   return getFallbackDialogueFrames().filter(frame => frame.category === 'shopGreeting');
 }
 
+function shopPurchaseFrames() {
+  const loaded = getShopPurchaseFrames();
+  if (loaded.length > 0) return loaded;
+  return getFallbackDialogueFrames().filter(frame => frame.category === 'shopPurchase');
+}
+
 function skillSelectFrame() {
   return getSkillSelectFrame()
     || getFallbackDialogueFrames().find(frame => frame.category === 'skill_select')
@@ -191,6 +202,22 @@ function knownSetForOpts(opts) {
   return opts?.knownSet instanceof Set ? opts.knownSet : new Set();
 }
 
+function hydrateFriendlyNpcOfferFrames(item, knownSet) {
+  if (!item?.word) return;
+  if (!item.tokens?.length || !item.words?.length) {
+    const candidates = shopPurchaseFrames()
+      .map(frame => assembleFrame(frame, { item }, { dict: getWordDict() }));
+    const best = selectBestFrame(candidates, knownSet, { dict: getWordDict() });
+    if (best) {
+      item.tokens = best.tokens || [];
+      item.words = best.words || [];
+    }
+  }
+  if (!item.nameToken) {
+    item.nameToken = entityToToken(item);
+  }
+}
+
 function buildFriendlyNpcPayload(gm, room, opts) {
   if (!room.friendlyNpc) {
     room.friendlyNpc = { offerCategory: 'equipment', offered: null, chosenId: null, completed: false };
@@ -201,14 +228,12 @@ function buildFriendlyNpcPayload(gm, room, opts) {
     room.friendlyNpc.offered = rollFriendlyNpcOffers('equipment', areaIdsForRun(gm?.run));
   }
 
+  const knownSet = knownSetForOpts(opts);
   for (const item of room.friendlyNpc.offered || []) {
-    if (item && item.word && !item.nameToken) {
-      item.nameToken = entityToToken(item);
-    }
+    hydrateFriendlyNpcOfferFrames(item, knownSet);
   }
 
   if (!room.friendlyNpc.greeting) {
-    const knownSet = knownSetForOpts(opts);
     const greetingCandidates = shopGreetingFrames()
       .map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
     room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
@@ -394,6 +419,11 @@ function missingPayloadReasonsFor(room, interactionPayload) {
     if (!interactionPayload?.npc) missing.push('friendlyNpc.npc');
     if (!Array.isArray(interactionPayload?.offered) || interactionPayload.offered.length === 0) {
       missing.push('friendlyNpc.offered');
+    }
+    if ((interactionPayload?.offered || []).some(item =>
+      item?.word && (!item.tokens?.length || !item.words?.length)
+    )) {
+      missing.push('friendlyNpc.offeredTokens');
     }
     if (!interactionPayload?.greeting?.tokens?.length) missing.push('friendlyNpc.greeting');
   }

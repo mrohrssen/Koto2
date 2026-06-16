@@ -173,6 +173,10 @@ test('prepares friendly NPC greeting before marking payload offline ready', asyn
 
   const friendly = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
   assert.ok(friendly.interactionPayload.offered.length > 0);
+  for (const item of friendly.interactionPayload.offered.filter(item => item.word)) {
+    assert.ok(item.tokens?.length > 0);
+    assert.ok(item.words?.length > 0);
+  }
   assert.ok(friendly.interactionPayload.greeting?.tokens?.length > 0);
   assert.equal(friendly.offlineReady, true);
 });
