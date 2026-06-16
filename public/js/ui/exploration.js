@@ -134,11 +134,17 @@ function applyPendingRunCorrection(pending, result) {
 function isInitialSkillPickChoiceResult(pending, result) {
   if (!isMatchingRunActionResponse(pending, result) || !result?.state) return false;
   const previousState = pending?.originalState;
-  const previousRoom = previousState?.room || getActiveRoomFromRun(previousState?.run);
-  const previousPick = previousState?.run?.initialSkillPick;
-  const wasInitialPick = (previousPick && !previousPick.chosenId)
-    || (previousState?.phase === 'skillMaster' && (!previousRoom || previousRoom.type !== 'skillMaster'));
+  const wasInitialPick = isInitialSkillPickState(previousState);
   return wasInitialPick && result.state.phase !== 'skillMaster';
+}
+
+function isInitialSkillPickState(state = getGameState?.()) {
+  const room = state?.room || getActiveRoomFromRun(state?.run);
+  const initialPick = state?.run?.initialSkillPick;
+  return Boolean(
+    (initialPick && !initialPick.chosenId)
+    || (state?.phase === 'skillMaster' && (!room || room.type !== 'skillMaster'))
+  );
 }
 
 async function resetSceneForInitialRoomEntry(state) {
@@ -2197,6 +2203,10 @@ export async function renderSkillMaster() {
 }
 
 async function chooseSkillMasterSkill(skillId) {
+  if (isInitialSkillPickState()) {
+    return chooseInitialSkillMasterSkill(skillId);
+  }
+
   const queued = getExploreSession()?.recordRoomAction('skillMaster.choose', { skillId });
   if (!queued?.accepted) {
     sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
@@ -2218,6 +2228,44 @@ async function chooseSkillMasterSkill(skillId) {
   actions.clear();
   updateUI();
   return true;
+}
+
+async function chooseInitialSkillMasterSkill(skillId) {
+  const pending = beginPendingRunAction({
+    actionType: 'skillMaster.choose',
+    applyLocal: draft => {
+      draft.run ||= {};
+      draft.run.pendingSkillChoice = skillId;
+    },
+  });
+  if (!pending) {
+    sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+    renderSkillMaster();
+    return false;
+  }
+
+  let result;
+  try {
+    result = await apiSkillMasterChoose?.(skillId, { actionId: pending.actionId });
+  } catch (err) {
+    console.error('[SkillMaster] Failed to choose initial skill:', err);
+    rollbackPendingRunAction(pending, { refreshUi: false });
+    sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+    renderSkillMaster();
+    return false;
+  }
+
+  if (applyPendingRunCorrection(pending, result)) {
+    sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+    return false;
+  }
+  if (await reconcileInitialSkillPickRoomEntry(pending, result)) return true;
+  if (reconcilePendingRunAction(pending, result)) return true;
+
+  rollbackPendingRunAction(pending, { refreshUi: false });
+  sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+  renderSkillMaster();
+  return false;
 }
 
 /** Tutorial step 0: show all 3 skills but only the first is clickable (glows). */

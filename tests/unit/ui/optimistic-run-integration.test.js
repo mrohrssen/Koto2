@@ -27,7 +27,8 @@ describe('optimistic run action integration', () => {
     assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('npcBattleSkill\.choose'/);
     assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.complete'/);
     assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.skip'/);
-    assert.doesNotMatch(explorationSource, /apiSkillMasterChoose\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
+    assert.match(explorationSource, /async function chooseInitialSkillMasterSkill\(skillId\)/);
+    assert.match(explorationSource, /if \(isInitialSkillPickState\(\)\)[\s\S]*return chooseInitialSkillMasterSkill\(skillId\)/);
     assert.doesNotMatch(explorationSource, /apiChooseShrineReward\?\.\(rewardType, creatureKey, \{ actionId: pending\.actionId \}\)/);
     assert.doesNotMatch(explorationSource, /apiChooseFriendlyNpcItem\?\.\(item\.id, creatureIndex, \{ actionId: pending\.actionId \}\)/);
     assert.doesNotMatch(explorationSource, /onSkillChosen\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);

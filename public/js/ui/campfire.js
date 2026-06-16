@@ -106,8 +106,48 @@ function cloneValue(value) {
 }
 
 function normalizeCampfireState(state) {
-  if (!state?.room?.campfire) return state;
-  return { ...state, room: state.room.campfire };
+  const next = state?.room?.campfire ? { ...state, room: state.room.campfire } : state;
+  return hydrateCampfireRecipes(next);
+}
+
+function hydrateCampfireRecipes(state) {
+  if (!state) return state;
+  const recipeCatalog = new Map();
+  for (const recipe of state.recipes || []) {
+    if (recipe?.id) recipeCatalog.set(recipe.id, recipe);
+  }
+  for (const recipe of state.discoveredRecipes || []) {
+    if (recipe?.id && !recipeCatalog.has(recipe.id)) recipeCatalog.set(recipe.id, recipe);
+  }
+  if (recipeCatalog.size === 0 || !Array.isArray(state.discoveredRecipes)) return state;
+  return {
+    ...state,
+    discoveredRecipes: state.discoveredRecipes
+      .map(recipe => typeof recipe === 'string' ? recipeCatalog.get(recipe) : recipe)
+      .filter(Boolean),
+  };
+}
+
+function recipeCatalogById() {
+  const catalog = new Map();
+  for (const recipe of campfireState?.recipes || []) {
+    if (recipe?.id) catalog.set(recipe.id, recipe);
+  }
+  for (const recipe of campfireState?.discoveredRecipes || []) {
+    if (recipe?.id) catalog.set(recipe.id, recipe);
+  }
+  return catalog;
+}
+
+function hydrateRecipe(recipe) {
+  if (!recipe?.id) return recipe;
+  const catalogRecipe = recipeCatalogById().get(recipe.id);
+  if (!catalogRecipe) return recipe;
+  return {
+    ...recipe,
+    ...catalogRecipe,
+    ingredients: cloneValue(recipe.ingredients || catalogRecipe.ingredients || []),
+  };
 }
 
 function uniqueObjects(values) {
@@ -505,7 +545,8 @@ async function cookSelected(event) {
   if (!queued) return;
 
   const recipe = getRecipeGuidance().candidateRecipes.find(candidate => selectionCompletesRecipe(candidate));
-  const cookedDish = cloneValue(recipe || selectedUnits()[0] || { id: 'campfire-dish', word: '料理', reading: 'りょうり', meaning: 'cooking' });
+  const hydratedRecipe = hydrateRecipe(recipe);
+  const cookedDish = cloneValue(hydratedRecipe || selectedUnits()[0] || { id: 'campfire-dish', word: '料理', reading: 'りょうり', meaning: 'cooking' });
   const consumed = cloneValue(recipe?.ingredients || ingredients);
   campfireState.room ||= {};
   campfireState.room.cookedDish = cookedDish;
