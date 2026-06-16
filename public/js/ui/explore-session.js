@@ -178,7 +178,9 @@ export function createExploreSession({
   function adoptRunwayInternal(nextRunway, { fromSync = false } = {}) {
     const previousEpoch = sessionEpoch;
     const nextEpoch = nextRunway?.sessionEpoch ?? null;
-    const epochChanged = Boolean(previousEpoch && nextEpoch && previousEpoch !== nextEpoch);
+    const sessionBoundary = !fromSync
+      && Boolean(previousEpoch)
+      && (!nextEpoch || previousEpoch !== nextEpoch);
 
     runway = cloneValue(nextRunway) ?? null;
     sessionEpoch = nextEpoch;
@@ -191,7 +193,7 @@ export function createExploreSession({
 
     if (fromSync) replayPendingProceedCursor();
 
-    if (!fromSync && epochChanged) {
+    if (sessionBoundary) {
       generation += 1;
       activeDrainToken += 1;
       activeDrainPromise = null;

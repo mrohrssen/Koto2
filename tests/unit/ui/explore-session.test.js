@@ -626,6 +626,61 @@ test('new runway generation abandons in-flight responses and clears old pending 
   assert.equal(checkpoints.length, 0);
 });
 
+test('inactive runway adoption invalidates in-flight responses from a live epoch', async () => {
+  const scheduler = makeManualScheduler();
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  const checkpoints = [];
+  const corrections = [];
+  const staleRunway = makeRunway({
+    sessionEpoch: 'ese_stale111111111',
+    currentRoom: 1,
+    preparedRooms: [preparedRoom(1, { actionSeq: 8 })],
+  });
+  const session = createExploreSession({
+    syncRequest: async () => {
+      await gate;
+      return okResponse(1, { exploreRunway: staleRunway });
+    },
+    onCheckpoint: response => checkpoints.push(response),
+    onCorrection: response => corrections.push(response),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway({ sessionEpoch: 'ese_live1111111111' }));
+
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'before-inactive' });
+  const draining = scheduler.fire();
+  assert.equal(session.pendingCount(), 1);
+
+  session.adoptRunway(null);
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.currentPreparedRoom(), null);
+
+  release();
+  await draining;
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(checkpoints.length, 0);
+  assert.equal(corrections.length, 0);
+  assert.equal(session.currentPreparedRoom(), null);
+
+  session.adoptRunway(makeRunway({
+    sessionEpoch: 'ese_fresh111111111',
+    preparedRooms: [
+      preparedRoom(0, {
+        actionSeq: 3,
+        acceptedActions: ['friendlyNpc.choose'],
+        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+      }),
+    ],
+  }));
+  const fresh = session.recordRoomAction('friendlyNpc.choose', { itemId: 'after-inactive' });
+  assert.equal(fresh.accepted, true);
+  assert.equal(session.pendingCount(), 1);
+});
+
 test('singleton lifecycle: configure / get / reset', () => {
   const session1 = configureExploreSession({ syncRequest: async () => okResponse(1) });
   assert.ok(session1);
