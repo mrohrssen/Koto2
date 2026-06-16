@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '../../..');
 const gameSrc = readFileSync(resolve(repoRoot, 'public/game.js'), 'utf8');
+const explorationSrc = readFileSync(resolve(repoRoot, 'public/js/ui/exploration.js'), 'utf8');
 
 function sourceBetween(source, start, end) {
   const startIndex = source.indexOf(start);
@@ -22,6 +23,12 @@ const autoProceedSrc = sourceBetween(
   '// ============ ENEMY DIALOGUE ============'
 );
 
+const proceedWithRevealBufferSrc = sourceBetween(
+  explorationSrc,
+  'export async function proceedWithRevealBuffer',
+  'async function proceedToNextRoom()'
+);
+
 test('autoProceed routes ingredient drops through room travel', () => {
   assert.doesNotMatch(
     gameSrc,
@@ -35,27 +42,29 @@ test('autoProceed routes ingredient drops through room travel', () => {
   );
 });
 
-test('autoProceed keeps optimistic verification but delays state commit until after room travel', () => {
-  const nextRoomIndex = autoProceedSrc.indexOf('const nextRoom = getNextRoom(gameState)');
-  const pendingIndex = autoProceedSrc.indexOf('pending = createPendingRunAction');
-  const apiIndex = autoProceedSrc.indexOf('apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })');
-  const transitionIndex = autoProceedSrc.indexOf('await playRoomTransition(pending.state');
-  const confirmIndex = autoProceedSrc.indexOf('updateGameState(confirmPendingRunAction(pending, result))');
-  const correctionIndex = autoProceedSrc.indexOf('updateGameState(correctPendingRunAction(pending, result))');
-  const verificationIndex = autoProceedSrc.indexOf('const verification = apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })');
+test('proceedWithRevealBuffer queues buffered proceed through explore session before legacy fallback', () => {
+  const sessionIndex = proceedWithRevealBufferSrc.indexOf("getExploreSession()?.recordRoomAction('proceed'");
+  const applyIndex = proceedWithRevealBufferSrc.indexOf('applyExploreSessionProceedResult');
+  const legacyIndex = proceedWithRevealBufferSrc.indexOf('apiProceed({');
 
-  assert.ok(nextRoomIndex >= 0, 'autoProceed should read the prepared next room from the reveal buffer');
-  assert.ok(pendingIndex > nextRoomIndex, 'autoProceed should create a pending action when a next room is buffered');
-  assert.ok(apiIndex > pendingIndex, 'autoProceed should start verified proceed before room travel');
-  assert.ok(verificationIndex >= 0 && verificationIndex < transitionIndex);
-  assert.ok(transitionIndex > apiIndex, 'autoProceed should optimistically play room travel while verification is in flight');
-  assert.ok(confirmIndex > transitionIndex, 'autoProceed should commit the accepted state only after room travel');
-  assert.ok(correctionIndex > transitionIndex, 'autoProceed should apply corrections only after room travel');
+  assert.ok(sessionIndex >= 0, 'proceedWithRevealBuffer should queue proceed in the explore session');
+  assert.ok(applyIndex > sessionIndex, 'proceedWithRevealBuffer should apply the accepted session result locally');
+  assert.ok(legacyIndex > applyIndex, 'legacy verified apiProceed fallback should remain after the session path');
 
-  assert.match(autoProceedSrc, /const fromRoom = gameState\.run\?\.currentRoom/);
-  assert.match(autoProceedSrc, /const actionSeq = gameState\.run\?\.roomActionSeq/);
-  assert.match(autoProceedSrc, /advanceStateToBufferedNextRoom\(draft\)/);
-  assert.match(autoProceedSrc, /isMatchingRunActionResponse\(pending, result\)/);
-  assert.doesNotMatch(autoProceedSrc, /updateGameState\(pending\.state\)/);
-  assert.doesNotMatch(autoProceedSrc, /updateStatusBar\(\)/);
+  assert.match(proceedWithRevealBufferSrc, /getExploreSession\(\)\?\.recordRoomAction\('proceed'/);
+  assert.match(proceedWithRevealBufferSrc, /applyExploreSessionProceedResult/);
+  assert.match(proceedWithRevealBufferSrc, /advanceStateToBufferedNextRoom\(draft\)/);
+});
+
+test('exploration wires explore session recovery drains', () => {
+  assert.match(
+    explorationSrc,
+    /addEventListener\('online'[\s\S]*syncNow\(\)/,
+    'online recovery should drain the explore session'
+  );
+  assert.match(
+    explorationSrc,
+    /visibilitychange[\s\S]*syncNow\(\)/,
+    'visibility restore should drain the explore session'
+  );
 });

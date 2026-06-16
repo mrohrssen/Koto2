@@ -39,6 +39,7 @@ import {
   getCurrentRoom as getCurrentBufferedRoom,
   getNextRoom,
 } from './room-reveal-buffer.js';
+import { configureExploreSession, getExploreSession } from './explore-session.js';
 
 /**
  * Resolve any active scene that owns an `npcs` layer. Every gameplay scene
@@ -80,6 +81,8 @@ let startNewRun = null;
 let returnToHub = null;
 let showAdventureReport = null;
 let pendingRunActionId = null;
+let exploreSessionOnlineDrainTarget = null;
+let exploreSessionVisibilityDrainTarget = null;
 
 function beginPendingRunAction({ actionType, applyLocal }) {
   if (pendingRunActionId) return null;
@@ -179,6 +182,70 @@ function rollbackPendingRunAction(pending, { refreshUi = true } = {}) {
 const WORD_DISCOVERY_SAVE_FAILURE_COPY = 'Word discovery did not save. Please try again.';
 const SPEED_REVIEW_SAVE_FAILURE_COPY = 'Speed review did not save. Please try again.';
 const WHACK_A_MOLE_SAVE_FAILURE_COPY = 'Game Master choice did not save. Please try again.';
+
+function applyExploreSessionRunway(response) {
+  if (!response || !Object.hasOwn(response, 'exploreRunway')) return;
+  const state = getGameState?.();
+  if (state?.run) state.run.exploreRunway = response.exploreRunway ?? null;
+}
+
+function onExploreSessionCheckpoint(response) {
+  if (response?.state) updateGameState(response.state);
+  applyExploreSessionRunway(response);
+}
+
+function onExploreSessionCorrection(response) {
+  const authoritativeState = response?.state || response?.authoritativeState;
+  if (authoritativeState) updateGameState(authoritativeState);
+  applyExploreSessionRunway(response);
+  updateUI();
+}
+
+function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
+  const missingDetails = Array.isArray(missingPayloadReasons)
+    ? missingPayloadReasons.filter(Boolean)
+    : [];
+  const detail = missingDetails.length > 0
+    ? ` Waiting for ${missingDetails.join(', ')}.`
+    : '';
+  sceneModule?.showNarration?.(
+    `Connection is spotty. Your progress will sync when you reconnect.${detail}`,
+    { autoDismiss: 1800 }
+  );
+}
+
+function hideExploreSoftPause() {
+  updateUI?.();
+}
+
+export function wireExploreSessionRecoveryDrains({
+  windowTarget = globalThis.window,
+  documentTarget = globalThis.document,
+} = {}) {
+  if (
+    windowTarget
+    && exploreSessionOnlineDrainTarget !== windowTarget
+    && typeof windowTarget.addEventListener === 'function'
+  ) {
+    exploreSessionOnlineDrainTarget = windowTarget;
+    windowTarget.addEventListener('online', () => {
+      void getExploreSession()?.syncNow();
+    });
+  }
+
+  if (
+    documentTarget
+    && exploreSessionVisibilityDrainTarget !== documentTarget
+    && typeof documentTarget.addEventListener === 'function'
+  ) {
+    exploreSessionVisibilityDrainTarget = documentTarget;
+    documentTarget.addEventListener('visibilitychange', () => {
+      if (documentTarget.visibilityState !== 'hidden') {
+        void getExploreSession()?.syncNow();
+      }
+    });
+  }
+}
 
 function showWordDiscoverySaveFailure() {
   sceneModule?.showNarration?.(WORD_DISCOVERY_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
@@ -403,6 +470,16 @@ export function init(callbacks) {
   apiSkipCampfire = callbacks.apiSkipCampfire;
   apiTutorialAdvance = callbacks.apiTutorialAdvance;
   showAdventureReport = callbacks.showAdventureReport;
+  if (typeof callbacks.apiSyncExploreSession === 'function') {
+    configureExploreSession({
+      syncRequest: callbacks.apiSyncExploreSession,
+      onCheckpoint: onExploreSessionCheckpoint,
+      onCorrection: onExploreSessionCorrection,
+      onPause: showExploreSoftPause,
+      onResume: hideExploreSoftPause,
+    });
+    wireExploreSessionRecoveryDrains();
+  }
   campfireUI.init({
     apiGetCampfire,
     apiCookAtCampfire,
@@ -881,12 +958,50 @@ export async function renderAreaSelection() {
 }
 
 /** Exploring phase — show Proceed or Fight button */
+function cloneStateForExploreSession(value) {
+  if (typeof structuredClone === 'function') {
+    try {
+      return structuredClone(value);
+    } catch {
+      // Fall through to JSON cloning for plain game-state snapshots.
+    }
+  }
+  return JSON.parse(JSON.stringify(value));
+}
+
+export function applyExploreSessionProceedResult(result) {
+  if (!result?.accepted) return null;
+  const currentState = getGameState?.();
+  if (!currentState) return null;
+  const draft = cloneStateForExploreSession(currentState);
+  advanceStateToBufferedNextRoom(draft);
+  updateGameState(draft);
+  return draft;
+}
+
 export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   const state = getGameState();
-  const fromRoom = state.run?.currentRoom;
-  const actionSeq = state.run?.roomActionSeq;
   const nextRoom = getNextRoom(state);
   if (nextRoom) {
+    const session = getExploreSession();
+    const runway = state.run?.exploreRunway || null;
+    session?.adoptRunway(runway);
+    const sessionResult = runway ? getExploreSession()?.recordRoomAction('proceed', {}) : null;
+    if (sessionResult?.accepted) {
+      const draft = applyExploreSessionProceedResult(sessionResult);
+      clearActionArea();
+      if (draft) {
+        await playRoomTransition(draft, { ingredientDrops: [] });
+        if (refreshUi) updateUI();
+      }
+      return { status: 'queued', actionId: sessionResult.entry.actionId };
+    }
+    if (sessionResult && !sessionResult.accepted) {
+      return null;
+    }
+
+    const fromRoom = state.run?.currentRoom;
+    const actionSeq = state.run?.roomActionSeq;
     const pending = beginPendingRunAction({
       actionType: 'run.proceed',
       applyLocal: draft => {
@@ -935,6 +1050,7 @@ async function proceedToNextRoom() {
 }
 
 export function renderExploring() {
+  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = gameState.run?.currentRoom;
 
@@ -975,6 +1091,7 @@ export function renderAreaComplete() {
 }
 
 export async function renderCampfire() {
+  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   return campfireUI.show();
 }
 
@@ -1080,6 +1197,7 @@ async function showShrineSprite() {
 
 /** Shrine phase - modern NPC-style reward room */
 export async function renderShrine() {
+  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
   const roomId = room?.id || room?.type || 'unknown';
@@ -1503,6 +1621,7 @@ async function completeSpeedReviewRoomOptimistically(room, { throwOnFailure = fa
 }
 
 export async function renderSpeedReviewRoom() {
+  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = getActiveSpeedReviewRoom(gameState);
   if (!room?.id) {
@@ -1709,6 +1828,7 @@ async function skipWhackAMoleOptimistically() {
 
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
 export async function renderWhackAMole() {
+  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = getCurrentBufferedRoom(gameState);
   const roomId = room?.id || room?.type || 'whackAMole';
@@ -1845,6 +1965,7 @@ async function showCidForSkillMaster() {
 
 /** Skill Master room — placeholder UI (to be expanded in later task) */
 export async function renderSkillMaster() {
+  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const run = gameState.run;
   const isInitialPick = run?.initialSkillPick && !run.initialSkillPick.chosenId;
@@ -2172,6 +2293,7 @@ async function showPlayerItemRequest(item) {
  * Player picks one; item is applied immediately.
  */
 export async function renderFriendlyNpc() {
+  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
   const roomId = room?.id || room?.type || 'unknown';
