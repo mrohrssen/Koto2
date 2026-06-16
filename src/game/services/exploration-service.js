@@ -101,11 +101,10 @@ function buildSpeedReviewWordKey(word) {
   return String(word);
 }
 
-function getStartingMeadowTutorialIngredientDrops(meta, run) {
+function getStartingMeadowTutorialIngredientDrops(meta, run, roomIndex = run?.currentRoom || 0) {
   if (!shouldFixRoomSequence(meta)) return null;
   if (run?.currentArea?.id !== STARTING_MEADOW_AREA_ID) return null;
 
-  const roomIndex = run?.currentRoom || 0;
   const ingredientId = STARTING_MEADOW_TUTORIAL_INGREDIENT_DROPS[roomIndex - 1];
   return ingredientId ? [{ id: ingredientId, quantity: 1 }] : null;
 }
@@ -216,25 +215,36 @@ export class ExplorationService {
     return prepared;
   }
 
+  prepareRoomEntryIngredientDrops(roomIndex) {
+    const run = this.gm.run;
+    if (!run?.rooms?.length || !Number.isInteger(roomIndex)) return [];
+    const room = run.rooms[roomIndex];
+    if (!room) return [];
+    if (Array.isArray(room.entryIngredientDrops)) return room.entryIngredientDrops;
+
+    const drops = getStartingMeadowTutorialIngredientDrops(this.gm.meta, run, roomIndex)
+      || rollRoomIngredientDrops({ rng: this.ingredientDropRandom });
+    const ingredientsById = new Map(COOKING_INGREDIENTS.map(ingredient => [ingredient.id, ingredient]));
+    room.entryIngredientDrops = drops.map(drop => {
+      const ingredient = ingredientsById.get(drop.id);
+      return { ...drop, ingredient, nameToken: entityToToken(ingredient) };
+    });
+    return room.entryIngredientDrops;
+  }
+
   _rollRoomIngredientDrops() {
     if (!this.gm.run.cooking) this.gm.run.cooking = { ingredients: {}, cookedThisRun: [] };
     if (!this.gm.run.cooking.ingredients) this.gm.run.cooking.ingredients = {};
     if (!Array.isArray(this.gm.run.cooking.cookedThisRun)) this.gm.run.cooking.cookedThisRun = [];
 
-    const drops = getStartingMeadowTutorialIngredientDrops(this.gm.meta, this.gm.run)
-      || rollRoomIngredientDrops({ rng: this.ingredientDropRandom });
+    const drops = this.prepareRoomEntryIngredientDrops(this.gm.run.currentRoom);
     if (drops.length === 0) return [];
 
     addIngredientsToBag(this.gm.run.cooking.ingredients, drops);
     if (this.gm.run.runSummary) {
       this.gm.run.runSummary.itemsCollected += drops.reduce((sum, drop) => sum + drop.quantity, 0);
     }
-
-    const ingredientsById = new Map(COOKING_INGREDIENTS.map(ingredient => [ingredient.id, ingredient]));
-    return drops.map(drop => {
-      const ingredient = ingredientsById.get(drop.id);
-      return { ...drop, ingredient, nameToken: entityToToken(ingredient) };
-    });
+    return drops;
   }
 
   // ============ AREA SELECTION ============

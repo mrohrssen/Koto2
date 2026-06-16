@@ -1,9 +1,24 @@
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
 import { ensureRoomActionSeq } from '../room-reveal-buffer.js';
 import { finalizeRandomRoom, resolveSupportRoom, ROOM_TYPES } from '../rooms.js';
 import { generateDealerCreatures, getCreatureBuyPrice, getCreatureSellPrice } from '../creatures.js';
 import { getDueCards } from '../internal-srs.js';
-import { hydrateCards } from '../bootstrap/word-knowledge.js';
-import { entityToToken } from '../token-format.js';
+import { getWordDict, hydrateCards } from '../bootstrap/word-knowledge.js';
+import { getShrineGreetingFrames, getSkillSelectFrame } from '../dialogue-loader.js';
+import {
+  assembleFrame,
+  entityToToken,
+  getEligibleFrameTokens,
+  selectBestFrame,
+} from '../token-format.js';
+import {
+  getPartySkillOfferDisplay,
+  normalizePartySkills,
+  rollSkillMasterOffers,
+} from '../party-skills.js';
 import {
   cloneExploreValue,
   ensureExploreSessionEpoch,
@@ -16,8 +31,31 @@ import {
   COOKING_RECIPES,
   getCookableRecipeHints,
   getIngredientCount,
+  rollRoomIngredientDrops,
 } from './cooking-service.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DIALOGUE_FRAMES_PATH = join(__dirname, '../../../data/dialogue/frames.json');
+let fallbackDialogueFrames = null;
+
+const SHRINE_REWARDS = Object.freeze([
+  {
+    id: 'heal_all',
+    title: 'Heal all creatures',
+    description: 'Restore 50% HP to living active and reserve creatures.',
+  },
+  {
+    id: 'restore_mp_all',
+    title: 'Restore MP',
+    description: 'Restore MP for all active and reserve creatures.',
+  },
+  {
+    id: 'level_up',
+    title: 'Level up a creature',
+    description: 'Choose one creature to gain a level.',
+  },
+]);
 
 function inactiveRunway() {
   return {
@@ -102,6 +140,51 @@ function allPartyCreatures(run) {
   ].filter(Boolean);
 }
 
+function getFallbackDialogueFrames() {
+  if (fallbackDialogueFrames) return fallbackDialogueFrames;
+  try {
+    fallbackDialogueFrames = JSON.parse(readFileSync(DIALOGUE_FRAMES_PATH, 'utf8'));
+  } catch (err) {
+    fallbackDialogueFrames = [];
+  }
+  return fallbackDialogueFrames;
+}
+
+function shrineGreetingFrames() {
+  const loaded = getShrineGreetingFrames();
+  if (loaded.length > 0) return loaded;
+  return getFallbackDialogueFrames().filter(frame => frame.category === 'shrineGreeting');
+}
+
+function skillSelectFrame() {
+  return getSkillSelectFrame()
+    || getFallbackDialogueFrames().find(frame => frame.category === 'skill_select')
+    || null;
+}
+
+function ingredientDropsForRoom(room) {
+  const ingredientsById = new Map(COOKING_INGREDIENTS.map(ingredient => [ingredient.id, ingredient]));
+  return rollRoomIngredientDrops().map(drop => {
+    const ingredient = ingredientsById.get(drop.id);
+    return { ...drop, ingredient, nameToken: entityToToken(ingredient) };
+  });
+}
+
+function prepareEntryIngredientDrops(gm, index, currentRoom) {
+  const room = gm?.run?.rooms?.[index] || null;
+  if (!room || index <= currentRoom) return;
+  if (Array.isArray(room.entryIngredientDrops)) return;
+
+  const fromService = gm?.explorationService?.prepareRoomEntryIngredientDrops?.(index);
+  if (Array.isArray(fromService)) return;
+
+  room.entryIngredientDrops = ingredientDropsForRoom(room);
+}
+
+function knownSetForOpts(opts) {
+  return opts?.knownSet instanceof Set ? opts.knownSet : new Set();
+}
+
 function buildFriendlyNpcPayload(gm, room) {
   if (!room.friendlyNpc) {
     room.friendlyNpc = { offerCategory: 'equipment', offered: null, chosenId: null, completed: false };
@@ -123,6 +206,51 @@ function buildFriendlyNpcPayload(gm, room) {
     npc: room.npc || null,
     offered: cloneExploreValue(room.friendlyNpc.offered || []),
     greeting: room.friendlyNpc.greeting || null,
+  };
+}
+
+function buildShrinePayload(room, opts) {
+  if (!room.shrine) {
+    room.shrine = { used: false, completed: false, chosenReward: null, greeting: null };
+  }
+
+  if (!room.shrine.greeting) {
+    const knownSet = knownSetForOpts(opts);
+    const greetingCandidates = shrineGreetingFrames()
+      .map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
+    room.shrine.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
+  }
+
+  return {
+    kind: 'shrine',
+    rewards: cloneExploreValue(SHRINE_REWARDS),
+    greeting: cloneExploreValue(room.shrine.greeting || null),
+    completed: room.shrine.completed === true || room.shrine.used === true,
+  };
+}
+
+function buildSkillMasterPayload(gm, room, opts) {
+  if (!room.skillMaster) {
+    room.skillMaster = { offered: null, chosenId: null, completed: false };
+  }
+
+  if (!Array.isArray(room.skillMaster.offered)) {
+    gm.run.partySkills = normalizePartySkills(gm.run?.partySkills || []);
+    room.skillMaster.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 })
+      .map(({ id, level }) => ({ id, level }));
+  }
+
+  const offered = (room.skillMaster.offered || [])
+    .map(offer => getPartySkillOfferDisplay(offer, gm.run?.partySkills || []))
+    .filter(Boolean);
+  const skillSelectPrompt = getEligibleFrameTokens(skillSelectFrame(), knownSetForOpts(opts), { dict: getWordDict() });
+
+  return {
+    kind: 'skillMaster',
+    offered,
+    skillSelectPrompt,
+    completed: room.skillMaster.completed === true,
+    chosenId: room.skillMaster.chosenId || null,
   };
 }
 
@@ -232,6 +360,10 @@ function buildInteractionPayload(gm, room, opts) {
   switch (room?.type) {
     case ROOM_TYPES.friendlyNpc:
       return buildFriendlyNpcPayload(gm, room);
+    case ROOM_TYPES.shrine:
+      return buildShrinePayload(room, opts);
+    case ROOM_TYPES.skillMaster:
+      return buildSkillMasterPayload(gm, room, opts);
     case ROOM_TYPES.campfire:
       return buildCampfirePayload(gm, room);
     case ROOM_TYPES.dealer:
@@ -259,12 +391,18 @@ function missingPayloadReasonsFor(room, interactionPayload) {
   return missing;
 }
 
+async function resolveKnownSet(opts) {
+  const knownWords = await Promise.resolve(opts?.getKnownWords?.() || []);
+  return new Set(Array.isArray(knownWords) ? knownWords : []);
+}
+
 export async function buildExploreRunway(gm, opts = {}) {
   const run = gm?.run;
   if (!run?.active || !Array.isArray(run.rooms) || run.rooms.length === 0) {
     return inactiveRunway();
   }
 
+  const payloadOpts = { ...opts, knownSet: await resolveKnownSet(opts) };
   const sessionEpoch = ensureExploreSessionEpoch(run);
   const roomActionSeq = ensureRoomActionSeq(run);
   const currentRoom = currentRoomIndex(run);
@@ -275,8 +413,9 @@ export async function buildExploreRunway(gm, opts = {}) {
     const room = prepareRoom(gm, index);
     if (!room) continue;
 
+    prepareEntryIngredientDrops(gm, index, currentRoom);
     const entryPayload = buildEntryPayload(gm, room);
-    const interactionPayload = buildInteractionPayload(gm, room, opts);
+    const interactionPayload = buildInteractionPayload(gm, room, payloadOpts);
     const acceptedActions = acceptedActionsForRoom(room);
     const missingPayloadReasons = missingPayloadReasonsFor(room, interactionPayload);
 

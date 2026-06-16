@@ -107,3 +107,55 @@ test('does not include raw static Japanese entry narration', async () => {
   assert.equal(runway.preparedRooms[0].entryPayload.narrationFrame, null);
   assert.equal(Object.hasOwn(runway.preparedRooms[0].entryPayload, 'rawNarration'), false);
 });
+
+test('prepares shrine rewards and frame-safe greeting payload', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.shrine]);
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const shrine = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.shrine);
+  assert.equal(shrine.interactionPayload.kind, 'shrine');
+  assert.deepEqual(shrine.interactionPayload.rewards.map(reward => reward.id), ['heal_all', 'restore_mp_all', 'level_up']);
+  assert.ok(shrine.interactionPayload.greeting?.tokens?.length > 0);
+  assert.equal(shrine.offlineReady, true);
+});
+
+test('prepares skill master offers and frame-safe prompt payload', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.skillMaster]);
+  gm.run.partySkills = [{ id: 'counterMaster', level: 1 }];
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const skillMaster = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.skillMaster);
+  assert.equal(skillMaster.interactionPayload.kind, 'skillMaster');
+  assert.ok(skillMaster.interactionPayload.offered.length > 0);
+  assert.ok(skillMaster.interactionPayload.skillSelectPrompt?.tokens?.length > 0);
+  assert.ok(skillMaster.acceptedActions.includes('skillMaster.choose'));
+  assert.equal(skillMaster.offlineReady, true);
+});
+
+test('pre-rolls future ingredient drops without awarding them early', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc, ROOM_TYPES.campfire]);
+  const beforeIngredients = structuredClone(gm.run.cooking.ingredients);
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const futureEntry = runway.preparedRooms.find(entry => entry.index > gm.run.currentRoom);
+  assert.ok(futureEntry.entryPayload.ingredientDrops.length > 0);
+  assert.deepEqual(gm.run.cooking.ingredients, beforeIngredients);
+  assert.deepEqual(
+    futureEntry.entryPayload.ingredientDrops,
+    gm.run.rooms[futureEntry.index].entryIngredientDrops
+  );
+});
