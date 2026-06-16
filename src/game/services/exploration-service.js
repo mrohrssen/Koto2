@@ -850,7 +850,10 @@ export class ExplorationService {
   }
 
   applyWhackAMoleComplete({ score } = {}) {
-    return this.completeWhackAMole(score);
+    const result = this.completeWhackAMole(score);
+    if (result?.alreadyComplete) return result;
+    const proceedResult = this.proceedToNextRoom();
+    return { ...result, ...proceedResult };
   }
 
   skipWhackAMole() {

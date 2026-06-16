@@ -583,6 +583,35 @@ describe('ExploreSessionSyncService', () => {
     });
   });
 
+  it('whackAMole.complete replay advances to the next canonical room once', async () => {
+    const gm = makeGm([ROOM_TYPES.whackAMole, ROOM_TYPES.friendlyNpc]);
+    gm.run.roomActionSeq = 5;
+    gm.run.rooms[0].whackAMole = { score: 0, completed: false };
+    const service = new ExploreSessionSyncService(gm);
+    const entry = {
+      seq: 1,
+      actionId: 'run_es_wamcomplete1',
+      kind: 'whackAMole.complete',
+      roomIndex: 0,
+      roomId: gm.run.rooms[0].id,
+      actionSeq: 5,
+      payload: { score: 4 },
+    };
+
+    const first = await service.applySessionSync({ sessionEpoch: gm.run.exploreSessionEpoch, entries: [entry] });
+    const replay = await service.applySessionSync({ sessionEpoch: gm.run.exploreSessionEpoch, entries: [entry] });
+
+    assert.equal(first.status, 'ok');
+    assert.equal(first.results[0].type, 'whack_a_mole_complete');
+    assert.equal(gm.run.rooms[0].whackAMole.completed, true);
+    assert.equal(gm.run.rooms[0].whackAMole.score, 4);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 6);
+    assert.equal(replay.results[0].replayed, true);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 6);
+  });
+
   it('speedReview.complete replays without double mutation', async () => {
     await expectSupportReplayOnce({
       roomType: ROOM_TYPES.speedReviewRoom,
