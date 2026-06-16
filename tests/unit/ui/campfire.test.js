@@ -712,6 +712,88 @@ describe('campfire UI', () => {
     assert.deepEqual(gameState.run.cooking.ingredients, { toufu: 1 });
   });
 
+  it('chooses the same best matching recipe as the server resolver', async () => {
+    const session = createSessionRecorder();
+    let gameState = sampleGameState();
+    const rareMisoSoup = {
+      id: 'rare-miso-soup',
+      word: '特別味噌汁',
+      reading: 'とくべつみそしる',
+      nameEn: 'Special miso soup',
+      meaning: 'special miso soup',
+      rarity: 'rare',
+      ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+      effectDescription: 'Restores more MP.',
+    };
+    campfire.renderForTest(sampleState({
+      discoveredRecipes: [
+        sampleState().discoveredRecipes[0],
+        rareMisoSoup,
+      ],
+      recipes: [
+        sampleState().discoveredRecipes[0],
+        rareMisoSoup,
+      ],
+      cookableRecipeHints: [
+        {
+          id: 'miso-soup',
+          rarity: 'common',
+          totalQuantity: 2,
+          ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+        },
+        {
+          id: 'rare-miso-soup',
+          rarity: 'rare',
+          totalQuantity: 2,
+          ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+        },
+      ],
+    }), {
+      ...session,
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+    });
+    openCooking();
+
+    const cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[0].click();
+    cards[1].click();
+    await actionArea.querySelector('.campfire-cook-btn').click();
+
+    assert.equal(gameState.room.campfire.cookedDish.id, 'rare-miso-soup');
+    assert.equal(gameState.room.campfire.cookedDish.word, '特別味噌汁');
+  });
+
+  it('updates the prepared runway campfire payload after local cooking', async () => {
+    const session = createSessionRecorder();
+    let gameState = sampleGameState();
+    gameState.run.exploreRunway = {
+      sessionEpoch: 'ese_campfire_test',
+      currentRoom: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: 'campfire-room',
+        room: gameState.room,
+        interactionPayload: sampleState({ kind: 'campfire', room: gameState.room }),
+      }],
+    };
+    campfire.renderForTest(sampleState(), {
+      ...session,
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+    });
+    openCooking();
+
+    const cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[0].click();
+    cards[1].click();
+    await actionArea.querySelector('.campfire-cook-btn').click();
+
+    const payload = gameState.run.exploreRunway.preparedRooms[0].interactionPayload;
+    assert.deepEqual(payload.ingredients, { toufu: 1 });
+    assert.equal(payload.room.campfire.cookedDish.word, '味噌汁');
+  });
+
   it('records one exposure for the cooked dish returned by cooking', async () => {
     const posted = [];
     const session = createSessionRecorder();

@@ -11,6 +11,13 @@ let activeTab = 'ingredients';
 let displayMode = 'entry';
 const DISPLAY_ONLY = { recordExposure: false };
 const CAMPFIRE_FAILURE_COPY = 'Campfire choice did not save. Please try again.';
+const RARITY_RANK = {
+  common: 1,
+  uncommon: 2,
+  rare: 3,
+  epic: 4,
+  legendary: 5,
+};
 
 export function init(cbs) {
   callbacks = cbs;
@@ -156,9 +163,18 @@ function uniqueObjects(values) {
   ));
 }
 
+function currentPreparedRoomDraft(draft) {
+  const currentRoom = draft?.run?.currentRoom;
+  if (!Number.isInteger(currentRoom)) return null;
+  const preparedRooms = draft?.run?.exploreRunway?.preparedRooms;
+  if (!Array.isArray(preparedRooms)) return null;
+  return preparedRooms.find(preparedRoom => preparedRoom?.index === currentRoom) || null;
+}
+
 function activeRoomDrafts(draft) {
   const run = draft?.run;
   const currentRoom = run?.currentRoom;
+  const preparedRoom = currentPreparedRoomDraft(draft);
   return uniqueObjects([
     draft?.room,
     Number.isInteger(currentRoom)
@@ -167,7 +183,23 @@ function activeRoomDrafts(draft) {
     Number.isInteger(currentRoom) && Array.isArray(run?.rooms)
       ? run.rooms[currentRoom]
       : null,
+    preparedRoom?.room,
   ]);
+}
+
+function syncPreparedCampfirePayload(draft) {
+  const preparedRoom = currentPreparedRoomDraft(draft);
+  if (!preparedRoom || !campfireState) return;
+  const room = cloneValue(preparedRoom.room || draft?.room || { type: 'campfire' });
+  room.campfire = cloneValue(campfireState.room || {});
+  if (campfireState.room?.completed || campfireState.room?.fed || campfireState.room?.skipped) {
+    room.interacted = true;
+  }
+  preparedRoom.room = room;
+  preparedRoom.interactionPayload = {
+    ...cloneValue(campfireState),
+    room: cloneValue(room),
+  };
 }
 
 function updateCampfireGameState(mutator, { phase = null } = {}) {
@@ -176,7 +208,9 @@ function updateCampfireGameState(mutator, { phase = null } = {}) {
   const draft = cloneValue(currentState);
   activeRoomDrafts(draft).forEach(room => mutator(room, draft));
   if (phase) draft.phase = phase;
+  syncPreparedCampfirePayload(draft);
   callbacks.updateGameState?.(draft);
+  callbacks.getExploreSession?.()?.adoptRunway?.(draft.run?.exploreRunway || null);
   return draft;
 }
 
@@ -243,6 +277,24 @@ function selectionCompletesRecipe(recipe, selection = selected) {
   return (recipe.ingredients || []).every(ingredient => {
     return (selection[ingredient.id] || 0) >= ingredient.quantity;
   });
+}
+
+function recipeTotalQuantity(recipe) {
+  return (recipe?.ingredients || []).reduce((sum, ingredient) => sum + (ingredient.quantity || 0), 0);
+}
+
+function compareRecipePreference(a, b) {
+  const sizeDelta = recipeTotalQuantity(b) - recipeTotalQuantity(a);
+  if (sizeDelta !== 0) return sizeDelta;
+  const rarityDelta = (RARITY_RANK[b?.rarity] || 0) - (RARITY_RANK[a?.rarity] || 0);
+  if (rarityDelta !== 0) return rarityDelta;
+  return String(a?.id || '').localeCompare(String(b?.id || ''));
+}
+
+function bestCompleteRecipe(recipes) {
+  return [...(recipes || [])]
+    .filter(recipe => selectionCompletesRecipe(recipe))
+    .sort(compareRecipePreference)[0] || null;
 }
 
 function selectionWithAddedIngredient(id) {
@@ -544,10 +596,10 @@ async function cookSelected(event) {
   const queued = recordCampfireAction('campfire.cook', { ingredients });
   if (!queued) return;
 
-  const recipe = getRecipeGuidance().candidateRecipes.find(candidate => selectionCompletesRecipe(candidate));
+  const recipe = bestCompleteRecipe(getRecipeGuidance().candidateRecipes);
   const hydratedRecipe = hydrateRecipe(recipe);
   const cookedDish = cloneValue(hydratedRecipe || selectedUnits()[0] || { id: 'campfire-dish', word: '料理', reading: 'りょうり', meaning: 'cooking' });
-  const consumed = cloneValue(recipe?.ingredients || ingredients);
+  const consumed = cloneValue(hydratedRecipe?.ingredients || recipe?.ingredients || ingredients);
   campfireState.room ||= {};
   campfireState.room.cookedDish = cookedDish;
   campfireState.room.consumed = consumed;

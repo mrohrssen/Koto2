@@ -623,21 +623,8 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(updateUiCalls, 1);
   });
 
-  it('uses composed proceed without replaying room travel after Whack-a-Mole completion', async () => {
+  it('advances locally from the prepared runway after Whack-a-Mole completion', async () => {
     const nextRoom = { id: 'after-wam', type: 'empty' };
-    const serverState = {
-      phase: 'room',
-      room: nextRoom,
-      run: {
-        currentRoom: 1,
-        roomActionSeq: 8,
-        rooms: [{ type: 'whackAMole' }, nextRoom],
-        revealedRooms: [
-          { index: 0, room: { id: 'wam-start', type: 'whackAMole' } },
-          { index: 1, room: nextRoom },
-        ],
-      },
-    };
     let currentState = {
       phase: 'whackAMole',
       room: { id: 'wam-start', type: 'whackAMole', interacted: false },
@@ -649,6 +636,31 @@ describe('renderWhackAMole decline flow', () => {
           { index: 0, room: { id: 'wam-start', type: 'whackAMole', interacted: false } },
           { index: 1, room: nextRoom },
         ],
+        exploreRunway: {
+          sessionEpoch: 'wam-complete-runway',
+          currentRoom: 0,
+          roomActionSeq: 7,
+          preparedRooms: [
+            {
+              index: 0,
+              roomId: 'wam-start',
+              actionSeq: 7,
+              room: { id: 'wam-start', type: 'whackAMole', interacted: false },
+              offlineReady: true,
+              acceptedActions: ['whackAMole.complete', 'whackAMole.skip'],
+              interactionPayload: { kind: 'whackAMole' },
+            },
+            {
+              index: 1,
+              roomId: 'after-wam',
+              actionSeq: 8,
+              room: nextRoom,
+              offlineReady: true,
+              acceptedActions: ['proceed'],
+              interactionPayload: { kind: 'empty' },
+            },
+          ],
+        },
       },
     };
     let updateUiCalls = 0;
@@ -671,40 +683,23 @@ describe('renderWhackAMole decline flow', () => {
       apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
       apiProceed: async options => {
         proceedCalls.push(options);
-        return {
-          actionId: options.actionId,
-          actionSeq: options.actionSeq,
-          fromRoom: options.fromRoom,
-          state: serverState,
-        };
+        throw new Error('legacy proceed should not run after session whack-a-mole completion');
       },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
     });
 
     await renderWhackAMole();
     await renderedButtons[0].onClick();
 
     assert.ok(whackAMoleDeps);
-    const originalDocument = globalThis.document;
-    globalThis.document = { getElementById: () => null };
-    let advanced;
-    try {
-      advanced = await whackAMoleDeps.apiProceed();
-      if (advanced?.state) {
-        roomTransitionCalls.push({ state: advanced.state, opts: { replayed: true } });
-      }
-    } finally {
-      if (originalDocument === undefined) {
-        delete globalThis.document;
-      } else {
-        globalThis.document = originalDocument;
-      }
-    }
+    await whackAMoleDeps.apiCompleteWhackAMole(4);
+    const advanced = await whackAMoleDeps.apiProceed();
     whackAMoleDeps.updateUI();
 
-    assert.equal(proceedCalls.length, 1);
-    assert.equal(roomTransitionCalls.length, 1);
-    assert.equal(roomTransitionCalls[0].state.run.currentRoom, 1);
+    assert.equal(proceedCalls.length, 0);
+    assert.equal(roomTransitionCalls.length, 0);
     assert.equal(currentState.run.currentRoom, 1);
+    assert.equal(currentState.room.id, 'after-wam');
     assert.equal(updateUiCalls, 1);
     assert.equal(advanced, null);
   });

@@ -863,6 +863,9 @@ export class ExplorationService {
       return { type: 'whack_a_mole_skipped', alreadySkipped: true };
     }
 
+    room.whackAMole ||= {};
+    room.whackAMole.completed = true;
+    room.whackAMole.skipped = true;
     room.interacted = true;
 
     const proceedResult = this.proceedToNextRoom();

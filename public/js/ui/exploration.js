@@ -285,6 +285,7 @@ function uniqueObjects(values) {
 function activeRoomDrafts(draft) {
   const run = draft?.run;
   const currentRoom = run?.currentRoom;
+  const preparedRoom = preparedRoomForRunwayCursor(run?.exploreRunway, currentRoom);
   return uniqueObjects([
     draft?.room,
     Number.isInteger(currentRoom)
@@ -293,6 +294,7 @@ function activeRoomDrafts(draft) {
     Number.isInteger(currentRoom) && Array.isArray(run?.rooms)
       ? run.rooms[currentRoom]
       : null,
+    preparedRoom?.room,
   ]);
 }
 
@@ -1085,6 +1087,13 @@ function alignExploreRunwayCursor(draft) {
   }
 }
 
+function canAdvanceFromCurrentPreparedRoom(state = getGameState?.()) {
+  return Boolean(nextPreparedRoomAfterRunwayCursor(
+    state?.run?.exploreRunway,
+    state?.run?.currentRoom
+  ));
+}
+
 export function applyExploreSessionProceedResult(result) {
   if (!result?.accepted) return null;
   const currentState = getGameState?.();
@@ -1865,7 +1874,7 @@ async function completeWhackAMoleOptimistically(score) {
 
   updateSupportRoomDraft(room => {
     markWhackAMoleRoomComplete(room, { score });
-  }, { phase: 'room' });
+  }, { advance: canAdvanceFromCurrentPreparedRoom(), phase: 'room' });
   return queued;
 }
 
@@ -2578,10 +2587,7 @@ function startWhackAMoleGame(pool) {
   activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
     apiCompleteWhackAMole: completeWhackAMoleOptimistically,
-    apiProceed: async () => {
-      await proceedWithRevealBuffer({ refreshUi: false });
-      return null;
-    },
+    apiProceed: async () => null,
     updateGameState,
     updateUI,
     playSFX,

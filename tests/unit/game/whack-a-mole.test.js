@@ -428,6 +428,8 @@ describe('Whack-a-Mole Skip', () => {
 
     assert.strictEqual(result.type, 'whack_a_mole_skipped');
     assert.strictEqual(run.rooms[roomIdx].interacted, true);
+    assert.strictEqual(run.rooms[roomIdx].whackAMole.completed, true);
+    assert.strictEqual(run.rooms[roomIdx].whackAMole.skipped, true);
     assert.strictEqual(run.currentRoom, roomIdx + 1);
   });
 

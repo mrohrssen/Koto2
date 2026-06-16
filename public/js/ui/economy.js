@@ -36,9 +36,18 @@ function uniqueObjects(values) {
   ));
 }
 
+function currentPreparedRoomDraft(draft) {
+  const currentRoom = draft?.run?.currentRoom;
+  if (!Number.isInteger(currentRoom)) return null;
+  const preparedRooms = draft?.run?.exploreRunway?.preparedRooms;
+  if (!Array.isArray(preparedRooms)) return null;
+  return preparedRooms.find(preparedRoom => preparedRoom?.index === currentRoom) || null;
+}
+
 function activeRoomDrafts(draft) {
   const run = draft?.run;
   const currentRoom = run?.currentRoom;
+  const preparedRoom = currentPreparedRoomDraft(draft);
   return uniqueObjects([
     draft?.room,
     Number.isInteger(currentRoom)
@@ -47,16 +56,24 @@ function activeRoomDrafts(draft) {
     Number.isInteger(currentRoom) && Array.isArray(run?.rooms)
       ? run.rooms[currentRoom]
       : null,
+    preparedRoom?.room,
   ]);
 }
 
-function updateDealerRoomState(mutator, { phase = null } = {}) {
+function updateDealerRoomState(mutator, { phase = null, payloadMutator = null } = {}) {
   const currentState = getGameState?.();
   if (!currentState) return null;
   const draft = cloneValue(currentState);
   activeRoomDrafts(draft).forEach(room => mutator(room, draft));
+  const preparedRoom = currentPreparedRoomDraft(draft);
+  if (payloadMutator && preparedRoom?.interactionPayload) {
+    const payload = cloneValue(preparedRoom.interactionPayload);
+    payloadMutator(payload, draft);
+    preparedRoom.interactionPayload = payload;
+  }
   if (phase) draft.phase = phase;
   updateGameState(draft);
+  getExploreSession?.()?.adoptRunway?.(draft.run?.exploreRunway || null);
   return draft;
 }
 
@@ -70,6 +87,7 @@ export function init(callbacks) {
 
 /** Render dealer room UI */
 export async function renderDealerRoom(actionsModule) {
+  getExploreSession?.()?.adoptRunway?.(getGameState?.()?.run?.exploreRunway || null);
   const prepared = getExploreSession?.()?.currentPreparedRoom();
   const payload = prepared?.interactionPayload;
   const dealerData = payload || await apiGetDealerState();
@@ -163,9 +181,19 @@ export async function renderDealerRoom(actionsModule) {
         return;
       }
       const creature = offeredCreatures.find(candidate => candidate.id === creatureId);
-      updateDealerRoomState(room => {
+      updateDealerRoomState((room, draft) => {
         room.dealer ||= {};
         room.dealer.purchasedCreature = creatureId;
+        if (draft.run?.player && creature?.buyPrice) {
+          draft.run.player.credits = Math.max(0, (draft.run.player.credits || 0) - creature.buyPrice);
+        }
+      }, {
+        payloadMutator: payload => {
+          payload.offeredCreatures = (payload.offeredCreatures || [])
+            .filter(candidate => candidate?.id !== creatureId);
+          payload.canBuy = false;
+          if (creature?.buyPrice) payload.credits = Math.max(0, (payload.credits || 0) - creature.buyPrice);
+        },
       });
       const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
       if (creditsEl && creature?.buyPrice) {
@@ -194,12 +222,22 @@ export async function renderDealerRoom(actionsModule) {
       return;
     }
     const sellPrice = Number(sellBtn.dataset.sellPrice) || 0;
-    updateDealerRoomState(room => {
+    updateDealerRoomState((room, draft) => {
       room.dealer ||= {};
       room.dealer.soldCreatures ||= [];
       if (!room.dealer.soldCreatures.includes(creatureId)) {
         room.dealer.soldCreatures.push(creatureId);
       }
+      if (draft.run?.player && sellPrice) {
+        draft.run.player.credits = (draft.run.player.credits || 0) + sellPrice;
+      }
+    }, {
+      payloadMutator: payload => {
+        payload.partyCreatures = (payload.partyCreatures || [])
+          .filter(creature => creature?.id !== creatureId);
+        payload.sellCount = Math.min(payload.maxSells || 0, (payload.sellCount || 0) + 1);
+        if (sellPrice) payload.credits = (payload.credits || 0) + sellPrice;
+      },
     });
     const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
     if (creditsEl && sellPrice) {
