@@ -294,6 +294,17 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
 
   const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
   const dueCards = excludeCards(getDueScriptCardsForTypes(userId, eligibleTypes, now), excludedIds);
+  const newCards = getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds);
+  const canIntroduce = !state.endlessMode
+    && daily.completed !== true
+    && daily.introducedCount < DAILY_NEW_LIMIT
+    && newCards.length > 0;
+
+  if (dueCards.length > 0 && state.reviewsSinceIntro >= state.nextIntroAfter && canIntroduce) {
+    state.noDueDiscoveryChainCount = 0;
+    const card = newCards[0];
+    return { kind: 'intro', card, source: 'reviewCadence' };
+  }
 
   if (dueCards.length > 0) {
     state.noDueDiscoveryChainCount = 0;
@@ -318,12 +329,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     return { kind: 'complete' };
   }
 
-  const newCards = getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds);
   state.report.scriptDeck = fallbackScriptDeck(eligibleTypes, dueCards, newCards);
-  const canIntroduce = !state.endlessMode
-    && daily.completed !== true
-    && daily.introducedCount < DAILY_NEW_LIMIT
-    && newCards.length > 0;
 
   const noDueChainCount = state.noDueDiscoveryChainCount || 0;
   const canContinueNoDueDiscoveryBatch = state.noDuePracticeQueue.length === noDueChainCount;

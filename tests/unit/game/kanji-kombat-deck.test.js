@@ -182,7 +182,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(work.quiz.cardId, 'katakana:ア');
   });
 
-  it('a learning-step card due minutes ago preempts new-card introductions', () => {
+  it('a learning-step card due minutes ago preempts new-card introductions before cadence fires', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards) {
       card.reps = 0;
@@ -196,7 +196,7 @@ describe('kanji-kombat deck controller', () => {
     saveSrsData(userId, data);
 
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
-    state.reviewsSinceIntro = state.nextIntroAfter;
+    state.reviewsSinceIntro = state.nextIntroAfter - 1;
     const work = chooseNextScriptWork(userId, state, {
       onboarding: { knowsHiragana: false, knowsKatakana: false },
       random: () => 0,
@@ -390,7 +390,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(getKanjiKombatActivePrompt(state)?.kind, 'intro');
   });
 
-  it('due cards preempt review-cadence intros even when the intro interval has fired', () => {
+  it('introduces a new card on cadence even while serving due cards in FSRS order', () => {
     const data = loadSrsData(userId);
     const dueCard = data.script.cards.find(c => c.id === 'hiragana:あ');
     dueCard.due = new Date('2026-05-30T00:00:00Z');
@@ -405,8 +405,9 @@ describe('kanji-kombat deck controller', () => {
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    assert.equal(work.kind, 'quiz');
-    assert.equal(work.quiz.cardId, 'hiragana:あ');
+    assert.equal(work.kind, 'intro');
+    assert.equal(work.card.id, 'hiragana:い');
+    assert.equal(work.source, 'reviewCadence');
     assert.equal(state.noDueDiscoveryChainCount, 0);
   });
 
@@ -832,7 +833,7 @@ describe('kanji-kombat deck controller', () => {
     });
 
     assert.deepEqual(summarizePrompts(refilled), summarizePrompts(fresh));
-    assert.deepEqual(refilled.map(prompt => prompt.kind), ['quiz', 'quiz', 'quiz', 'quiz', 'intro']);
+    assert.deepEqual(refilled.map(prompt => prompt.kind), ['intro', 'quiz', 'quiz', 'quiz', 'intro']);
   });
 
   it('reserves virtual daily intro budget while previewing prompts', () => {
