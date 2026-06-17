@@ -514,15 +514,20 @@ function isSpeculativeDailyCompletion(work, previewDailyState) {
 function isBufferedCompletionAuthoritative(userId, state, opts = {}) {
   if (state?.endlessMode) return false;
   const daily = getScriptDailyState(userId, state.localDate);
+  const eligibleTypes = getEligibleScriptTypes(opts.onboarding);
+  const now = opts.now || new Date();
+  const hasDueCards = getDueScriptCardsForTypes(userId, eligibleTypes, now).length > 0;
+  const eligibleCardIds = new Set(getScriptCards(userId)
+    .filter(card => eligibleTypes.includes(card.type))
+    .map(card => card.id));
+  const hasPracticeCards = Array.isArray(state.noDuePracticeQueue)
+    && state.noDuePracticeQueue.some(cardId => eligibleCardIds.has(cardId));
+  if (hasDueCards || hasPracticeCards) return false;
   if (daily.completed === true || (daily.introducedCount || 0) >= DAILY_NEW_LIMIT) {
     return true;
   }
 
-  const eligibleTypes = getEligibleScriptTypes(opts.onboarding);
-  const now = opts.now || new Date();
-  const hasDueCards = getDueScriptCardsForTypes(userId, eligibleTypes, now).length > 0;
   const hasNewCards = getNextNewScriptCards(userId, opts.onboarding).length > 0;
-  const hasPracticeCards = Array.isArray(state.noDuePracticeQueue) && state.noDuePracticeQueue.length > 0;
   return !hasDueCards && !hasNewCards && !hasPracticeCards;
 }
 
