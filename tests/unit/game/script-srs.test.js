@@ -267,6 +267,17 @@ describe('script-srs', () => {
       'kanji:人',
       'hiragana:あ',
     ]);
+
+    const subsetDue = getDueScriptCardsForTypes(
+      userId,
+      ['hiragana', 'kanji'],
+      new Date('2026-05-31T00:00:00Z')
+    );
+
+    assert.deepEqual(subsetDue.map(card => card.id), [
+      'kanji:人',
+      'hiragana:あ',
+    ]);
   });
 
   it('uses curriculum tie-breakers when due dates match exactly', () => {
@@ -312,8 +323,15 @@ describe('script-srs', () => {
     }
     saveSrsData(userId, data);
 
-    assert.equal(getNextNewScriptCards(userId, { knowsHiragana: false, knowsKatakana: false })[0].id, 'katakana:ア');
-    assert.equal(getNextNewScriptCards(userId, { knowsHiragana: true, knowsKatakana: false })[0].id, 'katakana:ア');
-    assert.equal(getNextNewScriptCards(userId, { knowsHiragana: false, knowsKatakana: true })[0].id, 'kanji:人');
+    const noKanaKnown = getNextNewScriptCards(userId, { knowsHiragana: false, knowsKatakana: false });
+    const hiraganaKnown = getNextNewScriptCards(userId, { knowsHiragana: true, knowsKatakana: false });
+    const katakanaKnown = getNextNewScriptCards(userId, { knowsHiragana: false, knowsKatakana: true });
+
+    assert.equal(noKanaKnown[0].id, 'katakana:ア');
+    assert.equal(noKanaKnown.every(card => card.type === 'katakana'), true);
+    assert.equal(hiraganaKnown[0].id, 'katakana:ア');
+    assert.equal(hiraganaKnown.every(card => card.type === 'katakana'), true);
+    assert.equal(katakanaKnown[0].id, 'kanji:人');
+    assert.equal(katakanaKnown.every(card => card.type === 'kanji'), true);
   });
 });
