@@ -197,11 +197,76 @@ function shuffle(items, random = Math.random) {
   return copy;
 }
 
-export function buildQuizForCard(card, answerPool, random = Math.random) {
-  const distractors = shuffle(
-    answerPool.filter(candidate => candidate.id !== card.id && candidate.answer !== card.answer),
+function isIntroducedScriptCard(card) {
+  return (card?.reps || 0) > 0;
+}
+
+function sameClassicalRadical(a, b) {
+  const aRadical = a?.radicals?.classical;
+  const bRadical = b?.radicals?.classical;
+  return Number.isInteger(aRadical) && Number.isInteger(bRadical) && aRadical === bRadical;
+}
+
+function selectUniqueDistractors(candidates, selected, usedAnswers, limit, random) {
+  for (const candidate of shuffle(candidates, random)) {
+    if (selected.length >= limit) break;
+    if (!candidate?.id || usedAnswers.has(candidate.answer)) continue;
+    selected.push(candidate);
+    usedAnswers.add(candidate.answer);
+  }
+}
+
+function baseDistractorCandidates(card, answerPool) {
+  return answerPool.filter(candidate =>
+    candidate.id !== card.id
+    && candidate.answer !== card.answer
+  );
+}
+
+function buildDefaultDistractors(card, answerPool, random) {
+  const selected = [];
+  const usedAnswers = new Set([card.answer]);
+  selectUniqueDistractors(baseDistractorCandidates(card, answerPool), selected, usedAnswers, 3, random);
+  return selected;
+}
+
+function buildKanjiDistractors(card, answerPool, random) {
+  const selected = [];
+  const usedAnswers = new Set([card.answer]);
+  const candidates = baseDistractorCandidates(card, answerPool)
+    .filter(candidate => candidate.type === 'kanji');
+
+  selectUniqueDistractors(
+    candidates.filter(candidate => isIntroducedScriptCard(candidate) && sameClassicalRadical(candidate, card)),
+    selected,
+    usedAnswers,
+    3,
     random
-  ).slice(0, 3);
+  );
+
+  selectUniqueDistractors(
+    candidates.filter(candidate => isIntroducedScriptCard(candidate) && !sameClassicalRadical(candidate, card)),
+    selected,
+    usedAnswers,
+    3,
+    random
+  );
+
+  selectUniqueDistractors(
+    candidates.filter(candidate => !isIntroducedScriptCard(candidate)),
+    selected,
+    usedAnswers,
+    3,
+    random
+  );
+
+  return selected;
+}
+
+export function buildQuizForCard(card, answerPool, random = Math.random) {
+  const distractors = card.type === 'kanji'
+    ? buildKanjiDistractors(card, answerPool, random)
+    : buildDefaultDistractors(card, answerPool, random);
 
   if (distractors.length < 3) {
     throw new Error(`Not enough distinct answers for script quiz: ${card.type}`);

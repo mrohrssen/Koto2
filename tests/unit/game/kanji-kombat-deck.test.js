@@ -35,6 +35,13 @@ describe('kanji-kombat deck controller', () => {
     }));
   }
 
+  function wrongAnswers(quiz) {
+    return quiz.choices
+      .filter(choice => !choice.correct)
+      .map(choice => choice.answer)
+      .sort();
+  }
+
   beforeEach(() => {
     tempDir = mkdtempSync(join(tmpdir(), 'koto-kk-deck-'));
     configureSrs({ dataDir: tempDir });
@@ -57,6 +64,73 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(quiz.choices.length, 4);
     assert.equal(new Set(quiz.choices.map(c => c.answer)).size, 4);
     assert.equal(quiz.choices.some(c => c.correct), true);
+  });
+
+  it('prefers introduced same-radical kanji distractors when enough exist', () => {
+    const prompt = { id: 'kanji:海', type: 'kanji', prompt: '海', answer: 'sea', reps: 5, radicals: { classical: 85 } };
+    const pool = [
+      prompt,
+      { id: 'kanji:河', type: 'kanji', prompt: '河', answer: 'river', reps: 2, radicals: { classical: 85 } },
+      { id: 'kanji:泳', type: 'kanji', prompt: '泳', answer: 'swim', reps: 1, radicals: { classical: 85 } },
+      { id: 'kanji:湖', type: 'kanji', prompt: '湖', answer: 'lake', reps: 3, radicals: { classical: 85 } },
+      { id: 'kanji:人', type: 'kanji', prompt: '人', answer: 'person', reps: 8, radicals: { classical: 9 } },
+      { id: 'kanji:言', type: 'kanji', prompt: '言', answer: 'say', reps: 8, radicals: { classical: 149 } },
+      { id: 'kanji:見', type: 'kanji', prompt: '見', answer: 'see', reps: 0, radicals: { classical: 147 } },
+    ];
+
+    const quiz = buildQuizForCard(prompt, pool, () => 0);
+
+    assert.deepEqual(wrongAnswers(quiz), ['lake', 'river', 'swim']);
+    assert.equal(quiz.choices.length, 4);
+    assert.equal(new Set(quiz.choices.map(choice => choice.answer)).size, 4);
+  });
+
+  it('falls back to introduced other kanji before unintroduced kanji', () => {
+    const prompt = { id: 'kanji:海', type: 'kanji', prompt: '海', answer: 'sea', reps: 5, radicals: { classical: 85 } };
+    const pool = [
+      prompt,
+      { id: 'kanji:河', type: 'kanji', prompt: '河', answer: 'river', reps: 2, radicals: { classical: 85 } },
+      { id: 'kanji:人', type: 'kanji', prompt: '人', answer: 'person', reps: 8, radicals: { classical: 9 } },
+      { id: 'kanji:言', type: 'kanji', prompt: '言', answer: 'say', reps: 8, radicals: { classical: 149 } },
+      { id: 'kanji:見', type: 'kanji', prompt: '見', answer: 'see', reps: 0, radicals: { classical: 147 } },
+      { id: 'kanji:一', type: 'kanji', prompt: '一', answer: 'one', reps: 0, radicals: { classical: 1 } },
+    ];
+
+    const quiz = buildQuizForCard(prompt, pool, () => 0);
+
+    assert.deepEqual(wrongAnswers(quiz), ['person', 'river', 'say']);
+  });
+
+  it('uses unintroduced kanji only when introduced kanji cannot fill three wrong answers', () => {
+    const prompt = { id: 'kanji:海', type: 'kanji', prompt: '海', answer: 'sea', reps: 5, radicals: { classical: 85 } };
+    const pool = [
+      prompt,
+      { id: 'kanji:河', type: 'kanji', prompt: '河', answer: 'river', reps: 2, radicals: { classical: 85 } },
+      { id: 'kanji:人', type: 'kanji', prompt: '人', answer: 'person', reps: 8, radicals: { classical: 9 } },
+      { id: 'kanji:見', type: 'kanji', prompt: '見', answer: 'see', reps: 0, radicals: { classical: 147 } },
+      { id: 'kanji:一', type: 'kanji', prompt: '一', answer: 'one', reps: 0, radicals: { classical: 1 } },
+    ];
+
+    const quiz = buildQuizForCard(prompt, pool, () => 0);
+
+    assert.equal(wrongAnswers(quiz).includes('river'), true);
+    assert.equal(wrongAnswers(quiz).includes('person'), true);
+    assert.equal(wrongAnswers(quiz).some(answer => answer === 'one' || answer === 'see'), true);
+    assert.equal(wrongAnswers(quiz).length, 3);
+  });
+
+  it('keeps kana distractor selection independent of reps and radicals', () => {
+    const prompt = { id: 'hiragana:あ', type: 'hiragana', prompt: 'あ', answer: 'a', reps: 5 };
+    const pool = [
+      prompt,
+      { id: 'hiragana:い', type: 'hiragana', prompt: 'い', answer: 'i', reps: 0, radicals: { classical: 85 } },
+      { id: 'hiragana:う', type: 'hiragana', prompt: 'う', answer: 'u', reps: 0, radicals: { classical: 85 } },
+      { id: 'hiragana:え', type: 'hiragana', prompt: 'え', answer: 'e', reps: 0, radicals: { classical: 85 } },
+    ];
+
+    const quiz = buildQuizForCard(prompt, pool, () => 0);
+
+    assert.deepEqual(wrongAnswers(quiz), ['e', 'i', 'u']);
   });
 
   it('chooses a due card before introducing a new card when interval has not fired', () => {
