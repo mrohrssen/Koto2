@@ -15,7 +15,10 @@ import {
   ensureScriptDeckSeeded,
   getActiveScriptType,
   getDueScriptCards,
+  getDueScriptCardsForTypes,
+  getEligibleScriptTypes,
   getNewScriptCards,
+  getNextNewScriptCards,
   getScriptDailyState,
   gradeScriptCard,
   recordScriptIntro,
@@ -209,5 +212,108 @@ describe('script-srs', () => {
     assert.equal(savedCard.reps, 4);
     assert.equal(savedCard.state, State.Learning);
     assert.equal(savedCard.due.toISOString(), '2026-05-30T00:00:00.000Z');
+  });
+
+  it('returns eligible script types with onboarding kana skips applied', () => {
+    assert.deepEqual(getEligibleScriptTypes({ knowsHiragana: false, knowsKatakana: false }), [
+      'hiragana',
+      'katakana',
+      'kanji',
+    ]);
+    assert.deepEqual(getEligibleScriptTypes({ knowsHiragana: true, knowsKatakana: false }), [
+      'katakana',
+      'kanji',
+    ]);
+    assert.deepEqual(getEligibleScriptTypes({ knowsHiragana: false, knowsKatakana: true }), [
+      'hiragana',
+      'kanji',
+    ]);
+    assert.deepEqual(getEligibleScriptTypes({ knowsHiragana: true, knowsKatakana: true }), [
+      'kanji',
+    ]);
+  });
+
+  it('returns due script cards across requested types in earliest due order', () => {
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+
+    const hiragana = data.script.cards.find(card => card.id === 'hiragana:あ');
+    const katakana = data.script.cards.find(card => card.id === 'katakana:イ');
+    const kanji = data.script.cards.find(card => card.id === 'kanji:人');
+    hiragana.reps = 1;
+    hiragana.state = State.Review;
+    hiragana.due = new Date('2026-05-30T00:00:00Z');
+    katakana.reps = 1;
+    katakana.state = State.Review;
+    katakana.due = new Date('2026-05-01T00:00:00Z');
+    kanji.reps = 1;
+    kanji.state = State.Review;
+    kanji.due = new Date('2026-05-15T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const due = getDueScriptCardsForTypes(
+      userId,
+      ['hiragana', 'katakana', 'kanji'],
+      new Date('2026-05-31T00:00:00Z')
+    );
+
+    assert.deepEqual(due.map(card => card.id), [
+      'katakana:イ',
+      'kanji:人',
+      'hiragana:あ',
+    ]);
+  });
+
+  it('uses curriculum tie-breakers when due dates match exactly', () => {
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+
+    const cards = [
+      data.script.cards.find(card => card.id === 'kanji:人'),
+      data.script.cards.find(card => card.id === 'katakana:ア'),
+      data.script.cards.find(card => card.id === 'hiragana:あ'),
+    ];
+    for (const card of cards) {
+      card.reps = 1;
+      card.state = State.Review;
+      card.due = new Date('2026-05-01T00:00:00Z');
+    }
+    saveSrsData(userId, data);
+
+    const due = getDueScriptCardsForTypes(
+      userId,
+      ['hiragana', 'katakana', 'kanji'],
+      new Date('2026-05-31T00:00:00Z')
+    );
+
+    assert.deepEqual(due.slice(0, 3).map(card => card.id), [
+      'hiragana:あ',
+      'katakana:ア',
+      'kanji:人',
+    ]);
+  });
+
+  it('returns new script cards from the first non-skipped type with unreviewed cards', () => {
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(card => card.type === 'hiragana')) {
+      card.reps = 1;
+      card.state = State.Review;
+    }
+    saveSrsData(userId, data);
+
+    assert.equal(getNextNewScriptCards(userId, { knowsHiragana: false, knowsKatakana: false })[0].id, 'katakana:ア');
+    assert.equal(getNextNewScriptCards(userId, { knowsHiragana: true, knowsKatakana: false })[0].id, 'katakana:ア');
+    assert.equal(getNextNewScriptCards(userId, { knowsHiragana: false, knowsKatakana: true })[0].id, 'kanji:人');
   });
 });
