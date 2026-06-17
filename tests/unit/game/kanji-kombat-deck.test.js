@@ -983,6 +983,109 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(state.promptBuffer.some(prompt => isDailyCompletePromptKind(prompt.kind)), true);
   });
 
+  it('refills due work after a stale completion prompt marked the day complete', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    const reviewedCard = data.script.cards.find(card => card.id === 'hiragana:あ');
+    const stillDueCard = data.script.cards.find(card => card.id === 'katakana:ア');
+    reviewedCard.reps = 1;
+    reviewedCard.state = State.Review;
+    reviewedCard.due = new Date('2026-05-01T00:00:00Z');
+    stillDueCard.reps = 1;
+    stillDueCard.state = State.Review;
+    stillDueCard.due = new Date('2026-05-01T00:00:00Z');
+    data.kanjiKombatDaily = {
+      date: '2026-05-31',
+      introducedCount: DAILY_NEW_LIMIT,
+      completed: false,
+    };
+    saveSrsData(userId, data);
+
+    const savedData = loadSrsData(userId);
+    const quiz = buildQuizForCard(
+      savedData.script.cards.find(card => card.id === 'hiragana:あ'),
+      savedData.script.cards.filter(card => card.type === 'hiragana'),
+      () => 0,
+    );
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    state.promptBuffer = [
+      {
+        promptId: 'old-quiz',
+        sequence: 1,
+        kind: 'quiz',
+        cardId: 'hiragana:あ',
+        source: null,
+        quiz,
+      },
+      {
+        promptId: 'stale-complete',
+        sequence: 2,
+        kind: DAILY_COMPLETE_PROMPT_KIND,
+        cardId: null,
+        source: 'dailyComplete',
+      },
+    ];
+    state.promptBufferSeq = 2;
+
+    consumeKanjiKombatPromptHead(state, {
+      promptId: 'old-quiz',
+      sequence: 1,
+      cardId: 'hiragana:あ',
+      kind: 'quiz',
+    }, { userId });
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, true);
+
+    fillKanjiKombatPromptBuffer(userId, state, {
+      excludeCardIds: ['hiragana:あ'],
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(state.promptBuffer[0].kind, 'quiz');
+    assert.equal(state.promptBuffer[0].cardId, 'katakana:ア');
+  });
+
+  it('refills pending practice after a stale completion prompt marked the day complete', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    const practiceCard = data.script.cards.find(card => card.id === 'hiragana:あ');
+    practiceCard.reps = 1;
+    practiceCard.state = State.Review;
+    practiceCard.due = new Date('2099-01-01T00:00:00Z');
+    data.kanjiKombatDaily = {
+      date: '2026-05-31',
+      introducedCount: DAILY_NEW_LIMIT,
+      completed: true,
+    };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    state.noDuePracticeQueue = ['hiragana:あ'];
+    state.promptBuffer = [{
+      promptId: 'stale-complete',
+      sequence: 1,
+      kind: DAILY_COMPLETE_PROMPT_KIND,
+      cardId: null,
+      source: 'dailyComplete',
+    }];
+
+    fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(state.promptBuffer[0].kind, 'quiz');
+    assert.equal(state.promptBuffer[0].cardId, 'hiragana:あ');
+  });
+
   it('does not duplicate an existing daily complete marker while appending endless review prompts', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {

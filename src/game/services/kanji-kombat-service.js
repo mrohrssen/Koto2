@@ -265,6 +265,16 @@ function getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds = []) 
   return [];
 }
 
+function takeNextPracticeCard(state, allEligibleCards, excludedPracticeIds = []) {
+  while (state.noDuePracticeQueue.length > 0) {
+    const practiceCardId = state.noDuePracticeQueue.shift();
+    if (excludedPracticeIds.includes(practiceCardId)) continue;
+    const card = allEligibleCards.find(candidate => candidate.id === practiceCardId);
+    if (card) return card;
+  }
+  return null;
+}
+
 function promptForDailyCompletion(userId, state, opts = {}) {
   if (opts.preview !== true) {
     markScriptDailyComplete(userId, state.localDate);
@@ -283,21 +293,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   state.endlessMode = state.endlessMode === true;
 
   const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
-  if (daily.completed === true && !state.endlessMode) {
-    state.report.completedDaily = true;
-    state.report.scriptDeck = completionScriptDeck(userId, state, opts.onboarding, eligibleTypes);
-    return { kind: 'complete' };
-  }
-
   const dueCards = excludeCards(getDueScriptCardsForTypes(userId, eligibleTypes, now), excludedIds);
-  const newCards = getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds);
-  state.report.scriptDeck = fallbackScriptDeck(eligibleTypes, dueCards, newCards);
-  const canIntroduce = !state.endlessMode
-    && daily.completed !== true
-    && daily.introducedCount < DAILY_NEW_LIMIT
-    && newCards.length > 0;
-  const allEligibleCards = getScriptCards(userId)
-    .filter(card => eligibleTypes.includes(card.type));
 
   if (dueCards.length > 0) {
     state.noDueDiscoveryChainCount = 0;
@@ -307,6 +303,28 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     return { kind: 'quiz', card, quiz };
   }
 
+  const allEligibleCards = getScriptCards(userId)
+    .filter(card => eligibleTypes.includes(card.type));
+
+  if (daily.completed === true && !state.endlessMode) {
+    const practiceCard = takeNextPracticeCard(state, allEligibleCards, excludedPracticeIds);
+    if (practiceCard) {
+      state.report.scriptDeck = practiceCard.type;
+      const quiz = buildQuizForCard(practiceCard, getAnswerPoolForCard(userId, practiceCard), random);
+      return { kind: 'quiz', card: practiceCard, quiz };
+    }
+    state.report.completedDaily = true;
+    state.report.scriptDeck = completionScriptDeck(userId, state, opts.onboarding, eligibleTypes);
+    return { kind: 'complete' };
+  }
+
+  const newCards = getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds);
+  state.report.scriptDeck = fallbackScriptDeck(eligibleTypes, dueCards, newCards);
+  const canIntroduce = !state.endlessMode
+    && daily.completed !== true
+    && daily.introducedCount < DAILY_NEW_LIMIT
+    && newCards.length > 0;
+
   const noDueChainCount = state.noDueDiscoveryChainCount || 0;
   const canContinueNoDueDiscoveryBatch = state.noDuePracticeQueue.length === noDueChainCount;
   if (canIntroduce && noDueChainCount < NO_DUE_DISCOVERY_CHAIN_LIMIT && canContinueNoDueDiscoveryBatch) {
@@ -315,14 +333,11 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     return { kind: 'intro', card, source: 'noDueBatch' };
   }
 
-  while (state.noDuePracticeQueue.length > 0) {
-    const practiceCardId = state.noDuePracticeQueue.shift();
-    if (excludedPracticeIds.includes(practiceCardId)) continue;
-    const card = allEligibleCards.find(candidate => candidate.id === practiceCardId);
-    if (!card) continue;
-    state.report.scriptDeck = card.type;
-    const quiz = buildQuizForCard(card, getAnswerPoolForCard(userId, card), random);
-    return { kind: 'quiz', card, quiz };
+  const practiceCard = takeNextPracticeCard(state, allEligibleCards, excludedPracticeIds);
+  if (practiceCard) {
+    state.report.scriptDeck = practiceCard.type;
+    const quiz = buildQuizForCard(practiceCard, getAnswerPoolForCard(userId, practiceCard), random);
+    return { kind: 'quiz', card: practiceCard, quiz };
   }
 
   if (canIntroduce) {
