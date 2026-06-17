@@ -35,6 +35,14 @@ describe('kanji-kombat deck controller', () => {
     }));
   }
 
+  function markCardsReviewed(cards, { due = '2099-01-01T00:00:00Z' } = {}) {
+    for (const card of cards) {
+      card.reps = Math.max(1, card.reps || 0);
+      card.state = State.Review;
+      card.due = new Date(due);
+    }
+  }
+
   beforeEach(() => {
     tempDir = mkdtempSync(join(tmpdir(), 'koto-kk-deck-'));
     configureSrs({ dataDir: tempDir });
@@ -71,6 +79,149 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(work.card.type, 'hiragana');
     assert.equal(state.currentQuiz, null);
     assert.equal(state.pendingIntro, null);
+  });
+
+  it('chooses the earliest due script card across all non-skipped script types', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+
+    const hiragana = data.script.cards.find(card => card.id === 'hiragana:あ');
+    const katakana = data.script.cards.find(card => card.id === 'katakana:イ');
+    const kanji = data.script.cards.find(card => card.id === 'kanji:人');
+    hiragana.reps = 1;
+    hiragana.state = State.Review;
+    hiragana.due = new Date('2026-05-30T00:00:00Z');
+    katakana.reps = 1;
+    katakana.state = State.Review;
+    katakana.due = new Date('2026-05-01T00:00:00Z');
+    kanji.reps = 1;
+    kanji.state = State.Review;
+    kanji.due = new Date('2026-05-15T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'quiz');
+    assert.equal(work.quiz.cardId, 'katakana:イ');
+    assert.equal(work.card.type, 'katakana');
+    assert.equal(state.report.scriptDeck, 'katakana');
+  });
+
+  it('keeps due hiragana eligible after all hiragana cards have reached Review', () => {
+    const data = loadSrsData(userId);
+    const hiragana = data.script.cards.filter(card => card.type === 'hiragana');
+    markCardsReviewed(hiragana);
+    data.script.cards.find(card => card.id === 'hiragana:あ').due = new Date('2026-05-01T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'quiz');
+    assert.equal(work.quiz.cardId, 'hiragana:あ');
+    assert.equal(state.report.scriptDeck, 'hiragana');
+  });
+
+  it('keeps due katakana eligible after all katakana cards have reached Review', () => {
+    const data = loadSrsData(userId);
+    markCardsReviewed(data.script.cards.filter(card => card.type === 'hiragana'));
+    markCardsReviewed(data.script.cards.filter(card => card.type === 'katakana'));
+    data.script.cards.find(card => card.id === 'katakana:ア').due = new Date('2026-05-01T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'quiz');
+    assert.equal(work.quiz.cardId, 'katakana:ア');
+    assert.equal(state.report.scriptDeck, 'katakana');
+  });
+
+  it('honors onboarding skips while choosing due cards', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    const hiragana = data.script.cards.find(card => card.id === 'hiragana:あ');
+    const katakana = data.script.cards.find(card => card.id === 'katakana:ア');
+    hiragana.reps = 1;
+    hiragana.state = State.Review;
+    hiragana.due = new Date('2026-05-01T00:00:00Z');
+    katakana.reps = 1;
+    katakana.state = State.Review;
+    katakana.due = new Date('2026-05-15T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: true, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'quiz');
+    assert.equal(work.quiz.cardId, 'katakana:ア');
+  });
+
+  it('a learning-step card due minutes ago preempts new-card introductions', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    const learningCard = data.script.cards.find(card => card.id === 'hiragana:あ');
+    learningCard.reps = 1;
+    learningCard.state = State.Learning;
+    learningCard.due = new Date('2026-05-31T00:03:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    state.reviewsSinceIntro = state.nextIntroAfter;
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:05:00Z'),
+    });
+
+    assert.equal(work.kind, 'quiz');
+    assert.equal(work.quiz.cardId, 'hiragana:あ');
+  });
+
+  it('introduces new cards in curriculum order only after no eligible cards are due', () => {
+    const data = loadSrsData(userId);
+    markCardsReviewed(data.script.cards.filter(card => card.type === 'hiragana'));
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'intro');
+    assert.equal(work.card.id, 'katakana:ア');
+    assert.equal(state.report.scriptDeck, 'katakana');
   });
 
   it('introduces a new card when no due cards exist and daily cap remains', () => {
@@ -449,6 +600,59 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
     assert.equal(new Set(state.promptBuffer.map(prompt => prompt.promptId)).size, 60);
     assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 60);
+  });
+
+  it('fills the prompt buffer in earliest due order without duplicate due cards', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    const dueCards = [
+      ['hiragana:あ', '2026-05-30T00:00:00Z'],
+      ['katakana:ア', '2026-05-01T00:00:00Z'],
+      ['kanji:人', '2026-05-15T00:00:00Z'],
+    ];
+    for (const [id, due] of dueCards) {
+      const card = data.script.cards.find(candidate => candidate.id === id);
+      card.reps = 1;
+      card.state = State.Review;
+      card.due = new Date(due);
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const prompts = fillKanjiKombatPromptBuffer(userId, state, {
+      target: 3,
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.deepEqual(prompts.map(prompt => prompt.cardId), [
+      'katakana:ア',
+      'kanji:人',
+      'hiragana:あ',
+    ]);
+    assert.equal(new Set(prompts.map(prompt => prompt.cardId)).size, 3);
+  });
+
+  it('preserves the last real script deck when daily completion is already recorded', () => {
+    const data = loadSrsData(userId);
+    data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: DAILY_NEW_LIMIT, completed: true };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    state.report.scriptDeck = 'katakana';
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'complete');
+    assert.equal(state.report.scriptDeck, 'katakana');
   });
 
   it('places one daily complete marker before endless early-review runway', () => {
