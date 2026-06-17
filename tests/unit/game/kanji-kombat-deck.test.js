@@ -390,30 +390,24 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(getKanjiKombatActivePrompt(state)?.kind, 'intro');
   });
 
-  it('resets intro spacing after a discovery so discoveries do not chain', () => {
+  it('due cards preempt review-cadence intros even when the intro interval has fired', () => {
     const data = loadSrsData(userId);
     const dueCard = data.script.cards.find(c => c.id === 'hiragana:あ');
     dueCard.due = new Date('2026-05-30T00:00:00Z');
     dueCard.reps = 1;
+    dueCard.state = State.Review;
     saveSrsData(userId, data);
 
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
     state.reviewsSinceIntro = state.nextIntroAfter;
-    const intro = chooseNextScriptWork(userId, state, {
-      random: () => 0,
-      now: new Date('2026-05-31T00:00:00Z'),
-    });
-    assert.equal(intro.kind, 'intro');
-
-    const result = resolveIntroChoice(userId, state, intro.card.id, 'known', {
-      introSource: intro.source,
+    const work = chooseNextScriptWork(userId, state, {
       random: () => 0,
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    assert.equal(state.reviewsSinceIntro, 0);
-    assert.equal(state.nextIntroAfter, 3);
-    assert.equal(result.next.kind, 'quiz');
+    assert.equal(work.kind, 'quiz');
+    assert.equal(work.quiz.cardId, 'hiragana:あ');
+    assert.equal(state.noDueDiscoveryChainCount, 0);
   });
 
   it('chains up to three discoveries when no cards are due, then tests that batch', () => {
@@ -530,7 +524,9 @@ describe('kanji-kombat deck controller', () => {
   it('introduces the first unlearned kanji by frequency order once kana are graduated', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana' || c.type === 'katakana')) {
+      card.reps = 1;
       card.state = State.Review;
+      card.due = new Date('2099-01-01T00:00:00Z');
     }
     saveSrsData(userId, data);
 
@@ -557,7 +553,9 @@ describe('kanji-kombat deck controller', () => {
   it('skips learned kanji and introduces the next frequency-ranked kanji', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana' || c.type === 'katakana')) {
+      card.reps = 1;
       card.state = State.Review;
+      card.due = new Date('2099-01-01T00:00:00Z');
     }
     const firstKanji = data.script.cards.find(card => card.id === 'kanji:人');
     firstKanji.reps = 1;
@@ -834,7 +832,7 @@ describe('kanji-kombat deck controller', () => {
     });
 
     assert.deepEqual(summarizePrompts(refilled), summarizePrompts(fresh));
-    assert.deepEqual(refilled.map(prompt => prompt.kind), ['intro', 'quiz', 'quiz', 'quiz', 'intro']);
+    assert.deepEqual(refilled.map(prompt => prompt.kind), ['quiz', 'quiz', 'quiz', 'quiz', 'intro']);
   });
 
   it('reserves virtual daily intro budget while previewing prompts', () => {

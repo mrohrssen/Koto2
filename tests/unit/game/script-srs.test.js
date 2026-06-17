@@ -67,7 +67,9 @@ describe('script-srs', () => {
     assert.equal(getActiveScriptType(userId), 'hiragana');
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.reps = 1;
       card.state = State.Review;
+      card.due = new Date('2099-01-01T00:00:00Z');
     }
     saveSrsData(userId, data);
     assert.equal(getActiveScriptType(userId), 'katakana');
@@ -155,7 +157,9 @@ describe('script-srs', () => {
     ensureScriptDeckSeeded(userId);
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana' || c.type === 'katakana')) {
+      card.reps = 1;
       card.state = State.Review;
+      card.due = new Date('2099-01-01T00:00:00Z');
     }
     saveSrsData(userId, data);
 
