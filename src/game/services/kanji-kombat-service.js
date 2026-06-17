@@ -34,9 +34,9 @@ import {
 import { getCrestMultipliers, applyCrestBonuses } from './crest-service.js';
 import {
   DAILY_NEW_LIMIT,
-  getActiveScriptType,
-  getDueScriptCards,
-  getNewScriptCards,
+  getDueScriptCardsForTypes,
+  getEligibleScriptTypes,
+  getNextNewScriptCards,
   getScriptCards,
   getScriptDailyState,
   gradeScriptCard,
@@ -239,6 +239,21 @@ function getEarlyReviewCards(cards, excludedIds = []) {
   return sortByDueDate(excludeCards(cards, excludedIds).filter(card => (card.reps || 0) > 0));
 }
 
+function getAnswerPoolForCard(userId, card) {
+  return getScriptCards(userId, card.type);
+}
+
+function fallbackScriptDeck(eligibleTypes, dueCards, newCards) {
+  return dueCards[0]?.type || newCards[0]?.type || eligibleTypes[0] || 'kanji';
+}
+
+function completionScriptDeck(userId, state, onboarding, eligibleTypes) {
+  return state.report?.scriptDeck
+    || getNextNewScriptCards(userId, onboarding)[0]?.type
+    || eligibleTypes[eligibleTypes.length - 1]
+    || 'kanji';
+}
+
 function promptForDailyCompletion(userId, state, opts = {}) {
   if (opts.preview !== true) {
     markScriptDailyComplete(userId, state.localDate);
@@ -252,35 +267,32 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   const random = opts.random || Math.random;
   const excludedIds = opts.excludeCardIds || [];
   const excludedPracticeIds = opts.excludePracticeCardIds || excludedIds;
-  const activeType = opts.activeType || getActiveScriptType(userId, opts.onboarding);
-  state.report.scriptDeck = activeType;
+  const eligibleTypes = getEligibleScriptTypes(opts.onboarding);
   if (!Array.isArray(state.noDuePracticeQueue)) state.noDuePracticeQueue = [];
   state.endlessMode = state.endlessMode === true;
 
   const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
   if (daily.completed === true && !state.endlessMode) {
     state.report.completedDaily = true;
+    state.report.scriptDeck = completionScriptDeck(userId, state, opts.onboarding, eligibleTypes);
     return { kind: 'complete' };
   }
 
-  const dueCards = excludeCards(getDueScriptCards(userId, activeType, now), excludedIds);
-  const newCards = excludeCards(getNewScriptCards(userId, activeType), excludedIds);
+  const dueCards = excludeCards(getDueScriptCardsForTypes(userId, eligibleTypes, now), excludedIds);
+  const newCards = excludeCards(getNextNewScriptCards(userId, opts.onboarding), excludedIds);
+  state.report.scriptDeck = fallbackScriptDeck(eligibleTypes, dueCards, newCards);
   const canIntroduce = !state.endlessMode
     && daily.completed !== true
     && daily.introducedCount < DAILY_NEW_LIMIT
     && newCards.length > 0;
-  const allCards = getScriptCards(userId, activeType);
-
-  if (dueCards.length > 0 && state.reviewsSinceIntro >= state.nextIntroAfter && canIntroduce) {
-    state.noDueDiscoveryChainCount = 0;
-    const card = newCards[0];
-    return { kind: 'intro', card, source: 'reviewCadence' };
-  }
+  const allEligibleCards = getScriptCards(userId)
+    .filter(card => eligibleTypes.includes(card.type));
 
   if (dueCards.length > 0) {
     state.noDueDiscoveryChainCount = 0;
     const card = dueCards[0];
-    const quiz = buildQuizForCard(card, allCards, random);
+    state.report.scriptDeck = card.type;
+    const quiz = buildQuizForCard(card, getAnswerPoolForCard(userId, card), random);
     return { kind: 'quiz', card, quiz };
   }
 
@@ -295,9 +307,10 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   while (state.noDuePracticeQueue.length > 0) {
     const practiceCardId = state.noDuePracticeQueue.shift();
     if (excludedPracticeIds.includes(practiceCardId)) continue;
-    const card = allCards.find(candidate => candidate.id === practiceCardId);
+    const card = allEligibleCards.find(candidate => candidate.id === practiceCardId);
     if (!card) continue;
-    const quiz = buildQuizForCard(card, allCards, random);
+    state.report.scriptDeck = card.type;
+    const quiz = buildQuizForCard(card, getAnswerPoolForCard(userId, card), random);
     return { kind: 'quiz', card, quiz };
   }
 
@@ -309,10 +322,11 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   }
 
   if (state.endlessMode) {
-    const earlyReviewCards = getEarlyReviewCards(allCards, excludedIds);
+    const earlyReviewCards = getEarlyReviewCards(allEligibleCards, excludedIds);
     if (earlyReviewCards.length > 0) {
       const card = earlyReviewCards[0];
-      const quiz = buildQuizForCard(card, allCards, random);
+      state.report.scriptDeck = card.type;
+      const quiz = buildQuizForCard(card, getAnswerPoolForCard(userId, card), random);
       return { kind: 'quiz', card, quiz, source: 'earlyReview' };
     }
   }
@@ -487,10 +501,10 @@ function isBufferedCompletionAuthoritative(userId, state, opts = {}) {
     return true;
   }
 
-  const activeType = opts.activeType || getActiveScriptType(userId, opts.onboarding);
+  const eligibleTypes = getEligibleScriptTypes(opts.onboarding);
   const now = opts.now || new Date();
-  const hasDueCards = getDueScriptCards(userId, activeType, now).length > 0;
-  const hasNewCards = getNewScriptCards(userId, activeType).length > 0;
+  const hasDueCards = getDueScriptCardsForTypes(userId, eligibleTypes, now).length > 0;
+  const hasNewCards = getNextNewScriptCards(userId, opts.onboarding).length > 0;
   const hasPracticeCards = Array.isArray(state.noDuePracticeQueue) && state.noDuePracticeQueue.length > 0;
   return !hasDueCards && !hasNewCards && !hasPracticeCards;
 }
