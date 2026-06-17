@@ -638,6 +638,36 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(new Set(prompts.map(prompt => prompt.cardId)).size, 3);
   });
 
+  it('keeps report script deck aligned to the active buffered prompt', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    const hiragana = data.script.cards.find(card => card.id === 'hiragana:あ');
+    const katakana = data.script.cards.find(card => card.id === 'katakana:ア');
+    hiragana.reps = 1;
+    hiragana.state = State.Review;
+    hiragana.due = new Date('2026-05-01T00:00:00Z');
+    katakana.reps = 1;
+    katakana.state = State.Review;
+    katakana.due = new Date('2026-05-15T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      target: 2,
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(getKanjiKombatActivePrompt(state).cardId, 'hiragana:あ');
+    assert.equal(state.promptBuffer[1].cardId, 'katakana:ア');
+    assert.equal(state.report.scriptDeck, 'hiragana');
+  });
+
   it('preserves the last real script deck when daily completion is already recorded', () => {
     const data = loadSrsData(userId);
     data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: DAILY_NEW_LIMIT, completed: true };
@@ -855,6 +885,35 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(prompts.at(-1).kind, 'quiz');
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, DAILY_NEW_LIMIT - 2);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
+  });
+
+  it('continues new-card planning into later eligible script types after exclusions', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 1;
+      card.state = State.Review;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    const remainingHiragana = data.script.cards.find(card => card.id === 'hiragana:あ');
+    remainingHiragana.reps = 0;
+    remainingHiragana.state = State.New;
+    for (const card of data.script.cards.filter(card => card.type === 'katakana')) {
+      card.reps = 0;
+      card.state = State.New;
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const prompts = fillKanjiKombatPromptBuffer(userId, state, {
+      target: 8,
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(prompts.some(prompt => isDailyCompletePromptKind(prompt.kind)), false);
+    assert.equal(prompts.some(prompt => prompt.kind === 'intro' && prompt.cardId?.startsWith('katakana:')), true);
+    assert.ok(data.script.cards.some(card => card.type === 'katakana' && (card.reps || 0) === 0));
   });
 
   it('drops stale speculative completion prompts when unknown daily budget remains', () => {

@@ -36,6 +36,7 @@ import {
   DAILY_NEW_LIMIT,
   getDueScriptCardsForTypes,
   getEligibleScriptTypes,
+  getNewScriptCards,
   getNextNewScriptCards,
   getScriptCards,
   getScriptDailyState,
@@ -254,6 +255,16 @@ function completionScriptDeck(userId, state, onboarding, eligibleTypes) {
     || 'kanji';
 }
 
+function getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds = []) {
+  const excluded = new Set(excludedIds);
+  for (const type of eligibleTypes) {
+    const cards = getNewScriptCards(userId, type)
+      .filter(card => !excluded.has(card.id));
+    if (cards.length > 0) return cards;
+  }
+  return [];
+}
+
 function promptForDailyCompletion(userId, state, opts = {}) {
   if (opts.preview !== true) {
     markScriptDailyComplete(userId, state.localDate);
@@ -279,7 +290,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   }
 
   const dueCards = excludeCards(getDueScriptCardsForTypes(userId, eligibleTypes, now), excludedIds);
-  const newCards = excludeCards(getNextNewScriptCards(userId, opts.onboarding), excludedIds);
+  const newCards = getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds);
   state.report.scriptDeck = fallbackScriptDeck(eligibleTypes, dueCards, newCards);
   const canIntroduce = !state.endlessMode
     && daily.completed !== true
@@ -393,8 +404,14 @@ function promptFromWork(state, work) {
   return null;
 }
 
+function scriptDeckFromPrompt(prompt) {
+  return prompt?.quiz?.type || prompt?.intro?.card?.type || null;
+}
+
 function syncKanjiKombatPromptBufferState(userId, state) {
   const head = getKanjiKombatActivePrompt(state);
+  const activeDeck = scriptDeckFromPrompt(head);
+  if (activeDeck) state.report.scriptDeck = activeDeck;
   if (isDailyCompletePrompt(head)) {
     if (userId) markScriptDailyComplete(userId, state.localDate);
     state.report.completedDaily = true;
@@ -595,9 +612,8 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
     advancePreviewDailyStateAfterPrompt(previewDailyState, prompt);
   }
 
-  if (planningState.report?.scriptDeck) {
-    state.report.scriptDeck = planningState.report.scriptDeck;
-  }
+  const activeDeck = scriptDeckFromPrompt(getKanjiKombatActivePrompt(state));
+  if (activeDeck) state.report.scriptDeck = activeDeck;
   return buffer;
 }
 
