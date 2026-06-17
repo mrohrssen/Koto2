@@ -1,7 +1,7 @@
 # Kanji Kombat FSRS Due Order Design
 
-**Date:** 2026-06-16  
-**Status:** Draft for user review  
+**Date:** 2026-06-16
+**Status:** Draft for user review
 **Feature:** Correct Kanji Kombat script-card scheduling
 
 ## Summary
