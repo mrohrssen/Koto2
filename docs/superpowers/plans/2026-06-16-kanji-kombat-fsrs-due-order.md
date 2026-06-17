@@ -17,6 +17,13 @@
 - Modify `tests/unit/game/script-srs.test.js`: cover due sorting, onboarding filters, and curriculum new-card selection at the script scheduler boundary.
 - Modify `tests/unit/game/kanji-kombat-deck.test.js`: cover end-to-end Kanji Kombat prompt selection, prompt-buffer ordering, skip preferences, and changed due-before-intro behavior.
 
+## Behavior Changes To Preserve Deliberately
+
+- Any eligible due card blocks new-card introductions, even if the intro cadence interval has fired. This is intentional: FSRS `due <= now` is the scheduling source of truth.
+- Learning-step cards due minutes ago are treated exactly like other due cards and should preempt new-card introductions. Cards due a few minutes in the future are not due yet.
+- `reviewsSinceIntro`, `nextIntroAfter`, and `rollIntroInterval()` become less important after removing due-plus-intro cadence, but they are left in this patch because existing state payloads, prompt-buffer planning, and no-due discovery flow still write them. Cleanup belongs in a separate refactor.
+- Daily-complete reporting should preserve the last real script deck when available. Do not overwrite completion state with `hiragana` just because it is the first eligible type.
+
 ## Task 1: Add Script Scheduler Tests
 
 **Files:**
@@ -395,6 +402,31 @@ Append these tests near the existing due-card tests:
     assert.equal(work.quiz.cardId, 'katakana:ア');
   });
 
+  it('a learning-step card due minutes ago preempts new-card introductions', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards) {
+      card.reps = 0;
+      card.state = State.New;
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    const learningCard = data.script.cards.find(card => card.id === 'hiragana:あ');
+    learningCard.reps = 1;
+    learningCard.state = State.Learning;
+    learningCard.due = new Date('2026-05-31T00:03:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    state.reviewsSinceIntro = state.nextIntroAfter;
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:05:00Z'),
+    });
+
+    assert.equal(work.kind, 'quiz');
+    assert.equal(work.quiz.cardId, 'hiragana:あ');
+  });
+
   it('introduces new cards in curriculum order only after no eligible cards are due', () => {
     const data = loadSrsData(userId);
     markCardsReviewed(data.script.cards.filter(card => card.type === 'hiragana'));
@@ -453,6 +485,23 @@ Append this test near the existing prompt-buffer tests:
     ]);
     assert.equal(new Set(prompts.map(prompt => prompt.cardId)).size, 3);
   });
+
+  it('preserves the last real script deck when daily completion is already recorded', () => {
+    const data = loadSrsData(userId);
+    data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: DAILY_NEW_LIMIT, completed: true };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    state.report.scriptDeck = 'katakana';
+    const work = chooseNextScriptWork(userId, state, {
+      onboarding: { knowsHiragana: false, knowsKatakana: false },
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'complete');
+    assert.equal(state.report.scriptDeck, 'katakana');
+  });
 ```
 
 - [ ] **Step 4: Run Kanji Kombat deck tests and verify failures describe old behavior**
@@ -508,6 +557,13 @@ function getAnswerPoolForCard(userId, card) {
 function fallbackScriptDeck(eligibleTypes, dueCards, newCards) {
   return dueCards[0]?.type || newCards[0]?.type || eligibleTypes[0] || 'kanji';
 }
+
+function completionScriptDeck(userId, state, onboarding, eligibleTypes) {
+  return state.report?.scriptDeck
+    || getNextNewScriptCards(userId, onboarding)[0]?.type
+    || eligibleTypes[eligibleTypes.length - 1]
+    || 'kanji';
+}
 ```
 
 - [ ] **Step 3: Replace active-type scheduling in `chooseNextScriptWork()`**
@@ -522,7 +578,7 @@ Inside `chooseNextScriptWork()`, replace the block from `const activeType = ...`
   const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
   if (daily.completed === true && !state.endlessMode) {
     state.report.completedDaily = true;
-    state.report.scriptDeck = eligibleTypes[0] || 'kanji';
+    state.report.scriptDeck = completionScriptDeck(userId, state, opts.onboarding, eligibleTypes);
     return { kind: 'complete' };
   }
 
@@ -622,7 +678,7 @@ Expected: Some new tests should pass. Existing tests that relied on review-caden
 **Files:**
 - Modify: `tests/unit/game/script-srs.test.js`
 - Modify: `tests/unit/game/kanji-kombat-deck.test.js`
-- Inspect and modify on fixture failure: `tests/integration/flows/kanji-kombat.test.js`
+- Inspect and modify on fixture or expectation failure: `tests/integration/flows/kanji-kombat.test.js`
 
 - [ ] **Step 1: Make state-only graduation fixtures realistic**
 
@@ -640,7 +696,30 @@ Use this replacement pattern in `tests/unit/game/script-srs.test.js`:
 
 Use the same pattern in `tests/unit/game/kanji-kombat-deck.test.js` for kanji-introduction tests that graduate kana before expecting `kanji:人`.
 
-- [ ] **Step 2: Replace the review-cadence intro expectation**
+- [ ] **Step 2: Pre-audit the scheduling-sensitive existing tests**
+
+Before editing expectations, inspect these existing tests because they are sensitive to the global due queue, no due-plus-intro cadence, or `State.Review` plus `reps` semantics:
+
+- `tests/unit/game/script-srs.test.js`: `selects hiragana until all hiragana script cards are Review`
+- `tests/unit/game/script-srs.test.js`: `returns new kanji in frequency order after hiragana and katakana graduate`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `resets intro spacing after a discovery so discoveries do not chain`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `introduces the first unlearned kanji by frequency order once kana are graduated`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `skips learned kanji and introduces the next frequency-ranked kanji`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `places one daily complete marker before endless early-review runway`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `does not duplicate the daily complete marker when refilling after the boundary`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `builds intro prompts in the buffer without recording daily intro counts`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `refills by replaying buffered prompts so partial planning matches a fresh full fill`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `reserves virtual daily intro budget while previewing prompts`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `does not fill the larger runway with new-card intros beyond the daily cap`
+- `tests/unit/game/kanji-kombat-deck.test.js`: `does not duplicate an existing daily complete marker while appending endless review prompts`
+
+For each failure in these tests, classify it before editing:
+
+- Fixture bug: the test meant "reviewed" but did not set `reps > 0`.
+- Expected behavior change: the old expectation relied on active-deck-only scheduling or review-cadence intros.
+- Real regression: the failure contradicts the spec and should be fixed in implementation, not papered over in the test.
+
+- [ ] **Step 3: Replace the review-cadence intro expectation**
 
 In `tests/unit/game/kanji-kombat-deck.test.js`, replace the existing `it('resets intro spacing after a discovery so discoveries do not chain', ...)` body with:
 
@@ -666,7 +745,7 @@ In `tests/unit/game/kanji-kombat-deck.test.js`, replace the existing `it('resets
   });
 ```
 
-- [ ] **Step 3: Update prompt-buffer sequence expectations**
+- [ ] **Step 4: Update prompt-buffer sequence expectations**
 
 In the `refills by replaying buffered prompts so partial planning matches a fresh full fill` test, replace:
 
@@ -680,7 +759,7 @@ with:
     assert.deepEqual(refilled.map(prompt => prompt.kind), ['quiz', 'quiz', 'quiz', 'quiz', 'intro']);
 ```
 
-- [ ] **Step 4: Run focused tests**
+- [ ] **Step 5: Run focused unit tests and iterate until green**
 
 Run:
 
@@ -690,7 +769,9 @@ node --test tests/unit/game/script-srs.test.js tests/unit/game/kanji-kombat-deck
 
 Expected: PASS.
 
-- [ ] **Step 5: Run the Kanji Kombat integration flow if focused unit tests pass**
+If this command fails, do not defer the failures to the full suite. Apply the classification from Step 2 and repeat this exact command until it passes.
+
+- [ ] **Step 6: Run the Kanji Kombat integration flow and treat expectation failures seriously**
 
 Run:
 
@@ -698,7 +779,14 @@ Run:
 node --test tests/integration/flows/kanji-kombat.test.js
 ```
 
-Expected: PASS. If it fails only because a fixture set `state = State.Review` without `reps`, update that fixture with `reps = 1` and a future `due` date as in Step 1.
+Expected: PASS.
+
+Do not assume failures are trivial fixture updates. These integration tests assert prompt-buffer ordering, `source: 'earlyReview'`, completion prompts, and `report.scriptDeck`. If any of those fail, compare the observed result against the spec:
+
+- Due-first ordering and per-type answer pools are intended behavior.
+- A completion prompt should still appear when no eligible due cards, no no-due practice cards, and no allowed new cards remain.
+- Endless-mode early reviews should still use `source: 'earlyReview'`.
+- `report.scriptDeck` should preserve the last real selected deck when available, not reset to the first eligible type.
 
 Use this exact fixture shape in `tests/integration/flows/kanji-kombat.test.js` when a script card is intended to be previously reviewed but not currently due:
 
@@ -711,7 +799,7 @@ Use this exact fixture shape in `tests/integration/flows/kanji-kombat.test.js` w
 }
 ```
 
-- [ ] **Step 6: Commit test expectation updates**
+- [ ] **Step 7: Commit test expectation updates**
 
 ```bash
 /usr/bin/git add tests/unit/game/script-srs.test.js tests/unit/game/kanji-kombat-deck.test.js tests/integration/flows/kanji-kombat.test.js
@@ -726,6 +814,8 @@ Use this exact fixture shape in `tests/integration/flows/kanji-kombat.test.js` w
 - Verify: `tests/unit/game/script-srs.test.js`
 - Verify: `tests/unit/game/kanji-kombat-deck.test.js`
 - Verify: `tests/integration/flows/kanji-kombat.test.js`
+
+The focused `node --test` commands are used because these specific files do not rely on module mocks. If a focused command fails because of runner configuration rather than test assertions, immediately rerun through the project wrapper with `npm run test:unit` and investigate the real failing assertion from that output.
 
 - [ ] **Step 1: Syntax-check changed JS files**
 
