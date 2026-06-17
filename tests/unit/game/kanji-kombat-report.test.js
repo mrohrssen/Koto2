@@ -44,4 +44,30 @@ describe('Kanji Kombat report summary', () => {
     assert.equal(summary.isVictory, false);
     assert.equal(summary.kanjiKombat.completedDaily, true);
   });
+
+  it('derives accuracy when only the live Kanji Kombat report is available', () => {
+    const summary = buildRunSummary({
+      mode: 'kanjiKombat',
+      kanjiKombat: {
+        wave: 3,
+        waveReached: 4,
+        highestStreak: 6,
+        report: {
+          wavesCleared: 2,
+          correctAnswers: 3,
+          wrongAnswers: 1,
+          cardsReviewed: 4,
+          scriptDeck: 'kanji',
+        },
+      },
+      creatureParty: {
+        active: [{ id: 'hi', nameEn: 'Hi', level: 5 }],
+      },
+    }, {});
+
+    assert.equal(summary.kanjiKombat.accuracy, 75);
+    assert.equal(summary.kanjiKombat.wave, 4);
+    assert.equal(summary.kanjiKombat.highestStreak, 6);
+    assert.deepEqual(summary.kanjiKombat.temporaryLevels, [{ id: 'hi', nameEn: 'Hi', level: 5 }]);
+  });
 });

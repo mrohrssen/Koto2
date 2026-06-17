@@ -6,13 +6,48 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const CREATURES = JSON.parse(readFileSync(join(__dirname, '../../data/creatures.json'), 'utf-8'));
 const ITEMS = JSON.parse(readFileSync(join(__dirname, '../../data/items.json'), 'utf-8'));
 
+function numberOr(value, fallback = 0) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+}
+
+function buildKanjiKombatReport(run) {
+  const kk = run.kanjiKombat || {};
+  const source = kk.finalReport || kk.report || {};
+  const correctAnswers = numberOr(source.correctAnswers);
+  const wrongAnswers = numberOr(source.wrongAnswers);
+  const totalAnswers = correctAnswers + wrongAnswers;
+  const sourceAccuracy = Number(source.accuracy);
+  const accuracy = totalAnswers > 0
+    ? Math.round((correctAnswers / totalAnswers) * 100)
+    : Number.isFinite(sourceAccuracy) ? sourceAccuracy : 0;
+  const activeParty = Array.isArray(run.creatureParty?.active) ? run.creatureParty.active : [];
+
+  return {
+    ...source,
+    wave: Math.max(1, Math.floor(numberOr(
+      source.wave ?? kk.waveReached ?? kk.wave,
+      numberOr(source.wavesCleared) + 1
+    ))),
+    highestStreak: numberOr(source.highestStreak ?? kk.highestStreak),
+    accuracy,
+    temporaryLevels: Array.isArray(source.temporaryLevels)
+      ? source.temporaryLevels
+      : activeParty.map(c => ({
+        id: c.id,
+        nameEn: c.nameEn,
+        level: c.level || 1
+      })),
+  };
+}
+
 /**
  * Build the adventure report summary object from run and meta state.
  * Called just before run state is cleared.
  */
 export function buildRunSummary(run, meta) {
   if (run.mode === 'kanjiKombat') {
-    const report = run.kanjiKombat?.finalReport || run.kanjiKombat?.report || {};
+    const report = buildKanjiKombatReport(run);
     return {
       mode: 'kanjiKombat',
       isVictory: report.completedDaily === true && report.defeated !== true,
