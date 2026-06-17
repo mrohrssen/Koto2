@@ -40,6 +40,7 @@ describe('script-decks static data', () => {
       sortIndex: 1,
       source: 'koto-kanji-dictionary',
       frequencyRank: 1,
+      radicals: { classical: 9 },
     });
     assert.deepEqual(KANJI_SCRIPT_CARDS.slice(0, 4).map(card => card.prompt), ['人', '言', '見', '一']);
     assert.equal(KANJI_SCRIPT_CARDS.some(card => card.source === 'wanikani-pleasant-100'), false);

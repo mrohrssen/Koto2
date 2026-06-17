@@ -4,6 +4,7 @@ import {
   getKotoKanjiEntries,
   getKotoKanjiEntry,
   getKotoKanjiMetadata,
+  validateKotoKanjiDictionary,
 } from '../../../src/game/koto-kanji-dictionary.js';
 
 function assertNoField(entry, field) {
@@ -41,9 +42,33 @@ describe('koto kanji dictionary', () => {
     assert.equal(typeof entry.primaryReading, 'string');
     assert.equal(Array.isArray(entry.secondaryReadings), true);
     assert.equal(Array.isArray(entry.examples), true);
+    assert.equal(typeof entry.radicals, 'object');
+    assert.equal(Number.isInteger(entry.radicals.classical), true);
+    assert.equal(entry.radicals.classical, 9);
     assertNoField(entry, 'onYomi');
     assertNoField(entry, 'kunYomi');
     assertNoField(entry, 'strokeCount');
+  });
+
+  it('rejects invalid radical metadata', () => {
+    const entry = getKotoKanjiEntry('人');
+    const dictionary = {
+      schemaVersion: 2,
+      curationVersion: 'test',
+      maintainer: 'Koto',
+      status: 'hand-curated',
+      entries: [
+        {
+          ...entry,
+          radicals: { classical: 0 },
+        },
+      ],
+    };
+
+    assert.throws(
+      () => validateKotoKanjiDictionary(dictionary),
+      /entries\[0\]\.radicals\.classical must be an integer from 1 to 214/
+    );
   });
 
   it('has unique contiguous ranks and unique kanji literals', () => {

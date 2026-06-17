@@ -21,7 +21,17 @@ const KATAKANA_BASE = [
   ['パ', 'pa'], ['ピ', 'pi'], ['プ', 'pu'], ['ペ', 'pe'], ['ポ', 'po'],
 ];
 
-function scriptCard({ type, prompt, answer, reading = prompt, keyword = null, sortIndex, source, frequencyRank = null }) {
+function scriptCard({
+  type,
+  prompt,
+  answer,
+  reading = prompt,
+  keyword = null,
+  sortIndex,
+  source,
+  frequencyRank = null,
+  radicals = null,
+}) {
   const card = {
     id: `${type}:${prompt}`,
     type,
@@ -33,6 +43,7 @@ function scriptCard({ type, prompt, answer, reading = prompt, keyword = null, so
     source,
   };
   if (frequencyRank !== null) card.frequencyRank = frequencyRank;
+  if (radicals) card.radicals = { ...radicals };
   return card;
 }
 
@@ -63,6 +74,7 @@ export const KANJI_SCRIPT_CARDS = getKotoKanjiEntries().map((entry, index) => sc
   sortIndex: index + 1,
   source: 'koto-kanji-dictionary',
   frequencyRank: entry.frequencyRank,
+  radicals: entry.radicals,
 }));
 
 export function getStaticScriptCards(type) {

@@ -28,6 +28,19 @@ function validateExample(example, label) {
   assertString(example.source, `${label}.source`);
 }
 
+function validateRadicals(radicals, label) {
+  if (!radicals || typeof radicals !== 'object' || Array.isArray(radicals)) {
+    throw new Error(`Invalid Koto kanji dictionary: ${label} must be an object`);
+  }
+  if (
+    !Number.isInteger(radicals.classical)
+    || radicals.classical < 1
+    || radicals.classical > 214
+  ) {
+    throw new Error(`Invalid Koto kanji dictionary: ${label}.classical must be an integer from 1 to 214`);
+  }
+}
+
 function validateEntry(entry, index) {
   const label = `entries[${index}]`;
   if (!entry || typeof entry !== 'object') {
@@ -47,6 +60,7 @@ function validateEntry(entry, index) {
   assertArray(entry.secondaryReadings, `${label}.secondaryReadings`);
   assertArray(entry.examples, `${label}.examples`);
   entry.examples.forEach((example, exampleIndex) => validateExample(example, `${label}.examples[${exampleIndex}]`));
+  validateRadicals(entry.radicals, `${label}.radicals`);
 
   for (const forbidden of ['onYomi', 'kunYomi', 'strokeCount']) {
     if (Object.prototype.hasOwnProperty.call(entry, forbidden)) {
@@ -84,7 +98,12 @@ function validateDictionary(data) {
   });
 }
 
-validateDictionary(dictionary);
+export function validateKotoKanjiDictionary(data) {
+  validateDictionary(data);
+  return true;
+}
+
+validateKotoKanjiDictionary(dictionary);
 
 const entries = Object.freeze([...dictionary.entries].sort((a, b) => a.frequencyRank - b.frequencyRank));
 const metadata = Object.freeze({

@@ -148,6 +148,31 @@ describe('script-srs', () => {
     assert.equal(refreshed.last_review.toISOString(), '2098-12-01T00:00:00.000Z');
   });
 
+  it('refreshes kanji radical metadata while preserving reviewed SRS progress', () => {
+    ensureScriptDeckSeeded(userId);
+    const staticCard = KANJI_SCRIPT_CARDS[0];
+    const data = loadSrsData(userId);
+    const savedCard = data.script.cards.find(card => card.id === staticCard.id);
+
+    delete savedCard.radicals;
+    savedCard.stability = 8.5;
+    savedCard.difficulty = 3.25;
+    savedCard.reps = 4;
+    savedCard.state = State.Review;
+    savedCard.due = new Date('2099-01-01T00:00:00.000Z');
+    saveSrsData(userId, data);
+
+    ensureScriptDeckSeeded(userId);
+
+    const refreshed = loadSrsData(userId).script.cards.find(card => card.id === staticCard.id);
+    assert.deepEqual(refreshed.radicals, staticCard.radicals);
+    assert.equal(refreshed.stability, 8.5);
+    assert.equal(refreshed.difficulty, 3.25);
+    assert.equal(refreshed.reps, 4);
+    assert.equal(refreshed.state, State.Review);
+    assert.equal(refreshed.due.toISOString(), '2099-01-01T00:00:00.000Z');
+  });
+
   it('returns new kanji in frequency order after hiragana and katakana graduate', () => {
     ensureScriptDeckSeeded(userId);
     const data = loadSrsData(userId);
