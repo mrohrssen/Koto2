@@ -166,6 +166,7 @@ describe('script-srs', () => {
 
     const refreshed = loadSrsData(userId).script.cards.find(card => card.id === staticCard.id);
     assert.deepEqual(refreshed.radicals, staticCard.radicals);
+    assert.notEqual(refreshed.radicals, staticCard.radicals);
     assert.equal(refreshed.stability, 8.5);
     assert.equal(refreshed.difficulty, 3.25);
     assert.equal(refreshed.reps, 4);

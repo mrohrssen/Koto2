@@ -32,11 +32,13 @@ function fsrsFieldsFrom(card) {
 }
 
 function mergeStaticCard(existing, staticCard) {
-  return {
+  const card = {
     ...staticCard,
     ...createEmptyCard(),
     ...fsrsFieldsFrom(existing),
   };
+  if (card.radicals) card.radicals = { ...card.radicals };
+  return card;
 }
 
 export function ensureScriptDeckSeeded(userId) {
