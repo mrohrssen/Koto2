@@ -4,7 +4,7 @@
 
 **Goal:** Add KANJIDIC2 classical radical metadata to Koto's curated kanji cards and use it to prefer harder, same-radical Kanji Kombat quiz distractors from the user's introduced kanji pool.
 
-**Architecture:** Keep the curated kanji dictionary as the meaning source of truth and add only structural `radicals.classical` metadata from KANJIDIC2. Propagate that metadata into script cards through the existing static-card seeding path, then make `buildQuizForCard()` use a kanji-only three-tier distractor selector: introduced same-radical, introduced other kanji, unintroduced fallback. Kana quiz behavior stays unchanged.
+**Architecture:** Keep the curated kanji dictionary as the meaning source of truth and add only structural `radicals.classical` metadata from KANJIDIC2. Propagate that metadata into script cards through the existing static-card seeding path, then make `buildQuizForCard()` use a kanji-only three-tier distractor selector: introduced same-radical, introduced other kanji, unintroduced fallback. Kana quizzes keep random active-pool selection and remain independent of reps/radicals, while still enforcing the existing no-duplicate-answer-label rule.
 
 **Tech Stack:** Node.js ES modules, `fast-xml-parser`, built-in `node:test`, existing FSRS-backed script deck, JSON data files.
 
@@ -17,15 +17,15 @@ This is one subsystem: Kanji Kombat quiz distractor quality. It includes a data-
 ## File Structure
 
 - Create `scripts/enrich-kanji-radicals.mjs`
-  - Parses KANJIDIC2 classical radical numbers and enriches existing curated dictionary entries without changing meanings/readings/examples.
+  - Parses valid KANJIDIC2 classical radical numbers, resolves known source variants such as `髙` via `高`, and enriches existing curated dictionary entries without changing meanings/readings/examples.
 - Create `tests/unit/scripts/kanji-radical-enrichment.test.js`
-  - Covers radical parsing, malformed KANJIDIC2 failures, and curated-field preservation.
+  - Covers radical parsing, non-Koto malformed KANJIDIC2 tolerance, variant alias resolution, missing requested radicals, and curated-field preservation.
 - Modify `data/kanji/koto-kanji-dictionary.json`
   - Add `radicals.classical` to each of the 4000 entries. Do not hand-edit meanings.
 - Modify `src/game/koto-kanji-dictionary.js`
   - Validate `radicals.classical` as required metadata for each kanji entry.
 - Modify `tests/unit/game/koto-kanji-dictionary.test.js`
-  - Assert loaded entries expose valid classical radical metadata.
+  - Assert loaded entries expose valid classical radical metadata and exported validation rejects invalid radical metadata.
 - Modify `src/game/script-decks.js`
   - Copy radical metadata from dictionary entries into `KANJI_SCRIPT_CARDS`.
 - Modify `tests/unit/game/script-decks.test.js`
@@ -35,7 +35,7 @@ This is one subsystem: Kanji Kombat quiz distractor quality. It includes a data-
 - Modify `src/game/services/kanji-kombat-service.js`
   - Add the kanji-specific tiered distractor selector inside `buildQuizForCard()`.
 - Modify `tests/unit/game/kanji-kombat-deck.test.js`
-  - Cover same-radical preference, introduced fallback, unintroduced fallback, and unchanged kana behavior.
+  - Cover same-radical preference, introduced fallback, unintroduced fallback, and kana selection remaining random/reps-independent.
 - Modify `docs/data-sources.md`
   - Document that `radicals.classical` is stored as compact structural metadata.
 - Modify `docs/superpowers/specs/2026-05-31-kanji-kombat-mvp-design.md`
@@ -79,6 +79,10 @@ const SAMPLE_XML = `<?xml version="1.0" encoding="UTF-8"?>
       <rad_value rad_type="nelson_c">11</rad_value>
     </radical>
   </character>
+  <character>
+    <literal>高</literal>
+    <radical><rad_value rad_type="classical">189</rad_value></radical>
+  </character>
 </kanjidic2>`;
 
 function stripRadicals(entry) {
@@ -92,25 +96,20 @@ describe('kanji radical enrichment', () => {
     assert.equal(radicals.get('海'), 85);
     assert.equal(radicals.get('泳'), 85);
     assert.equal(radicals.get('人'), 9);
+    assert.equal(radicals.get('高'), 189);
   });
 
-  it('rejects KANJIDIC2 entries without a classical radical', () => {
+  it('ignores nonconforming KANJIDIC2 entries unless Koto requests them', () => {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <kanjidic2>
+  <character>
+    <literal>海</literal>
+    <radical><rad_value rad_type="classical">85</rad_value></radical>
+  </character>
   <character>
     <literal>欠</literal>
     <radical><rad_value rad_type="nelson_c">76</rad_value></radical>
   </character>
-</kanjidic2>`;
-    assert.throws(
-      () => parseKanjidic2ClassicalRadicals(xml),
-      /Expected exactly one classical radical for 欠/
-    );
-  });
-
-  it('rejects KANJIDIC2 entries with multiple classical radicals', () => {
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<kanjidic2>
   <character>
     <literal>水</literal>
     <radical>
@@ -119,10 +118,10 @@ describe('kanji radical enrichment', () => {
     </radical>
   </character>
 </kanjidic2>`;
-    assert.throws(
-      () => parseKanjidic2ClassicalRadicals(xml),
-      /Expected exactly one classical radical for 水/
-    );
+    const radicals = parseKanjidic2ClassicalRadicals(xml);
+    assert.equal(radicals.get('海'), 85);
+    assert.equal(radicals.has('欠'), false);
+    assert.equal(radicals.has('水'), false);
   });
 
   it('adds radicals while preserving curated dictionary fields', () => {
@@ -200,6 +199,33 @@ describe('kanji radical enrichment', () => {
     });
   });
 
+  it('resolves a Koto kanji through a known KANJIDIC2 source variant alias', () => {
+    const dictionary = {
+      entries: [
+        {
+          kanji: '髙',
+          frequencyRank: 3421,
+          kind: 'Hyōgai',
+          primaryMeaning: 'tall / high',
+          secondaryMeanings: [],
+          primaryReading: 'たか',
+          secondaryReadings: ['コウ'],
+          examples: [{ word: '髙い', reading: 'たかい', meaning: 'tall / high', source: 'manual' }],
+          mnemonic: null,
+          notes: 'Variant of 高.',
+        },
+      ],
+    };
+    const radicals = parseKanjidic2ClassicalRadicals(SAMPLE_XML);
+
+    const result = enrichDictionaryWithClassicalRadicals(dictionary, radicals);
+
+    assert.deepEqual(result.changed, [{ kanji: '髙', from: null, to: 189 }]);
+    assert.equal(result.dictionary.entries[0].primaryMeaning, 'tall / high');
+    assert.equal(result.dictionary.entries[0].notes, 'Variant of 高.');
+    assert.deepEqual(result.dictionary.entries[0].radicals, { classical: 189 });
+  });
+
   it('fails when a Koto dictionary kanji is missing from KANJIDIC2 radicals', () => {
     const dictionary = { entries: [{ kanji: '謎', primaryMeaning: 'mystery' }] };
     const radicals = new Map([['海', 85]]);
@@ -247,6 +273,9 @@ import { XMLParser } from 'fast-xml-parser';
 
 export const DEFAULT_DICTIONARY_PATH = 'data/kanji/koto-kanji-dictionary.json';
 export const DEFAULT_KANJIDIC_PATH = 'data/kanji/sources/kanjidic2.xml';
+export const KANJIDIC2_VARIANT_ALIASES = Object.freeze({
+  髙: '高',
+});
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -283,18 +312,29 @@ export function parseKanjidic2ClassicalRadicals(xml) {
       .map(value => Number(textValue(value)));
 
     if (
-      classicalValues.length !== 1
-      || !Number.isInteger(classicalValues[0])
-      || classicalValues[0] < 1
-      || classicalValues[0] > 214
+      classicalValues.length === 1
+      && Number.isInteger(classicalValues[0])
+      && classicalValues[0] >= 1
+      && classicalValues[0] <= 214
     ) {
-      throw new Error(`Expected exactly one classical radical for ${literal}`);
+      radicals.set(literal, classicalValues[0]);
     }
-
-    radicals.set(literal, classicalValues[0]);
   }
 
   return radicals;
+}
+
+function resolveClassicalRadical(kanji, radicalByKanji, aliases = KANJIDIC2_VARIANT_ALIASES) {
+  const direct = radicalByKanji.get(kanji);
+  if (Number.isInteger(direct)) return direct;
+
+  const alias = aliases[kanji];
+  if (alias) {
+    const aliased = radicalByKanji.get(alias);
+    if (Number.isInteger(aliased)) return aliased;
+  }
+
+  throw new Error(`Missing KANJIDIC2 classical radical for ${kanji}`);
 }
 
 export function enrichDictionaryWithClassicalRadicals(dictionary, radicalByKanji) {
@@ -302,10 +342,7 @@ export function enrichDictionaryWithClassicalRadicals(dictionary, radicalByKanji
   const changed = [];
 
   const enrichedEntries = entries.map(entry => {
-    const radical = radicalByKanji.get(entry.kanji);
-    if (!Number.isInteger(radical)) {
-      throw new Error(`Missing KANJIDIC2 classical radical for ${entry.kanji}`);
-    }
+    const radical = resolveClassicalRadical(entry.kanji, radicalByKanji);
 
     const existing = entry.radicals?.classical;
     if (existing === radical) return entry;
@@ -465,13 +502,14 @@ Expected: output starts with `4000 kanji radical changes:` and includes `Updated
 Run:
 
 ```bash
-node --input-type=module -e 'import { readFileSync } from "node:fs"; const dict = JSON.parse(readFileSync("data/kanji/koto-kanji-dictionary.json", "utf8")); console.log(dict.entries.slice(0, 4).map(e => [e.kanji, e.primaryMeaning, e.radicals?.classical]));'
+node --input-type=module -e 'import { readFileSync } from "node:fs"; const dict = JSON.parse(readFileSync("data/kanji/koto-kanji-dictionary.json", "utf8")); console.log(dict.entries.slice(0, 4).map(e => [e.kanji, e.primaryMeaning, e.radicals?.classical])); const hashigo = dict.entries.find(e => e.kanji === "髙"); console.log([hashigo.kanji, hashigo.primaryMeaning, hashigo.radicals?.classical]);'
 ```
 
 Expected:
 
 ```text
 [ [ '人', 'person', 9 ], [ '言', 'say', 149 ], [ '見', 'see', 147 ], [ '一', 'one', 1 ] ]
+[ '髙', 'tall / high', 189 ]
 ```
 
 - [ ] **Step 4: Verify the enrichment is idempotent**
@@ -511,12 +549,48 @@ Run:
 
 - [ ] **Step 1: Write failing dictionary and script-card tests**
 
+In `tests/unit/game/koto-kanji-dictionary.test.js`, add `validateKotoKanjiDictionary` to the import list:
+
+```javascript
+import {
+  getKotoKanjiEntries,
+  getKotoKanjiEntry,
+  getKotoKanjiMetadata,
+  validateKotoKanjiDictionary,
+} from '../../../src/game/koto-kanji-dictionary.js';
+```
+
 In `tests/unit/game/koto-kanji-dictionary.test.js`, inside `it('validates the compact entry schema used by Kanji Kombat', ...)`, add these assertions after the `examples` assertion:
 
 ```javascript
     assert.equal(typeof entry.radicals, 'object');
     assert.equal(Number.isInteger(entry.radicals.classical), true);
     assert.equal(entry.radicals.classical, 9);
+```
+
+In `tests/unit/game/koto-kanji-dictionary.test.js`, add this test after `it('validates the compact entry schema used by Kanji Kombat', ...)`:
+
+```javascript
+  it('rejects invalid radical metadata', () => {
+    const entry = getKotoKanjiEntry('人');
+    const dictionary = {
+      schemaVersion: 2,
+      curationVersion: 'test',
+      maintainer: 'Koto',
+      status: 'hand-curated',
+      entries: [
+        {
+          ...entry,
+          radicals: { classical: 0 },
+        },
+      ],
+    };
+
+    assert.throws(
+      () => validateKotoKanjiDictionary(dictionary),
+      /entries\[0\]\.radicals\.classical must be an integer from 1 to 214/
+    );
+  });
 ```
 
 In `tests/unit/game/script-decks.test.js`, update the expected first kanji card to include `radicals`:
@@ -573,7 +647,7 @@ Run:
 node --test tests/unit/game/koto-kanji-dictionary.test.js tests/unit/game/script-decks.test.js tests/unit/game/script-srs.test.js
 ```
 
-Expected: FAIL because `KANJI_SCRIPT_CARDS[0]` and persisted script cards do not yet include `radicals`.
+Expected: FAIL because `validateKotoKanjiDictionary` is not exported yet, `KANJI_SCRIPT_CARDS[0]` does not yet include `radicals`, and persisted script cards do not yet include `radicals`.
 
 - [ ] **Step 3: Add dictionary radical validation**
 
@@ -598,6 +672,23 @@ In `validateEntry()`, add this call after example validation:
 
 ```javascript
   validateRadicals(entry.radicals, `${label}.radicals`);
+```
+
+Replace the module-load validation call:
+
+```javascript
+validateDictionary(dictionary);
+```
+
+with this exported wrapper and call:
+
+```javascript
+export function validateKotoKanjiDictionary(data) {
+  validateDictionary(data);
+  return true;
+}
+
+validateKotoKanjiDictionary(dictionary);
 ```
 
 - [ ] **Step 4: Propagate radicals onto script cards**
@@ -902,7 +993,7 @@ Run:
 In `docs/data-sources.md`, replace the compact fields sentence with:
 
 ```markdown
-The runtime dictionary intentionally stores only compact gameplay fields: `primaryMeaning`, `secondaryMeanings`, `primaryReading`, `secondaryReadings`, `examples`, `mnemonic`, `notes`, and `radicals.classical`. KANJIDIC2 supplies only the structural `radicals.classical` number; Koto's curated dictionary remains the source of truth for player-facing meanings.
+The runtime dictionary intentionally stores only compact gameplay fields: `primaryMeaning`, `secondaryMeanings`, `primaryReading`, `secondaryReadings`, `examples`, `mnemonic`, `notes`, and `radicals.classical`. KANJIDIC2 supplies only the structural `radicals.classical` number; known source variants such as `髙` are resolved through explicit enrichment aliases; Koto's curated dictionary remains the source of truth for player-facing meanings.
 ```
 
 - [ ] **Step 2: Update Kanji Kombat MVP quiz rule wording**
@@ -925,10 +1016,10 @@ Distractors:
 Run:
 
 ```bash
-rg -n "full possible answer list|radicals.classical|classical radical|runtime dictionary intentionally stores" docs/data-sources.md docs/superpowers/specs/2026-05-31-kanji-kombat-mvp-design.md docs/superpowers/specs/2026-06-17-kanji-radical-distractors-design.md
+rg -n "full possible answer list|radicals.classical|classical radical|runtime dictionary intentionally stores|known source variants" docs/data-sources.md docs/superpowers/specs/2026-05-31-kanji-kombat-mvp-design.md
 ```
 
-Expected: no `full possible answer list` hit remains in `2026-05-31-kanji-kombat-mvp-design.md`; the new radical wording appears in all three docs.
+Expected: no `full possible answer list` hit remains in `2026-05-31-kanji-kombat-mvp-design.md`; the new radical wording appears in `docs/data-sources.md` and `docs/superpowers/specs/2026-05-31-kanji-kombat-mvp-design.md`.
 
 - [ ] **Step 4: Commit**
 
