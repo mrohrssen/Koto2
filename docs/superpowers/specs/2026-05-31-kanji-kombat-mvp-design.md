@@ -183,7 +183,10 @@ Choices:
 
 Distractors:
 
-- Pull the other three answers randomly from the full possible answer list for the active script deck.
+- Hiragana/katakana: pull the other three answers randomly from the active kana answer pool.
+- Kanji: prefer wrong answers from introduced kanji (`reps > 0`) sharing the prompt kanji's KANJIDIC2 classical radical.
+- If fewer than three same-radical introduced kanji answers exist, fill from other introduced kanji answers.
+- If fewer than three introduced kanji answers exist, fill the remaining slots from unintroduced kanji answers.
 - The correct answer appears once.
 - Duplicate answer labels are not allowed in the same quiz.
 
