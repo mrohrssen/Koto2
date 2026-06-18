@@ -574,7 +574,7 @@ export function startKanjiKombatOnboardingIfNeeded(gameState) {
   return true;
 }
 
-function bindSingleFlightButtons(buttons, getValue, handler, { beforeSubmit = null } = {}) {
+function bindSingleFlightButtons(buttons, getValue, handler, { beforeSubmit = null, afterRejected = null } = {}) {
   let inFlight = false;
   for (const button of buttons) {
     button.addEventListener('click', async () => {
@@ -586,6 +586,7 @@ function bindSingleFlightButtons(buttons, getValue, handler, { beforeSubmit = nu
         const handled = await handler?.(getValue(button));
         if (handled === false) {
           inFlight = false;
+          afterRejected?.(button, buttons);
           buttons.forEach(btn => { btn.disabled = false; });
         }
         return handled;
@@ -610,6 +611,16 @@ function markKanjiKombatChoiceFeedback(selectedButton, buttons, correctAnswerId)
   if (selectedIsCorrect) return;
   const correctButton = buttons.find(button => button.dataset.answerId === correctAnswerId);
   correctButton?.classList.add('kanji-kombat-choice--correct-answer');
+}
+
+function clearKanjiKombatChoiceFeedback(buttons) {
+  for (const button of buttons) {
+    button.classList.remove(
+      'kanji-kombat-choice--correct-selected',
+      'kanji-kombat-choice--wrong-selected',
+      'kanji-kombat-choice--correct-answer'
+    );
+  }
 }
 
 function playCorrectAnswerAudio(answer) {
@@ -657,7 +668,10 @@ export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
       beforeSubmit: (button, buttons) => {
         markKanjiKombatChoiceFeedback(button, buttons, correctAnswerId);
         playCorrectAnswerAudio(correctAudioText);
-      }
+      },
+      afterRejected: (_button, buttons) => {
+        clearKanjiKombatChoiceFeedback(buttons);
+      },
     }
   );
 }

@@ -1153,10 +1153,10 @@ describe('combat network hardening', () => {
     assert.equal(snap[2].promptId, 'kkp_chain_3');
   });
 
-  it('submitKanjiKombatAnswer returns handledByCombatLoop and wires to the session quiz path', () => {
-    // submitKanjiKombatAnswer always returns { handledByCombatLoop: true } — the actual
-    // session-log append happens through executeCreatureMovesTurn's kanjiKombat path which
-    // calls runOptimisticKanjiKombatAnswer. Check the source wiring is in place.
+  it('submitKanjiKombatAnswer reports handled answers and wires to the session quiz path', () => {
+    // Successful submitKanjiKombatAnswer paths return { handledByCombatLoop: true }.
+    // The actual session-log append happens through executeCreatureMovesTurn's
+    // kanjiKombat path, which calls runOptimisticKanjiKombatAnswer.
     assert.match(
       combatLoopSource,
       /submitKanjiKombatAnswer[\s\S]*?handledByCombatLoop: true/,
@@ -1178,6 +1178,83 @@ describe('combat network hardening', () => {
       combatLoopSource,
       /kanjiKombatQueuedVerificationPending/,
     );
+  });
+
+  it('returns false when a Kanji Kombat answer is ignored by an in-flight answer guard', async () => {
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [],
+    };
+    const enemy = {
+      ...ally,
+      id: 'mizu',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      hp: 20,
+      maxHp: 20,
+    };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          currentQuiz: {
+            cardId: 'hiragana:あ',
+            choices: [{ id: 'answer-correct', answer: 'a', correct: true }],
+          },
+        },
+      },
+    };
+    let apiCalls = 0;
+    let resolveRequest;
+    configureKanjiKombatSession({
+      syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      schedule: (fn, delay) => { void delay; return setTimeout(fn, 99999); },
+    });
+    const submitAnswer = async () => {
+      apiCalls += 1;
+      return new Promise(resolve => { resolveRequest = resolve; });
+    };
+    combatLoop.init({
+      getGameState: () => currentState,
+      updateGameState: () => {},
+      updateUI: () => {},
+      settings: { getApiKeys: () => ({}) },
+      narration: {},
+      characterUI: {},
+      getEnemyDialogueActive: () => false,
+      delay: () => Promise.resolve(),
+      apiSubmitKanjiKombatAnswer: submitAnswer,
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const first = combatLoop.submitKanjiKombatAnswer('answer-correct', { cardId: 'hiragana:あ' });
+    await Promise.resolve();
+
+    const second = await combatLoop.submitKanjiKombatAnswer('answer-correct', { cardId: 'hiragana:あ' });
+
+    assert.equal(second, false);
+    assert.equal(apiCalls, 1, 'guarded duplicate should not submit another answer request');
+    resolveRequest({ error: 'No active combat' });
+    await first;
   });
 
   it('clears currentQuiz-only Kanji Kombat state after local answer prediction', async () => {

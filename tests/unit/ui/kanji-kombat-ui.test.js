@@ -428,6 +428,25 @@ describe('kanji-kombat ui', () => {
     assert.equal(wrongButton.classList.contains('kanji-kombat-choice--correct-answer'), false);
   });
 
+  it('clears quiz feedback when answer handling returns false', async () => {
+    renderKanjiKombatQuiz({
+      prompt: '火',
+      choices: [
+        { id: 'fire', answer: 'Fire', correct: true },
+        { id: 'water', answer: 'Water', correct: false },
+      ],
+    }, { onAnswer: async () => false });
+
+    const [correctButton, wrongButton] = actionArea.querySelectorAll('.kanji-kombat-choice');
+    await correctButton.click();
+
+    assert.equal(correctButton.disabled, false);
+    assert.equal(wrongButton.disabled, false);
+    assert.equal(correctButton.classList.contains('kanji-kombat-choice--correct-selected'), false);
+    assert.equal(correctButton.classList.contains('kanji-kombat-choice--wrong-selected'), false);
+    assert.equal(wrongButton.classList.contains('kanji-kombat-choice--correct-answer'), false);
+  });
+
   it('marks a wrong quiz choice red and the correct answer green', async () => {
     renderKanjiKombatQuiz({
       prompt: '火',

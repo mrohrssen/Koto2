@@ -1264,13 +1264,14 @@ export async function submitKanjiKombatAnswer(answerId, promptRef = {}) {
   if (typeof apiSubmitKanjiKombatAnswer !== 'function') {
     throw new Error('Kanji Kombat answer API is not configured');
   }
-  await executeCreatureMovesTurn([], {
+  const handled = await executeCreatureMovesTurn([], {
     actionType: 'kanjiKombat',
     kanjiAnswerId: answerId,
     kanjiPromptRef: promptRef,
     request: () => apiSubmitKanjiKombatAnswer(withKanjiKombatPromptRef(answerId, promptRef)),
     describeIntent: () => `Kanji Kombat answer: ${answerId}`,
   });
+  if (handled === false) return false;
   return { handledByCombatLoop: true };
 }
 
@@ -2215,7 +2216,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
  * @param {Array} choices - Array of { creatureIndex, moveId, targetIndex }
  */
 async function executeCreatureMovesTurn(choices, options = {}) {
-  if (!combatActive || playerAttackPending || getEnemyDialogueActive()) return;
+  if (!combatActive || playerAttackPending || getEnemyDialogueActive?.()) return false;
   playerAttackPending = true;
   const actionType = options.actionType || 'attack';
   const recoveryActionType = options.recoveryActionType || 'attack';
@@ -2272,7 +2273,7 @@ async function executeCreatureMovesTurn(choices, options = {}) {
       // intentionally allowed to fall through so the online server path handles it.
       if (actionType === 'kanjiKombat' && options.kanjiAnswerId) {
         const _kkSession = getKanjiKombatSession();
-        if (_kkSession && !_kkSession.canConsumePrompt()) return;
+        if (_kkSession && !_kkSession.canConsumePrompt()) return false;
       }
 
       const requestStartedAt = performance.now();
