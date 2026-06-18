@@ -10,6 +10,38 @@ import { getStaticScriptCards, SCRIPT_CARD_TYPES } from './script-decks.js';
 export const SCRIPT_DECK = 'script';
 export const DAILY_NEW_LIMIT = 20;
 
+const SCRIPT_TYPE_ORDER = new Map(SCRIPT_CARD_TYPES.map((type, index) => [type, index]));
+
+function dueTime(card) {
+  const due = card.due instanceof Date ? card.due : new Date(card.due);
+  return due.getTime();
+}
+
+function scriptTypeOrder(type) {
+  return SCRIPT_TYPE_ORDER.get(type) ?? SCRIPT_TYPE_ORDER.size;
+}
+
+function compareScriptCardsByDue(a, b) {
+  return dueTime(a) - dueTime(b)
+    || scriptTypeOrder(a.type) - scriptTypeOrder(b.type)
+    || (a.sortIndex || 0) - (b.sortIndex || 0)
+    || String(a.id).localeCompare(String(b.id));
+}
+
+function compareScriptCardsByCurriculum(a, b) {
+  return scriptTypeOrder(a.type) - scriptTypeOrder(b.type)
+    || (a.sortIndex || 0) - (b.sortIndex || 0)
+    || String(a.id).localeCompare(String(b.id));
+}
+
+export function getEligibleScriptTypes(onboarding = {}) {
+  return SCRIPT_CARD_TYPES.filter(type => {
+    if (type === 'hiragana' && onboarding?.knowsHiragana === true) return false;
+    if (type === 'katakana' && onboarding?.knowsKatakana === true) return false;
+    return true;
+  });
+}
+
 const FSRS_FIELDS = [
   'due',
   'stability',
@@ -97,15 +129,37 @@ export function getActiveScriptType(userId, onboarding = {}) {
 }
 
 export function getDueScriptCards(userId, type = getActiveScriptType(userId), now = new Date()) {
-  return getScriptCards(userId, type).filter(card => {
-    if ((card.reps || 0) === 0) return false;
-    const due = card.due instanceof Date ? card.due : new Date(card.due);
-    return due <= now;
-  });
+  return getScriptCards(userId, type)
+    .filter(card => {
+      if ((card.reps || 0) === 0) return false;
+      return dueTime(card) <= now.getTime();
+    })
+    .sort(compareScriptCardsByDue);
+}
+
+export function getDueScriptCardsForTypes(userId, types = SCRIPT_CARD_TYPES, now = new Date()) {
+  const allowedTypes = new Set(types);
+  return getScriptCards(userId)
+    .filter(card => allowedTypes.has(card.type))
+    .filter(card => {
+      if ((card.reps || 0) === 0) return false;
+      return dueTime(card) <= now.getTime();
+    })
+    .sort(compareScriptCardsByDue);
 }
 
 export function getNewScriptCards(userId, type = getActiveScriptType(userId)) {
-  return getScriptCards(userId, type).filter(card => (card.reps || 0) === 0);
+  return getScriptCards(userId, type)
+    .filter(card => (card.reps || 0) === 0)
+    .sort(compareScriptCardsByCurriculum);
+}
+
+export function getNextNewScriptCards(userId, onboarding = {}) {
+  for (const type of getEligibleScriptTypes(onboarding)) {
+    const cards = getNewScriptCards(userId, type);
+    if (cards.length > 0) return cards;
+  }
+  return [];
 }
 
 export function gradeScriptCard(userId, cardId, grade) {

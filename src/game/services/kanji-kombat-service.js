@@ -34,9 +34,10 @@ import {
 import { getCrestMultipliers, applyCrestBonuses } from './crest-service.js';
 import {
   DAILY_NEW_LIMIT,
-  getActiveScriptType,
-  getDueScriptCards,
+  getDueScriptCardsForTypes,
+  getEligibleScriptTypes,
   getNewScriptCards,
+  getNextNewScriptCards,
   getScriptCards,
   getScriptDailyState,
   gradeScriptCard,
@@ -304,6 +305,41 @@ function getEarlyReviewCards(cards, excludedIds = []) {
   return sortByDueDate(excludeCards(cards, excludedIds).filter(card => (card.reps || 0) > 0));
 }
 
+function getAnswerPoolForCard(userId, card) {
+  return getScriptCards(userId, card.type);
+}
+
+function fallbackScriptDeck(eligibleTypes, dueCards, newCards) {
+  return dueCards[0]?.type || newCards[0]?.type || eligibleTypes[0] || 'kanji';
+}
+
+function completionScriptDeck(userId, state, onboarding, eligibleTypes) {
+  return state.report?.scriptDeck
+    || getNextNewScriptCards(userId, onboarding)[0]?.type
+    || eligibleTypes[eligibleTypes.length - 1]
+    || 'kanji';
+}
+
+function getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds = []) {
+  const excluded = new Set(excludedIds);
+  for (const type of eligibleTypes) {
+    const cards = getNewScriptCards(userId, type)
+      .filter(card => !excluded.has(card.id));
+    if (cards.length > 0) return cards;
+  }
+  return [];
+}
+
+function takeNextPracticeCard(state, allEligibleCards, excludedPracticeIds = []) {
+  while (state.noDuePracticeQueue.length > 0) {
+    const practiceCardId = state.noDuePracticeQueue.shift();
+    if (excludedPracticeIds.includes(practiceCardId)) continue;
+    const card = allEligibleCards.find(candidate => candidate.id === practiceCardId);
+    if (card) return card;
+  }
+  return null;
+}
+
 function promptForDailyCompletion(userId, state, opts = {}) {
   if (opts.preview !== true) {
     markScriptDailyComplete(userId, state.localDate);
@@ -317,24 +353,17 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   const random = opts.random || Math.random;
   const excludedIds = opts.excludeCardIds || [];
   const excludedPracticeIds = opts.excludePracticeCardIds || excludedIds;
-  const activeType = opts.activeType || getActiveScriptType(userId, opts.onboarding);
-  state.report.scriptDeck = activeType;
+  const eligibleTypes = getEligibleScriptTypes(opts.onboarding);
   if (!Array.isArray(state.noDuePracticeQueue)) state.noDuePracticeQueue = [];
   state.endlessMode = state.endlessMode === true;
 
   const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
-  if (daily.completed === true && !state.endlessMode) {
-    state.report.completedDaily = true;
-    return { kind: 'complete' };
-  }
-
-  const dueCards = excludeCards(getDueScriptCards(userId, activeType, now), excludedIds);
-  const newCards = excludeCards(getNewScriptCards(userId, activeType), excludedIds);
+  const dueCards = excludeCards(getDueScriptCardsForTypes(userId, eligibleTypes, now), excludedIds);
+  const newCards = getNextNewScriptCardsForTypes(userId, eligibleTypes, excludedIds);
   const canIntroduce = !state.endlessMode
     && daily.completed !== true
     && daily.introducedCount < DAILY_NEW_LIMIT
     && newCards.length > 0;
-  const allCards = getScriptCards(userId, activeType);
 
   if (dueCards.length > 0 && state.reviewsSinceIntro >= state.nextIntroAfter && canIntroduce) {
     state.noDueDiscoveryChainCount = 0;
@@ -345,9 +374,27 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   if (dueCards.length > 0) {
     state.noDueDiscoveryChainCount = 0;
     const card = dueCards[0];
-    const quiz = buildQuizForCard(card, allCards, random);
+    state.report.scriptDeck = card.type;
+    const quiz = buildQuizForCard(card, getAnswerPoolForCard(userId, card), random);
     return { kind: 'quiz', card, quiz };
   }
+
+  const allEligibleCards = getScriptCards(userId)
+    .filter(card => eligibleTypes.includes(card.type));
+
+  if (daily.completed === true && !state.endlessMode) {
+    const practiceCard = takeNextPracticeCard(state, allEligibleCards, excludedPracticeIds);
+    if (practiceCard) {
+      state.report.scriptDeck = practiceCard.type;
+      const quiz = buildQuizForCard(practiceCard, getAnswerPoolForCard(userId, practiceCard), random);
+      return { kind: 'quiz', card: practiceCard, quiz };
+    }
+    state.report.completedDaily = true;
+    state.report.scriptDeck = completionScriptDeck(userId, state, opts.onboarding, eligibleTypes);
+    return { kind: 'complete' };
+  }
+
+  state.report.scriptDeck = fallbackScriptDeck(eligibleTypes, dueCards, newCards);
 
   const noDueChainCount = state.noDueDiscoveryChainCount || 0;
   const canContinueNoDueDiscoveryBatch = state.noDuePracticeQueue.length === noDueChainCount;
@@ -357,13 +404,11 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     return { kind: 'intro', card, source: 'noDueBatch' };
   }
 
-  while (state.noDuePracticeQueue.length > 0) {
-    const practiceCardId = state.noDuePracticeQueue.shift();
-    if (excludedPracticeIds.includes(practiceCardId)) continue;
-    const card = allCards.find(candidate => candidate.id === practiceCardId);
-    if (!card) continue;
-    const quiz = buildQuizForCard(card, allCards, random);
-    return { kind: 'quiz', card, quiz };
+  const practiceCard = takeNextPracticeCard(state, allEligibleCards, excludedPracticeIds);
+  if (practiceCard) {
+    state.report.scriptDeck = practiceCard.type;
+    const quiz = buildQuizForCard(practiceCard, getAnswerPoolForCard(userId, practiceCard), random);
+    return { kind: 'quiz', card: practiceCard, quiz };
   }
 
   if (canIntroduce) {
@@ -374,10 +419,11 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   }
 
   if (state.endlessMode) {
-    const earlyReviewCards = getEarlyReviewCards(allCards, excludedIds);
+    const earlyReviewCards = getEarlyReviewCards(allEligibleCards, excludedIds);
     if (earlyReviewCards.length > 0) {
       const card = earlyReviewCards[0];
-      const quiz = buildQuizForCard(card, allCards, random);
+      state.report.scriptDeck = card.type;
+      const quiz = buildQuizForCard(card, getAnswerPoolForCard(userId, card), random);
       return { kind: 'quiz', card, quiz, source: 'earlyReview' };
     }
   }
@@ -444,8 +490,14 @@ function promptFromWork(state, work) {
   return null;
 }
 
+function scriptDeckFromPrompt(prompt) {
+  return prompt?.quiz?.type || prompt?.intro?.card?.type || null;
+}
+
 function syncKanjiKombatPromptBufferState(userId, state) {
   const head = getKanjiKombatActivePrompt(state);
+  const activeDeck = scriptDeckFromPrompt(head);
+  if (activeDeck) state.report.scriptDeck = activeDeck;
   if (isDailyCompletePrompt(head)) {
     if (userId) markScriptDailyComplete(userId, state.localDate);
     state.report.completedDaily = true;
@@ -548,15 +600,20 @@ function isSpeculativeDailyCompletion(work, previewDailyState) {
 function isBufferedCompletionAuthoritative(userId, state, opts = {}) {
   if (state?.endlessMode) return false;
   const daily = getScriptDailyState(userId, state.localDate);
+  const eligibleTypes = getEligibleScriptTypes(opts.onboarding);
+  const now = opts.now || new Date();
+  const hasDueCards = getDueScriptCardsForTypes(userId, eligibleTypes, now).length > 0;
+  const eligibleCardIds = new Set(getScriptCards(userId)
+    .filter(card => eligibleTypes.includes(card.type))
+    .map(card => card.id));
+  const hasPracticeCards = Array.isArray(state.noDuePracticeQueue)
+    && state.noDuePracticeQueue.some(cardId => eligibleCardIds.has(cardId));
+  if (hasDueCards || hasPracticeCards) return false;
   if (daily.completed === true || (daily.introducedCount || 0) >= DAILY_NEW_LIMIT) {
     return true;
   }
 
-  const activeType = opts.activeType || getActiveScriptType(userId, opts.onboarding);
-  const now = opts.now || new Date();
-  const hasDueCards = getDueScriptCards(userId, activeType, now).length > 0;
-  const hasNewCards = getNewScriptCards(userId, activeType).length > 0;
-  const hasPracticeCards = Array.isArray(state.noDuePracticeQueue) && state.noDuePracticeQueue.length > 0;
+  const hasNewCards = getNextNewScriptCards(userId, opts.onboarding).length > 0;
   return !hasDueCards && !hasNewCards && !hasPracticeCards;
 }
 
@@ -646,9 +703,8 @@ export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
     advancePreviewDailyStateAfterPrompt(previewDailyState, prompt);
   }
 
-  if (planningState.report?.scriptDeck) {
-    state.report.scriptDeck = planningState.report.scriptDeck;
-  }
+  const activeDeck = scriptDeckFromPrompt(getKanjiKombatActivePrompt(state));
+  if (activeDeck) state.report.scriptDeck = activeDeck;
   return buffer;
 }
 
