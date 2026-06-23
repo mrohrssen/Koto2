@@ -1173,14 +1173,16 @@ export class KanjiKombatService {
   getAvailability() {
     const collection = this.gm.meta?.creatureCollection || [];
     if (collection.length === 0) {
-      return { available: false, reason: 'no_creatures' };
+      return { available: false, reason: 'no_creatures', dueCount: 0 };
     }
 
     const onboarding = ensureKanjiKombatOnboardingState(this.gm.meta);
     if (onboarding.completed !== true) {
-      return { available: true, next: 'onboarding', scriptDeck: null };
+      return { available: true, next: 'onboarding', scriptDeck: null, dueCount: 0 };
     }
 
+    const eligibleTypes = getEligibleScriptTypes(onboarding);
+    const dueCount = getDueScriptCardsForTypes(this.gm.userId, eligibleTypes).length;
     const state = createInitialKanjiKombatState();
     const work = this.chooseNextWork(state);
     if (work.kind === 'complete' || isDailyCompletePromptKind(work.kind)) {
@@ -1188,13 +1190,15 @@ export class KanjiKombatService {
         available: false,
         reason: 'complete_for_day',
         message: 'Come back later!',
-        scriptDeck: state.report.scriptDeck
+        scriptDeck: state.report.scriptDeck,
+        dueCount
       };
     }
     return {
       available: true,
       next: work.kind,
-      scriptDeck: state.report.scriptDeck
+      scriptDeck: state.report.scriptDeck,
+      dueCount
     };
   }
 
