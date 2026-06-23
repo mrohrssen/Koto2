@@ -760,6 +760,7 @@ export async function renderHub() {
   const kanjiKombat = (apiGetKanjiKombatAvailability
     ? await apiGetKanjiKombatAvailability().catch(() => ({ available: false }))
     : { available: false }) || { available: false };
+  const kanjiKombatDueCount = Math.max(0, Number(kanjiKombat.dueCount) || 0);
 
   if (getGameState().phase !== 'hub') return;
 
@@ -801,7 +802,7 @@ export async function renderHub() {
         updateUI();
       }
     }},
-    { label: 'Kanji Kombat', onClick: () => startKanjiKombatSetup?.(), disabled: kanjiKombat.available === false },
+    { label: `Kanji Kombat${kanjiKombatDueCount > 0 ? ` (${kanjiKombatDueCount})` : ''}`, onClick: () => startKanjiKombatSetup?.(), disabled: kanjiKombat.available === false },
     { label: '⚔️ Multiplayer Battle', onClick: () => {
       const gs = getGameState();
       gs.phase = 'pvp_lobby';

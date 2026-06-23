@@ -131,6 +131,41 @@ describe('Kanji Kombat integration flow', () => {
     assert.ok(after.last_review instanceof Date);
   });
 
+  it('reports all due eligible script cards in availability', async () => {
+    const { GameManager } = await import('../../../src/game/loop.js');
+    const userId = 'kk-integration-user';
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    const dueTypes = new Set();
+    data[SCRIPT_DECK].cards = data[SCRIPT_DECK].cards.map(card => {
+      const shouldBeDue = !dueTypes.has(card.type);
+      if (shouldBeDue) dueTypes.add(card.type);
+      return {
+        ...card,
+        reps: shouldBeDue ? 1 : 0,
+        due: shouldBeDue ? new Date('2000-01-01') : new Date('2100-01-01'),
+      };
+    });
+    saveSrsData(userId, data);
+
+    const gm = new GameManager();
+    gm.userId = userId;
+    gm.meta = {
+      levels: { highestUnlocked: 1 },
+      creatureCollection: ['hi'],
+      creatureCounts: { hi: 1 },
+      bossesDefeated: [],
+      lifetimeStats: {},
+      kanjiKombatOnboarding: { completed: true, knowsHiragana: false, knowsKatakana: false },
+    };
+
+    const availability = gm.kanjiKombatService.getAvailability();
+
+    assert.equal(dueTypes.size >= 2, true, 'test should cover multiple script types');
+    assert.equal(availability.available, true);
+    assert.equal(availability.dueCount, dueTypes.size);
+  });
+
   it('exposes buffered intro prompt cards to the UI without pendingIntro hydration', async () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';

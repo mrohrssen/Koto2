@@ -390,6 +390,38 @@ describe('renderHub fusion core review narration', () => {
     assert.equal(dueCountCalls, 2, 'hub should fetch due count again after review exit');
   });
 
+  it('shows the Kanji Kombat due card count in the hub button', async () => {
+    let gameState = {
+      phase: 'hub',
+      meta: {
+        pvpTeams: [],
+        tutorialStep: 6,
+        tutorialFusionDataUnlocked: [],
+        tutorialFusionCoreAwarded: false,
+        tutorialFusionComplete: false,
+        creatureCollection: ['hi'],
+      },
+    };
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: (nextState) => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      startNewRun: () => {},
+      apiGetVocabDueCount: async () => ({ count: 0 }),
+      apiGetKanjiKombatAvailability: async () => ({ available: true, dueCount: 7 }),
+    });
+
+    await renderHub();
+
+    const kanjiKombatButton = renderedButtons.find(button => button.label.includes('Kanji Kombat'));
+    assert.ok(kanjiKombatButton, 'Kanji Kombat button should render');
+    assert.equal(kanjiKombatButton.label, 'Kanji Kombat (7)');
+    assert.equal(kanjiKombatButton.disabled, false);
+  });
+
   it('forces Fusion Lab instead of Knowledge Review after the fusion core is awarded', async () => {
     let gameState = {
       phase: 'hub',
