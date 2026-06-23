@@ -61,6 +61,7 @@ import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
 const KANJI_KOMBAT_STREAK_REWARD_MILESTONES = new Set([3, 6, 9, 12, 15]);
+const KANJI_KOMBAT_WRONG_ANSWER_FEEDBACK_MIN_MS = 200;
 
 function willKanjiKombatAnswerTriggerStreakReward(state, correct) {
   if (correct !== true) return false;
@@ -330,6 +331,22 @@ async function waitBeforeMoveSelection(delayMs = 0) {
   if (ms > 0) {
     await delay(ms);
   }
+}
+
+function kanjiKombatNextSelectionDelayMs(correct, feedbackStartedAt, configuredDelayMs = 0) {
+  const configured = Number.isFinite(configuredDelayMs) ? Math.max(0, configuredDelayMs) : 0;
+  if (correct !== false) return configured;
+  const elapsed = Number.isFinite(feedbackStartedAt)
+    ? Math.max(0, performance.now() - feedbackStartedAt)
+    : 0;
+  const remaining = Math.max(0, KANJI_KOMBAT_WRONG_ANSWER_FEEDBACK_MIN_MS - elapsed);
+  return Math.max(configured, remaining);
+}
+
+async function waitBeforeKanjiKombatNextSelection(correct, feedbackStartedAt, configuredDelayMs = 0) {
+  await waitBeforeMoveSelection(
+    kanjiKombatNextSelectionDelayMs(correct, feedbackStartedAt, configuredDelayMs)
+  );
 }
 
 async function runCreatureCombatRequest(actionType, moveChoices = []) {
@@ -900,7 +917,7 @@ async function runOptimisticKanjiKombatAnswer({
       logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
       const enemyDialogueActiveAfterWave = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
       if (!enemyDialogueActiveAfterWave) {
-        await waitBeforeMoveSelection(nextSelectionDelayMs);
+        await waitBeforeKanjiKombatNextSelection(correct, requestStartedAt, nextSelectionDelayMs);
         restartMoveSelection();
       }
     } else {
@@ -925,7 +942,7 @@ async function runOptimisticKanjiKombatAnswer({
     // render the UI directly.  The server checkpoint will later deliver the
     // authoritative combatEnded result and finishCombatResult will fire.
     if (allEnemiesDefeated && dailyBoundary && combatActive && !isEnemyDialogueActive?.()) {
-      await waitBeforeMoveSelection(nextSelectionDelayMs);
+      await waitBeforeKanjiKombatNextSelection(correct, requestStartedAt, nextSelectionDelayMs);
       if (typeof refreshAction === 'function') refreshAction();
       return true;
     }
@@ -933,7 +950,7 @@ async function runOptimisticKanjiKombatAnswer({
 
   const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
   if (!hasLocalCombatEnd && combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
-    await waitBeforeMoveSelection(nextSelectionDelayMs);
+    await waitBeforeKanjiKombatNextSelection(correct, requestStartedAt, nextSelectionDelayMs);
     restartMoveSelection();
   }
   return true;
@@ -1982,6 +1999,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
     choices = [],
     logMoveIntent = true,
     nextSelectionDelayMs = 0,
+    kanjiAnswerFeedbackStartedAt = null,
     skipAttackCards = false,
     deferNextSelection = false,
   } = options;
@@ -2207,7 +2225,13 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
 
   playerAttackPending = false;
 
-  await waitBeforeMoveSelection(nextSelectionDelayMs);
+  await waitBeforeMoveSelection(
+    kanjiKombatNextSelectionDelayMs(
+      result.kanjiAnswerCorrect,
+      kanjiAnswerFeedbackStartedAt,
+      nextSelectionDelayMs
+    )
+  );
   logCombatTurnTiming(turnTiming, result, 'next_selection');
   startMoveSelection();
 }
@@ -2309,6 +2333,7 @@ async function executeCreatureMovesTurn(choices, options = {}) {
         return;
       }
 
+      const kanjiAnswerFeedbackStartedAt = actionType === 'kanjiKombat' ? performance.now() : null;
       if (actionType === 'kanjiKombat') {
         void vfx.showKanjiKombatAnswerBanner(result.kanjiAnswerCorrect, result.kanjiStreakReward || null);
       }
@@ -2317,6 +2342,7 @@ async function executeCreatureMovesTurn(choices, options = {}) {
         choices,
         logMoveIntent: false,
         skipAttackCards: actionType === 'kanjiKombat',
+        kanjiAnswerFeedbackStartedAt,
       });
 
     } catch (error) {

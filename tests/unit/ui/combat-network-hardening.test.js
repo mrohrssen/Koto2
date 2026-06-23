@@ -89,12 +89,26 @@ const combatLoopSource = readFileSync(resolve(import.meta.dirname, '../../../pub
 const combatVfxSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/combat-vfx.js'), 'utf8');
 const kanjiKombatSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/kanji-kombat.js'), 'utf8');
 
+function initCombatLoopTestDefaults() {
+  combatLoop.init({
+    getGameState: () => null,
+    updateGameState: () => {},
+    updateUI: () => {},
+    settings: { getApiKeys: () => ({}) },
+    narration: {},
+    characterUI: {},
+    getEnemyDialogueActive: () => false,
+    delay: () => Promise.resolve(),
+  });
+}
+
 describe('combat network hardening', () => {
   beforeEach(() => {
     actionArea = createActionArea();
     localStorage.clear();
     console.log = () => {};
     resetKanjiKombatSession();
+    initCombatLoopTestDefaults();
     combatLoop.__combatNetworkTest.setCreatureCombatApi(null);
     combatLoop.__combatNetworkTest.setSyncIndicatorDelayMs(500);
   });
@@ -865,6 +879,132 @@ describe('combat network hardening', () => {
     // Local state was updated: prompt buffer advanced to next prompt.
     assert.equal(updates.at(-1).run.kanjiKombat.promptBuffer[0].promptId, 'kkp_next_local');
     assert.equal(updates.at(-1).run.kanjiKombat.currentQuiz.cardId, 'hiragana:い');
+  });
+
+  it('keeps wrong Kanji Kombat answer feedback visible for 200ms while playback starts immediately', async () => {
+    configureKanjiKombatSession({
+      syncRequest: async () => new Promise(() => {}),
+      schedule: (fn, delay) => { void fn; void delay; return setTimeout(() => {}, 99999); },
+    });
+    const calls = [];
+    const updates = [];
+    const delays = [];
+    let resolveDelay;
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [],
+    };
+    const enemy = {
+      ...ally,
+      id: 'mizu',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      hp: 20,
+      maxHp: 20,
+    };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_kanji_wrong_hold', stateVersion: 2, nextTurnSeed: 'seed_kanji_wrong_hold', turnSeeds: ['s1', 's2'] },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          currentQuiz: {
+            cardId: 'hiragana:あ',
+            choices: [
+              { id: 'answer-correct', answer: 'a', correct: true },
+              { id: 'answer-wrong', answer: 'i', correct: false },
+            ],
+          },
+          promptBuffer: [
+            {
+              promptId: 'kkp_wrong_hold',
+              sequence: 1,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              quiz: {
+                cardId: 'hiragana:あ',
+                choices: [
+                  { id: 'answer-correct', answer: 'a', correct: true },
+                  { id: 'answer-wrong', answer: 'i', correct: false },
+                ],
+              },
+            },
+            {
+              promptId: 'kkp_after_wrong_hold',
+              sequence: 2,
+              kind: 'quiz',
+              cardId: 'hiragana:い',
+              quiz: {
+                cardId: 'hiragana:い',
+                prompt: 'い',
+                choices: [{ id: 'answer-i', answer: 'i', correct: true }],
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    combatLoop.init({
+      getGameState: () => updates.at(-1) || currentState,
+      updateGameState: state => updates.push(state),
+      updateUI: () => {},
+      settings: { getApiKeys: () => ({}) },
+      narration: {},
+      characterUI: {},
+      getEnemyDialogueActive: () => false,
+      delay: ms => new Promise(resolve => {
+        delays.push(ms);
+        resolveDelay = resolve;
+      }),
+      apiSubmitKanjiKombatAnswer: async () => ({ status: 'accepted' }),
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handledPromise = combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId: 'answer-wrong',
+      promptRef: { promptId: 'kkp_wrong_hold', sequence: 1, cardId: 'hiragana:あ' },
+      turnTiming: {},
+      playback: async localTranscript => calls.push(['playback', localTranscript.kanjiAnswerCorrect]),
+      startMoveSelection: () => calls.push(['startMoveSelection']),
+      getEnemyDialogueActive: () => false,
+    });
+
+    await waitForCondition(() => delays.length === 1, 'wrong answer feedback delay should be scheduled');
+
+    try {
+      assert.deepEqual(calls, [['playback', false]]);
+      assert.equal(delays.length, 1);
+      assert.equal(delays[0] > 190 && delays[0] <= 200, true);
+      assert.equal(calls.some(call => call[0] === 'startMoveSelection'), false);
+    } finally {
+      resolveDelay();
+    }
+
+    assert.equal(await handledPromise, true);
+    assert.deepEqual(calls, [
+      ['playback', false],
+      ['startMoveSelection'],
+    ]);
   });
 
   function buildLocalStreakState({ streak = 0, allyHp = 50, pendingStreakRewards = null } = {}) {
