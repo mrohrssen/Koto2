@@ -2695,6 +2695,32 @@ describe('kanji-kombat ui', () => {
     };
   }
 
+  it('holds the action area and requests refill when Kanji Kombat has no prompt to render', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      syncSession: async () => ({ status: 'ok', confirmedThroughSeq: 999 }),
+      __sessionSchedule: syncSchedule,
+      refillPromptBuffer: async () => {
+        calls.push(['refill']);
+        return { state: combatStateWithPromptBuffer([]) };
+      },
+      showNarration: async text => calls.push(['narration', text]),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    const handled = renderKanjiKombatAction({
+      phase: 'combat',
+      run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
+      combat: { actionCursor: { side: 'ally', index: 0 }, enemies: [{ id: 'mizu', hp: 20, maxHp: 20 }] },
+    });
+
+    await flushPromises(4);
+
+    assert.equal(handled, true, 'empty Kanji Kombat prompt state must not fall through to move UI');
+    assert.deepEqual(calls.map(call => call[0]), ['refill', 'narration']);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').length, 0);
+  });
+
   it('requests a single-flight refill when the local prompt buffer drops below ten', async () => {
     const calls = [];
     const promptBuffer = Array.from({ length: 10 }, (_, index) => introPrompt(index));

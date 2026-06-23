@@ -1799,6 +1799,7 @@ async function playKanjiKombatEnemyTravelReveal({ enemies = [], allies = [], isB
     ? allies
     : state?.combat?.allies || state?.run?.creatureParty?.active || [];
 
+  kanjiKombatOpeningRevealActive = false;
   await showFormation('enemy', enemies, { isBoss, force: true });
   const enemyFormation = document.getElementById('enemy-formation');
   if (enemyFormation) enemyFormation.style.opacity = '0';

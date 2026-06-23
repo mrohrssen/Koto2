@@ -148,6 +148,23 @@ test('Kanji Kombat opening suppresses updateScene enemy rendering until reveal c
   assert.match(startLoopSource, /kanjiKombatOpeningRevealActive = false/);
 });
 
+test('Kanji Kombat opening lowers the reveal guard before staging enemy DOM anchors', () => {
+  const revealSource = sourceBetween(
+    combatLoopSrc,
+    'async function playKanjiKombatEnemyTravelReveal',
+    'async function playKanjiKombatOpeningTransition'
+  );
+
+  const lowerGuardIndex = revealSource.indexOf('kanjiKombatOpeningRevealActive = false');
+  const showFormationIndex = revealSource.indexOf("await showFormation('enemy'");
+
+  assert.ok(lowerGuardIndex >= 0, 'opening reveal should lower the updateScene hide guard itself');
+  assert.ok(
+    lowerGuardIndex < showFormationIndex,
+    'guard must be lowered before enemy DOM anchors are created so updateScene cannot erase them'
+  );
+});
+
 test('Kanji Kombat opening keeps centralized parallax sync from cancelling travel', () => {
   const parallaxSource = sourceBetween(
     gameSrc,

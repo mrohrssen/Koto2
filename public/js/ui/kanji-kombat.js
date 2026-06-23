@@ -877,5 +877,12 @@ export function renderKanjiKombatAction(gameState) {
     return true;
   }
 
+  if (!hasBufferedPrompt) {
+    clearActionArea();
+    requestPromptBufferRefillIfLow(gameState);
+    void showKanjiKombatSyncPause();
+    return true;
+  }
+
   return false;
 }
