@@ -342,5 +342,89 @@
     ],
     "defeatLine": "やるじゃん。",
     "createdAt": "2026-04-07"
+  },
+  "nouka": {
+    "id": "nouka",
+    "name": "農家",
+    "nameEn": "Farmer",
+    "speakerId": 13,
+    "area": "morning-ranch",
+    "reading": "のうか",
+    "meaning": "farmer / farm family",
+    "rank": 8100,
+    "attack": 16,
+    "skills": ["sodateru"],
+    "personality": {
+      "traits": ["hardworking", "proud"],
+      "speechStyle": "Plain and warm.",
+      "quirk": "Brags about the vegetables."
+    },
+    "greeting": "おはよう！",
+    "shopGreetings": ["おはよう！"],
+    "defeatLine": "ありがとう！",
+    "createdAt": "2026-07-02"
+  },
+  "okaasan": {
+    "id": "okaasan",
+    "name": "お母さん",
+    "nameEn": "Mother",
+    "speakerId": 10,
+    "area": "morning-ranch",
+    "reading": "おかあさん",
+    "meaning": "mother / mom",
+    "rank": 1400,
+    "attack": 16,
+    "skills": ["okosu"],
+    "personality": {
+      "traits": ["caring", "brisk"],
+      "speechStyle": "Kind but no-nonsense.",
+      "quirk": "Wakes everyone at sunrise."
+    },
+    "greeting": "おはよう！",
+    "shopGreetings": ["おはよう！"],
+    "defeatLine": "また来てね！",
+    "createdAt": "2026-07-02"
+  },
+  "musume": {
+    "id": "musume",
+    "name": "娘",
+    "nameEn": "Daughter",
+    "speakerId": 52,
+    "area": "morning-ranch",
+    "reading": "むすめ",
+    "meaning": "daughter / (young) girl",
+    "rank": 600,
+    "attack": 16,
+    "skills": ["hakobu"],
+    "personality": {
+      "traits": ["energetic", "curious"],
+      "speechStyle": "Bright and quick.",
+      "quirk": "Races the morning deliveries."
+    },
+    "greeting": "おはよう！",
+    "shopGreetings": ["おはよう！"],
+    "defeatLine": "楽しかった！",
+    "createdAt": "2026-07-02"
+  },
+  "ojiisan": {
+    "id": "ojiisan",
+    "name": "おじいさん",
+    "nameEn": "Grandfather",
+    "speakerId": 51,
+    "area": "morning-ranch",
+    "reading": "おじいさん",
+    "meaning": "grandfather / elderly man",
+    "rank": 9000,
+    "attack": 16,
+    "skills": ["tetsudau"],
+    "personality": {
+      "traits": ["gentle", "wise"],
+      "speechStyle": "Slow and fond of stories.",
+      "quirk": "Claims the ranch was smaller in his day."
+    },
+    "greeting": "おはよう！",
+    "shopGreetings": ["おはよう！"],
+    "defeatLine": "元気ですね！",
+    "createdAt": "2026-07-02"
   }
 }
