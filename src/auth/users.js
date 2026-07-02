@@ -1,48 +1,46 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { writeFileAtomicSync } from '../atomic-write.js';
 import { randomBytes } from 'crypto';
 import { hashPassword, encryptKeys, decryptKeys } from './crypto.js';
 import { dataPath } from '../data-dir.js';
+import { getDb } from '../db.js';
 
-const DEFAULT_FILE = dataPath('.jrpg-users.json');
+const DEFAULT_FILE = dataPath('.jrpg-users.json'); // legacy import source only
 const PERSONALIZED_DIALOGUE_DEBUG_USERNAME = 'michia';
 
 export function isPersonalizedDialogueDebugUser(user) {
   return (user?.username || '').toLowerCase() === PERSONALIZED_DIALOGUE_DEBUG_USERNAME;
 }
 
-/**
- * Load users data from file
- * @param {string} filePath
- * @returns {{ users: Array, inviteCodes: Array }}
- */
-export function loadUsers(filePath = DEFAULT_FILE) {
-  if (!existsSync(filePath)) {
-    return { users: [], inviteCodes: [] };
+function rowToUser(row) {
+  if (!row) return null;
+  const user = {
+    id: row.id,
+    username: row.username,
+    passwordHash: row.password_hash,
+    encryptedApiKeys: row.encrypted_api_keys ? JSON.parse(row.encrypted_api_keys) : null,
+    createdAt: row.created_at,
+  };
+  if (row.is_bot) {
+    user.isBot = true;
+    user.botProfile = row.bot_profile ? JSON.parse(row.bot_profile) : {};
   }
-  try {
-    return JSON.parse(readFileSync(filePath, 'utf-8'));
-  } catch {
-    return { users: [], inviteCodes: [] };
-  }
+  return user;
 }
 
 /**
- * Save users data to file
- * @param {object} data
- * @param {string} filePath
+ * Read-only compatibility dump in the legacy `{ users, inviteCodes }` shape.
+ * users do NOT include reviews/kanjiKombatRuns arrays (no caller needs them).
+ * All filePath parameters below are accepted and ignored (legacy signature).
  */
-export function saveUsers(data, filePath = DEFAULT_FILE) {
-  writeFileAtomicSync(filePath, JSON.stringify(data, null, 2));
+export function loadUsers(_filePath = DEFAULT_FILE) {
+  const db = getDb();
+  return {
+    users: db.prepare('SELECT * FROM users').all().map(rowToUser),
+    inviteCodes: db.prepare('SELECT code, used_by AS usedBy, created_at AS createdAt FROM invite_codes').all(),
+  };
 }
 
-export async function createUserRecord(fields, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
-
-  if (data.users.some(u => u.username === fields.username)) {
-    throw new Error('Username already taken');
-  }
-
+export async function createUserRecord(fields, _filePath = DEFAULT_FILE) {
+  const db = getDb();
   const user = {
     id: fields.id || `u_${randomBytes(8).toString('hex')}`,
     username: fields.username,
@@ -51,9 +49,22 @@ export async function createUserRecord(fields, filePath = DEFAULT_FILE) {
     createdAt: fields.createdAt || new Date().toISOString(),
     ...(fields.isBot ? { isBot: true, botProfile: fields.botProfile || {} } : {})
   };
-
-  data.users.push(user);
-  saveUsers(data, filePath);
+  try {
+    db.prepare(`
+      INSERT INTO users (id, username, password_hash, encrypted_api_keys, created_at, is_bot, bot_profile)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      user.id, user.username, user.passwordHash,
+      user.encryptedApiKeys ? JSON.stringify(user.encryptedApiKeys) : null,
+      user.createdAt, user.isBot ? 1 : 0,
+      user.botProfile ? JSON.stringify(user.botProfile) : null
+    );
+  } catch (e) {
+    if (String(e.message).includes('UNIQUE constraint failed: users.username')) {
+      throw new Error('Username already taken');
+    }
+    throw e;
+  }
   return user;
 }
 
@@ -74,9 +85,8 @@ export async function createUser(username, password, filePath = DEFAULT_FILE) {
  * @param {string} filePath
  * @returns {object|null}
  */
-export function findUserByUsername(username, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
-  return data.users.find(u => u.username === username) || null;
+export function findUserByUsername(username, _filePath = DEFAULT_FILE) {
+  return rowToUser(getDb().prepare('SELECT * FROM users WHERE username = ?').get(username));
 }
 
 /**
@@ -85,9 +95,8 @@ export function findUserByUsername(username, filePath = DEFAULT_FILE) {
  * @param {string} filePath
  * @returns {object|null}
  */
-export function findUserById(id, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
-  return data.users.find(u => u.id === id) || null;
+export function findUserById(id, _filePath = DEFAULT_FILE) {
+  return rowToUser(getDb().prepare('SELECT * FROM users WHERE id = ?').get(id));
 }
 
 /**
@@ -96,15 +105,10 @@ export function findUserById(id, filePath = DEFAULT_FILE) {
  * @param {string} filePath
  * @returns {string} The invite code
  */
-export function createInviteCode(adminSecret, filePath = DEFAULT_FILE) {
+export function createInviteCode(_adminSecret, _filePath = DEFAULT_FILE) {
   const code = `NEO-TOKYO-${randomBytes(6).toString('hex')}`;
-  const data = loadUsers(filePath);
-  data.inviteCodes.push({
-    code,
-    usedBy: null,
-    createdAt: new Date().toISOString()
-  });
-  saveUsers(data, filePath);
+  getDb().prepare('INSERT INTO invite_codes (code, used_by, created_at) VALUES (?, NULL, ?)')
+    .run(code, new Date().toISOString());
   return code;
 }
 
@@ -115,14 +119,17 @@ export function createInviteCode(adminSecret, filePath = DEFAULT_FILE) {
  * @param {string} filePath
  * @returns {boolean} Whether the code was valid and unused
  */
-export function useInviteCode(code, userId, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
-  const invite = data.inviteCodes.find(i => i.code === code && !i.usedBy);
-  if (!invite) return false;
+export function useInviteCode(code, userId, _filePath = DEFAULT_FILE) {
+  const result = getDb().prepare(
+    'UPDATE invite_codes SET used_by = ? WHERE code = ? AND used_by IS NULL'
+  ).run(userId, code);
+  return result.changes === 1;
+}
 
-  invite.usedBy = userId;
-  saveUsers(data, filePath);
-  return true;
+const userKeysCache = new Map(); // userId -> decrypted keys object
+
+function invalidateUserKeysCache(userId) {
+  userKeysCache.delete(userId);
 }
 
 /**
@@ -132,13 +139,31 @@ export function useInviteCode(code, userId, filePath = DEFAULT_FILE) {
  * @param {string} encryptionKey - 64-char hex encryption key
  * @param {string} filePath
  */
-export function updateUserKeys(userId, keys, encryptionKey, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
-  const user = data.users.find(u => u.id === userId);
+export function updateUserKeys(userId, keys, encryptionKey, _filePath = DEFAULT_FILE) {
+  const user = findUserById(userId);
   if (!user) throw new Error('User not found');
+  setUserEncryptedApiKeys(userId, encryptKeys(keys, encryptionKey));
+}
 
-  user.encryptedApiKeys = encryptKeys(keys, encryptionKey);
-  saveUsers(data, filePath);
+export function setUserEncryptedApiKeys(userId, encryptedBlobOrNull) {
+  getDb().prepare('UPDATE users SET encrypted_api_keys = ? WHERE id = ?')
+    .run(encryptedBlobOrNull ? JSON.stringify(encryptedBlobOrNull) : null, userId);
+  invalidateUserKeysCache(userId);
+}
+
+export function setUserPasswordHash(userId, passwordHash) {
+  getDb().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, userId);
+}
+
+export function deleteUserById(userId) {
+  const db = getDb();
+  const remove = db.transaction(() => {
+    db.prepare('DELETE FROM reviews WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM kanji_kombat_runs WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+  });
+  remove();
+  invalidateUserKeysCache(userId);
 }
 
 /**
@@ -153,8 +178,7 @@ export function migrateAiConsentForExistingUsers({
   filePath = DEFAULT_FILE,
   encryptionKey = process.env.ENCRYPTION_KEY || 'a'.repeat(64)
 } = {}) {
-  const data = loadUsers(filePath);
-  const users = Array.isArray(data.users) ? data.users : [];
+  const users = loadUsers(filePath).users;
   let migratedUsers = 0;
   let skippedUsers = 0;
 
@@ -187,12 +211,8 @@ export function migrateAiConsentForExistingUsers({
 
     if (!changed) continue;
 
-    user.encryptedApiKeys = encryptKeys(keys, encryptionKey);
+    setUserEncryptedApiKeys(user.id, encryptKeys(keys, encryptionKey));
     migratedUsers += 1;
-  }
-
-  if (migratedUsers > 0) {
-    saveUsers(data, filePath);
   }
 
   return {
@@ -207,20 +227,13 @@ export function migrateAiConsentForExistingUsers({
  * @param {string} userId
  * @param {string} filePath
  */
-export function addReview(userId, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
-  const user = data.users.find(u => u.id === userId);
-  if (!user) return;
-
+export function addReview(userId, _filePath = DEFAULT_FILE) {
+  const db = getDb();
+  if (!findUserById(userId)) return;
   const now = Date.now();
-  if (!user.reviews) user.reviews = [];
-  user.reviews.push({ ts: now });
-
-  // Prune entries older than 7 days
   const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
-  user.reviews = user.reviews.filter(r => r.ts > sevenDaysAgo);
-
-  saveUsers(data, filePath);
+  db.prepare('INSERT INTO reviews (user_id, ts) VALUES (?, ?)').run(userId, now);
+  db.prepare('DELETE FROM reviews WHERE user_id = ? AND ts <= ?').run(userId, sevenDaysAgo);
 }
 
 function getKanjiKombatCutoff(period, now = Date.now()) {
@@ -245,24 +258,19 @@ function coerceTimestamp(value, fallback = Date.now()) {
  * @param {{ wave?: number, wavesCleared?: number, completedAt?: number|string }} run
  * @param {string} filePath
  */
-export function recordKanjiKombatRun(userId, run = {}, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
-  const user = data.users.find(u => u.id === userId);
-  if (!user) return null;
-
+export function recordKanjiKombatRun(userId, run = {}, _filePath = DEFAULT_FILE) {
+  const db = getDb();
+  if (!findUserById(userId)) return null;
   const completedAt = coerceTimestamp(run.completedAt);
   const wavesCleared = Math.max(0, Math.floor(Number(run.wavesCleared) || 0));
   const wave = Math.max(1, Math.floor(Number(run.wave) || wavesCleared + 1));
-
-  if (!Array.isArray(user.kanjiKombatRuns)) user.kanjiKombatRuns = [];
-  user.kanjiKombatRuns.push({ ts: completedAt, wave, wavesCleared });
-
   const weeklyCutoff = getKanjiKombatCutoff('weekly');
-  user.kanjiKombatRuns = user.kanjiKombatRuns.filter(entry =>
-    Number(entry?.ts) >= weeklyCutoff
-  );
-
-  saveUsers(data, filePath);
+  const record = db.transaction(() => {
+    db.prepare('INSERT INTO kanji_kombat_runs (user_id, ts, wave, waves_cleared) VALUES (?, ?, ?, ?)')
+      .run(userId, completedAt, wave, wavesCleared);
+    db.prepare('DELETE FROM kanji_kombat_runs WHERE user_id = ? AND ts < ?').run(userId, weeklyCutoff);
+  });
+  record();
   return { wave, wavesCleared, ts: completedAt };
 }
 
@@ -274,42 +282,30 @@ export function recordKanjiKombatRun(userId, run = {}, filePath = DEFAULT_FILE) 
  * @param {{ now?: number }} opts
  * @returns {{ period: string, entries: Array, currentUser: object }}
  */
-export function getKanjiKombatLeaderboard(period, currentUserId, filePath = DEFAULT_FILE, opts = {}) {
+export function getKanjiKombatLeaderboard(period, currentUserId, _filePath = DEFAULT_FILE, opts = {}) {
   const normalizedPeriod = period === 'weekly' ? 'weekly' : '24h';
-  const data = loadUsers(filePath);
   const now = typeof opts.now === 'number' ? opts.now : Date.now();
   const cutoff = getKanjiKombatCutoff(normalizedPeriod, now);
+  const rows = getDb().prepare(`
+    SELECT u.id AS userId, u.username AS username, r.wave AS wave, MIN(r.ts) AS ts
+    FROM kanji_kombat_runs r
+    JOIN users u ON u.id = r.user_id
+    WHERE r.ts >= @cutoff AND r.wave > 0
+      AND r.wave = (
+        SELECT MAX(r2.wave) FROM kanji_kombat_runs r2
+        WHERE r2.user_id = r.user_id AND r2.ts >= @cutoff
+      )
+    GROUP BY r.user_id
+    ORDER BY wave DESC, ts ASC, username ASC
+  `).all({ cutoff });
 
-  const bestByUser = data.users
-    .map(user => {
-      const runs = (user.kanjiKombatRuns || [])
-        .filter(entry => Number(entry?.ts) >= cutoff && Number(entry?.wave) > 0)
-        .map(entry => ({
-          userId: user.id,
-          username: user.username,
-          wave: Math.max(1, Math.floor(Number(entry.wave) || 1)),
-          ts: Number(entry.ts)
-        }))
-        .sort((a, b) => b.wave - a.wave || a.ts - b.ts);
-      return runs[0] || null;
-    })
-    .filter(Boolean);
-
-  const ranked = bestByUser.sort((a, b) =>
-    b.wave - a.wave || a.ts - b.ts || a.username.localeCompare(b.username)
-  );
-
-  const currentUserEntry = ranked.find(entry => entry.userId === currentUserId);
-  const currentUser = currentUserEntry
-    ? { rank: ranked.indexOf(currentUserEntry) + 1, wave: currentUserEntry.wave }
+  const currentIndex = rows.findIndex(entry => entry.userId === currentUserId);
+  const currentUser = currentIndex !== -1
+    ? { rank: currentIndex + 1, wave: rows[currentIndex].wave }
     : { rank: null, wave: 0 };
-
-  const entries = ranked.map((entry, index) => ({
-    rank: index + 1,
-    username: entry.username,
-    wave: entry.wave
+  const entries = rows.map((entry, index) => ({
+    rank: index + 1, username: entry.username, wave: entry.wave,
   }));
-
   return { period: normalizedPeriod, entries, currentUser };
 }
 
@@ -320,46 +316,39 @@ export function getKanjiKombatLeaderboard(period, currentUserId, filePath = DEFA
  * @param {string} filePath
  * @returns {{ period: string, entries: Array, currentUser: object }}
  */
-export function getLeaderboard(period, currentUserId, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
+export function getLeaderboard(period, currentUserId, _filePath = DEFAULT_FILE) {
+  // Tokyo-time cutoff math copied verbatim from the previous implementation
   const now = Date.now();
-
-  // Tokyo time (UTC+9) boundaries
   const tokyoOffset = 9 * 60 * 60 * 1000;
   const nowTokyo = new Date(now + tokyoOffset);
-
   let cutoff;
   if (period === 'weekly') {
-    // Monday 00:00 JST this week
-    const day = nowTokyo.getUTCDay(); // 0=Sun, 1=Mon, ...
+    const day = nowTokyo.getUTCDay();
     const daysSinceMonday = day === 0 ? 6 : day - 1;
     const mondayTokyo = new Date(nowTokyo);
     mondayTokyo.setUTCDate(nowTokyo.getUTCDate() - daysSinceMonday);
     mondayTokyo.setUTCHours(0, 0, 0, 0);
-    cutoff = mondayTokyo.getTime() - tokyoOffset; // Convert back to UTC ms
+    cutoff = mondayTokyo.getTime() - tokyoOffset;
   } else {
-    // Today 00:00 JST
     const todayTokyo = new Date(nowTokyo);
     todayTokyo.setUTCHours(0, 0, 0, 0);
-    cutoff = todayTokyo.getTime() - tokyoOffset; // Convert back to UTC ms
+    cutoff = todayTokyo.getTime() - tokyoOffset;
   }
 
-  const ranked = data.users
-    .map(u => ({
-      username: u.username,
-      userId: u.id,
-      count: (u.reviews || []).filter(r => r.ts >= cutoff).length
-    }))
-    .filter(e => e.count > 0)
-    .sort((a, b) => b.count - a.count);
+  const rows = getDb().prepare(`
+    SELECT u.username AS username, u.id AS userId, COUNT(*) AS count
+    FROM reviews r JOIN users u ON u.id = r.user_id
+    WHERE r.ts >= ?
+    GROUP BY r.user_id
+    HAVING COUNT(*) > 0
+    ORDER BY count DESC
+  `).all(cutoff);
 
-  const currentUserEntry = ranked.find(e => e.userId === currentUserId);
-  const currentUser = currentUserEntry
-    ? { rank: ranked.indexOf(currentUserEntry) + 1, count: currentUserEntry.count }
+  const currentIndex = rows.findIndex(entry => entry.userId === currentUserId);
+  const currentUser = currentIndex !== -1
+    ? { rank: currentIndex + 1, count: rows[currentIndex].count }
     : { rank: null, count: 0 };
-
-  const entries = ranked.map((e, i) => ({ rank: i + 1, username: e.username, count: e.count }));
-
+  const entries = rows.map((entry, index) => ({ rank: index + 1, username: entry.username, count: entry.count }));
   return { period, entries, currentUser };
 }
 
@@ -369,16 +358,20 @@ export function getLeaderboard(period, currentUserId, filePath = DEFAULT_FILE) {
  * @returns {object} Decrypted keys with userId included, or object with just userId
  */
 export function getUserKeys(userId) {
+  if (userKeysCache.has(userId)) return { ...userKeysCache.get(userId), userId };
   const user = findUserById(userId);
-  if (!user?.encryptedApiKeys) return { userId, aiConversationsEnabled: false };
-  try {
-    const keys = decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
-    return {
-      ...keys,
-      aiConversationsEnabled: isPersonalizedDialogueDebugUser(user) && keys.aiConversationsEnabled === true,
-      userId
-    };
-  } catch {
-    return { userId, aiConversationsEnabled: false };
+  let result = { userId, aiConversationsEnabled: false };
+  if (user?.encryptedApiKeys) {
+    try {
+      const keys = decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
+      result = {
+        ...keys,
+        aiConversationsEnabled: isPersonalizedDialogueDebugUser(user) && keys.aiConversationsEnabled === true,
+        userId,
+      };
+    } catch { /* fall through to default */ }
   }
+  const { userId: _ignored, ...cacheable } = result;
+  userKeysCache.set(userId, cacheable);
+  return result;
 }

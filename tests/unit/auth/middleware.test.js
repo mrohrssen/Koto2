@@ -8,22 +8,25 @@ import { tmpdir } from 'node:os';
 process.env.JWT_SECRET = 'test-secret-key-for-unit-tests-only';
 
 import { signToken, verifyToken, requireAuth } from '../../../src/auth/middleware.js';
-import { saveUsers } from '../../../src/auth/users.js';
+import { createUserRecord } from '../../../src/auth/users.js';
+import { setDataDirForTest, resetDataDirForTest } from '../../../src/data-dir.js';
+import { resetDbForTest } from '../../../src/db.js';
 
 describe('auth/middleware', () => {
   let dataDir;
   let usersFile;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     dataDir = mkdtempSync(join(tmpdir(), 'koto-auth-middleware-'));
     usersFile = join(dataDir, '.jrpg-users.json');
-    saveUsers({
-      users: [{ id: 'u_123', username: 'takeshi' }],
-      inviteCodes: [],
-    }, usersFile);
+    setDataDirForTest(dataDir);
+    resetDbForTest();
+    await createUserRecord({ id: 'u_123', username: 'takeshi', password: 'secret123' });
   });
 
   afterEach(() => {
+    resetDbForTest();
+    resetDataDirForTest();
     if (dataDir) rmSync(dataDir, { recursive: true, force: true });
     dataDir = null;
     usersFile = null;

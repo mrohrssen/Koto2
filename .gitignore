@@ -3,6 +3,9 @@ node_modules/
 .jrpg-*.json
 .jrpg-users.json
 .jrpg-save-*.json
+koto.db
+koto.db-wal
+koto.db-shm
 .jchat-*.json
 .pvp-match-*.json
 .DS_Store

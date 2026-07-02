@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { dataPath, getDataDir } from '../data-dir.js';
-import { createUserRecord, findUserByUsername, loadUsers, saveUsers } from '../auth/users.js';
+import { createUserRecord, findUserByUsername, findUserById, setUserPasswordHash } from '../auth/users.js';
 import { encryptKeys, hashPassword, verifyPassword } from '../auth/crypto.js';
 import { createMetaProgression, createNewPlayer } from '../game/state.js';
 import { CREATURES_BY_ID } from '../game/creatures.js';
@@ -83,11 +83,8 @@ async function ensureDevTestUser(usersFile) {
     }, usersFile);
     created = true;
   } else if (!await verifyPassword(DEV_TEST_PASSWORD, user.passwordHash)) {
-    const data = loadUsers(usersFile);
-    const existing = data.users.find(candidate => candidate.id === user.id);
-    existing.passwordHash = await hashPassword(DEV_TEST_PASSWORD);
-    saveUsers(data, usersFile);
-    user = existing;
+    setUserPasswordHash(user.id, await hashPassword(DEV_TEST_PASSWORD));
+    user = findUserById(user.id, usersFile);
   }
 
   return { user, created };

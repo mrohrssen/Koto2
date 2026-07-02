@@ -1,7 +1,7 @@
-import { mkdtempSync } from 'fs';
+import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createBotUsernameBatch,
@@ -9,8 +9,25 @@ import {
   listBotUsers
 } from '../../../src/pvp/bot-account-service.js';
 import { loadUsers } from '../../../src/auth/users.js';
+import { setDataDirForTest, resetDataDirForTest } from '../../../src/data-dir.js';
+import { resetDbForTest } from '../../../src/db.js';
 
 describe('bot-account-service', () => {
+  let dir;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'koto-bots-'));
+    setDataDirForTest(dir);
+    resetDbForTest();
+  });
+
+  afterEach(() => {
+    resetDbForTest();
+    resetDataDirForTest();
+    if (dir) rmSync(dir, { recursive: true, force: true });
+    dir = null;
+  });
+
   it('generates varied unique usernames', () => {
     const usernames = createBotUsernameBatch({ count: 100, seed: 'ranked-bots-v1', existingUsernames: new Set() });
     assert.equal(usernames.length, 100);
@@ -22,7 +39,6 @@ describe('bot-account-service', () => {
   });
 
   it('creates users marked as bots without exposing plain passwords', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'koto-bots-'));
     const usersFile = join(dir, 'users.json');
     const user = await createBotUserRecord({
       username: 'taro1995',

@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createTestTmpDir } from '../../helpers/tmp.js';
 import { resetDataDirForTest, setDataDirForTest } from '../../../src/data-dir.js';
+import { resetDbForTest } from '../../../src/db.js';
 import { clearManagersForTest, getManager } from '../../../src/game/manager-registry.js';
 import { loadUsers } from '../../../src/auth/users.js';
 import { verifyPassword } from '../../../src/auth/crypto.js';
@@ -20,6 +21,7 @@ let tmp;
 describe('dev test user seeder', () => {
   afterEach(async () => {
     clearManagersForTest();
+    resetDbForTest();
     resetDataDirForTest();
     if (tmp) {
       await tmp.cleanup();
@@ -30,6 +32,7 @@ describe('dev test user seeder', () => {
   it('creates a registered devtester account with a progressed hub save', async () => {
     tmp = await createTestTmpDir('koto-dev-user-');
     const usersFile = join(tmp.path, '.jrpg-users.json');
+    setDataDirForTest(tmp.path);
 
     const result = await seedDevTestUser({ dataDir: tmp.path, usersFile });
 
@@ -67,6 +70,7 @@ describe('dev test user seeder', () => {
   it('is idempotent and repairs the fixture save without duplicating users', async () => {
     tmp = await createTestTmpDir('koto-dev-user-');
     const usersFile = join(tmp.path, '.jrpg-users.json');
+    setDataDirForTest(tmp.path);
 
     const first = await seedDevTestUser({ dataDir: tmp.path, usersFile });
     const second = await seedDevTestUser({ dataDir: tmp.path, usersFile });

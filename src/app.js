@@ -5,6 +5,7 @@ import createRoutes from './routes/index.js';
 import createAuthRoutes from './auth/routes.js';
 import { dataPath, setDataDirForTest } from './data-dir.js';
 import { migrateAiConsentForExistingUsers } from './auth/users.js';
+import { migrateUsersJsonIfNeeded } from './db.js';
 import { chat } from './ai-providers.js';
 import { DialogueTranslationCache } from './dialogue-translation/cache.js';
 import { buildDialogueTranslationConfig } from './dialogue-translation/service.js';
@@ -112,6 +113,11 @@ export function createApp({
 
   const app = express();
   app.locals.usersFile = usersFile || dataPath('.jrpg-users.json');
+
+  const usersImport = migrateUsersJsonIfNeeded(app.locals.usersFile);
+  if (usersImport.migrated) {
+    console.log(`[Auth] Imported ${usersImport.users} users from legacy JSON.`);
+  }
 
   const consentMigration = migrateAiConsentForExistingUsers({
     filePath: app.locals.usersFile,

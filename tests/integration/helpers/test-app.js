@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { createApp } from '../../../src/app.js';
 import { resetDataDirForTest } from '../../../src/data-dir.js';
+import { resetDbForTest } from '../../../src/db.js';
 import { clearManagersForTest } from '../../../src/game/manager-registry.js';
 import { createTestTmpDir } from '../../helpers/tmp.js';
 import {
@@ -63,6 +64,7 @@ export async function createTestApp() {
   async function cleanup() {
     await new Promise(resolve => server.close(resolve));
     clearManagersForTest();
+    resetDbForTest();
     resetDataDirForTest();
     await tmp.cleanup();
   }
