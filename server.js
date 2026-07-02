@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import dotenv from 'dotenv';
 
 import { createApp, enrichGameState } from './src/app.js';
+import { writeFileAtomicSync } from './src/atomic-write.js';
 
 
 import {
@@ -139,7 +140,7 @@ function loadSettings() {
 
 function saveSettings(settings) {
   try {
-    writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+    writeFileAtomicSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
   } catch (e) {
     console.warn('Failed to save settings:', e.message);
   }

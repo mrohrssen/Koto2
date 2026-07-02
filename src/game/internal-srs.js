@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from 'fs';
+import { writeFileAtomicSync } from '../atomic-write.js';
 import {
   createEmptyCard,
   fsrs,
@@ -142,7 +143,7 @@ export function saveSrsData(userId, data) {
   }
 
   try {
-    writeFileSync(filePath, JSON.stringify(serialized, null, 2));
+    writeFileAtomicSync(filePath, JSON.stringify(serialized, null, 2));
   } catch (e) {
     console.warn(`[SRS] Failed to save data for ${userId}:`, e.message);
   }

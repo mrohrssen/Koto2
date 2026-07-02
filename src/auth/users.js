@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { writeFileAtomicSync } from '../atomic-write.js';
 import { randomBytes } from 'crypto';
 import { hashPassword, encryptKeys, decryptKeys } from './crypto.js';
 import { dataPath } from '../data-dir.js';
@@ -32,7 +33,7 @@ export function loadUsers(filePath = DEFAULT_FILE) {
  * @param {string} filePath
  */
 export function saveUsers(data, filePath = DEFAULT_FILE) {
-  writeFileSync(filePath, JSON.stringify(data, null, 2));
+  writeFileAtomicSync(filePath, JSON.stringify(data, null, 2));
 }
 
 export async function createUserRecord(fields, filePath = DEFAULT_FILE) {
