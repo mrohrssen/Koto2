@@ -25,7 +25,9 @@ Twelve fusion recipes exist in `src/game/services/fusion-service.js`, each locke
 
 ## The Nine Areas
 
-| # | Area ID | Name | Name teaches (JPDB rank) | Boss (fusion, rarity) | New natives | Reused spawns |
+Every creature named below already exists in `data/creatures.json` (all 72 have sprites); "first placed here" means this area is the creature's first spawn assignment — no new creatures are created by this roadmap.
+
+| # | Area ID | Name | Name teaches (JPDB rank) | Boss (fusion, rarity) | First placed here | Reused spawns |
 |---|---------|------|--------------------------|----------------------|-------------|---------------|
 | 4 | morning-ranch | 朝の牧場 Morning Ranch | 朝 400 · 牧場 13700 | 光の馬 hikarino-uma (unc) | hikari, uma, tsuchi, ushi, buta, hitsuji, nezumi, kaeru | inu, tori, hana |
 | 5 | blue-sea | 青い海 Blue Sea | 青い 1600 · 海 800 | 雲の魚 kumono-sakana (unc) | kumo, kame, tako, ika, kani, kamo, kujira (epic) | sakana, mizu |
