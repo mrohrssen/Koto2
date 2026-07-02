@@ -1241,5 +1241,61 @@
     "category": "gameMaster_no",
     "raw": "いいえ",
     "slots": []
+  },
+  {
+    "id": "npc_nouka_fightStart_yasai",
+    "category": "npc",
+    "group": "nouka_fightStart",
+    "raw": "野菜を育てます！",
+    "slots": []
+  },
+  {
+    "id": "npc_nouka_defeatLine_arigatou",
+    "category": "npc",
+    "group": "nouka_defeatLine",
+    "raw": "ありがとう！",
+    "slots": []
+  },
+  {
+    "id": "npc_okaasan_fightStart_asa",
+    "category": "npc",
+    "group": "okaasan_fightStart",
+    "raw": "朝ですよ！",
+    "slots": []
+  },
+  {
+    "id": "npc_okaasan_defeatLine_matakite",
+    "category": "npc",
+    "group": "okaasan_defeatLine",
+    "raw": "また来てね！",
+    "slots": []
+  },
+  {
+    "id": "npc_musume_fightStart_gyuunyuu",
+    "category": "npc",
+    "group": "musume_fightStart",
+    "raw": "牛乳を運びます！",
+    "slots": []
+  },
+  {
+    "id": "npc_musume_defeatLine_tanoshikatta",
+    "category": "npc",
+    "group": "musume_defeatLine",
+    "raw": "楽しかった！",
+    "slots": []
+  },
+  {
+    "id": "npc_ojiisan_fightStart_tetsudai",
+    "category": "npc",
+    "group": "ojiisan_fightStart",
+    "raw": "手伝いましょうか？",
+    "slots": []
+  },
+  {
+    "id": "npc_ojiisan_defeatLine_genki",
+    "category": "npc",
+    "group": "ojiisan_defeatLine",
+    "raw": "元気ですね！",
+    "slots": []
   }
 ]
