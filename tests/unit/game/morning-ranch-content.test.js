@@ -52,3 +52,42 @@ describe('morning-ranch npcs', () => {
     });
   }
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'gyuunyuu', word: '牛乳', category: 'food' },
+  { id: 'yasai', word: '野菜', category: 'food' },
+  { id: 'kome', word: '米', category: 'food' },
+  { id: 'chiizu', word: 'チーズ', category: 'food' },
+  { id: 'bataa', word: 'バター', category: 'food' },
+  { id: 'kuriimu', word: 'クリーム', category: 'food' },
+  { id: 'baketsu', word: 'バケツ', category: 'equipment' },
+  { id: 'suzu', word: '鈴', category: 'equipment' },
+  { id: 'kago', word: '籠', category: 'equipment' },
+  { id: 'epuron', word: 'エプロン', category: 'equipment' },
+  { id: 'tane', word: '種', category: 'equipment' },
+  { id: 'kama', word: '鎌', category: 'equipment' }
+];
+
+describe('morning-ranch items', () => {
+  const ranchItems = items.filter(i => i.area === 'morning-ranch');
+
+  it('has exactly the 12 approved items', () => {
+    assert.deepEqual(
+      ranchItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = ranchItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});

@@ -799,5 +799,215 @@
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
+  },
+  {
+    "id": "gyuunyuu",
+    "word": "牛乳",
+    "reading": "ぎゅうにゅう",
+    "nameEn": "Milk",
+    "meaning": "milk",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.32
+    },
+    "description": "Heals all living creatures for 32% of max HP.",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "yasai",
+    "word": "野菜",
+    "reading": "やさい",
+    "nameEn": "Vegetables",
+    "meaning": "vegetable",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "kome",
+    "word": "米",
+    "reading": "こめ",
+    "nameEn": "Rice",
+    "meaning": "(uncooked) rice",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.30
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "chiizu",
+    "word": "チーズ",
+    "reading": "チーズ",
+    "nameEn": "Cheese",
+    "meaning": "cheese",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "bataa",
+    "word": "バター",
+    "reading": "バター",
+    "nameEn": "Butter",
+    "meaning": "butter",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "kuriimu",
+    "word": "クリーム",
+    "reading": "クリーム",
+    "nameEn": "Cream",
+    "meaning": "cream",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.45
+    },
+    "description": "Heals all living creatures for 45% of max HP.",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "baketsu",
+    "word": "バケツ",
+    "reading": "バケツ",
+    "nameEn": "Bucket",
+    "meaning": "bucket",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "suzu",
+    "word": "鈴",
+    "reading": "すず",
+    "nameEn": "Bell",
+    "meaning": "bell (small)",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "kago",
+    "word": "籠",
+    "reading": "かご",
+    "nameEn": "Basket",
+    "meaning": "basket",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "epuron",
+    "word": "エプロン",
+    "reading": "エプロン",
+    "nameEn": "Apron",
+    "meaning": "apron",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 12
+    },
+    "description": "+12 base attack (scales with level).",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "tane",
+    "word": "種",
+    "reading": "たね",
+    "nameEn": "Seeds",
+    "meaning": "seed / pit",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
+  },
+  {
+    "id": "kama",
+    "word": "鎌",
+    "reading": "かま",
+    "nameEn": "Sickle",
+    "meaning": "sickle",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "morning-ranch",
+    "createdAt": "2026-07-02"
   }
 ]
