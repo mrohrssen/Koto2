@@ -27,6 +27,7 @@ import {
   saveSrsData,
 } from '../../../src/game/internal-srs.js';
 import {
+  clearScriptDeckMemo,
   ensureScriptDeckSeeded,
   SCRIPT_DECK,
 } from '../../../src/game/script-srs.js';
@@ -90,22 +91,19 @@ function seedSaveFile(tmpDir, userId) {
  * (rather than intros, which are generated for brand-new cards).
  */
 function seedSrsDueCards(userId) {
-  ensureScriptDeckSeeded(userId);
+  const merged = ensureScriptDeckSeeded(userId);
   const srsData = loadSrsData(userId);
   if (!srsData[SCRIPT_DECK]) srsData[SCRIPT_DECK] = { cards: [] };
-  srsData[SCRIPT_DECK].cards = srsData[SCRIPT_DECK].cards.map((card, i) => {
-    if (i < 2) {
-      return {
-        ...card,
-        reps: 1,
-        due: '2000-01-01T00:00:00.000Z',
-        last_review: '2000-01-01T00:00:00.000Z',
-      };
-    }
-    return card;
-  });
+  srsData[SCRIPT_DECK].cards = merged.slice(0, 2).map(card => ({
+    id: card.id,
+    type: card.type,
+    reps: 1,
+    due: '2000-01-01T00:00:00.000Z',
+    last_review: '2000-01-01T00:00:00.000Z',
+  }));
   saveSrsData(userId, srsData);
   clearSrsCache(userId);
+  clearScriptDeckMemo(userId);
 }
 
 // ---------------------------------------------------------------------------

@@ -6,8 +6,10 @@ import { join } from 'path';
 import { State } from 'ts-fsrs';
 import { clearSrsCache, configureSrs, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
 import {
+  clearScriptDeckMemo,
   DAILY_NEW_LIMIT,
   ensureScriptDeckSeeded,
+  getScriptCards,
   getScriptDailyState,
   SCRIPT_DECK,
 } from '../../../src/game/script-srs.js';
@@ -154,14 +156,19 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
   it('saves onboarding and shows completion choice when no script work is available', () => {
     const gm = buildGm();
-    ensureScriptDeckSeeded(gm.userId);
+    const merged = ensureScriptDeckSeeded(gm.userId);
     const data = loadSrsData(gm.userId);
-    for (const card of data[SCRIPT_DECK].cards.filter(candidate => candidate.type === 'kanji')) {
-      card.reps = 1;
-      card.state = State.Learning;
-      card.due = new Date('2100-01-01T00:00:00Z');
-    }
+    data[SCRIPT_DECK].cards = merged
+      .filter(candidate => candidate.type === 'kanji')
+      .map(card => ({
+        id: card.id,
+        type: card.type,
+        reps: 1,
+        state: State.Learning,
+        due: new Date('2100-01-01T00:00:00Z'),
+      }));
     saveSrsData(gm.userId, data);
+    clearScriptDeckMemo(gm.userId);
     const service = new KanjiKombatService(gm);
     service.startRunWithCreature(fakeCreature('hi'));
 
@@ -200,7 +207,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
     assert.equal(gm.run.kanjiKombat.pendingIntro.cardId, card.id);
     const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(candidate => candidate.id === card.id);
-    assert.equal(savedCard.reps || 0, 0);
+    assert.equal(savedCard?.reps || 0, 0);
   });
 
   it('rejects stale intro card ids without grading arbitrary cards', () => {
@@ -210,7 +217,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     const service = new KanjiKombatService(gm);
     service.startRunWithCreature(fakeCreature('hi'));
     const pendingCardId = gm.run.kanjiKombat.promptBuffer[0].cardId;
-    const wrongCardId = loadSrsData(gm.userId)[SCRIPT_DECK].cards
+    const wrongCardId = getScriptCards(gm.userId)
       .find(card => card.id !== pendingCardId && card.type === 'hiragana').id;
 
     assert.throws(
@@ -221,7 +228,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
     assert.equal(gm.run.kanjiKombat.promptBuffer[0].cardId, pendingCardId);
     const wrongCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === wrongCardId);
-    assert.equal(wrongCard.reps || 0, 0);
+    assert.equal(wrongCard?.reps || 0, 0);
   });
 
   it('rejects direct and optimistic answers while onboarding is pending', () => {
@@ -256,7 +263,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     );
 
     const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === 'hiragana:あ');
-    assert.equal(savedCard.reps || 0, 0);
+    assert.equal(savedCard?.reps || 0, 0);
   });
 
   it('rejects completion choices while onboarding is pending', () => {
@@ -478,7 +485,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     );
 
     const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === head.cardId);
-    assert.equal(savedCard.reps || 0, 0);
+    assert.equal(savedCard?.reps || 0, 0);
   });
 
   it('rejects supplied empty intro prompt ids without grading or consuming', () => {
@@ -497,7 +504,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     );
 
     const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === head.cardId);
-    assert.equal(savedCard.reps || 0, 0);
+    assert.equal(savedCard?.reps || 0, 0);
     assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.promptId, head.promptId);
   });
 
@@ -518,7 +525,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     );
 
     const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === head.cardId);
-    assert.equal(savedCard.reps || 0, 0);
+    assert.equal(savedCard?.reps || 0, 0);
     assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.promptId, head.promptId);
   });
 

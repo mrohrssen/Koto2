@@ -5,7 +5,15 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { State } from 'ts-fsrs';
 import { clearSrsCache, configureSrs, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
-import { DAILY_NEW_LIMIT, ensureScriptDeckSeeded, getScriptDailyState, gradeScriptCard } from '../../../src/game/script-srs.js';
+import {
+  clearScriptDeckMemo,
+  DAILY_NEW_LIMIT,
+  ensureScriptDeckSeeded,
+  getScriptCards,
+  getScriptDailyState,
+  gradeScriptCard,
+  SCRIPT_DECK,
+} from '../../../src/game/script-srs.js';
 import {
   buildQuizForCard,
   chooseNextScriptWork,
@@ -54,7 +62,19 @@ describe('kanji-kombat deck controller', () => {
     tempDir = mkdtempSync(join(tmpdir(), 'koto-kk-deck-'));
     configureSrs({ dataDir: tempDir });
     clearSrsCache(userId);
-    ensureScriptDeckSeeded(userId);
+    // Tests in this file poke data.script.cards directly to seed fixtures
+    // (find/filter by id or type, mutate reps/state/due in place). Under
+    // sparse storage that array only holds graded (reps>0) cards, so
+    // pre-warm it with the full merged deck here — one place — instead of
+    // threading grading calls through every fixture below. Any downstream
+    // ensureScriptDeckSeeded compaction pass drops the reps:0 entries again,
+    // which is fine: it only runs after the fixtures have already read/
+    // mutated/saved what they need.
+    const merged = ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    data[SCRIPT_DECK].cards = merged.map(card => ({ ...card }));
+    saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
   });
 
   afterEach(() => rmSync(tempDir, { recursive: true, force: true }));
@@ -586,6 +606,7 @@ describe('kanji-kombat deck controller', () => {
     const updated = loadSrsData(userId);
     updated.script.cards.find(card => card.id === due.quiz.cardId).due = new Date('2099-01-01T00:00:00Z');
     saveSrsData(userId, updated);
+    clearScriptDeckMemo(userId);
     state.currentQuiz = null;
 
     const practice = chooseNextScriptWork(userId, state, {
@@ -986,7 +1007,7 @@ describe('kanji-kombat deck controller', () => {
 
     assert.equal(prompts.some(prompt => isDailyCompletePromptKind(prompt.kind)), false);
     assert.equal(prompts.some(prompt => prompt.kind === 'intro' && prompt.cardId?.startsWith('katakana:')), true);
-    assert.ok(data.script.cards.some(card => card.type === 'katakana' && (card.reps || 0) === 0));
+    assert.ok(getScriptCards(userId).some(card => card.type === 'katakana' && (card.reps || 0) === 0));
   });
 
   it('drops stale speculative completion prompts when unknown daily budget remains', () => {
