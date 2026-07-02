@@ -13,6 +13,15 @@ function createEntriesMap() {
   return Object.create(null);
 }
 
+const STRIPPED_RESPONSE_FIELDS = ['state', 'authoritativeState'];
+
+function slimResponse(response) {
+  if (!response || typeof response !== 'object' || Array.isArray(response)) return response;
+  const slim = { ...response };
+  for (const field of STRIPPED_RESPONSE_FIELDS) delete slim[field];
+  return slim;
+}
+
 function isObject(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
@@ -65,6 +74,10 @@ export function normalizeActionLedger(owner) {
 
   pruneLedger(ledger);
   syncEntriesToOrder(ledger);
+  for (const actionId of ledger.order) {
+    const entry = ledger.entries[actionId];
+    if (entry && entry.response) entry.response = slimResponse(entry.response);
+  }
   return ledger;
 }
 
@@ -90,7 +103,7 @@ export function rememberActionLedgerResult(owner, { actionId, actionType, respon
   ledger.entries[actionId] = {
     actionId,
     actionType: actionType || 'unknown',
-    response: cloneValue(response),
+    response: cloneValue(slimResponse(response)),
     recordedAt: Date.now(),
   };
 
