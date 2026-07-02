@@ -8,6 +8,7 @@ import { createApp } from '../../../src/app.js';
 import { resetDataDirForTest } from '../../../src/data-dir.js';
 import { loadUsers } from '../../../src/auth/users.js';
 import { decryptKeys } from '../../../src/auth/crypto.js';
+import { clearManagersForTest, flushAllDirty, getManager, getSaveFilePath, saveManager } from '../../../src/game/manager-registry.js';
 
 describe('auth routes', { concurrency: false }, () => {
   let dataDir;
@@ -28,6 +29,7 @@ describe('auth routes', { concurrency: false }, () => {
     } else {
       process.env.ANALYTICS_ID_SECRET = originalAnalyticsSecret;
     }
+    clearManagersForTest();
     resetDataDirForTest();
     rmSync(dataDir, { recursive: true, force: true });
   });
@@ -201,6 +203,36 @@ describe('auth routes', { concurrency: false }, () => {
     assert.equal(existsSync(join(dataDir, `save-${userId}.json`)), false);
     assert.equal(existsSync(join(dataDir, `npc-memory-${userId}.json`)), false);
     assert.equal(existsSync(reportDir), false);
+  });
+
+  it('does not let a dirty in-memory manager resurrect the save file after deletion', async () => {
+    const app = createApp({ dataDir, usersFile });
+
+    const register = await request(app)
+      .post('/api/auth/register')
+      .field('username', 'resurrect-check')
+      .field('password', 'pass123')
+      .field('aiDataSharingConsent', 'true')
+      .expect(200);
+
+    const userId = register.body.user.id;
+
+    // Load the manager into the registry and mark it dirty, simulating a
+    // write-behind save that hasn't flushed yet at the moment of deletion.
+    getManager(userId);
+    saveManager(userId);
+
+    await request(app)
+      .delete('/api/auth/me')
+      .set('Authorization', `Bearer ${register.body.token}`)
+      .send({ password: 'pass123' })
+      .expect(200);
+
+    // If deleteMe failed to drop the manager from the registry, this flush
+    // would rewrite the just-deleted save file with pre-deletion state.
+    flushAllDirty();
+
+    assert.equal(existsSync(getSaveFilePath(userId)), false);
   });
 
   it('rejects the old token after account deletion', async () => {

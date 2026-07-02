@@ -1,12 +1,12 @@
 import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createTestTmpDir } from '../../helpers/tmp.js';
 import { resetDataDirForTest, setDataDirForTest } from '../../../src/data-dir.js';
 import { resetDbForTest } from '../../../src/db.js';
 import { clearManagersForTest, getManager } from '../../../src/game/manager-registry.js';
-import { loadUsers } from '../../../src/auth/users.js';
+import { loadUsers, findUserByUsername } from '../../../src/auth/users.js';
 import { verifyPassword } from '../../../src/auth/crypto.js';
 import {
   DEV_TEST_CREATURE_IDS,
@@ -94,5 +94,33 @@ describe('dev test user seeder', () => {
     assert.equal(shouldAutoSeedDevTestUser({ nodeEnv: 'production', railwayEnvironment: undefined }), false);
     assert.equal(shouldAutoSeedDevTestUser({ nodeEnv: 'development', railwayEnvironment: 'dev' }), false);
     assert.equal(shouldAutoSeedDevTestUser({ nodeEnv: 'development', skipSeed: 'true' }), false);
+  });
+
+  it('imports the legacy users JSON instead of permanently skipping it', async () => {
+    tmp = await createTestTmpDir('koto-dev-user-');
+    const usersFile = join(tmp.path, '.jrpg-users.json');
+    setDataDirForTest(tmp.path);
+
+    // A legacy pre-existing user, written to disk before the DB has ever
+    // been touched — simulates an old deployment's .jrpg-users.json that
+    // has not yet been imported into koto.db.
+    writeFileSync(usersFile, JSON.stringify({
+      users: [{
+        id: 'u_legacy1',
+        username: 'legacyuser',
+        passwordHash: '$2b$10$fixturehashfixturehashfixturehashfixturehashfixtu',
+        createdAt: '2026-01-01T00:00:00.000Z'
+      }],
+      inviteCodes: []
+    }, null, 2));
+
+    await seedDevTestUser({ dataDir: tmp.path, usersFile });
+
+    const legacyUser = findUserByUsername('legacyuser');
+    assert.ok(legacyUser, 'expected legacy user to be imported into the DB');
+    assert.equal(legacyUser.id, 'u_legacy1');
+
+    const devUser = findUserByUsername(DEV_TEST_USERNAME);
+    assert.ok(devUser, 'expected devtester user to also be present');
   });
 });

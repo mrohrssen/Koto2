@@ -11,6 +11,8 @@ import {
 } from './users.js';
 import { dataPath, getDataDir } from '../data-dir.js';
 import { clearSrsCache } from '../game/internal-srs.js';
+import { clearScriptDeckMemo } from '../game/script-srs.js';
+import { removeManager } from '../game/manager-registry.js';
 import { getAnalyticsId } from './analytics-id.js';
 
 const registrationFields = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } }).none();
@@ -49,6 +51,12 @@ function deleteAssociatedData(userId) {
   const deletedFiles = [];
   const deletedBugReports = [];
 
+  // removeManager first: with write-behind saves, a dirty in-memory manager
+  // flushes to disk on removal. Deleting the save file before removing the
+  // manager would let that flush resurrect it with stale pre-deletion data.
+  // Removing first means any flush lands on the file we're about to delete.
+  removeManager(userId);
+
   for (const entry of readdirSync(dataDir, { withFileTypes: true })) {
     if (entry.name.includes(userId)) {
       rmSync(join(dataDir, entry.name), { recursive: true, force: true });
@@ -75,6 +83,7 @@ function deleteAssociatedData(userId) {
   }
 
   clearSrsCache(userId);
+  clearScriptDeckMemo(userId);
   return {
     deletedFiles: deletedFiles.sort(),
     deletedBugReports: deletedBugReports.sort()

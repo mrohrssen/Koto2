@@ -4,6 +4,9 @@
   "description": "Japanese vocabulary learning RPG",
   "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "npx concurrently --names server,vite --prefix-colors blue,green \"npm run dev:server\" \"npm run dev:client\"",

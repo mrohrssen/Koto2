@@ -1,6 +1,7 @@
 node_modules/
 .env
 .jrpg-*.json
+.jrpg-*.json.tmp
 .jrpg-users.json
 .jrpg-save-*.json
 koto.db
@@ -12,6 +13,7 @@ koto.db-shm
 
 # Per-user runtime data (written to repo root when /app/persist/ is absent)
 /srs-u_*.json
+/srs-u_*.json.tmp
 /word-knowledge-u_*.json
 /npc-memory-u_*.json
 /creature-memory-u_*.json

@@ -1,13 +1,14 @@
 // tests/unit/admin-routes.test.js
 import { describe, it, before, after, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'fs';
+import { existsSync, mkdtempSync, writeFileSync, readFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import express from 'express';
 import createAdminRoutes from '../../src/routes/admin.js';
 import { setDataDirForTest, resetDataDirForTest } from '../../src/data-dir.js';
-import { clearManagersForTest, getManager, saveManager } from '../../src/game/manager-registry.js';
+import { clearManagersForTest, flushAllDirty, getManager, saveManager, getSaveFilePath } from '../../src/game/manager-registry.js';
+import { createUserRecord } from '../../src/auth/users.js';
 
 describe('shiftFsrsTimestamps', () => {
   let tempDir;
@@ -145,6 +146,60 @@ describe('admin advance-time', () => {
       } finally {
         await new Promise(resolve => server.close(resolve));
       }
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('admin delete-user', () => {
+  afterEach(() => {
+    delete process.env.ADMIN_SECRET;
+    clearManagersForTest();
+    resetDataDirForTest();
+  });
+
+  it('does not let a dirty in-memory manager resurrect the deleted save file', async () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'admin-delete-user-'));
+    try {
+      setDataDirForTest(tempDir);
+      process.env.ADMIN_SECRET = 'test-secret';
+
+      const user = await createUserRecord({
+        username: 'delete-me-admin',
+        password: 'pass123'
+      }, join(tempDir, '.jrpg-users.json'));
+
+      // Load the manager into the registry and mark it dirty, simulating a
+      // write-behind save that hasn't flushed yet at the moment of deletion.
+      getManager(user.id);
+      saveManager(user.id);
+
+      const app = express();
+      app.use(express.json());
+      app.use('/api/admin', createAdminRoutes({ dataDir: tempDir }));
+      const server = await new Promise(resolve => {
+        const listener = app.listen(0, () => resolve(listener));
+      });
+
+      try {
+        const res = await fetch(`http://127.0.0.1:${server.address().port}/api/admin/delete-user`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': 'test-secret' },
+          body: JSON.stringify({ username: 'delete-me-admin' })
+        });
+
+        assert.equal(res.status, 200);
+      } finally {
+        await new Promise(resolve => server.close(resolve));
+      }
+
+      // If /delete-user failed to drop the manager from the registry, it
+      // would still be sitting in the dirty set from the saveManager() call
+      // above, and this flush would rewrite the just-deleted save file with
+      // stale pre-deletion state.
+      flushAllDirty();
+      assert.equal(existsSync(getSaveFilePath(user.id)), false);
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }

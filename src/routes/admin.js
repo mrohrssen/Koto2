@@ -2,13 +2,14 @@ import { Router } from 'express';
 import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync } from 'fs';
 import { join, basename } from 'path';
 import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
+import { clearScriptDeckMemo } from '../game/script-srs.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
 import { loadUsers, findUserByUsername, deleteUserById } from '../auth/users.js';
 import { lookupDictPrimary } from '../../public/js/shared/exposure-extractor.js';
 import { createBalanceSimulationManager } from '../game/balance-simulator.js';
-import { getManager, saveManager } from '../game/manager-registry.js';
+import { getManager, saveManager, removeManager } from '../game/manager-registry.js';
 import { adminAuth } from './admin-auth.js';
 
 const defaultBalanceManager = createBalanceSimulationManager();
@@ -193,6 +194,13 @@ export default function createAdminRoutes({ dataDir, balanceManager = defaultBal
 
       const userId = user.id;
 
+      // removeManager first: with write-behind saves, a dirty in-memory
+      // manager flushes to disk on removal. Deleting the save file before
+      // removing the manager would let that flush resurrect it with stale
+      // pre-deletion data. Removing first means any flush lands on the file
+      // we're about to delete.
+      removeManager(userId);
+
       // Delete all data files containing the userId
       const deleted = [];
       // Check root data dir (save files, npc-memory)
@@ -205,6 +213,7 @@ export default function createAdminRoutes({ dataDir, balanceManager = defaultBal
       deleteUserById(userId);
 
       clearSrsCache(userId);
+      clearScriptDeckMemo(userId);
 
       res.json({ deleted, userId, username, message: `User "${username}" and all data removed` });
     } catch (err) {
