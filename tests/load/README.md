@@ -37,6 +37,14 @@ is fresh.
 
     node tests/load/kk-load.mjs --url https://jrpg-dev.up.railway.app --bots 100 --minutes 30 --subway 10
 
+### Pass criteria
+
+- **p95 latency < 300ms** on every endpoint in the summary table
+- **error rate ≤ 1%** (harness exits non-zero above this threshold)
+- **zero PROCESS restarts** of the Node server during the run — check Railway deploy logs; this is distinct from the harness's `runRestarts` counter (in-game bot run restarts, expected and benign)
+- **memory plateaus** over the run with no monotonic growth — check Railway metrics
+- **subway `/sync` batch requests p95 < 2s**
+
 ## Output
 
 Per-endpoint p50/p95/p99 latency and request count, plus a summary line:
@@ -47,10 +55,10 @@ Per-endpoint p50/p95/p99 latency and request count, plus a summary line:
   refused, timeout). A `'corrected'` `/sync` response, a 400 from a stale
   prompt ref, or a 400 from the known cursor bug (below) are normal client
   flows, not errors — a real client resyncs and keeps playing.
-- **runRestarts** counts fresh-run restarts: legitimate in-run defeat (a
-  starter creature has no reserves and can die to bad enemy rolls even
-  answering everything correctly), the daily-content-exhausted state, and
-  the known pre-existing KO-cursor bug below. None of these count as errors.
+- **runRestarts** counts in-game bot run restarts (fresh attempts): legitimate
+  in-run defeat, the daily-content-exhausted state, and the known pre-existing
+  KO-cursor bug below — expected and benign. This is separate from server
+  PROCESS restarts (Node crashes on Railway), which are tracked in Railway logs.
 
 Exit code is non-zero if `errors / requests > 0.01` (1%).
 
