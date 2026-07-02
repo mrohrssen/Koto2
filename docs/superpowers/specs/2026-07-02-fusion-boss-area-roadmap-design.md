@@ -41,6 +41,8 @@ Every creature named below already exists in `data/creatures.json` (all 72 have 
 
 Area IDs use the English kebab-case convention above (wild-plains/school precedent, 2 of 3 existing areas).
 
+**Note:** the NPC/item/skill *concept* lists in the area cards below were superseded by the word-level companion ledger, `2026-07-02-area-content-ledger-design.md`, which is the source of truth for the actual JPDB-validated words.
+
 ### Area 4 — 朝の牧場 (Morning Ranch)
 
 - **Teaching identity:** farm animals, farm food, morning-routine verbs. Core pool candidates: 卵 egg, 牛乳 milk, 野菜 vegetables, 米 rice, 起きる wake up, 育てる raise, 働く work.
