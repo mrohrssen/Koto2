@@ -12,6 +12,7 @@ import {
   saveSrsData,
 } from '../../../src/game/internal-srs.js';
 import {
+  clearScriptDeckMemo,
   ensureScriptDeckSeeded,
   getActiveScriptType,
   getDueScriptCards,
@@ -19,6 +20,7 @@ import {
   getEligibleScriptTypes,
   getNewScriptCards,
   getNextNewScriptCards,
+  getScriptCards,
   getScriptDailyState,
   gradeScriptCard,
   recordScriptIntro,
@@ -41,7 +43,7 @@ describe('script-srs', () => {
 
   it('seeds a separate script deck without touching vocab', () => {
     ensureScriptDeckSeeded(userId);
-    const script = getDeckCards(userId, 'script');
+    const script = getScriptCards(userId);
     const vocab = getDeckCards(userId, 'vocab');
     assert.equal(script.some(c => c.type === 'hiragana'), true);
     assert.equal(script.some(c => c.type === 'katakana'), true);
@@ -56,7 +58,7 @@ describe('script-srs', () => {
     saveSrsData(userId, data);
 
     ensureScriptDeckSeeded(userId);
-    const card = getDeckCards(userId, 'script').find(c => c.id === 'hiragana:あ');
+    const card = getScriptCards(userId).find(c => c.id === 'hiragana:あ');
     assert.equal(card.reps, 3);
     assert.equal(card.state, State.Learning);
     assert.equal(loadSrsData(userId).scriptMigration?.kanaToScript, true);
@@ -65,6 +67,9 @@ describe('script-srs', () => {
   it('selects hiragana until all hiragana script cards are Review', () => {
     ensureScriptDeckSeeded(userId);
     assert.equal(getActiveScriptType(userId), 'hiragana');
+    for (const card of getScriptCards(userId, 'hiragana')) {
+      gradeScriptCard(userId, card.id, 'good');
+    }
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
       card.reps = 1;
@@ -77,6 +82,7 @@ describe('script-srs', () => {
 
   it('returns due script cards for active type only', () => {
     ensureScriptDeckSeeded(userId);
+    gradeScriptCard(userId, 'hiragana:あ', 'good');
     const data = loadSrsData(userId);
     const reviewed = data.script.cards.find(c => c.id === 'hiragana:あ');
     reviewed.reps = 1;
@@ -119,6 +125,7 @@ describe('script-srs', () => {
   it('refreshes kanji answer and keyword while preserving reviewed SRS progress', () => {
     ensureScriptDeckSeeded(userId);
     const staticCard = KANJI_SCRIPT_CARDS[0];
+    gradeScriptCard(userId, staticCard.id, 'good');
     const data = loadSrsData(userId);
     const savedCard = data.script.cards.find(card => card.id === staticCard.id);
 
@@ -135,10 +142,11 @@ describe('script-srs', () => {
     savedCard.due = new Date('2099-01-01T00:00:00.000Z');
     savedCard.last_review = new Date('2098-12-01T00:00:00.000Z');
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     ensureScriptDeckSeeded(userId);
 
-    const refreshed = loadSrsData(userId).script.cards.find(card => card.id === staticCard.id);
+    const refreshed = getScriptCards(userId).find(card => card.id === staticCard.id);
     assert.equal(refreshed.answer, staticCard.answer);
     assert.equal(refreshed.keyword, staticCard.keyword);
     assert.equal(refreshed.stability, 12.5);
@@ -156,6 +164,7 @@ describe('script-srs', () => {
   it('refreshes kanji radical metadata while preserving reviewed SRS progress', () => {
     ensureScriptDeckSeeded(userId);
     const staticCard = KANJI_SCRIPT_CARDS[0];
+    gradeScriptCard(userId, staticCard.id, 'good');
     const data = loadSrsData(userId);
     const savedCard = data.script.cards.find(card => card.id === staticCard.id);
 
@@ -166,10 +175,11 @@ describe('script-srs', () => {
     savedCard.state = State.Review;
     savedCard.due = new Date('2099-01-01T00:00:00.000Z');
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     ensureScriptDeckSeeded(userId);
 
-    const refreshed = loadSrsData(userId).script.cards.find(card => card.id === staticCard.id);
+    const refreshed = getScriptCards(userId).find(card => card.id === staticCard.id);
     assert.deepEqual(refreshed.radicals, staticCard.radicals);
     assert.notEqual(refreshed.radicals, staticCard.radicals);
     assert.equal(refreshed.stability, 8.5);
@@ -181,6 +191,9 @@ describe('script-srs', () => {
 
   it('returns new kanji in frequency order after hiragana and katakana graduate', () => {
     ensureScriptDeckSeeded(userId);
+    for (const card of getScriptCards(userId).filter(c => c.type === 'hiragana' || c.type === 'katakana')) {
+      gradeScriptCard(userId, card.id, 'good');
+    }
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana' || c.type === 'katakana')) {
       card.reps = 1;
@@ -188,6 +201,7 @@ describe('script-srs', () => {
       card.due = new Date('2099-01-01T00:00:00Z');
     }
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     assert.equal(getActiveScriptType(userId), 'kanji');
     const newKanji = getNewScriptCards(userId);
@@ -204,6 +218,7 @@ describe('script-srs', () => {
 
   it('uses katakana when hiragana is known without editing hiragana card progress', () => {
     ensureScriptDeckSeeded(userId);
+    gradeScriptCard(userId, 'hiragana:あ', 'good');
     const data = loadSrsData(userId);
     const card = data.script.cards.find(c => c.id === 'hiragana:あ');
     card.reps = 2;
@@ -211,6 +226,7 @@ describe('script-srs', () => {
     card.due = new Date('2026-05-30T00:00:00Z');
     card.last_review = new Date('2026-05-29T00:00:00Z');
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     assert.equal(getActiveScriptType(userId, { knowsHiragana: true, knowsKatakana: false }), 'katakana');
 
@@ -229,12 +245,14 @@ describe('script-srs', () => {
 
   it('uses hiragana when kana scripts are not known without restarting progress', () => {
     ensureScriptDeckSeeded(userId);
+    gradeScriptCard(userId, 'hiragana:あ', 'good');
     const data = loadSrsData(userId);
     const card = data.script.cards.find(c => c.id === 'hiragana:あ');
     card.reps = 4;
     card.state = State.Learning;
     card.due = new Date('2026-05-30T00:00:00Z');
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     assert.equal(getActiveScriptType(userId, { knowsHiragana: false, knowsKatakana: false }), 'hiragana');
 
@@ -265,13 +283,10 @@ describe('script-srs', () => {
 
   it('returns due script cards across requested types in earliest due order', () => {
     ensureScriptDeckSeeded(userId);
+    gradeScriptCard(userId, 'hiragana:あ', 'good');
+    gradeScriptCard(userId, 'katakana:イ', 'good');
+    gradeScriptCard(userId, 'kanji:人', 'good');
     const data = loadSrsData(userId);
-    for (const card of data.script.cards) {
-      card.reps = 0;
-      card.state = State.New;
-      card.due = new Date('2099-01-01T00:00:00Z');
-    }
-
     const hiragana = data.script.cards.find(card => card.id === 'hiragana:あ');
     const katakana = data.script.cards.find(card => card.id === 'katakana:イ');
     const kanji = data.script.cards.find(card => card.id === 'kanji:人');
@@ -285,6 +300,7 @@ describe('script-srs', () => {
     kanji.state = State.Review;
     kanji.due = new Date('2026-05-15T00:00:00Z');
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     const due = getDueScriptCardsForTypes(
       userId,
@@ -312,13 +328,10 @@ describe('script-srs', () => {
 
   it('uses curriculum tie-breakers when due dates match exactly', () => {
     ensureScriptDeckSeeded(userId);
+    gradeScriptCard(userId, 'kanji:人', 'good');
+    gradeScriptCard(userId, 'katakana:ア', 'good');
+    gradeScriptCard(userId, 'hiragana:あ', 'good');
     const data = loadSrsData(userId);
-    for (const card of data.script.cards) {
-      card.reps = 0;
-      card.state = State.New;
-      card.due = new Date('2099-01-01T00:00:00Z');
-    }
-
     const cards = [
       data.script.cards.find(card => card.id === 'kanji:人'),
       data.script.cards.find(card => card.id === 'katakana:ア'),
@@ -330,6 +343,7 @@ describe('script-srs', () => {
       card.due = new Date('2026-05-01T00:00:00Z');
     }
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     const due = getDueScriptCardsForTypes(
       userId,
@@ -346,12 +360,16 @@ describe('script-srs', () => {
 
   it('returns new script cards from the first non-skipped type with unreviewed cards', () => {
     ensureScriptDeckSeeded(userId);
+    for (const card of getScriptCards(userId, 'hiragana')) {
+      gradeScriptCard(userId, card.id, 'good');
+    }
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(card => card.type === 'hiragana')) {
       card.reps = 1;
       card.state = State.Review;
     }
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     const noKanaKnown = getNextNewScriptCards(userId, { knowsHiragana: false, knowsKatakana: false });
     const hiraganaKnown = getNextNewScriptCards(userId, { knowsHiragana: true, knowsKatakana: false });

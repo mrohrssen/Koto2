@@ -2,10 +2,11 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { dataPath, getDataDir } from '../data-dir.js';
-import { createUserRecord, findUserByUsername, loadUsers, saveUsers } from '../auth/users.js';
+import { createUserRecord, findUserByUsername, findUserById, setUserPasswordHash } from '../auth/users.js';
 import { encryptKeys, hashPassword, verifyPassword } from '../auth/crypto.js';
 import { createMetaProgression, createNewPlayer } from '../game/state.js';
 import { CREATURES_BY_ID } from '../game/creatures.js';
+import { migrateUsersJsonIfNeeded } from '../db.js';
 
 export const DEV_TEST_USERNAME = 'devtester';
 export const DEV_TEST_PASSWORD = 'test1234';
@@ -83,11 +84,8 @@ async function ensureDevTestUser(usersFile) {
     }, usersFile);
     created = true;
   } else if (!await verifyPassword(DEV_TEST_PASSWORD, user.passwordHash)) {
-    const data = loadUsers(usersFile);
-    const existing = data.users.find(candidate => candidate.id === user.id);
-    existing.passwordHash = await hashPassword(DEV_TEST_PASSWORD);
-    saveUsers(data, usersFile);
-    user = existing;
+    setUserPasswordHash(user.id, await hashPassword(DEV_TEST_PASSWORD));
+    user = findUserById(user.id, usersFile);
   }
 
   return { user, created };
@@ -98,6 +96,11 @@ export async function seedDevTestUser({
   usersFile = dataPath('.jrpg-users.json'),
   now = DEV_TEST_SAVE_DATE
 } = {}) {
+  // Run the legacy users-JSON migration before inserting the devtester user.
+  // migrateUsersJsonIfNeeded only imports when the users table is still
+  // empty, so seeding devtester first would permanently strand any legacy
+  // .jrpg-users.json import on every subsequent server boot.
+  migrateUsersJsonIfNeeded(usersFile);
   const { user, created } = await ensureDevTestUser(usersFile);
   mkdirSync(dataDir, { recursive: true });
   const savePath = join(dataDir, `.jrpg-save-${user.id}.json`);

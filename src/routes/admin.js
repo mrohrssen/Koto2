@@ -2,13 +2,14 @@ import { Router } from 'express';
 import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync } from 'fs';
 import { join, basename } from 'path';
 import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
+import { clearScriptDeckMemo } from '../game/script-srs.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
-import { loadUsers, saveUsers } from '../auth/users.js';
+import { loadUsers, findUserByUsername, deleteUserById } from '../auth/users.js';
 import { lookupDictPrimary } from '../../public/js/shared/exposure-extractor.js';
 import { createBalanceSimulationManager } from '../game/balance-simulator.js';
-import { getManager, saveManager } from '../game/manager-registry.js';
+import { getManager, saveManager, removeManager } from '../game/manager-registry.js';
 import { adminAuth } from './admin-auth.js';
 
 const defaultBalanceManager = createBalanceSimulationManager();
@@ -184,16 +185,21 @@ export default function createAdminRoutes({ dataDir, balanceManager = defaultBal
         return res.status(400).json({ error: 'username (string) required' });
       }
 
-      // Find user in the users file
+      // Find user in the users store
       const usersFile = join(dataDir, '.jrpg-users.json');
-      const data = loadUsers(usersFile);
-      const userIndex = data.users.findIndex(u => u.username === username);
-      if (userIndex === -1) {
+      const user = findUserByUsername(username, usersFile);
+      if (!user) {
         return res.status(404).json({ error: `User "${username}" not found` });
       }
 
-      const user = data.users[userIndex];
       const userId = user.id;
+
+      // removeManager first: with write-behind saves, a dirty in-memory
+      // manager flushes to disk on removal. Deleting the save file before
+      // removing the manager would let that flush resurrect it with stale
+      // pre-deletion data. Removing first means any flush lands on the file
+      // we're about to delete.
+      removeManager(userId);
 
       // Delete all data files containing the userId
       const deleted = [];
@@ -203,11 +209,11 @@ export default function createAdminRoutes({ dataDir, balanceManager = defaultBal
           try { unlinkSync(join(dataDir, file)); deleted.push(file); } catch (e) { /* skip */ }
         }
       }
-      // Remove user from users file
-      data.users.splice(userIndex, 1);
-      saveUsers(data, usersFile);
+      // Remove user from users store
+      deleteUserById(userId);
 
       clearSrsCache(userId);
+      clearScriptDeckMemo(userId);
 
       res.json({ deleted, userId, username, message: `User "${username}" and all data removed` });
     } catch (err) {

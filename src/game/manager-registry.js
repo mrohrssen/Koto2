@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { GameManager, cleanupDebugSuperAttack } from './loop.js';
 import { getDataDir } from '../data-dir.js';
@@ -9,11 +9,22 @@ import { ensureCrystalMeta } from './services/crystal-wallet-service.js';
 import { ensureKanjiKombatOnboardingState } from './state.js';
 import { normalizeRankedState } from '../pvp/ranked-rating.js';
 import { normalizePartySkills } from './party-skills.js';
+import { writeFileAtomicSync } from '../atomic-write.js';
+import { clearSrsCache } from './internal-srs.js';
+import { clearScriptDeckMemo } from './script-srs.js';
 
 const SAVE_VERSION = 2;
 
 /** @type {Map<string, GameManager>} */
 const managers = new Map();
+const dirtyUsers = new Set();
+const lastAccess = new Map(); // userId -> epoch ms
+let flushTimer = null;
+let evictionTimer = null;
+
+const FLUSH_INTERVAL_MS = 5000;
+const EVICTION_INTERVAL_MS = 60 * 1000;
+const IDLE_EVICTION_MS = 30 * 60 * 1000;
 
 /**
  * Get or create a GameManager for a user
@@ -22,6 +33,7 @@ const managers = new Map();
  * @returns {GameManager}
  */
 export function getManager(userId) {
+  lastAccess.set(userId, Date.now());
   if (managers.has(userId)) return managers.get(userId);
 
   const manager = new GameManager();
@@ -216,15 +228,28 @@ export function getManager(userId) {
   }
 
   managers.set(userId, manager);
-  if (needsSave) saveManager(userId);
+  if (needsSave) flushManager(userId);
   return manager;
 }
 
 /**
- * Save a user's GameManager state to disk
+ * Mark a user's state dirty. Persisted by the maintenance loop (~5s),
+ * by flushManager/flushAllDirty, on removeManager, and at shutdown.
+ * Keeps the historical name because ~10 call sites treat "saveManager"
+ * as "persist this user's state".
  * @param {string} userId
  */
 export function saveManager(userId) {
+  if (!managers.has(userId)) return;
+  lastAccess.set(userId, Date.now());
+  dirtyUsers.add(userId);
+}
+
+/**
+ * Immediately serialize and atomically persist one user's state.
+ * @param {string} userId
+ */
+export function flushManager(userId) {
   const manager = managers.get(userId);
   if (!manager) return;
 
@@ -237,22 +262,93 @@ export function saveManager(userId) {
     combat: manager.combat || null,
     savedAt: new Date().toISOString()
   };
-  writeFileSync(saveFile, JSON.stringify(state, null, 2));
+  const json = process.env.NODE_ENV === 'production'
+    ? JSON.stringify(state)
+    : JSON.stringify(state, null, 2);
+  writeFileAtomicSync(saveFile, json);
+  dirtyUsers.delete(userId);
 }
 
 /**
- * Remove a manager from the registry (for cleanup/testing)
+ * Flush every dirty manager. Never throws (logs and continues).
+ */
+export function flushAllDirty() {
+  for (const userId of [...dirtyUsers]) {
+    try {
+      flushManager(userId);
+    } catch (e) {
+      console.warn(`[Registry] Flush failed for ${userId}:`, e.message);
+    }
+  }
+}
+
+/**
+ * Flush-if-dirty then drop managers idle longer than idleMs.
+ * @param {{ now?: number, idleMs?: number }} [options]
+ * @returns {number} count of evicted managers
+ */
+export function evictIdleManagers({ now = Date.now(), idleMs = IDLE_EVICTION_MS } = {}) {
+  let evicted = 0;
+  for (const [userId] of managers) {
+    const last = lastAccess.get(userId) || 0;
+    if (now - last < idleMs) continue;
+    try {
+      if (dirtyUsers.has(userId)) flushManager(userId);
+      managers.delete(userId);
+      lastAccess.delete(userId);
+      clearSrsCache(userId);
+      clearScriptDeckMemo(userId);
+      evicted += 1;
+    } catch (e) {
+      console.warn(`[Registry] Eviction failed for ${userId}:`, e.message);
+    }
+  }
+  return evicted;
+}
+
+/**
+ * Started by server.js only. Timers are unref'd so they never hold the process open.
+ * @param {{ flushIntervalMs?: number, evictionIntervalMs?: number }} [options]
+ */
+export function startMaintenanceLoop({ flushIntervalMs = FLUSH_INTERVAL_MS, evictionIntervalMs = EVICTION_INTERVAL_MS } = {}) {
+  stopMaintenanceLoop();
+  flushTimer = setInterval(flushAllDirty, flushIntervalMs);
+  flushTimer.unref?.();
+  evictionTimer = setInterval(() => evictIdleManagers(), evictionIntervalMs);
+  evictionTimer.unref?.();
+}
+
+export function stopMaintenanceLoop() {
+  if (flushTimer) { clearInterval(flushTimer); flushTimer = null; }
+  if (evictionTimer) { clearInterval(evictionTimer); evictionTimer = null; }
+}
+
+/**
+ * Remove a manager from the registry (for cleanup/testing).
+ * Flushes dirty state first so callers that expect immediate-persist
+ * semantics (ranked-bot-seeder, user-data-reset) keep working unchanged.
  * @param {string} userId
  */
 export function removeManager(userId) {
+  if (dirtyUsers.has(userId)) {
+    try { flushManager(userId); } catch (e) {
+      console.warn(`[Registry] Flush-on-remove failed for ${userId}:`, e.message);
+    }
+  }
   managers.delete(userId);
+  lastAccess.delete(userId);
+  dirtyUsers.delete(userId);
 }
 
 /**
- * Remove all managers from the registry (for test isolation)
+ * Remove all managers from the registry (for test isolation).
+ * Stops maintenance timers and clears state WITHOUT writing.
  */
 export function clearManagersForTest() {
+  stopMaintenanceLoop();
   managers.clear();
+  dirtyUsers.clear();
+  lastAccess.clear();
 }
 
 /**

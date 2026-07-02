@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import dotenv from 'dotenv';
 
 import { createApp, enrichGameState } from './src/app.js';
+import { writeFileAtomicSync } from './src/atomic-write.js';
 
 
 import {
@@ -75,7 +76,10 @@ import {
 } from './src/services/dialogue-card-speakers.js';
 import { setupPvpSockets } from './src/pvp/socket-handler.js';
 import { ensureRankedBotAccounts } from './src/pvp/ranked-bot-seeder.js';
-import { getManager, saveManager, removeManager } from './src/game/manager-registry.js';
+import {
+  getManager, saveManager, removeManager,
+  flushAllDirty, startMaintenanceLoop, stopMaintenanceLoop
+} from './src/game/manager-registry.js';
 import { DEV_TEST_PASSWORD, DEV_TEST_USERNAME, seedDevTestUserForLocalDev } from './src/dev/dev-test-user.js';
 
 dotenv.config();
@@ -139,7 +143,7 @@ function loadSettings() {
 
 function saveSettings(settings) {
   try {
-    writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+    writeFileAtomicSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
   } catch (e) {
     console.warn('Failed to save settings:', e.message);
   }
@@ -544,4 +548,32 @@ httpServer.listen(PORT, '0.0.0.0', () => {
   console.log('[TTS] Prefetch:', settings.gameTtsEnabled ? 'enabled' : 'disabled');
   console.log('');
   console.log('Open http://localhost:' + PORT + ' in your browser to play');
+});
+
+startMaintenanceLoop();
+
+let shuttingDown = false;
+function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  logger.info('[Server] Shutdown:', { signal });
+  stopMaintenanceLoop();
+  try { flushAllDirty(); } catch (e) { console.error('[Server] Flush on shutdown failed:', e); }
+  httpServer.close(() => process.exit(0));
+  // Railway gives ~10s after SIGTERM; don't wait on stuck sockets forever.
+  setTimeout(() => process.exit(0), 5000).unref();
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+process.on('uncaughtException', (error) => {
+  console.error('[Server] Uncaught exception:', error);
+  try { flushAllDirty(); } catch { /* best effort */ }
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[Server] Unhandled rejection:', reason);
+  try { flushAllDirty(); } catch { /* best effort */ }
+  process.exit(1);
 });

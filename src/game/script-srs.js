@@ -1,6 +1,5 @@
 import { createEmptyCard, State } from 'ts-fsrs';
 import {
-  getDeckCards,
   gradeCard,
   loadSrsData,
   saveSrsData,
@@ -63,6 +62,17 @@ function fsrsFieldsFrom(card) {
   return fields;
 }
 
+// --- Sparse storage + merged-view memo -------------------------------------
+// Persisted form (data[SCRIPT_DECK].cards): ONLY cards with reps > 0.
+// Read form: full static deck with per-user FSRS progress overlaid, memoized
+// per user and invalidated on grade/insert or via clearScriptDeckMemo.
+
+const mergedDeckMemo = new Map(); // userId -> { dataRef, cards }
+
+export function clearScriptDeckMemo(userId) {
+  mergedDeckMemo.delete(userId);
+}
+
 function mergeStaticCard(existing, staticCard) {
   const card = {
     ...staticCard,
@@ -73,44 +83,85 @@ function mergeStaticCard(existing, staticCard) {
   return card;
 }
 
-export function ensureScriptDeckSeeded(userId) {
-  const data = loadSrsData(userId);
-  if (!data[SCRIPT_DECK]) data[SCRIPT_DECK] = { cards: [] };
-
-  const byId = new Map(data[SCRIPT_DECK].cards.map(card => [card.id, card]));
-  const seeded = [];
+function buildMergedDeck(data) {
+  const byId = new Map((data[SCRIPT_DECK]?.cards || []).map(card => [card.id, card]));
+  const merged = [];
   for (const type of SCRIPT_CARD_TYPES) {
     for (const staticCard of getStaticScriptCards(type)) {
-      seeded.push(mergeStaticCard(byId.get(staticCard.id), staticCard));
+      merged.push(mergeStaticCard(byId.get(staticCard.id), staticCard));
     }
   }
+  return merged;
+}
 
-  data[SCRIPT_DECK].cards = seeded;
-  migrateLegacyKanaData(data);
-  saveSrsData(userId, data);
-  return data[SCRIPT_DECK].cards;
+function getMergedDeck(userId) {
+  const data = loadSrsData(userId);
+  const memo = mergedDeckMemo.get(userId);
+  if (memo && memo.dataRef === data) return memo.cards;
+  const cards = buildMergedDeck(data);
+  mergedDeckMemo.set(userId, { dataRef: data, cards });
+  return cards;
+}
+
+const STATIC_IDS = new Set(
+  SCRIPT_CARD_TYPES.flatMap(type => getStaticScriptCards(type).map(card => card.id))
+);
+
+/**
+ * Ensure sparse structures exist, run one-time migrations, and compact
+ * legacy fat files (drop reps===0 cards and unknown ids). Writes to disk
+ * ONLY when something actually changed. Returns the merged deck.
+ */
+export function ensureScriptDeckSeeded(userId) {
+  const data = loadSrsData(userId);
+  let dirty = false;
+
+  if (!data[SCRIPT_DECK]) {
+    data[SCRIPT_DECK] = { cards: [] };
+    dirty = true;
+  }
+
+  dirty = migrateLegacyKanaData(data) || dirty;
+
+  const compacted = data[SCRIPT_DECK].cards.filter(
+    card => (card.reps || 0) > 0 && STATIC_IDS.has(card.id)
+  );
+  if (compacted.length !== data[SCRIPT_DECK].cards.length) {
+    data[SCRIPT_DECK].cards = compacted;
+    dirty = true;
+  }
+
+  if (dirty) {
+    saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
+  }
+  return getMergedDeck(userId);
 }
 
 function migrateLegacyKanaData(data) {
-  if (data.scriptMigration?.kanaToScript) return;
+  if (data.scriptMigration?.kanaToScript) return false;
   const legacyCards = data.kana?.cards || [];
-  if (!legacyCards.length) {
-    data.scriptMigration = { ...(data.scriptMigration || {}), kanaToScript: true };
-    return;
+  if (legacyCards.length) {
+    const legacyByChar = new Map(legacyCards.map(card => [card.char, card]));
+    const migrated = [];
+    for (const staticCard of getStaticScriptCards('hiragana')) {
+      const legacy = legacyByChar.get(staticCard.prompt);
+      if (legacy && (legacy.reps || 0) > 0) {
+        migrated.push({ id: staticCard.id, type: 'hiragana', ...fsrsFieldsFrom(legacy) });
+      }
+    }
+    const existingIds = new Set(data[SCRIPT_DECK].cards.map(card => card.id));
+    for (const card of migrated) {
+      if (!existingIds.has(card.id)) data[SCRIPT_DECK].cards.push(card);
+    }
   }
-
-  const legacyByChar = new Map(legacyCards.map(card => [card.char, card]));
-  data[SCRIPT_DECK].cards = data[SCRIPT_DECK].cards.map(card => {
-    if (card.type !== 'hiragana') return card;
-    const legacy = legacyByChar.get(card.prompt);
-    return legacy ? { ...card, ...fsrsFieldsFrom(legacy) } : card;
-  });
   data.scriptMigration = { ...(data.scriptMigration || {}), kanaToScript: true };
+  return true;
 }
 
 export function getScriptCards(userId, type = null) {
-  ensureScriptDeckSeeded(userId);
-  const cards = getDeckCards(userId, SCRIPT_DECK);
+  ensureScriptDeckSeeded(userId); // no-op (no write) after first call
+  const cards = getMergedDeck(userId);
   return type ? cards.filter(card => card.type === type) : cards;
 }
 
@@ -163,8 +214,17 @@ export function getNextNewScriptCards(userId, onboarding = {}) {
 }
 
 export function gradeScriptCard(userId, cardId, grade) {
-  ensureScriptDeckSeeded(userId);
-  return gradeCard(userId, SCRIPT_DECK, cardId, grade);
+  const data = loadSrsData(userId);
+  if (!data[SCRIPT_DECK]) ensureScriptDeckSeeded(userId);
+  const stored = data[SCRIPT_DECK].cards.find(card => card.id === cardId);
+  if (!stored) {
+    const merged = getMergedDeck(userId).find(card => card.id === cardId);
+    if (!merged) throw new Error(`Card ${cardId} not found in deck '${SCRIPT_DECK}'`);
+    data[SCRIPT_DECK].cards.push({ ...merged });
+  }
+  const result = gradeCard(userId, SCRIPT_DECK, cardId, grade);
+  clearScriptDeckMemo(userId);
+  return result;
 }
 
 export function getScriptDailyState(userId, localDate) {

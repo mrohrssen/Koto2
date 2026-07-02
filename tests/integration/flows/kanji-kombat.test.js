@@ -5,7 +5,13 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { State } from 'ts-fsrs';
 import { configureSrs, clearSrsCache, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
-import { ensureScriptDeckSeeded, SCRIPT_DECK } from '../../../src/game/script-srs.js';
+import {
+  clearScriptDeckMemo,
+  ensureScriptDeckSeeded,
+  getScriptCards,
+  gradeScriptCard,
+  SCRIPT_DECK,
+} from '../../../src/game/script-srs.js';
 
 describe('Kanji Kombat integration flow', () => {
   let tempDir;
@@ -81,8 +87,9 @@ describe('Kanji Kombat integration flow', () => {
     gm.kanjiKombatService.startRunWithCreatureId('hi');
     const introCard = activeIntro(gm)?.card;
     assert.ok(introCard, 'fresh no-due run should introduce a script card');
-    const before = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === introCard.id);
-    assert.ok(before, 'introduced card exists in the persisted script deck');
+    // Not yet graded, so sparse storage has no entry for it — check the merged view instead.
+    const before = getScriptCards(userId).find(card => card.id === introCard.id);
+    assert.ok(before, 'introduced card exists in the merged script deck');
     assert.equal(before.reps || 0, 0);
 
     submitActiveIntro(gm, 'known');
@@ -96,14 +103,16 @@ describe('Kanji Kombat integration flow', () => {
   it('records correct quiz answers as good FSRS reviews', async () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';
-    ensureScriptDeckSeeded(userId);
+    const merged = ensureScriptDeckSeeded(userId);
     const data = loadSrsData(userId);
-    data[SCRIPT_DECK].cards = data[SCRIPT_DECK].cards.map((card, index) => ({
-      ...card,
+    data[SCRIPT_DECK].cards = merged.map((card, index) => ({
+      id: card.id,
+      type: card.type,
       reps: 1,
       due: index === 0 ? new Date('2000-01-01') : new Date('2100-01-01'),
     }));
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     const gm = new GameManager();
     gm.userId = userId;
@@ -134,19 +143,23 @@ describe('Kanji Kombat integration flow', () => {
   it('reports all due eligible script cards in availability', async () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';
-    ensureScriptDeckSeeded(userId);
+    const merged = ensureScriptDeckSeeded(userId);
     const data = loadSrsData(userId);
     const dueTypes = new Set();
-    data[SCRIPT_DECK].cards = data[SCRIPT_DECK].cards.map(card => {
-      const shouldBeDue = !dueTypes.has(card.type);
-      if (shouldBeDue) dueTypes.add(card.type);
-      return {
-        ...card,
-        reps: shouldBeDue ? 1 : 0,
-        due: shouldBeDue ? new Date('2000-01-01') : new Date('2100-01-01'),
-      };
-    });
+    data[SCRIPT_DECK].cards = merged
+      .filter(card => {
+        const shouldBeDue = !dueTypes.has(card.type);
+        if (shouldBeDue) dueTypes.add(card.type);
+        return shouldBeDue;
+      })
+      .map(card => ({
+        id: card.id,
+        type: card.type,
+        reps: 1,
+        due: new Date('2000-01-01'),
+      }));
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     const gm = new GameManager();
     gm.userId = userId;
@@ -196,14 +209,16 @@ describe('Kanji Kombat integration flow', () => {
   it('prompts before ending when the script queue is exhausted mid-wave', async () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';
-    ensureScriptDeckSeeded(userId);
+    const merged = ensureScriptDeckSeeded(userId);
     const data = loadSrsData(userId);
-    data[SCRIPT_DECK].cards = data[SCRIPT_DECK].cards.map((card, index) => ({
-      ...card,
+    data[SCRIPT_DECK].cards = merged.map((card, index) => ({
+      id: card.id,
+      type: card.type,
       reps: 1,
       due: index === 0 ? new Date('2000-01-01') : new Date('2100-01-01'),
     }));
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     const gm = new GameManager();
     gm.userId = userId;
@@ -250,14 +265,16 @@ describe('Kanji Kombat integration flow', () => {
   it('continues with early FSRS reviews after the completion prompt is accepted', async () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';
-    ensureScriptDeckSeeded(userId);
+    const merged = ensureScriptDeckSeeded(userId);
     const data = loadSrsData(userId);
-    data[SCRIPT_DECK].cards = data[SCRIPT_DECK].cards.map((card, index) => ({
-      ...card,
+    data[SCRIPT_DECK].cards = merged.map((card, index) => ({
+      id: card.id,
+      type: card.type,
       reps: 1,
       due: index === 0 ? new Date('2000-01-01') : new Date('2100-01-01'),
     }));
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     const gm = new GameManager();
     gm.userId = userId;
@@ -304,6 +321,7 @@ describe('Kanji Kombat integration flow', () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';
     ensureScriptDeckSeeded(userId);
+    gradeScriptCard(userId, 'hiragana:あ', 'good');
     const data = loadSrsData(userId);
     const card = data[SCRIPT_DECK].cards.find(candidate => candidate.id === 'hiragana:あ');
     card.reps = 7;
@@ -311,6 +329,7 @@ describe('Kanji Kombat integration flow', () => {
     card.due = new Date('2026-05-30T00:00:00Z');
     card.last_review = new Date('2026-05-29T00:00:00Z');
     saveSrsData(userId, data);
+    clearScriptDeckMemo(userId);
 
     const gm = new GameManager();
     gm.userId = userId;

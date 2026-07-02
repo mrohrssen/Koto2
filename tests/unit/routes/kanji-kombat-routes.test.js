@@ -5,7 +5,9 @@ import request from 'supertest';
 import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { saveUsers } from '../../../src/auth/users.js';
+import { createUserRecord, recordKanjiKombatRun } from '../../../src/auth/users.js';
+import { setDataDirForTest, resetDataDirForTest } from '../../../src/data-dir.js';
+import { resetDbForTest } from '../../../src/db.js';
 import createKanjiKombatRoutes from '../../../src/routes/game/kanji-kombat.js';
 
 function appWithManager(manager, { usersFile = null } = {}) {
@@ -713,23 +715,12 @@ describe('Kanji Kombat routes', () => {
     const usersFile = join(dir, '.jrpg-users.json');
     const now = Date.now();
     try {
-      saveUsers({
-        users: [
-          {
-            id: 'route-user',
-            username: 'me',
-            passwordHash: 'hash',
-            kanjiKombatRuns: [{ ts: now - 60 * 60 * 1000, wave: 4, wavesCleared: 3 }]
-          },
-          {
-            id: 'u_other',
-            username: 'other',
-            passwordHash: 'hash',
-            kanjiKombatRuns: [{ ts: now - 2 * 60 * 60 * 1000, wave: 6, wavesCleared: 5 }]
-          }
-        ],
-        inviteCodes: []
-      }, usersFile);
+      setDataDirForTest(dir);
+      resetDbForTest();
+      await createUserRecord({ id: 'route-user', username: 'me', password: 'secret123' });
+      await createUserRecord({ id: 'u_other', username: 'other', password: 'secret123' });
+      recordKanjiKombatRun('route-user', { wave: 4, wavesCleared: 3, completedAt: now - 60 * 60 * 1000 });
+      recordKanjiKombatRun('u_other', { wave: 6, wavesCleared: 5, completedAt: now - 2 * 60 * 60 * 1000 });
 
       const manager = { kanjiKombatService: { getAvailability: () => ({ available: true }) } };
       const daily = await request(appWithManager(manager, { usersFile }))
@@ -747,6 +738,8 @@ describe('Kanji Kombat routes', () => {
       assert.equal(weekly.status, 200);
       assert.equal(weekly.body.period, 'weekly');
     } finally {
+      resetDbForTest();
+      resetDataDirForTest();
       rmSync(dir, { recursive: true, force: true });
     }
   });
@@ -755,10 +748,9 @@ describe('Kanji Kombat routes', () => {
     const dir = mkdtempSync(join(tmpdir(), 'koto-kk-leaderboard-period-'));
     const usersFile = join(dir, '.jrpg-users.json');
     try {
-      saveUsers({
-        users: [{ id: 'route-user', username: 'me', passwordHash: 'hash', kanjiKombatRuns: [] }],
-        inviteCodes: []
-      }, usersFile);
+      setDataDirForTest(dir);
+      resetDbForTest();
+      await createUserRecord({ id: 'route-user', username: 'me', password: 'secret123' });
 
       const manager = { kanjiKombatService: { getAvailability: () => ({ available: true }) } };
       const res = await request(appWithManager(manager, { usersFile }))
@@ -766,6 +758,8 @@ describe('Kanji Kombat routes', () => {
       assert.equal(res.status, 200);
       assert.equal(res.body.period, '24h');
     } finally {
+      resetDbForTest();
+      resetDataDirForTest();
       rmSync(dir, { recursive: true, force: true });
     }
   });

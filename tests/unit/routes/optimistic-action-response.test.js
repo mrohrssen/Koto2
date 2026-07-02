@@ -158,11 +158,13 @@ describe('optimistic action route response helpers', () => {
       actionType: 'combat.attack',
       state: { phase: 'after-mutation' },
     });
-    assert.deepEqual(savedEntry.response, res.body);
+    // Stored ledger entries are slimmed: state/authoritativeState are stripped at remember-time.
+    const { state: _state, ...expectedStoredResponse } = res.body;
+    assert.deepEqual(savedEntry.response, expectedStoredResponse);
     assert.equal(savedEntry.actionType, 'combat.attack');
   });
 
-  it('returns duplicate action response without running mutation again and without calling saveGame', async () => {
+  it('returns duplicate action response without running mutation again or calling saveGame, with state null when fresh enrichment is unavailable', async () => {
     const owner = {};
     const runOptimisticAction = createOptimisticActionRunner({ owner });
     const initialReq = {
@@ -194,12 +196,14 @@ describe('optimistic action route response helpers', () => {
     assert.equal(res.statusCode, 200);
     assert.equal(performCalls, 0);
     assert.equal(saveCalls, 0);
+    // Ledger entries are stored slimmed (no state); replay tries fresh enrichment first,
+    // and falls back to null (not a stored snapshot) when that's unavailable.
     assert.deepEqual(res.body, {
       damage: 9,
       status: 'accepted',
       actionId: actionId('repeat'),
       actionType: 'combat.attack',
-      state: { phase: 'stored' },
+      state: null,
     });
   });
 
@@ -380,7 +384,7 @@ describe('optimistic action route response helpers', () => {
     });
   });
 
-  it('if getEnrichedGameState throws, accepted/corrected state fields are null and duplicate fallback can use stored state', async () => {
+  it('if getEnrichedGameState throws, accepted/corrected state fields are null, and a duplicate replay also gets null state (no stored-state fallback)', async () => {
     const req = {
       body: { actionId: actionId('throws') },
       getEnrichedGameState: () => {
@@ -428,12 +432,14 @@ describe('optimistic action route response helpers', () => {
       },
     });
 
+    // Stored ledger entries no longer carry state (slimmed at remember-time), so when
+    // fresh enrichment also fails on replay, state is null rather than a stored snapshot.
     assert.deepEqual(duplicateRes.body, {
       ok: true,
       status: 'accepted',
       actionId: actionId('throws'),
       actionType: 'test.action',
-      state: { phase: 'stored-before-throw' },
+      state: null,
     });
   });
 });

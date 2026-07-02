@@ -31,6 +31,11 @@ export function resetUserProgress(userId) {
 
   const deleted = [];
 
+  // removeManager first: with write-behind saves, a dirty in-memory manager
+  // flushes to disk on removal. Deleting the save file before removing the
+  // manager would let that flush resurrect it with stale pre-reset data.
+  // Removing first means any flush lands on the file we're about to delete.
+  removeManager(userId);
   deleteFileIfPresent(getSaveFilePath(userId), deleted);
 
   clearSrsData(userId);
@@ -46,7 +51,6 @@ export function resetUserProgress(userId) {
   }
 
   invalidateNarrationUser(userId);
-  removeManager(userId);
 
   return { success: true, deleted };
 }

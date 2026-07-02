@@ -6,11 +6,13 @@ import { signToken, requireAuth } from './middleware.js';
 import { verifyPassword, decryptKeys, encryptKeys } from './crypto.js';
 import {
   createUser, findUserByUsername, findUserById,
-  useInviteCode, createInviteCode, loadUsers, saveUsers, updateUserKeys,
-  isPersonalizedDialogueDebugUser
+  useInviteCode, createInviteCode, loadUsers, updateUserKeys,
+  isPersonalizedDialogueDebugUser, setUserEncryptedApiKeys, deleteUserById
 } from './users.js';
 import { dataPath, getDataDir } from '../data-dir.js';
 import { clearSrsCache } from '../game/internal-srs.js';
+import { clearScriptDeckMemo } from '../game/script-srs.js';
+import { removeManager } from '../game/manager-registry.js';
 import { getAnalyticsId } from './analytics-id.js';
 
 const registrationFields = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } }).none();
@@ -49,6 +51,12 @@ function deleteAssociatedData(userId) {
   const deletedFiles = [];
   const deletedBugReports = [];
 
+  // removeManager first: with write-behind saves, a dirty in-memory manager
+  // flushes to disk on removal. Deleting the save file before removing the
+  // manager would let that flush resurrect it with stale pre-deletion data.
+  // Removing first means any flush lands on the file we're about to delete.
+  removeManager(userId);
+
   for (const entry of readdirSync(dataDir, { withFileTypes: true })) {
     if (entry.name.includes(userId)) {
       rmSync(join(dataDir, entry.name), { recursive: true, force: true });
@@ -75,6 +83,7 @@ function deleteAssociatedData(userId) {
   }
 
   clearSrsCache(userId);
+  clearScriptDeckMemo(userId);
   return {
     deletedFiles: deletedFiles.sort(),
     deletedBugReports: deletedBugReports.sort()
@@ -233,13 +242,7 @@ export default function createAuthRoutes(options = {}) {
 
     const encrypted = encryptKeys(merged, encryptionKey);
 
-    // Save to users file
-    const data = loadUsers(usersFile);
-    const u = data.users.find(u => u.id === req.user.id);
-    if (u) {
-      u.encryptedApiKeys = encrypted;
-      saveUsers(data, usersFile);
-    }
+    setUserEncryptedApiKeys(req.user.id, encrypted);
 
     res.json({ success: true });
   }
@@ -294,21 +297,18 @@ export default function createAuthRoutes(options = {}) {
       return res.status(400).json({ error: 'Password required' });
     }
 
-    const data = loadUsers(usersFile);
-    const userIndex = data.users.findIndex(u => u.id === req.user.id);
-    if (userIndex === -1) {
+    const user = findUserById(req.user.id, usersFile);
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const user = data.users[userIndex];
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
     const { deletedFiles, deletedBugReports } = deleteAssociatedData(user.id);
-    data.users.splice(userIndex, 1);
-    saveUsers(data, usersFile);
+    deleteUserById(user.id);
 
     res.json({
       success: true,

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { unlinkSync, existsSync, writeFileSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getManager, saveManager, removeManager } from '../../../src/game/manager-registry.js';
+import { getManager, saveManager, flushManager, removeManager } from '../../../src/game/manager-registry.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE_DIR = join(__dirname, '../../..');
@@ -79,6 +79,7 @@ describe('manager-registry', () => {
     const manager = getManager('u_test123');
     manager.createPlayer('SaveTest', { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 });
     saveManager('u_test123');
+    flushManager('u_test123');
 
     assert.ok(existsSync(testSaveFile));
     const saved = JSON.parse(readFileSync(testSaveFile, 'utf-8'));

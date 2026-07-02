@@ -5,7 +5,9 @@ import request from 'supertest';
 import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { loadUsers, saveUsers } from '../../../src/auth/users.js';
+import { createUserRecord, getKanjiKombatLeaderboard } from '../../../src/auth/users.js';
+import { setDataDirForTest, resetDataDirForTest } from '../../../src/data-dir.js';
+import { resetDbForTest } from '../../../src/db.js';
 import createRunRoutes from '../../../src/routes/game/run.js';
 
 function appWithForfeitSummary({ usersFile, runSummary }) {
@@ -33,10 +35,9 @@ describe('Kanji Kombat leaderboard recording', () => {
     const dir = mkdtempSync(join(tmpdir(), 'koto-kk-recording-'));
     const usersFile = join(dir, '.jrpg-users.json');
     try {
-      saveUsers({
-        users: [{ id: 'route-user', username: 'me', passwordHash: 'hash' }],
-        inviteCodes: []
-      }, usersFile);
+      setDataDirForTest(dir);
+      resetDbForTest();
+      await createUserRecord({ id: 'route-user', username: 'me', password: 'secret123' });
 
       const app = appWithForfeitSummary({
         usersFile,
@@ -52,11 +53,11 @@ describe('Kanji Kombat leaderboard recording', () => {
       const res = await request(app).post('/forfeit').send({ isVictory: false });
       assert.equal(res.status, 200);
 
-      const user = loadUsers(usersFile).users[0];
-      assert.equal(user.kanjiKombatRuns.length, 1);
-      assert.equal(user.kanjiKombatRuns[0].wave, 7);
-      assert.equal(user.kanjiKombatRuns[0].wavesCleared, 6);
+      const board = getKanjiKombatLeaderboard('24h', 'route-user');
+      assert.equal(board.currentUser.wave, 7);
     } finally {
+      resetDbForTest();
+      resetDataDirForTest();
       rmSync(dir, { recursive: true, force: true });
     }
   });
