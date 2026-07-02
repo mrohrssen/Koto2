@@ -750,7 +750,7 @@ Follow the shape of `npc_sensei_fightStart_ready` (`category: "npc"` for fight s
 },
 {
   "id": "npc_nouka_defeatLine_arigatou",
-  "category": "npcDefeat",
+  "category": "npc",
   "group": "nouka_defeatLine",
   "raw": "ありがとう！",
   "slots": []
@@ -764,7 +764,7 @@ Follow the shape of `npc_sensei_fightStart_ready` (`category: "npc"` for fight s
 },
 {
   "id": "npc_okaasan_defeatLine_matakite",
-  "category": "npcDefeat",
+  "category": "npc",
   "group": "okaasan_defeatLine",
   "raw": "また来てね！",
   "slots": []
@@ -778,7 +778,7 @@ Follow the shape of `npc_sensei_fightStart_ready` (`category: "npc"` for fight s
 },
 {
   "id": "npc_musume_defeatLine_tanoshikatta",
-  "category": "npcDefeat",
+  "category": "npc",
   "group": "musume_defeatLine",
   "raw": "楽しかった！",
   "slots": []
@@ -792,7 +792,7 @@ Follow the shape of `npc_sensei_fightStart_ready` (`category: "npc"` for fight s
 },
 {
   "id": "npc_ojiisan_defeatLine_genki",
-  "category": "npcDefeat",
+  "category": "npc",
   "group": "ojiisan_defeatLine",
   "raw": "元気ですね！",
   "slots": []
