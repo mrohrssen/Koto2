@@ -15,7 +15,16 @@ const EXPANSION_DATE = '2026-05-06';
 const EXPECTED_NEW_CREATURE_COUNT = 54;
 const ALLOWED_AREA_PLACEMENTS = new Set([
   'school:yousei',
-  'school:boss:hanano-yousei'
+  'school:boss:hanano-yousei',
+  'morning-ranch:hikari',
+  'morning-ranch:uma',
+  'morning-ranch:tsuchi',
+  'morning-ranch:ushi',
+  'morning-ranch:buta',
+  'morning-ranch:hitsuji',
+  'morning-ranch:nezumi',
+  'morning-ranch:kaeru',
+  'morning-ranch:boss:hikarino-uma'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));

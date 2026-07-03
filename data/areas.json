@@ -119,5 +119,53 @@
     "background": "areas/school/school_01.webp",
     "stage": 1,
     "createdAt": "2026-04-07"
+  },
+  {
+    "id": "morning-ranch",
+    "name": "朝の牧場",
+    "nameEn": "Morning Ranch",
+    "reading": "あさのぼくじょう",
+    "rank": 400,
+    "particle": "の",
+    "parallaxId": "morning-ranch",
+    "modifierWord": {
+      "word": "朝",
+      "reading": "あさ",
+      "meaning": "morning",
+      "rank": 400
+    },
+    "locationWord": {
+      "word": "牧場",
+      "reading": "ぼくじょう",
+      "meaning": "ranch / pasture",
+      "rank": 13700
+    },
+    "theme": "A sunlit family ranch waking with the dawn, where farm creatures roam the pastures.",
+    "creatures": [
+      "hikari",
+      "uma",
+      "tsuchi",
+      "ushi",
+      "buta",
+      "hitsuji",
+      "nezumi",
+      "kaeru",
+      "inu",
+      "tori",
+      "hana"
+    ],
+    "bossCreatureId": "hikarino-uma",
+    "roomCount": 30,
+    "description": "A family-run ranch at the edge of the plains, busiest at sunrise.",
+    "tags": [
+      "ranch",
+      "farm",
+      "morning",
+      "open"
+    ],
+    "subAreas": [],
+    "background": "areas/morning-ranch/morning-ranch_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-02"
   }
 ]
