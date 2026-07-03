@@ -207,6 +207,16 @@ deterministic rooms-only fixture (no combat/minigames) to isolate the proceed/sy
 invariant, it should add a test seam to `pickRandomRoomType` (e.g. honor
 `popTestRoomType()` there, or a run-scoped forced-type field).
 
+> **CORRECTION (Task 3b, 2026-07-04): do NOT add the `pickRandomRoomType` seam.**
+> A deterministic probe proved layout forcing already works on the live path:
+> `proceedToNextRoom` (`src/game/services/exploration-service.js:455-461`) pops
+> `popTestRoomType()` and overrides the entered room, driven via the existing
+> `debug-mode` + `debug-queue-rooms` endpoints. Adding the seam to
+> `pickRandomRoomType` makes the runway prepare-ahead consume the same queue →
+> double consumption scrambles layouts and the `:455` guard stomps the resolved
+> room (two integration tests break). The harness forces layouts through the
+> existing endpoints; see `.superpowers/sdd/task-3b-report.md` for the probe.
+
 ## Scope reachability
 
 - **Rooms tier** (`EXPLORE_SUBWAY_SMOKE=1`): exercised; fails RED on F1 (dominant).
