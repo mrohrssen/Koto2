@@ -1220,5 +1220,235 @@
     "stage": 1,
     "area": "blue-sea",
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "keeki",
+    "word": "ケーキ",
+    "reading": "ケーキ",
+    "nameEn": "Cake",
+    "meaning": "cake",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kukkii",
+    "word": "クッキー",
+    "reading": "クッキー",
+    "nameEn": "Cookie",
+    "meaning": "cookie",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "koohii",
+    "word": "コーヒー",
+    "reading": "コーヒー",
+    "nameEn": "Coffee",
+    "meaning": "coffee",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "purin",
+    "word": "プリン",
+    "reading": "プリン",
+    "nameEn": "Pudding",
+    "meaning": "custard pudding",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kagi",
+    "word": "鍵",
+    "reading": "かぎ",
+    "nameEn": "Key",
+    "meaning": "key",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "chizu",
+    "word": "地図",
+    "reading": "ちず",
+    "nameEn": "Map",
+    "meaning": "map",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "saifu",
+    "word": "財布",
+    "reading": "さいふ",
+    "nameEn": "Wallet",
+    "meaning": "wallet",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kasa",
+    "word": "傘",
+    "reading": "かさ",
+    "nameEn": "Umbrella",
+    "meaning": "umbrella",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "shinbun",
+    "word": "新聞",
+    "reading": "しんぶん",
+    "nameEn": "Newspaper",
+    "meaning": "newspaper",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tegami",
+    "word": "手紙",
+    "reading": "てがみ",
+    "nameEn": "Letter",
+    "meaning": "letter",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "omiyage",
+    "word": "お土産",
+    "reading": "おみやげ",
+    "nameEn": "Souvenir",
+    "meaning": "souvenir",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hanataba",
+    "word": "花束",
+    "reading": "はなたば",
+    "nameEn": "Bouquet",
+    "meaning": "bouquet",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "jitensha",
+    "word": "自転車",
+    "reading": "じてんしゃ",
+    "nameEn": "Bicycle",
+    "meaning": "bicycle",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
   }
 ]

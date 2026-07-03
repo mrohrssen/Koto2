@@ -52,3 +52,43 @@ describe('evening-town npcs', () => {
     });
   }
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'keeki', word: 'ケーキ', category: 'food' },
+  { id: 'kukkii', word: 'クッキー', category: 'food' },
+  { id: 'koohii', word: 'コーヒー', category: 'food' },
+  { id: 'purin', word: 'プリン', category: 'food' },
+  { id: 'kagi', word: '鍵', category: 'equipment' },
+  { id: 'chizu', word: '地図', category: 'equipment' },
+  { id: 'saifu', word: '財布', category: 'equipment' },
+  { id: 'kasa', word: '傘', category: 'equipment' },
+  { id: 'shinbun', word: '新聞', category: 'equipment' },
+  { id: 'tegami', word: '手紙', category: 'equipment' },
+  { id: 'omiyage', word: 'お土産', category: 'equipment' },
+  { id: 'hanataba', word: '花束', category: 'equipment' },
+  { id: 'jitensha', word: '自転車', category: 'equipment' }
+];
+
+describe('evening-town items', () => {
+  const townItems = items.filter(i => i.area === 'evening-town');
+
+  it('has exactly the 13 approved items', () => {
+    assert.deepEqual(
+      townItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = townItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});
