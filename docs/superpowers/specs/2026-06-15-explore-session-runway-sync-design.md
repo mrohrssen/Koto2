@@ -1,7 +1,7 @@
 # Explore Session Runway Sync Design
 
 **Date:** 2026-06-15
-**Status:** Draft for review
+**Status:** Implemented 2026-06-16 (rooms architecture); superseded for remaining work (combat boundary removal, acceptance harness, cleanup) by `2026-07-03-explore-subway-stability-design.md`
 **Feature:** Subway-resilient regular explore mode via prepared room runway, client action log, and batch checkpoint sync
 
 ## Problem
@@ -26,7 +26,7 @@ The target is not full reload-proof offline persistence. The target is subway-re
 - **Runway size:** prepare the current room plus 5 rooms ahead, for up to 6 prepared room entries visible to the client. This replaces today's default current plus 1 room reveal buffer.
 - **Dialogue/audio:** i+1 dialogue and audio metadata are part of the runway, not online-only render-time fetches. The server should select frames against the player's known vocabulary and attach cached or requestable audio metadata before the room is needed.
 - **Migration discipline:** old endpoints may remain for compatibility during rollout, but the new client path should flow through one explore session model. Room-specific optimistic pending paths should be deleted after cutover.
-- **Combat boundary:** explore sync prepares and enters combat rooms, but PvE/PvP combat mechanics remain in the combat subsystem. Offline combat changes are separate and must preserve PvE/PvP parity.
+- **Combat boundary:** explore sync prepares combat room entry, but starting PvE combat is a checkpoint boundary. The UI may acknowledge the tap immediately, then must drain the explore session before calling the combat-start endpoint. `encounter.start`, `npcBattle.start`, and `boss.start` are not offline-queued explore log entries in this phase. PvE/PvP combat mechanics remain in the combat subsystem, and offline combat changes are separate and must preserve PvE/PvP parity.
 
 ## Goals
 
@@ -67,6 +67,8 @@ The server owns canonical `run.rooms`. The client receives a bounded, prepared r
       room: { /* client-safe room state */ },
       entryPayload: { /* narration, background, drops */ },
       interactionPayload: { /* room-type-specific payload */ },
+      acceptedActions: ["friendlyNpc.choose"],
+      actionEffects: { "friendlyNpc.choose": ["partyStats"] },
       offlineReady: true
     }
   ]
@@ -83,6 +85,7 @@ The runway builder should:
 - Select all frame-backed dialogue against the player's known vocabulary.
 - Attach dialogue audio metadata using the existing dialogue-card TTS cache path. It may return cached keys immediately or requestable metadata while synthesis continues in the background.
 - Roll offers, pools, and snapshots that must stay stable during offline play.
+- Attach `actionEffects` for each accepted action so dependency-pause behavior is derived from the server contract, not a duplicated client table.
 - Mark each prepared room with `offlineReady` and explicit missing payload reasons when incomplete.
 
 ### 2. Client Explore Action Log
@@ -101,6 +104,7 @@ The client owns an ordered in-memory log of player actions:
     itemId: "iron-charm",
     targetCreatureIndex: 0
   },
+  predictedEffects: ["partyStats"],
   createdAt: 1780000000000
 }
 ```
@@ -139,6 +143,8 @@ The server replays entries in order against canonical run state. For each entry:
 - Record the action ledger result.
 - Stop at the first invalid entry and return a correction.
 
+The sync service must replay every action kind the runway advertises as locally acceptable. Support-room cutover is incomplete if the client can record an action that falls through to an unsupported-entry correction.
+
 The response shape mirrors Kanji Kombat:
 
 ```js
@@ -153,7 +159,7 @@ The response shape mirrors Kanji Kombat:
 }
 ```
 
-The syncer should be single-flight and debounced after actions. Retry triggers should include online event, visibility restore, and backoff. Batching is the point: a short working connection should drain several rooms of progress in one request.
+The syncer should be single-flight and debounced after actions. Retry triggers should include online event, visibility restore, and backoff. Before any reconnect/recovery code refetches `/api/game/state`, the client should drain the in-memory explore log first. Batching is the point: a short working connection should drain several rooms of progress in one request.
 
 ## Room Payload Contract
 
@@ -305,13 +311,13 @@ Prepared payload:
 - NPC metadata for NPC battles
 - any frame-backed intro copy that belongs to room entry
 
-Client actions:
+Checkpoint actions:
 
 - `encounter.start`
 - `npcBattle.start`
 - `boss.start`
 
-Explore sync may prepare and commit the handoff into combat. Combat turns and offline combat behavior stay in the combat subsystem.
+These actions render as responsive buttons, but they are not accepted offline log entries. The button path first drains the explore session; only after that checkpoint succeeds may it call the existing combat-start route. Combat turns and offline combat behavior stay in the combat subsystem.
 
 ## Server-Owned vs Locally Predicted
 
@@ -441,4 +447,3 @@ This design intentionally mirrors `docs/superpowers/specs/2026-06-11-kanji-komba
 | prompt exhausted pause | runway exhausted pause |
 
 The main adaptation is heterogeneity. Kanji Kombat has one loop with repeated prompt/quiz entries. Explore mode has many room types, so the runway must define a payload contract per room type. The architecture should still stay one model.
-

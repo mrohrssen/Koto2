@@ -1,5 +1,7 @@
 # Tiered Optimistic Game Actions Design
 
+> **Status 2026-07-03:** this doc carries the 2026-06-03 implementation audit inline. For explore-mode room actions, the per-action optimistic commit contract has since been subsumed by the explore session log (`2026-06-15-explore-session-runway-sync-design.md` → `2026-07-03-explore-subway-stability-design.md`). The persisted action ledger remains the idempotency mechanism. Hub/meta migrations listed under "Still Needed" remain open and are NOT part of the explore subway arc.
+
 ## Goal
 
 Make player actions throughout Koto feel as fast as the new optimistic combat turns while keeping server-side validation authoritative for anti-cheat and data integrity.
@@ -15,32 +17,96 @@ The player-facing rule is simple: optimistic actions should be silent on the hap
 
 ## Current Optimistic Actions
 
-Koto already has two optimistic systems.
+Status note: this section reflects the implementation audit on 2026-06-03.
 
 Predictive combat optimism:
 
-- PvE creature combat attacks, including move and target choices.
-- PvE creature combat defend turns.
+- PvE creature combat attacks, including action-cursor move and target choices.
 - Kanji Kombat quiz answer turns.
 
 These use shared deterministic combat logic, seed, state version, and transcript hash verification.
 
+PvE creature combat defend optimism is only partially current. The optimistic builder still supports legacy non-action-cursor defend turns, but normal creature encounters now initialize an action cursor and cursor-based defend prediction is not yet enabled.
+
 Optimistic run commits:
 
-- Room proceed when the next room already exists locally.
+- Room proceed through the server-prepared reveal buffer.
 - Shrine reward choice.
 - Skill Master skill choice, including tutorial and initial skill pick.
 - Friendly NPC item choice, including target selection.
-
-Post-combat shop selection is wired through the optimistic route, API, UI, and tests. The random post-victory shop remains disabled for the current MVP, but reload recovery and selection now use the same persisted `run.postCombatShop.items` source when an active shop is present.
+- NPC battle skill reward choice.
+- Post-combat shop item selection wiring.
 
 These use an action ID and local draft state, then reconcile with server `accepted` or `corrected` responses.
+
+Post-combat shop selection is wired through the optimistic route, API, UI, and tests, but the live shop roll path appears dormant or mismatched. Treat it as partial until the generated offer source and selection source are aligned.
+
+Server-prepared reveal buffer:
+
+- Client state exposes `revealedRooms` and `roomActionSeq`, not the full `run.rooms` array.
+- The default reveal window is current room plus one future room.
+- Proceed sends `actionId`, `fromRoom`, and `actionSeq`, starts buffered travel immediately, and reconciles to server state.
+
+The core reveal-buffer proceed path is implemented. Some edge paths still need work: room-specific completion/recovery paths that call bare `apiProceed()`, area-complete continue semantics, and start-encounter transition feedback before the encounter API returns.
+
+Confirmed save:
+
+- PvP team save shows `Saving team...`, then `Team saved!` only after server confirmation.
+- Failure copy is `Team was not saved. Your draft is still here.`
+
+Matchmaking still needs to be updated to use only server-confirmed saved teams; the current lobby path can still pass browser-sent `teamData` into match selection.
 
 Creature dealer buy/sell actions also have optimistic wiring today, but the creature dealer is not currently used in the game. They are out of scope for this rollout and do not need additional planning or migration work.
 
 Older local optimism:
 
 - Speed Review card swipes advance immediately with an undo window. Room-mode commits are serialized and retried before completion.
+
+Medium-risk room, learning, and minigame flows are mostly still legacy or older local optimism. Campfire, Word Discovery completion/progress, Speed Review room completion, Whack-a-Mole completion/skip, and Kanji Kombat intro/completion choices still need the optimistic commit contract if they remain in scope.
+
+## Implementation Status
+
+### Completed
+
+- Persisted action ledger service for migrated optimistic actions, including old-ledger migration, response cloning, pruning, and duplicate `actionId` replay.
+- Shared route helper for legacy responses, accepted optimistic responses, corrected optimistic responses, duplicate replay, mismatched duplicate correction, and save-failure rollback.
+- Optimistic deterministic choices for Skill Master, shrine rewards, friendly NPC item choices, and NPC battle skill rewards.
+- Core server-prepared reveal-buffer proceed flow: current/next-only client exposure, `roomActionSeq`, `fromRoom` validation, duplicate proceed protection, buffered client transition, and server reconciliation.
+- PvE attack and Kanji Kombat quiz-answer predictive combat using shared deterministic resolvers, seed, state version, action ID, and transcript hash verification.
+- Combat return-to-control polish for the main optimistic attack path: arbitrary fixed `600ms` control-gating waits are removed or reduced, and control waits on playback plus server verification.
+- Safe enemy final-hit and KO visual prediction for supported PvE cases while stripping server-owned reward/progression fields from local visual transcripts.
+- Confirmed-save PvP team save feedback.
+- Local-only draft controls for move targeting, campfire ingredient selection, fusion recipe tile selection, chest element tabs, and starter/team drafting.
+
+### Partial
+
+- Post-combat shop item selection has optimistic wiring, but the live offer source should be fixed or re-enabled before treating it as complete.
+- Server-prepared reveal buffer is complete for the main proceed path, but not yet complete for every room-completion path, area-complete continue flow, or start-encounter transition feedback.
+- PvE defend prediction is partial because cursor-era defend actions are not predicted.
+- Combat pending end is partial: local transcripts can mark `pendingCombatEnd`, but there is no visible pending victory/defeat shell before server confirmation.
+- Ally defeated summary prediction is still limited by safe-prediction blockers such as KO swaps/removals.
+- Daily crystal claim is server-authoritative and naturally once-per-day idempotent, but it is not an optimistic/action-ledger flow.
+- Chest open, crest equip/unequip, fusion start, and tutorial fusion actions are server-authoritative and conservative, but not optimistic/action-ledger flows.
+
+### Still Needed
+
+- Migrate medium-risk optimistic commits:
+  - Campfire cook, feed dish, and skip.
+  - Word Discovery review/progress commits and completion.
+  - Speed Review room completion.
+  - Whack-a-Mole skip and completion.
+  - Kanji Kombat intro known/unknown choice and completion keep-going/stop choice.
+- Migrate high-impact hub/meta optimistic commits:
+  - Daily crystal claim.
+  - Chest open, with immediate opening animation but delayed crest reveal.
+  - Crest equip and unequip.
+  - Fusion start.
+  - Tutorial fusion core claim and tutorial fusion completion.
+- Add duplicate `actionId` idempotency for every action that spends, awards, reveals, advances room state, or mutates persistent/meta state.
+- Make PvP matchmaking load confirmed server-saved teams instead of trusting browser-sent `teamData`.
+- Implement cursor-era PvE defend prediction or document that defend is intentionally server-confirmed.
+- Add a visible pending victory/defeat shell for optimistic terminal combat turns, or update this spec if the intended behavior is only final-hit/KO playback while awaiting verification.
+- Add focused tests for skipped/future/out-of-order reveal-buffer proceeds, setup endpoint reveal buffers, remaining optimistic routes, hub/meta duplicate protection, PvP tampered-team rejection, and chest/fusion reveal timing.
 
 ## Action Patterns
 
@@ -150,7 +216,7 @@ If the network fails:
 
 Duplicate `actionId`s must be idempotent for any action that spends, awards, reveals, advances room state, or mutates persistent/meta state. This includes crystals, chests, fusion, rewards, inventory, room advancement, and any future persistent progression actions.
 
-The first implementation should add a persisted action ledger for these high-impact actions. Existing in-memory or response-wrapping optimism is not enough for actions where a reload, retry, or duplicate request could otherwise double-spend, double-award, or reveal a different outcome.
+The first implementation has added a persisted action ledger for migrated run actions. Continue applying it to every high-impact action where a reload, retry, or duplicate request could otherwise double-spend, double-award, or reveal a different outcome.
 
 ## Coverage
 
@@ -163,6 +229,8 @@ Run setup:
 - Confirm creatures / starter team.
 - First-run auto setup.
 
+Status: setup endpoints now return enriched/sanitized state, but add focused tests that assert reveal-buffer presence for each setup path.
+
 Run spine / reveal buffer:
 
 - Proceed through rooms using server-prepared room data.
@@ -170,6 +238,8 @@ Run spine / reveal buffer:
 - Area-complete continue.
 - Room transition travel animations.
 - Start encounter where the immediate UX is only transition/start feedback. Exact combat outcomes remain predictive combat.
+
+Status: the main proceed and room-transition path is implemented. Remaining work is to convert or justify room-specific bare `apiProceed()` paths, add skipped/future/out-of-order proceed tests, decide area-complete continue semantics, and add immediate start-encounter transition/start feedback if that remains required.
 
 ### Add Optimistic Commit
 
@@ -181,11 +251,15 @@ Reward and item choices:
 - NPC battle skill reward choice.
 - Friendly NPC item choice.
 
+Status: shrine, Skill Master, NPC battle skill reward, and friendly NPC item choice are complete. Post-combat shop selection is wired but partial until its live offer source is fixed or re-enabled.
+
 Campfire:
 
 - Cook.
 - Feed dish.
 - Skip.
+
+Status: not migrated.
 
 Learning and minigames:
 
@@ -197,6 +271,8 @@ Learning and minigames:
 - Kanji Kombat intro known/unknown choice.
 - Kanji Kombat completion keep-going/stop choice.
 
+Status: not migrated to optimistic commits. Speed Review and Word Discovery have older local optimism/retry behavior, but not the action-ledger accepted/corrected contract.
+
 Hub and meta actions:
 
 - Daily crystal claim.
@@ -207,11 +283,22 @@ Hub and meta actions:
 - Tutorial fusion core claim.
 - Tutorial fusion completion.
 
+Status: not migrated to optimistic commits. Daily crystals are naturally once-per-day idempotent; chest/fusion reveal timing is conservative; none of these use the persisted optimistic action ledger yet.
+
 ### Keep Predictive Combat
 
 - Existing PvE attack.
-- PvE defend prediction supports cursor-era creature encounters by predicting the full defend turn through the shared deterministic resolver. Unsafe KO swap/removal cases still correct through the existing safe-prediction blockers.
+- Existing PvE defend, partial until cursor-era defend prediction is implemented or explicitly de-scoped.
 - Existing Kanji Kombat quiz answer.
+
+Recent predictive-combat polish removed or reduced fixed post-turn dead-air delays from the main optimistic attack path. Combat should continue to return control as soon as local playback is finished and the server has accepted or corrected the prediction. If the server has already confirmed during animation playback, move selection should return immediately. If playback finishes first, the only remaining wait should be for server verification/correction. Animation-owned waits such as attack impacts, KO fades, and readable transition promises can remain, but arbitrary `600ms` control-gating pauses should stay out of control-return paths.
+
+The same combat polish phase partially expanded safe visual prediction for final-hit moments:
+
+- Final-hit and KO visuals can be predicted locally for supported safe cases: show the hit, HP reaching 0, and KO animation immediately, then let the server confirm or correct.
+- Enemy defeated state summaries can be reflected visually when the shared resolver predicts enemy HP at 0.
+- Ally defeated state summaries still need care around KO swaps/removals.
+- Combat end can mark a local `pendingCombatEnd`, but a visible pending victory/defeat shell is still needed if this remains part of the desired UX. XP, rewards, room completion, move-learn prompts, shop state, and permanent progression must wait for server confirmation.
 
 ### Use Confirmed Save
 
@@ -278,13 +365,13 @@ Confirmed-save copy is different because the UI intentionally waits for server c
 
 Every state-changing endpoint remains server-authoritative.
 
-Current implementation constraints make the reveal buffer a real architecture change, not a small UX patch:
+Original implementation constraints made the reveal buffer a real architecture change, not a small UX patch. Current status:
 
-- `GameManager.getState()` currently exposes `run.rooms` directly to the client.
-- Area entry currently generates the area's room list before play begins.
-- Support and random rooms are finalized during area entry/proceed.
+- `GameManager.getState()` no longer exposes full `run.rooms` to the client.
+- Area entry still generates the server-side room list before play begins, with future flexible slots represented as unresolved `randomRoom` placeholders.
+- Support and random rooms are still finalized server-side before entering the reveal window, including when state preparation refreshes the reveal buffer.
 
-The reveal-buffer work must therefore narrow what room data is exposed, preserve server-side room finalization, and prevent future room/reward inspection.
+The remaining reveal-buffer work must preserve narrowed client exposure, preserve server-side room finalization, and prevent future room/reward inspection while tightening edge flows and tests.
 
 For optimistic commits and reveal-buffer commits, the submitted client payload is only a requested action. The server must validate:
 
@@ -344,12 +431,13 @@ The implementation should not introduce a giant centralized action registry in t
 
 Implement in focused batches:
 
-1. Harden the shared optimistic action contract, standard failure copy, and persisted idempotency ledger.
-2. Migrate already-known deterministic choices: Skill Master, shrine, friendly NPC item, NPC battle skill reward, and post-combat shop item selection.
-3. Add confirmed-save PvP team UX.
-4. Migrate medium-risk room-adjacent choices: campfire, Word Discovery completion/progress, Speed Review room completion, and Whack-a-Mole completion/skip.
-5. Build server-prepared reveal-buffer travel as its own focused project.
-6. Migrate high-impact hub/meta actions last: daily crystals, chest open, crest equip/unequip, fusion start, and tutorial fusion actions.
+1. Done: harden the shared optimistic action contract, standard failure copy, and persisted idempotency ledger.
+2. Done/partial: migrate already-known deterministic choices. Skill Master, shrine, friendly NPC item, and NPC battle skill reward are done; post-combat shop item selection is wired but needs the live offer source fixed or re-enabled.
+3. Partial: add confirmed-save PvP team UX. Save feedback is done; matchmaking must still use only confirmed server-saved teams.
+4. Partial: tighten combat responsiveness. Main attack-path delay removal and safe enemy KO prediction are done; cursor-era defend prediction and visible pending combat-end shell remain.
+5. Next: migrate medium-risk room-adjacent choices: campfire, Word Discovery completion/progress, Speed Review room completion, Whack-a-Mole completion/skip, and Kanji Kombat intro/completion choices.
+6. Core done/edge cleanup: build server-prepared reveal-buffer travel. Main proceed and buffered transition are done; room-specific proceed paths, setup tests, area-complete semantics, and start-encounter feedback remain.
+7. Later: migrate high-impact hub/meta actions last: daily crystals, chest open, crest equip/unequip, fusion start, and tutorial fusion actions.
 
 Each batch should keep legacy no-`actionId` behavior working so routes remain backwards-compatible during rollout.
 
@@ -385,6 +473,11 @@ UI tests:
 
 - Room transition starts immediately from buffered room data.
 - Room transition reconciles to the refreshed server buffer after accepted proceed.
+- Optimistic combat move selection returns as soon as playback and verification are both complete.
+- Optimistic combat does not wait on fixed `600ms` post-turn delays when verification has already completed.
+- Slow server verification can still hold move selection until accepted/corrected state arrives.
+- Optimistic final-hit playback can show predicted HP reaching 0 and KO animation before server confirmation.
+- Optimistic combat-end playback can show a pending victory/defeat shell but does not grant XP, rewards, room completion, or move-learn prompts until accepted server state arrives.
 - Skill choice advances silently on success.
 - Failed skill choice returns to choice UI and shows `Skill choice did not save. Please choose again.`
 - Reward and item failure copy uses the approved "did not save" pattern.
