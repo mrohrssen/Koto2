@@ -120,3 +120,66 @@ export function hasUnsafeSharedPveOptimisticPrediction({ combat, transcript } = 
   return hasUnsafePveVisualPredictionFeedback(transcript)
     || isBefriendEligibleTerminalPvePrediction({ combat, transcript });
 }
+
+// ============================================================================
+// Two-mode PvE prediction policy
+// ----------------------------------------------------------------------------
+// There are two distinct safety bars for an optimistically-predicted PvE turn,
+// because the two consumers reconcile with the server differently:
+//
+//   STRICT  (hasUnsafeSharedPveOptimisticPrediction, above)
+//     Used by the ONLINE per-turn verify path (combat-cycle-service
+//     verifyAndCommitCreatureCombatCycle) and mirrored for PvP semantics. Under
+//     per-turn verify the client applies its predicted turn immediately and only
+//     the server's `accepted` acknowledgement makes it durable. So the STRICT
+//     bar rejects any turn whose faithful outcome the client cannot itself
+//     produce without server-only data — including EVERY ally-KO turn (koSwaps /
+//     koRemovals) and EVERY befriend-eligible wild-encounter terminal victory
+//     (isBefriendEligibleTerminalPvePrediction), because online those need a
+//     server round-trip to resolve the replacement / befriend offer. This
+//     predicate MUST stay byte-identical — the parity rule keeps PvE-online and
+//     PvP regression-free.
+//
+//   SESSION (hasUnsafeSessionPvePrediction, below)
+//     Used by the offline explore-session combat path. Session turns are pure,
+//     deterministic resolver output committed later by replayCombatCycleEntry
+//     (which has NO unsafe gate — it hash-verifies the same core transcript and
+//     commits regardless of KO/terminal shape). Under this model the two STRICT
+//     exclusions are unnecessarily conservative:
+//       • koSwaps / koRemovals — resolvePveTurn/resolvePveCursorTurn resolve ally
+//         KO swaps automatically IN-TRANSCRIPT (processKoSwaps:true, no player
+//         replacement choice mid-turn), so the client can play them faithfully.
+//       • befriend-eligible terminal victory — victory UX is the pendingCombatEnd
+//         shell (rewards stay server-owned, granted on checkpoint) and the
+//         actual befriend flow is online-gated separately (Task 11), so a
+//         terminal wild victory is safe to predict.
+//     What SESSION still blocks is genuinely non-simulatable feedback that would
+//     make the local transcript diverge from the server's replay: a mid-turn
+//     befriend quiz (befriendQuizTriggered), a wave transition (nextWave), and
+//     any server-only reward/collection/shop field that survives the
+//     visual-safe sanitizer (the SANITIZABLE_PVE_BLOCKERS remainder).
+// ============================================================================
+
+// Blockers that the SESSION path treats as genuinely non-simulatable. Unlike the
+// STRICT set, koSwaps/koRemovals/defeatVisuals/combatEnd are allowed (the
+// pendingCombatEnd shell + resolver-automatic swaps cover them). This mirrors
+// getUnsafePveVisualPredictionFeedback's sanitizer exclusion but ALSO drops the
+// visual-KO/terminal blockers that only matter for the online per-turn path.
+const SESSION_SAFE_PVE_BLOCKERS = new Set([
+  ...SANITIZABLE_PVE_BLOCKERS,
+  'combatEnd',
+  'koSwaps',
+  'koRemovals',
+  'defeatVisuals',
+  'effectDefeatEvents',
+  'roundStartDefeatEvents',
+]);
+
+export function getUnsafeSessionPvePredictionBlockers(transcript = {}) {
+  return getPvePredictionBlockers(transcript, PVE_VISUAL_PREDICTION_OPTIONS)
+    .filter(blocker => !SESSION_SAFE_PVE_BLOCKERS.has(blocker));
+}
+
+export function hasUnsafeSessionPvePrediction({ transcript } = {}) {
+  return getUnsafeSessionPvePredictionBlockers(transcript).length > 0;
+}

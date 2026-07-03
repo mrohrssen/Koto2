@@ -324,6 +324,45 @@ describe('ExploreSessionSyncService — combat replay', () => {
     assert.equal(gm.run.active, false, 'defeat ended the run');
   });
 
+  it('replays a koSwap turn (front ally KO, reserve swaps in) with a matching hash', async () => {
+    // Front ally at 1 HP with a no-power move; boss survives the tap and one-shots
+    // the ally. A reserve is on the bench, so the resolver auto-swaps it in
+    // (koSwaps in-transcript, no mid-turn player choice) and the fight continues —
+    // a NON-terminal turn. The predicted hash (built from resolvePveCursorTurn)
+    // must equal what replayCombatCycleEntry commits, proving KO-swap turns are
+    // deterministic across the resolver-prediction / server-replay boundary.
+    const gm = makeCombatGm({
+      roomType: ROOM_TYPES.boss, enemyHp: 500, allyMove: WEAK_MOVE, allyHp: 1,
+      enemyMove: BIG_MOVE, ownedExtra: true,
+    });
+    const service = new ExploreSessionSyncService(gm);
+
+    await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [startEntry(gm, { seq: 1, actionId: 'run_es_00000701', kind: 'boss.start' })],
+    });
+
+    // Sanity: the resolver actually produces a koSwap for this turn (built on a
+    // clone so the honest predicted hash is computed against the live head).
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const moveChoices = [{ creatureIndex: 0, moveId: WEAK_MOVE.id, targetIndex: 0 }];
+    const predicted = resolvePveCursorTurn(
+      { combat: gm.combat, run: gm.run, moveChoices },
+      { actionType: 'attack', seed },
+    );
+    assert.ok(predicted.transcript.koSwaps.length > 0, 'turn produces a koSwap');
+    assert.equal(predicted.transcript.combatEnded, false, 'koSwap turn is non-terminal');
+
+    const cycle = matchingCycleEntry(gm, { seq: 2, actionId: 'run_es_00000702', moveId: WEAK_MOVE.id });
+    const result = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: [cycle] });
+
+    assert.equal(result.status, 'ok', 'matching-hash koSwap turn is accepted, not corrected');
+    assert.equal(result.confirmedThroughSeq, 2);
+    assert.equal(result.results[0].combatEnded, false);
+    assert.equal(gm.combat.active, true, 'fight continues after the swap');
+    assert.equal(gm.run.creatureParty.reserves.length, 0, 'reserve was swapped into the active slot');
+  });
+
   it('rejects a combat start whose kind does not match the current room type', async () => {
     const gm = makeCombatGm({ roomType: ROOM_TYPES.boss });
     const service = new ExploreSessionSyncService(gm);
