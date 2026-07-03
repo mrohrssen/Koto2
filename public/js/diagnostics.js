@@ -1,6 +1,7 @@
 import { store } from './store.js';
 import { extractGameContext } from './analytics-core.js';
 import { setCrashContext, trackMilestone, recordNonFatal } from './analytics.js';
+import { createFrameStats, createTextureSampler } from './perf-telemetry.js';
 
 // ============ RING BUFFER ============
 
@@ -166,13 +167,23 @@ function initGlobalErrorCapture() {
 let frameCount = 0;
 let slowFrameCount = 0;
 let lastFrameTime = 0;
+let frameStats = null;
+let textureSampler = null;
 
 function initPerformanceTracking() {
   lastFrameTime = performance.now();
+  frameStats = createFrameStats();
+  textureSampler = createTextureSampler({
+    getCount: () =>
+      window.__pixiApp?.()?.app?.renderer?.texture?.managedTextures?.length ?? null,
+  });
   function tick() {
     const now = performance.now();
     frameCount++;
-    if (now - lastFrameTime > 33) slowFrameCount++;
+    const delta = now - lastFrameTime;
+    if (delta > 33) slowFrameCount++;
+    frameStats.onFrame(delta, now);
+    textureSampler.maybeSample(now);
     lastFrameTime = now;
     requestAnimationFrame(tick);
   }
@@ -193,7 +204,9 @@ export function snapshot() {
         totalJSHeapSize: performance.memory.totalJSHeapSize
       } : null,
       slowFrames: slowFrameCount,
-      totalFrames: frameCount
+      totalFrames: frameCount,
+      frameBuckets: frameStats ? frameStats.toArray() : [],
+      textureTimeline: textureSampler ? textureSampler.toArray() : []
     }
   };
 }

@@ -2,6 +2,7 @@ import { Text } from 'pixi.js';
 import { getApp } from './app.js';
 import { tween, wait } from './tween.js';
 import { screenShake, screenFlash } from './effects.js';
+import { destroyText } from './text.js';
 
 // ============ BANNER STYLE CONFIG ============
 
@@ -72,5 +73,5 @@ export async function showBanner(message, style = 'super', { elementColor = 0xFF
   // Fade out
   await tween(text, { alpha: 0 }, { duration: 300, ease: 'easeOut' });
 
-  text.destroy();
+  destroyText(text);
 }

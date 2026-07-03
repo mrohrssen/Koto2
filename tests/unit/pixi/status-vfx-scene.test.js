@@ -82,6 +82,7 @@ await mock.module('../../../public/js/pixi/effects.js', {
 await mock.module('../../../public/js/pixi/text.js', {
   namedExports: {
     showEventPopup: () => {},
+    destroyText: () => {},
   },
 });
 // status-vfx.js no longer imports from formation.js after Task 18 (the

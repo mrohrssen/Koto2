@@ -75,12 +75,19 @@ export function createAnalyticsClient({
   let milestoneStore = null;
   let initialized = false;
   let furthestStep = null;
+  const warnedLabels = new Set();
 
   async function runSafely(label, fn) {
     try {
       return await fn();
     } catch (err) {
-      console.warn(`[Analytics] ${label} failed:`, err?.message || err);
+      // Firebase plugins are unimplemented on iOS; without this gate their
+      // failure warnings fill the entire diagnostics console buffer within
+      // seconds and blind bug reports to real errors.
+      if (!warnedLabels.has(label)) {
+        warnedLabels.add(label);
+        console.warn(`[Analytics] ${label} failed:`, err?.message || err);
+      }
       return null;
     }
   }
