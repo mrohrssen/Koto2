@@ -120,6 +120,7 @@ test('maps predicted effects for every plan action kind', () => {
     ['encounter.start', []],
     ['npcBattle.start', []],
     ['boss.start', []],
+    ['combat.cycle', ['partyStats']],
   ];
 
   for (const [kind, expectedEffects] of actionEffects) {
@@ -129,9 +130,12 @@ test('maps predicted effects for every plan action kind', () => {
 
 test('maps room dependencies for every plan room type', () => {
   const roomDependencies = [
-    ['encounter', ['partyStats', 'partySkills']],
-    ['boss', ['partyStats', 'partySkills']],
-    ['npcBattle', ['partyStats', 'partySkills']],
+    // Combat rooms are pre-rolled (Task 8): prepareCombatStart pins enemies +
+    // seed chain at prepare time, so queued earlier-room effects no longer
+    // invalidate them.
+    ['encounter', []],
+    ['boss', []],
+    ['npcBattle', []],
     ['campfire', ['ingredients', 'partyStats']],
     ['dealer', ['credits']],
     ['speedReviewRoom', ['srs']],
@@ -152,11 +156,11 @@ test('returns fresh effect and dependency arrays', () => {
   const effects = predictedEffectsForAction('dealer.sell');
   effects.push('partyStats');
 
-  const dependencies = roomDependenciesForType('encounter');
+  const dependencies = roomDependenciesForType('campfire');
   dependencies.push('credits');
 
   assert.deepEqual(predictedEffectsForAction('dealer.sell'), ['credits']);
-  assert.deepEqual(roomDependenciesForType('encounter'), ['partyStats', 'partySkills']);
+  assert.deepEqual(roomDependenciesForType('campfire'), ['ingredients', 'partyStats']);
 });
 
 test('builds correction response', () => {

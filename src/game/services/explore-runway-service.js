@@ -41,6 +41,7 @@ import {
   rollRoomIngredientDrops,
 } from './cooking-service.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
+import { shouldShowStartingMeadowHinonekoIntro } from './tutorial-service.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIALOGUE_FRAMES_PATH = join(__dirname, '../../../data/dialogue/frames.json');
@@ -100,28 +101,37 @@ function buildEntryPayload(gm, room) {
   };
 }
 
+// Combat rooms accept their prepared start plus the per-turn cycle action. Every
+// SUPPORT room also accepts 'proceed' so a completed support room can advance
+// through the session log offline instead of pausing at the legacy proceed route
+// (Task 5 finding: 'proceed' was previously granted only to the default type, so
+// offline chains stalled at every support-room exit). Server-side proceed
+// validation is unchanged — applyExploreProceed → proceedToNextRoom still gates
+// encounter (interacted) and skillMaster (completed) before advancing.
 function acceptedActionsForRoom(room) {
   switch (room?.type) {
     case ROOM_TYPES.friendlyNpc:
-      return ['friendlyNpc.choose'];
+      return ['friendlyNpc.choose', 'proceed'];
     case ROOM_TYPES.shrine:
-      return ['shrine.choose'];
+      return ['shrine.choose', 'proceed'];
     case ROOM_TYPES.skillMaster:
-      return ['skillMaster.choose'];
+      return ['skillMaster.choose', 'proceed'];
     case ROOM_TYPES.whackAMole:
-      return ['whackAMole.complete', 'whackAMole.skip'];
+      return ['whackAMole.complete', 'whackAMole.skip', 'proceed'];
     case ROOM_TYPES.campfire:
-      return ['campfire.cook', 'campfire.feed', 'campfire.skip'];
+      return ['campfire.cook', 'campfire.feed', 'campfire.skip', 'proceed'];
     case ROOM_TYPES.speedReviewRoom:
-      return ['speedReview.commit', 'speedReview.complete'];
+      return ['speedReview.commit', 'speedReview.complete', 'proceed'];
     case ROOM_TYPES.wordDiscovery:
-      return ['wordDiscovery.review', 'wordDiscovery.complete'];
+      return ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'];
     case ROOM_TYPES.dealer:
-      return ['dealer.sell', 'dealer.buy', 'dealer.leave'];
+      return ['dealer.sell', 'dealer.buy', 'dealer.leave', 'proceed'];
     case ROOM_TYPES.encounter:
+      return ['encounter.start', 'combat.cycle'];
     case ROOM_TYPES.npcBattle:
+      return ['npcBattle.start', 'combat.cycle'];
     case ROOM_TYPES.boss:
-      return [];
+      return ['boss.start', 'combat.cycle'];
     default:
       return ['proceed'];
   }
@@ -471,7 +481,75 @@ function buildSpeedReviewPayload(userId, room) {
   };
 }
 
+// Combat kind for a room type. Combat rooms carry a prepared start payload so
+// they can be entered and fought offline (encounter/boss/npcBattle).
+function combatKindForRoom(room) {
+  switch (room?.type) {
+    case ROOM_TYPES.encounter: return 'encounter';
+    case ROOM_TYPES.npcBattle: return 'npcBattle';
+    case ROOM_TYPES.boss: return 'boss';
+    default: return null;
+  }
+}
+
+// Shape a prepared combat room into the runway interaction payload. `combatStart`
+// is the client-facing form of what startCreatureEncounter returns (enemies/npc/
+// flags + the optimistic head), minus server-internal cursor/state. The seed
+// chain and combatId are pre-committed by prepareCombatStart so the client can
+// run optimistic turns offline and the server replay matches on reconnect.
+//
+// Trade-off (spec-accepted, same class as Kanji Kombat's pre-rolled wave): enemy
+// stat blocks are delivered up to EXPLORE_RUNWAY_AHEAD rooms early. Rewards/XP
+// stay server-owned and are only granted when the combat actually resolves.
+function buildCombatPayload(gm, room) {
+  const kind = combatKindForRoom(room);
+  const prepared = room?.preparedCombat || null;
+  if (!prepared) {
+    // No prepared roll (e.g. combatCycleService unavailable in a rebuild). Emit a
+    // shell so the client still knows the room kind; offlineReady stays false.
+    return { kind, combatStart: null, seedChain: [], combatId: null, initialStateVersion: 0 };
+  }
+
+  const tutorialBossIntro = shouldShowStartingMeadowHinonekoIntro(gm?.meta, gm?.run)
+    ? {
+        speaker: 'Cid',
+        lines: [
+          'Careful! This creature is stronger than normal.',
+          "You can't befriend this creature, but defeat it and our scientists can collect data.",
+          'With enough data, our fusion scientists can add it to your team.',
+        ],
+      }
+    : null;
+
+  const combatStart = {
+    enemy: cloneExploreValue(prepared.enemies[0] || null),
+    enemies: cloneExploreValue(prepared.enemies || []),
+    allies: cloneExploreValue(gm?.run?.creatureParty?.active || []),
+    playerGoesFirst: true,
+    npc: cloneExploreValue(prepared.npcData || null),
+    isBoss: prepared.isBoss === true,
+    isNpcBattle: prepared.isNpcBattle === true,
+    tutorialBossIntro,
+    optimistic: {
+      combatId: prepared.combatId,
+      stateVersion: 0,
+      nextTurnSeed: prepared.turnSeeds[0] || null,
+    },
+  };
+
+  return {
+    kind,
+    combatStart,
+    seedChain: cloneExploreValue(prepared.turnSeeds || []),
+    combatId: prepared.combatId,
+    initialStateVersion: 0,
+  };
+}
+
 async function buildInteractionPayload(gm, room, opts) {
+  if (combatKindForRoom(room)) {
+    return buildCombatPayload(gm, room);
+  }
   switch (room?.type) {
     case ROOM_TYPES.friendlyNpc:
       return buildFriendlyNpcPayload(gm, room, opts);
@@ -492,6 +570,15 @@ async function buildInteractionPayload(gm, room, opts) {
 
 function missingPayloadReasonsFor(room, interactionPayload) {
   const missing = [];
+  // Combat rooms are offline-ready only when a prepared start with a non-empty
+  // seed chain is attached (offlineReady === preparedCombat present).
+  if (combatKindForRoom(room)) {
+    if (!interactionPayload?.combatStart?.enemies?.length) missing.push(`${interactionPayload?.kind || room.type}.combatStart`);
+    if (!Array.isArray(interactionPayload?.seedChain) || interactionPayload.seedChain.length < 1) {
+      missing.push(`${interactionPayload?.kind || room.type}.seedChain`);
+    }
+    return missing;
+  }
   if (room?.type === ROOM_TYPES.friendlyNpc) {
     if (!interactionPayload?.npc) missing.push('friendlyNpc.npc');
     if (!Array.isArray(interactionPayload?.offered) || interactionPayload.offered.length === 0) {
@@ -550,6 +637,14 @@ export async function buildExploreRunway(gm, opts = {}) {
   for (let index = currentRoom; index <= lastIndex; index += 1) {
     const room = prepareRoom(gm, index);
     if (!room) continue;
+
+    // Pre-roll combat rooms so they can be entered and fought offline. Idempotent
+    // per room (persisted on room.preparedCombat) — a responseContext rebuild
+    // after replay reuses the existing roll rather than re-rolling. Guarded on the
+    // service being present (some rebuild paths carry a lean gm).
+    if (combatKindForRoom(room) && !room.preparedCombat && gm?.combatCycleService?.prepareCombatStart) {
+      gm.combatCycleService.prepareCombatStart(room);
+    }
 
     prepareEntryIngredientDrops(gm, index, currentRoom);
     const entryPayload = buildEntryPayload(gm, room);

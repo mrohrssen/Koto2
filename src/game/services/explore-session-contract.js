@@ -23,6 +23,7 @@ const ACTION_EFFECTS = Object.freeze({
   'encounter.start': [],
   'npcBattle.start': [],
   'boss.start': [],
+  'combat.cycle': [EXPLORE_EFFECTS.PARTY_STATS],
   'friendlyNpc.choose': [EXPLORE_EFFECTS.PARTY_STATS],
   'shrine.choose': [EXPLORE_EFFECTS.PARTY_STATS],
   'skillMaster.choose': [EXPLORE_EFFECTS.PARTY_SKILLS],
@@ -42,9 +43,14 @@ const ACTION_EFFECTS = Object.freeze({
 });
 
 const ROOM_DEPENDENCIES = Object.freeze({
-  encounter: [EXPLORE_EFFECTS.PARTY_STATS, EXPLORE_EFFECTS.PARTY_SKILLS],
-  boss: [EXPLORE_EFFECTS.PARTY_STATS, EXPLORE_EFFECTS.PARTY_SKILLS],
-  npcBattle: [EXPLORE_EFFECTS.PARTY_STATS, EXPLORE_EFFECTS.PARTY_SKILLS],
+  // Combat rooms are pre-rolled (prepareCombatStart pins enemies + seed chain onto
+  // the prepared payload), so a queued earlier-room stat/skill effect no longer
+  // invalidates them — the roll is fixed at prepare time. Same rationale as Kanji
+  // Kombat's pre-rolled wave. (An intervening level-up is governed by the prepared
+  // roll; spec-accepted.)
+  encounter: [],
+  boss: [],
+  npcBattle: [],
   campfire: [EXPLORE_EFFECTS.INGREDIENTS, EXPLORE_EFFECTS.PARTY_STATS],
   dealer: [EXPLORE_EFFECTS.CREDITS],
   speedReviewRoom: [EXPLORE_EFFECTS.SRS],

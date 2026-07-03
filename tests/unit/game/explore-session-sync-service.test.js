@@ -190,6 +190,90 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(result.exploreRunway.roomActionSeq, 1);
   });
 
+  // RIDER (Task 8): support rooms proceed through the session log. Server-side
+  // proceed validation must match the legacy route: a choose→proceed pair for a
+  // completed support room succeeds in order; an uncompleted-support-room proceed
+  // fails validation (skillMaster is the support room with a completion gate).
+  it('applies a skillMaster choose→proceed pair through the session log in order', async () => {
+    const gm = makeGm([ROOM_TYPES.skillMaster, ROOM_TYPES.friendlyNpc]);
+    gm.run.roomActionSeq = 0;
+    gm.run.rooms[0].skillMaster = {
+      offered: [{ id: 'counterMaster', level: 1 }],
+      chosenId: null,
+      completed: false,
+    };
+    const room = gm.run.rooms[0];
+    // Stand in for the real choose so the test targets proceed validation, not
+    // party-skill mechanics: mark the room completed exactly as the real path does.
+    gm.explorationService.applySkillMasterChoose = () => {
+      room.skillMaster.completed = true;
+      room.skillMaster.chosenId = 'counterMaster';
+      room.interacted = true;
+      return { ok: true, chosenId: 'counterMaster' };
+    };
+    const service = new ExploreSessionSyncService(gm);
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 1,
+          actionId: 'run_es_00005001',
+          kind: 'skillMaster.choose',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+          payload: { skillId: 'counterMaster' },
+        }),
+        makeEntry(gm, {
+          seq: 2,
+          actionId: 'run_es_00005002',
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'ok');
+    assert.equal(result.confirmedThroughSeq, 2);
+    assert.equal(room.skillMaster.completed, true);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 1);
+  });
+
+  it('rejects a proceed for an uncompleted skillMaster support room', async () => {
+    const gm = makeGm([ROOM_TYPES.skillMaster, ROOM_TYPES.friendlyNpc]);
+    gm.run.roomActionSeq = 0;
+    gm.run.rooms[0].skillMaster = {
+      offered: [{ id: 'counterMaster', level: 1 }],
+      chosenId: null,
+      completed: false,
+    };
+    const service = new ExploreSessionSyncService(gm);
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 1,
+          actionId: 'run_es_00005003',
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: gm.run.rooms[0].id,
+          actionSeq: 0,
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.match(result.reason, /Skill Master/);
+    assert.equal(result.rejectedSeq, 1);
+    assert.equal(gm.run.currentRoom, 0);
+    assert.equal(gm.run.roomActionSeq, 0);
+  });
+
   it('replays an exact duplicate actionId without rerunning the performer', async () => {
     const gm = makeGm();
     const originalProceed = gm.explorationService.applyExploreProceed.bind(gm.explorationService);
