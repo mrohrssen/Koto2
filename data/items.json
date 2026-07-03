@@ -1450,5 +1450,182 @@
     "stage": 1,
     "area": "evening-town",
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "karee",
+    "word": "カレー",
+    "reading": "カレー",
+    "nameEn": "Curry",
+    "meaning": "curry",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.30
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kudamono",
+    "word": "果物",
+    "reading": "くだもの",
+    "nameEn": "Fruit",
+    "meaning": "fruit",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "satou",
+    "word": "砂糖",
+    "reading": "さとう",
+    "nameEn": "Sugar",
+    "meaning": "sugar",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "suitou",
+    "word": "水筒",
+    "reading": "すいとう",
+    "nameEn": "Canteen",
+    "meaning": "water flask / canteen",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "houseki",
+    "word": "宝石",
+    "reading": "ほうせき",
+    "nameEn": "Gem",
+    "meaning": "gem / jewel",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "ranpu",
+    "word": "ランプ",
+    "reading": "ランプ",
+    "nameEn": "Lamp",
+    "meaning": "lamp",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "juutan",
+    "word": "絨毯",
+    "reading": "じゅうたん",
+    "nameEn": "Carpet",
+    "meaning": "carpet / rug",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tsubo",
+    "word": "壺",
+    "reading": "つぼ",
+    "nameEn": "Jar",
+    "meaning": "jar / pot",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kousui",
+    "word": "香水",
+    "reading": "こうすい",
+    "nameEn": "Perfume",
+    "meaning": "perfume",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "manto",
+    "word": "マント",
+    "reading": "マント",
+    "nameEn": "Cloak",
+    "meaning": "cloak / mantle",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
   }
 ]

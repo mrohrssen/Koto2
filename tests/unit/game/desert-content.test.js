@@ -53,3 +53,40 @@ describe('desert npcs', () => {
     });
   }
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'karee', word: 'カレー', category: 'food' },
+  { id: 'kudamono', word: '果物', category: 'food' },
+  { id: 'satou', word: '砂糖', category: 'food' },
+  { id: 'suitou', word: '水筒', category: 'equipment' },
+  { id: 'houseki', word: '宝石', category: 'equipment' },
+  { id: 'ranpu', word: 'ランプ', category: 'equipment' },
+  { id: 'juutan', word: '絨毯', category: 'equipment' },
+  { id: 'tsubo', word: '壺', category: 'equipment' },
+  { id: 'kousui', word: '香水', category: 'equipment' },
+  { id: 'manto', word: 'マント', category: 'equipment' }
+];
+
+describe('desert items', () => {
+  const desertItems = items.filter(i => i.area === 'desert');
+
+  it('has exactly the 10 approved items', () => {
+    assert.deepEqual(
+      desertItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = desertItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});
