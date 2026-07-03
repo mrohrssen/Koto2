@@ -594,5 +594,89 @@
     "shopGreetings": ["こんばんは！"],
     "defeatLine": "いい子ね！",
     "createdAt": "2026-07-03"
+  },
+  "shounin": {
+    "id": "shounin",
+    "name": "商人",
+    "nameEn": "Merchant",
+    "speakerId": 13,
+    "area": "desert",
+    "reading": "しょうにん",
+    "meaning": "merchant / trader",
+    "rank": 3700,
+    "attack": 22,
+    "skills": ["koukan"],
+    "personality": {
+      "traits": ["shrewd", "cheerful"],
+      "speechStyle": "Fast and persuasive.",
+      "quirk": "Weighs everything twice."
+    },
+    "greeting": "いらっしゃい！",
+    "shopGreetings": ["いらっしゃい！"],
+    "defeatLine": "交換しましょう！",
+    "createdAt": "2026-07-03"
+  },
+  "gakusha": {
+    "id": "gakusha",
+    "name": "学者",
+    "nameEn": "Scholar",
+    "speakerId": 9,
+    "area": "desert",
+    "reading": "がくしゃ",
+    "meaning": "scholar",
+    "rank": 6500,
+    "attack": 22,
+    "skills": ["mitsukeru"],
+    "personality": {
+      "traits": ["curious", "absent-minded"],
+      "speechStyle": "Excited and precise.",
+      "quirk": "Sketches every ruin they pass."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "面白い！",
+    "createdAt": "2026-07-03"
+  },
+  "tabibito": {
+    "id": "tabibito",
+    "name": "旅人",
+    "nameEn": "Traveler",
+    "speakerId": 12,
+    "area": "desert",
+    "reading": "たびびと",
+    "meaning": "traveler",
+    "rank": 8900,
+    "attack": 22,
+    "skills": ["yasumu"],
+    "personality": {
+      "traits": ["easygoing", "worn"],
+      "speechStyle": "Relaxed and wry.",
+      "quirk": "Can nap in any patch of shade."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "いい旅を！",
+    "createdAt": "2026-07-03"
+  },
+  "hime": {
+    "id": "hime",
+    "name": "姫",
+    "nameEn": "Princess",
+    "speakerId": 10,
+    "area": "desert",
+    "reading": "ひめ",
+    "meaning": "princess",
+    "rank": 3200,
+    "attack": 22,
+    "skills": ["annai"],
+    "personality": {
+      "traits": ["gracious", "adventurous"],
+      "speechStyle": "Elegant but eager.",
+      "quirk": "Keeps sneaking out of the palace."
+    },
+    "greeting": "ようこそ！",
+    "shopGreetings": ["ようこそ！"],
+    "defeatLine": "素晴らしい！",
+    "createdAt": "2026-07-03"
   }
 }
