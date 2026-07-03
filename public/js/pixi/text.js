@@ -13,6 +13,22 @@ const DAMAGE_COLORS = {
   poison: '#9C27B0',
 };
 
+// ============ TEXT TEARDOWN ============
+
+/**
+ * Destroy a uniquely-generated Text object AND its GPU texture.
+ *
+ * PIXI v8 Text auto-generates a texture per instance; a bare destroy()
+ * leaves that texture in GPU memory forever — invisible to JS-heap
+ * metrics and never reclaimed by textureGC. Every floating-text teardown
+ * must go through this helper (or pass the same options explicitly).
+ * Do NOT use for Sprites — creature/shadow sprites share cached textures
+ * that must survive.
+ */
+export function destroyText(t) {
+  t.destroy({ texture: true, textureSource: true });
+}
+
 // ============ DAMAGE NUMBERS ============
 
 /**
@@ -63,7 +79,7 @@ export async function showDamageNumber(amount, pos, { tier = 1, type = 'normal' 
     tween(text.scale, { x: 1, y: 1 }, { duration: 200, ease: 'easeOut' }),
   ]);
 
-  text.destroy();
+  destroyText(text);
 }
 
 // ============ GENERIC EVENT POPUP ============
@@ -100,7 +116,7 @@ export async function showEventPopup(message, pos, { color = '#FFFFFF', directio
 
   await tween(text, { y: pos.y + dy, alpha: 0 }, { duration, ease: 'easeOut' });
 
-  text.destroy();
+  destroyText(text);
 }
 
 // ============ POPUP PRESETS ============
