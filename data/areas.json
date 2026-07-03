@@ -256,5 +256,45 @@
     "background": "areas/evening-town/evening-town_01.webp",
     "stage": 1,
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "desert",
+    "name": "砂漠",
+    "nameEn": "Desert",
+    "reading": "さばく",
+    "rank": 8400,
+    "particle": "",
+    "parallaxId": "desert",
+    "modifierWord": "",
+    "modifierReading": "",
+    "modifierMeaning": "",
+    "modifierRank": null,
+    "locationWord": "砂漠",
+    "locationReading": "さばく",
+    "locationMeaning": "desert",
+    "locationRank": 8400,
+    "theme": "Golden dunes under a blazing sun — caravans, buried ruins, and a cool oasis at the heart of it.",
+    "creatures": [
+      "suna",
+      "hebi",
+      "tokage",
+      "suishou",
+      "ishi",
+      "hi",
+      "kaze"
+    ],
+    "bossCreatureId": "sunano-hebi",
+    "roomCount": 30,
+    "description": "A bright desert crossed by merchant caravans, where a great snake sleeps beneath the dunes.",
+    "tags": [
+      "desert",
+      "dunes",
+      "oasis",
+      "open"
+    ],
+    "subAreas": [],
+    "background": "areas/desert/desert_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]

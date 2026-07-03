@@ -37,7 +37,12 @@ const ALLOWED_AREA_PLACEMENTS = new Set([
   'evening-town:suraimu',
   'evening-town:goburin',
   'evening-town:nezumi',
-  'evening-town:boss:kageno-inu'
+  'evening-town:boss:kageno-inu',
+  'desert:suna',
+  'desert:hebi',
+  'desert:tokage',
+  'desert:suishou',
+  'desert:boss:sunano-hebi'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));
