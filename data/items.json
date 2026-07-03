@@ -2496,5 +2496,218 @@
     "stage": 1,
     "area": "snow-village",
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "takoyaki",
+    "word": "たこ焼き",
+    "reading": "たこやき",
+    "nameEn": "Takoyaki",
+    "meaning": "takoyaki (octopus dumplings)",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yakisoba",
+    "word": "焼きそば",
+    "reading": "やきそば",
+    "nameEn": "Yakisoba",
+    "meaning": "yakisoba (fried noodles)",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kakigoori",
+    "word": "かき氷",
+    "reading": "かきごおり",
+    "nameEn": "Shaved Ice",
+    "meaning": "shaved ice",
+    "category": "food",
+    "rarity": "rare",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.55
+    },
+    "description": "Heals all living creatures for 55% of max HP.",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hanabi",
+    "word": "花火",
+    "reading": "はなび",
+    "nameEn": "Fireworks",
+    "meaning": "fireworks",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "taiko",
+    "word": "太鼓",
+    "reading": "たいこ",
+    "nameEn": "Taiko",
+    "meaning": "drum / taiko",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 12
+    },
+    "description": "+12 base attack (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "men",
+    "word": "面",
+    "reading": "めん",
+    "nameEn": "Festival Mask",
+    "meaning": "face / mask",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kingyo",
+    "word": "金魚",
+    "reading": "きんぎょ",
+    "nameEn": "Goldfish",
+    "meaning": "goldfish",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 16
+    },
+    "description": "+16 base MP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kuji",
+    "word": "くじ",
+    "reading": "くじ",
+    "nameEn": "Raffle Ticket",
+    "meaning": "lot / lottery / raffle",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sensu",
+    "word": "扇子",
+    "reading": "せんす",
+    "nameEn": "Folding Fan",
+    "meaning": "folding fan",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "chouchin",
+    "word": "提灯",
+    "reading": "ちょうちん",
+    "nameEn": "Paper Lantern",
+    "meaning": "paper lantern",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "fuusen",
+    "word": "風船",
+    "reading": "ふうせん",
+    "nameEn": "Balloon",
+    "meaning": "balloon",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 8
+    },
+    "description": "+8 base HP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "fue",
+    "word": "笛",
+    "reading": "ふえ",
+    "nameEn": "Flute",
+    "meaning": "flute / whistle",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
   }
 ]

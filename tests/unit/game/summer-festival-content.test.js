@@ -56,3 +56,42 @@ describe('summer-festival npcs', () => {
     });
   }
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'takoyaki', word: 'たこ焼き', category: 'food' },
+  { id: 'yakisoba', word: '焼きそば', category: 'food' },
+  { id: 'kakigoori', word: 'かき氷', category: 'food' },
+  { id: 'hanabi', word: '花火', category: 'equipment' },
+  { id: 'taiko', word: '太鼓', category: 'equipment' },
+  { id: 'men', word: '面', category: 'equipment' },
+  { id: 'kingyo', word: '金魚', category: 'equipment' },
+  { id: 'kuji', word: 'くじ', category: 'equipment' },
+  { id: 'sensu', word: '扇子', category: 'equipment' },
+  { id: 'chouchin', word: '提灯', category: 'equipment' },
+  { id: 'fuusen', word: '風船', category: 'equipment' },
+  { id: 'fue', word: '笛', category: 'equipment' }
+];
+
+describe('summer-festival items', () => {
+  const festivalItems = items.filter(i => i.area === 'summer-festival');
+
+  it('has exactly the 12 approved items', () => {
+    assert.deepEqual(
+      festivalItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = festivalItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});
