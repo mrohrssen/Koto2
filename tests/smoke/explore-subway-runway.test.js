@@ -32,6 +32,13 @@ const DEV_USER = 'devtester';
 const DEV_PASS = 'test1234';
 const ROOMS_TIER = process.env.EXPLORE_SUBWAY_SMOKE === '1';
 const COMBAT_TIER = process.env.EXPLORE_SUBWAY_COMBAT === '1';
+// Verification aid (NOT a gate): force a deterministic layout containing a
+// speedReviewRoom via the existing debug-queue-rooms endpoint (proceedToNextRoom
+// pops the queued type on entry), so the speed-review takeover driver can be
+// exercised on demand. Layouts are otherwise random and speedReviewRoom is absent
+// from the random weights, so it is unreachable by chance. Off by default → the
+// gate still runs against a random layout.
+const FORCE_SPEED_REVIEW = process.env.EXPLORE_SUBWAY_FORCE_SPEED_REVIEW === '1';
 
 // devtester owns these; hi/mizu/ki is a valid 3-creature team.
 const DEV_TEAM = ['hi', 'mizu', 'ki'];
@@ -181,6 +188,51 @@ async function startExplorationRun(page) {
   return result;
 }
 
+/**
+ * Verification aid (NOT part of the gate): force a deterministic layout with a
+ * speedReviewRoom at an early, reached-ONLINE slot so the speed-review takeover
+ * driver can be exercised on demand. Uses the EXISTING test-room queue seam —
+ * proceedToNextRoom() pops one queued type per room advance and overrides the
+ * entered room (src/game/services/exploration-service.js) — via the existing
+ * debug-queue-rooms endpoint. No game-code seam is added; speedReviewRoom is
+ * simply absent from the random weights, so it never appears by chance.
+ *
+ * Consumption is 1 pop per proceed, starting at the SECOND room: room 0 is
+ * finalized on area entry (RNG, does not consume the queue), then queue[0] ->
+ * room 1, queue[1] -> room 2, etc. So speedReviewRoom at queue index 1 lands at
+ * room index 2 (badge "3/10") — in the online gap after the first offline window
+ * (armed at badge 2) restores and before the second (armed at badge 4). Verified
+ * deterministically before wiring. Must run BEFORE the run is created.
+ * No-op unless EXPLORE_SUBWAY_FORCE_SPEED_REVIEW=1.
+ */
+async function forceSpeedReviewLayout(page) {
+  const result = await page.evaluate(async () => {
+    const token = localStorage.getItem('authToken');
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+    const post = async (path, body) => {
+      const res = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body || {}) });
+      return { status: res.status, body: await res.json().catch(() => null) };
+    };
+    // debug-queue-rooms requires NODE_ENV=test OR server debug mode; dev is
+    // 'development', so enable debug mode first.
+    const dbg = await post('/api/game/debug-mode', { enabled: true });
+    if (dbg.status !== 200) return { error: `debug-mode ${dbg.status}`, detail: dbg.body };
+    // Exactly TWO queued rooms: queue[0] -> room 1 (a cheap shrine),
+    // queue[1] === speedReviewRoom -> room index 2 (badge 3/10). The queue pop
+    // replaces ANY entered room (including npcBattle/boss), and a long
+    // encounter-heavy queue inflates the fight count far past a random layout's
+    // (~10 fights vs ~5) — enough to exhaust MAX_INTERACTIONS across the two
+    // offline holds. Leaving the queue empty after the speed review keeps rooms
+    // 3+ on the normal random profile (npcBattle room 6 and boss room 10 intact).
+    const rooms = ['shrine', 'speedReviewRoom'];
+    const q = await post('/api/game/debug-queue-rooms', { rooms });
+    if (q.status !== 200) return { error: `debug-queue-rooms ${q.status}`, detail: q.body };
+    return { ok: true, rooms };
+  });
+  expect(result.error, `force layout failed: ${result.error} ${JSON.stringify(result.detail || {})}`).toBeUndefined();
+  return result;
+}
+
 /** Derive the current room type from client/server state (currentRoom is an int index). */
 function roomTypeFor(state) {
   const idx = state?.run?.currentRoom;
@@ -253,6 +305,7 @@ test.describe('explore subway full session', () => {
     page.on('pageerror', err => process.stdout.write(`[browser] PAGE ERROR: ${err.message}\n`));
 
     await login(page);
+    if (FORCE_SPEED_REVIEW) await forceSpeedReviewLayout(page);
     await startExplorationRun(page);
 
     // Reload so the client adopts the freshly-created run + exploreRunway.
@@ -337,6 +390,120 @@ test.describe('explore subway full session', () => {
     }
 
     /**
+     * Flip and grade the card in ONE specific slot (#speed-review-slot-{index}),
+     * grading `right` = "knew it" or left = "didn't know". A plain click flips it
+     * (`.flipped`); once flipped, the card's own handler grades on a click in the
+     * left (<40% width) or right (>60% width) region — a deterministic region
+     * CLICK (no drag-threshold flake in WebKit), with a mouse-swipe fallback if
+     * the card is somehow still present. Returns true only if a card was graded.
+     *
+     * IMPORTANT: the server validates commits against a canonical snapshot order
+     * (snapshotWordKeys[commitIndex] === word); the 3 slots display consecutive
+     * snapshot words (slot0=w0, slot1=w1, slot2=w2, refilling w3,w4,w5…). The
+     * caller therefore grades slots strictly 0→1→2→0→1→2 so commits land in
+     * snapshot order — grading a single slot repeatedly commits w0,w3,w6… out of
+     * order and the server rejects with 409 "Commit does not match snapshot".
+     */
+    async function gradeSpeedReviewSlot(index, right) {
+      const cardSel = `#speed-review-slot-${index} .flash-card`;
+      let card = page.locator(cardSel).first();
+      if (!(await card.count())) return false;
+      const flipped = await card.evaluate(el => el.classList.contains('flipped')).catch(() => false);
+      if (!flipped) {
+        await card.click().catch(() => {});
+        await page.waitForTimeout(120);
+      }
+      const box = await card.boundingBox().catch(() => null);
+      if (!box) return false;
+      const cy = box.y + box.height / 2;
+      const gx = box.x + box.width * (right ? 0.82 : 0.18);
+      await page.mouse.click(gx, cy).catch(() => {});
+      await page.waitForTimeout(180);
+      // Fallback swipe if the grade click didn't take the card away.
+      card = page.locator(cardSel).first();
+      if (await card.count()) {
+        const still = await card.evaluate(el => el.classList.contains('flipped')).catch(() => false);
+        if (still) {
+          const b2 = await card.boundingBox().catch(() => null);
+          if (b2) {
+            const ccx = b2.x + b2.width / 2;
+            const ccy = b2.y + b2.height / 2;
+            await page.mouse.move(ccx, ccy);
+            await page.mouse.down();
+            await page.mouse.move(ccx + (right ? 200 : -200), ccy, { steps: 12 });
+            await page.mouse.up();
+            await page.waitForTimeout(180);
+          }
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Drive a speed-review ROOM takeover to completion. In room mode the deck is
+     * a fixed (≤10) card set, close is locked until every card is committed
+     * (canCloseEarly:false), and each commit is a server round-trip, so this only
+     * runs ONLINE. Grade slots in snapshot order (0→1→2, alternating knew-it /
+     * didn't-know) until the takeover auto-closes on completion (handleCompletion
+     * → takeover.close), the close unlocks (`speed-review-close-ready`) and we
+     * click it, or a commit-sync retry surfaces and we click it. Counts the room
+     * once in played.supportActions and asserts the takeover actually closes — a
+     * stuck locked takeover soft-locks the run and is a real failure.
+     */
+    async function driveSpeedReviewRoom() {
+      const viewSel = '#speed-review-view';
+      const closeSel = `${viewSel} .takeover-close`;
+      const cardSel = '#speed-review-content .speed-review-slot .flash-card';
+      let gradeParity = 0;
+      let idleStreak = 0;
+      // 24 passes >> the ≤10-card deck (each pass grades up to 3 slots).
+      for (let i = 0; i < 24; i += 1) {
+        const stillActive = await page.locator(`${viewSel}.active`).count().catch(() => 0);
+        if (!stillActive) break; // room completed and closed itself.
+
+        // Commit-sync retry panel (a per-card commit failed) → retry.
+        const retry = page.locator('#speed-review-room-retry-btn');
+        if (await retry.count().catch(() => 0)) {
+          await retry.click().catch(() => {});
+          await page.waitForTimeout(500);
+          continue;
+        }
+
+        // Close unlocked (all committed) → close and finish.
+        const closeCls = await page.locator(closeSel).first().getAttribute('class').catch(() => '') || '';
+        if (closeCls.includes('speed-review-close-ready')) {
+          await page.locator(closeSel).first().click().catch(() => {});
+          await page.waitForTimeout(500);
+          continue;
+        }
+
+        // Grade slots 0→1→2 in order so commits arrive in snapshot order.
+        let gradedThisPass = false;
+        for (let slot = 0; slot < 3; slot += 1) {
+          if (await page.locator(`#speed-review-slot-${slot} .flash-card`).count().catch(() => 0)) {
+            const graded = await gradeSpeedReviewSlot(slot, gradeParity % 2 === 0);
+            if (graded) { gradedThisPass = true; gradeParity += 1; }
+            // Let this card's commit land before grading the next slot, keeping the
+            // serialized commit chain strictly in snapshot order.
+            await page.waitForTimeout(160);
+          }
+        }
+        if (gradedThisPass) {
+          idleStreak = 0;
+        } else if (await page.locator(cardSel).count().catch(() => 0) === 0) {
+          // No cards anywhere (last commit / completion settling) — yield.
+          idleStreak += 1;
+          await page.waitForTimeout(400);
+          if (idleStreak >= 8) break;
+        }
+      }
+      await page.waitForTimeout(500);
+      const stillOpen = await page.locator(`${viewSel}.active`).count().catch(() => 0);
+      expect(stillOpen, 'speed-review takeover should close after its deck is committed').toBe(0);
+      played.supportActions += 1;
+    }
+
+    /**
      * Snapshot every decision-relevant DOM signal in ONE evaluate. Purely
      * DOM-based so it works offline (server /state is unreachable while the API
      * is routed to abort, and there is no in-page __gameState seam to fall back
@@ -391,12 +558,23 @@ test.describe('explore subway full session', () => {
         return 'paused';
       }
 
-      // 1.5) A takeover overlay (speed-review room, settings, etc.) is active
-      // and covers the action area. Try to close it (its × button); a speed-
-      // review ROOM takeover locks close until reviews are committed — that is a
-      // minigame this harness does not model (out of scope), so fail with a
-      // precise message rather than looping or false-firing the blank-area check.
+      // 1.5) A takeover overlay is active and covers the action area.
+      //   - The speed-review ROOM takeover locks close until its 10-card deck is
+      //     committed (each commit is a server round-trip). We model it: flip+swipe
+      //     the cards until it auto-closes / unlocks. Rooms tier holds while offline
+      //     (commits can't land), mirroring the combat-door soft pause.
+      //   - Any other closable takeover (settings, etc.) → close it.
+      //   - A genuinely unmodeled, non-closable takeover → fail with a precise message.
       if (d.takeoverActive) {
+        // Identify by takeover id ONLY — the "Cards Reviewed" copy is not a safe
+        // signal (the speed-review view hides via transform, not display:none, so
+        // its text is always present in body.innerText even when inactive).
+        const isSpeedReview = d.takeoverId === 'speed-review-view';
+        if (isSpeedReview) {
+          if (offline && !COMBAT_TIER) { await page.waitForTimeout(1000); return 'speed-review-offline-wait'; }
+          await driveSpeedReviewRoom();
+          return 'speed-review';
+        }
         const closeBtn = page.locator(`#${d.takeoverId} .takeover-close`).first();
         const closable = (await closeBtn.count())
           && !(await closeBtn.getAttribute('class').catch(() => '') || '').includes('speed-review-close-locked');
@@ -407,9 +585,9 @@ test.describe('explore subway full session', () => {
         }
         expect(
           false,
-          `active takeover "${d.takeoverId}" cannot be closed — an unmodeled takeover room `
-          + `(likely a speed-review room whose close is locked until completion); `
-          + `driving this minigame is out of the harness's scope (offline=${offline})`,
+          `active takeover "${d.takeoverId}" cannot be closed and is not a modeled `
+          + `speed-review room — an unmodeled takeover is out of the harness's scope `
+          + `(offline=${offline})`,
         ).toBeTruthy();
         return 'takeover-blocked';
       }
