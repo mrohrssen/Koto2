@@ -846,5 +846,89 @@
     "shopGreetings": ["こんにちは！"],
     "defeatLine": "お大事に！",
     "createdAt": "2026-07-03"
+  },
+  "senshu": {
+    "id": "senshu",
+    "name": "選手",
+    "nameEn": "Athlete",
+    "speakerId": 12,
+    "area": "frozen-lake",
+    "reading": "せんしゅ",
+    "meaning": "athlete / player",
+    "rank": 3600,
+    "attack": 28,
+    "skills": ["suberu"],
+    "personality": {
+      "traits": ["energetic", "competitive"],
+      "speechStyle": "Fast and breathless.",
+      "quirk": "Practices spins between battles."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "速いですね！",
+    "createdAt": "2026-07-03"
+  },
+  "ryourinin": {
+    "id": "ryourinin",
+    "name": "料理人",
+    "nameEn": "Cook",
+    "speakerId": 13,
+    "area": "frozen-lake",
+    "reading": "りょうりにん",
+    "meaning": "cook / chef",
+    "rank": 8600,
+    "attack": 28,
+    "skills": ["mazeru"],
+    "personality": {
+      "traits": ["hearty", "generous"],
+      "speechStyle": "Warm and loud.",
+      "quirk": "Ladles out seconds uninvited."
+    },
+    "greeting": "いらっしゃい！",
+    "shopGreetings": ["いらっしゃい！"],
+    "defeatLine": "スープをどうぞ！",
+    "createdAt": "2026-07-03"
+  },
+  "gaka": {
+    "id": "gaka",
+    "name": "画家",
+    "nameEn": "Painter",
+    "speakerId": 9,
+    "area": "frozen-lake",
+    "reading": "がか",
+    "meaning": "painter / artist",
+    "rank": 10800,
+    "attack": 28,
+    "skills": ["egaku"],
+    "personality": {
+      "traits": ["quiet", "observant"],
+      "speechStyle": "Half to themselves.",
+      "quirk": "Paints on with numb fingers."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "絵になりますね！",
+    "createdAt": "2026-07-03"
+  },
+  "ryoushi_frozen_lake": {
+    "id": "ryoushi_frozen_lake",
+    "name": "漁師",
+    "nameEn": "Fisherman",
+    "speakerId": 13,
+    "area": "frozen-lake",
+    "reading": "りょうし",
+    "meaning": "fisherman",
+    "rank": 12700,
+    "attack": 28,
+    "skills": ["matsu"],
+    "personality": {
+      "traits": ["patient", "weathered"],
+      "speechStyle": "Slow and sure.",
+      "quirk": "Came inland when the sea froze over."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "いい魚ですね！",
+    "createdAt": "2026-07-03"
   }
 }
