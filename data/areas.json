@@ -431,5 +431,48 @@
     "background": "areas/frozen-lake/frozen-lake_01.webp",
     "stage": 1,
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "snow-village",
+    "name": "雪の村",
+    "nameEn": "Snow Village",
+    "reading": "ゆきのむら",
+    "rank": 1500,
+    "particle": "の",
+    "parallaxId": "snow-village",
+    "modifierWord": {
+      "word": "雪",
+      "reading": "ゆき",
+      "meaning": "snow",
+      "rank": 1800
+    },
+    "locationWord": {
+      "word": "村",
+      "reading": "むら",
+      "meaning": "village",
+      "rank": 1500
+    },
+    "theme": "A snow-covered hot-spring village — steam over the baths, warm lanterns, and snow monkeys soaking at dusk.",
+    "creatures": [
+      "yuki",
+      "kitsune",
+      "saru",
+      "hitsuji",
+      "koori",
+      "tsuru"
+    ],
+    "bossCreatureId": "yukino-kitsune",
+    "roomCount": 30,
+    "description": "A cozy onsen village deep in the snow, watched over by a white fox spirit.",
+    "tags": [
+      "village",
+      "snow",
+      "onsen",
+      "cozy"
+    ],
+    "subAreas": [],
+    "background": "areas/snow-village/snow-village_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]

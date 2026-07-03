@@ -62,7 +62,14 @@ const ALLOWED_AREA_PLACEMENTS = new Set([
   'frozen-lake:kuma',
   'frozen-lake:tsuru',
   'frozen-lake:kamo',
-  'frozen-lake:boss:koorino-kuma'
+  'frozen-lake:boss:koorino-kuma',
+  'snow-village:yuki',
+  'snow-village:kitsune',
+  'snow-village:saru',
+  'snow-village:hitsuji',
+  'snow-village:koori',
+  'snow-village:tsuru',
+  'snow-village:boss:yukino-kitsune'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));
