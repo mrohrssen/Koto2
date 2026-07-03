@@ -510,5 +510,89 @@
     "shopGreetings": ["こんにちは！"],
     "defeatLine": "宝をどうぞ！",
     "createdAt": "2026-07-03"
+  },
+  "tenin": {
+    "id": "tenin",
+    "name": "店員",
+    "nameEn": "Shop Clerk",
+    "speakerId": 12,
+    "area": "evening-town",
+    "reading": "てんいん",
+    "meaning": "shop assistant / clerk",
+    "rank": 3400,
+    "attack": 20,
+    "skills": ["uru"],
+    "personality": {
+      "traits": ["polite", "efficient"],
+      "speechStyle": "Crisp and courteous.",
+      "quirk": "Counts change at lightning speed."
+    },
+    "greeting": "いらっしゃいませ！",
+    "shopGreetings": ["いらっしゃいませ！"],
+    "defeatLine": "またどうぞ！",
+    "createdAt": "2026-07-03"
+  },
+  "panya": {
+    "id": "panya",
+    "name": "パン屋",
+    "nameEn": "Baker",
+    "speakerId": 13,
+    "area": "evening-town",
+    "reading": "パンや",
+    "meaning": "bakery / baker",
+    "rank": 14600,
+    "attack": 20,
+    "skills": ["tsutsumu"],
+    "personality": {
+      "traits": ["warm", "generous"],
+      "speechStyle": "Hearty and floury.",
+      "quirk": "Always smells of fresh bread."
+    },
+    "greeting": "いらっしゃい！",
+    "shopGreetings": ["いらっしゃい！"],
+    "defeatLine": "パンをどうぞ！",
+    "createdAt": "2026-07-03"
+  },
+  "keisatsukan": {
+    "id": "keisatsukan",
+    "name": "警察官",
+    "nameEn": "Police Officer",
+    "speakerId": 51,
+    "area": "evening-town",
+    "reading": "けいさつかん",
+    "meaning": "police officer",
+    "rank": 7300,
+    "attack": 20,
+    "skills": ["sagasu"],
+    "personality": {
+      "traits": ["kind", "watchful"],
+      "speechStyle": "Calm and reassuring.",
+      "quirk": "Knows every alley cat by name."
+    },
+    "greeting": "こんばんは！",
+    "shopGreetings": ["こんばんは！"],
+    "defeatLine": "気をつけてね！",
+    "createdAt": "2026-07-03"
+  },
+  "obaasan": {
+    "id": "obaasan",
+    "name": "おばあさん",
+    "nameEn": "Grandmother",
+    "speakerId": 10,
+    "area": "evening-town",
+    "reading": "おばあさん",
+    "meaning": "grandmother / elderly woman",
+    "rank": 10500,
+    "attack": 20,
+    "skills": ["kau"],
+    "personality": {
+      "traits": ["sweet", "chatty"],
+      "speechStyle": "Slow and doting.",
+      "quirk": "Feeds snacks to the stray dogs."
+    },
+    "greeting": "こんばんは！",
+    "shopGreetings": ["こんばんは！"],
+    "defeatLine": "いい子ね！",
+    "createdAt": "2026-07-03"
   }
 }
