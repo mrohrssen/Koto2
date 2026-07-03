@@ -15371,5 +15371,523 @@
       "子"
     ],
     "group": "obaasan_defeatLine"
+  },
+  {
+    "id": "npc_shounin_fightStart_houseki",
+    "category": "npc",
+    "raw": "宝石を交換します！",
+    "tokens": [
+      {
+        "surface": "宝石",
+        "base": "宝石",
+        "reading": "ほうせき",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "交換",
+        "base": "交換",
+        "reading": "こうかん",
+        "pos": "Noun",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      },
+      {
+        "surface": "し",
+        "reading": "し",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "します",
+            "tokenStart": 3,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "します",
+            "tokenStart": 3,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
+      }
+    ],
+    "words": [
+      "宝石",
+      "交換"
+    ],
+    "group": "shounin_fightStart"
+  },
+  {
+    "id": "npc_shounin_defeatLine_koukan",
+    "category": "npc",
+    "raw": "交換しましょう！",
+    "tokens": [
+      {
+        "surface": "交換",
+        "base": "交換",
+        "reading": "こうかん",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "し",
+        "reading": "し",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-mashou",
+            "title": "ましょう",
+            "meaning": "let's / shall we",
+            "shortExplanation": "Suggests doing something together.",
+            "displayPattern": "Verb stem + ましょう",
+            "readingOverride": "",
+            "matchedText": "しましょう",
+            "tokenStart": 1,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "ましょう",
+        "reading": "ましょう",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-mashou",
+            "title": "ましょう",
+            "meaning": "let's / shall we",
+            "shortExplanation": "Suggests doing something together.",
+            "displayPattern": "Verb stem + ましょう",
+            "readingOverride": "",
+            "matchedText": "しましょう",
+            "tokenStart": 1,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
+      }
+    ],
+    "words": [
+      "交換"
+    ],
+    "group": "shounin_defeatLine"
+  },
+  {
+    "id": "npc_gakusha_fightStart_mitsuketa",
+    "category": "npc",
+    "raw": "見つけました！",
+    "tokens": [
+      {
+        "surface": "見つけ",
+        "base": "見つける",
+        "reading": "みつけ",
+        "pos": "Verb",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "見つけまし",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "まし",
+        "reading": "まし",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "見つけまし",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "た",
+        "reading": "た",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
+      }
+    ],
+    "words": [
+      "見つける"
+    ],
+    "group": "gakusha_fightStart"
+  },
+  {
+    "id": "npc_gakusha_defeatLine_omoshiroi",
+    "category": "npc",
+    "raw": "面白い！",
+    "tokens": [
+      {
+        "surface": "面白い",
+        "base": "面白い",
+        "reading": "おもしろい",
+        "pos": "Adjective",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective",
+            "title": "い-Adjective",
+            "meaning": "i-adjective",
+            "shortExplanation": "Names the class of adjectives that usually end in い.",
+            "displayPattern": "い-adjective",
+            "readingOverride": "",
+            "matchedText": "面白い",
+            "tokenStart": 0,
+            "tokenEnd": 0
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1
+      }
+    ],
+    "words": [
+      "面白い"
+    ],
+    "group": "gakusha_defeatLine"
+  },
+  {
+    "id": "npc_tabibito_fightStart_oasisu",
+    "category": "npc",
+    "raw": "オアシスで休みます！",
+    "tokens": [
+      {
+        "surface": "オアシス",
+        "base": "オアシス",
+        "reading": "おあしす",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "で",
+        "reading": "で",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-de-location",
+            "title": "で",
+            "meaning": "at / in",
+            "shortExplanation": "Marks where an action happens.",
+            "displayPattern": "Place + で + Verb",
+            "readingOverride": "",
+            "matchedText": "で",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          },
+          {
+            "grammarId": "n5-de-means",
+            "title": "で",
+            "meaning": "with / by using",
+            "shortExplanation": "Marks the tool, method, or material used for an action.",
+            "displayPattern": "Noun + で + Verb",
+            "readingOverride": "",
+            "matchedText": "で",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "休み",
+        "base": "休む",
+        "reading": "やすみ",
+        "pos": "Verb",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "休みます",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "休みます",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
+      }
+    ],
+    "words": [
+      "オアシス",
+      "休む"
+    ],
+    "group": "tabibito_fightStart"
+  },
+  {
+    "id": "npc_tabibito_defeatLine_iitabi",
+    "category": "npc",
+    "raw": "いい旅を！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい旅",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "旅",
+        "base": "旅",
+        "reading": "たび",
+        "pos": "Noun",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい旅",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
+      }
+    ],
+    "words": [
+      "いい",
+      "旅"
+    ],
+    "group": "tabibito_defeatLine"
+  },
+  {
+    "id": "npc_hime_fightStart_annai",
+    "category": "npc",
+    "raw": "案内しましょう！",
+    "tokens": [
+      {
+        "surface": "案内",
+        "base": "案内",
+        "reading": "あんない",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "し",
+        "reading": "し",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-mashou",
+            "title": "ましょう",
+            "meaning": "let's / shall we",
+            "shortExplanation": "Suggests doing something together.",
+            "displayPattern": "Verb stem + ましょう",
+            "readingOverride": "",
+            "matchedText": "しましょう",
+            "tokenStart": 1,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "ましょう",
+        "reading": "ましょう",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-mashou",
+            "title": "ましょう",
+            "meaning": "let's / shall we",
+            "shortExplanation": "Suggests doing something together.",
+            "displayPattern": "Verb stem + ましょう",
+            "readingOverride": "",
+            "matchedText": "しましょう",
+            "tokenStart": 1,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
+      }
+    ],
+    "words": [
+      "案内"
+    ],
+    "group": "hime_fightStart"
+  },
+  {
+    "id": "npc_hime_defeatLine_subarashii",
+    "category": "npc",
+    "raw": "素晴らしい！",
+    "tokens": [
+      {
+        "surface": "素晴らしい",
+        "base": "素晴らしい",
+        "reading": "すばらしい",
+        "pos": "Adjective",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective",
+            "title": "い-Adjective",
+            "meaning": "i-adjective",
+            "shortExplanation": "Names the class of adjectives that usually end in い.",
+            "displayPattern": "い-adjective",
+            "readingOverride": "",
+            "matchedText": "素晴らしい",
+            "tokenStart": 0,
+            "tokenEnd": 0
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1
+      }
+    ],
+    "words": [
+      "素晴らしい"
+    ],
+    "group": "hime_defeatLine"
   }
 ]

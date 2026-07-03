@@ -1409,5 +1409,61 @@
     "group": "obaasan_defeatLine",
     "raw": "いい子ね！",
     "slots": []
+  },
+  {
+    "id": "npc_shounin_fightStart_houseki",
+    "category": "npc",
+    "group": "shounin_fightStart",
+    "raw": "宝石を交換します！",
+    "slots": []
+  },
+  {
+    "id": "npc_shounin_defeatLine_koukan",
+    "category": "npc",
+    "group": "shounin_defeatLine",
+    "raw": "交換しましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_gakusha_fightStart_mitsuketa",
+    "category": "npc",
+    "group": "gakusha_fightStart",
+    "raw": "見つけました！",
+    "slots": []
+  },
+  {
+    "id": "npc_gakusha_defeatLine_omoshiroi",
+    "category": "npc",
+    "group": "gakusha_defeatLine",
+    "raw": "面白い！",
+    "slots": []
+  },
+  {
+    "id": "npc_tabibito_fightStart_oasisu",
+    "category": "npc",
+    "group": "tabibito_fightStart",
+    "raw": "オアシスで休みます！",
+    "slots": []
+  },
+  {
+    "id": "npc_tabibito_defeatLine_iitabi",
+    "category": "npc",
+    "group": "tabibito_defeatLine",
+    "raw": "いい旅を！",
+    "slots": []
+  },
+  {
+    "id": "npc_hime_fightStart_annai",
+    "category": "npc",
+    "group": "hime_fightStart",
+    "raw": "案内しましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_hime_defeatLine_subarashii",
+    "category": "npc",
+    "group": "hime_defeatLine",
+    "raw": "素晴らしい！",
+    "slots": []
   }
 ]
