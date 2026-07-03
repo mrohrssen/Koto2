@@ -15889,5 +15889,699 @@
       "素晴らしい"
     ],
     "group": "hime_defeatLine"
+  },
+  {
+    "id": "npc_hakase_fightStart_hoshi",
+    "category": "npc",
+    "raw": "星を見上げます！",
+    "tokens": [
+      {
+        "surface": "星",
+        "base": "星",
+        "reading": "ほし",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "見",
+        "base": "見る",
+        "reading": "み",
+        "pos": "Verb",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      },
+      {
+        "surface": "上げ",
+        "base": "上げる",
+        "reading": "あげ",
+        "pos": "Verb",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "上げます",
+            "tokenStart": 3,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "上げます",
+            "tokenStart": 3,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
+      }
+    ],
+    "words": [
+      "星",
+      "見る",
+      "上げる"
+    ],
+    "group": "hakase_fightStart"
+  },
+  {
+    "id": "npc_hakase_defeatLine_kirei",
+    "category": "npc",
+    "raw": "星がきれいですね。",
+    "tokens": [
+      {
+        "surface": "星",
+        "base": "星",
+        "reading": "ほし",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "が",
+        "reading": "が",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ga-subject",
+            "title": "が",
+            "meaning": "subject marker",
+            "shortExplanation": "Marks the subject or the thing being identified.",
+            "displayPattern": "Noun + が",
+            "readingOverride": "",
+            "matchedText": "が",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "きれい",
+        "base": "きれい",
+        "reading": "きれい",
+        "pos": "Na-adjective",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-na-adjective",
+            "title": "な-Adjective",
+            "meaning": "na-adjective",
+            "shortExplanation": "Names the class of adjective-like nouns that use な before nouns.",
+            "displayPattern": "な-adjective",
+            "readingOverride": "",
+            "matchedText": "きれい",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "です",
+        "reading": "です",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-desu-copula",
+            "title": "です",
+            "meaning": "to be / is",
+            "shortExplanation": "Marks a polite statement that something is something.",
+            "displayPattern": "Noun + です",
+            "readingOverride": "",
+            "matchedText": "です",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ね",
+        "reading": "ね",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ne-confirmation",
+            "title": "ね",
+            "meaning": "right? / isn't it?",
+            "shortExplanation": "Invites agreement or shared feeling from the listener.",
+            "displayPattern": "Sentence + ね",
+            "readingOverride": "",
+            "matchedText": "ね",
+            "tokenStart": 4,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "。",
+        "reading": "。",
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
+      }
+    ],
+    "words": [
+      "星",
+      "きれい"
+    ],
+    "group": "hakase_defeatLine"
+  },
+  {
+    "id": "npc_majo_fightStart_uranai",
+    "category": "npc",
+    "raw": "占いましょう！",
+    "tokens": [
+      {
+        "surface": "占い",
+        "base": "占う",
+        "reading": "うらない",
+        "pos": "Verb",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-mashou",
+            "title": "ましょう",
+            "meaning": "let's / shall we",
+            "shortExplanation": "Suggests doing something together.",
+            "displayPattern": "Verb stem + ましょう",
+            "readingOverride": "",
+            "matchedText": "占いましょう",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "ましょう",
+        "reading": "ましょう",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-mashou",
+            "title": "ましょう",
+            "meaning": "let's / shall we",
+            "shortExplanation": "Suggests doing something together.",
+            "displayPattern": "Verb stem + ましょう",
+            "readingOverride": "",
+            "matchedText": "占いましょう",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      }
+    ],
+    "words": [
+      "占う"
+    ],
+    "group": "majo_fightStart"
+  },
+  {
+    "id": "npc_majo_defeatLine_mahou",
+    "category": "npc",
+    "raw": "いい魔法ね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい魔法",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "魔法",
+        "base": "魔法",
+        "reading": "まほう",
+        "pos": "Noun",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい魔法",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "ね",
+        "reading": "ね",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ne-confirmation",
+            "title": "ね",
+            "meaning": "right? / isn't it?",
+            "shortExplanation": "Invites agreement or shared feeling from the listener.",
+            "displayPattern": "Sentence + ね",
+            "readingOverride": "",
+            "matchedText": "ね",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
+      }
+    ],
+    "words": [
+      "いい",
+      "魔法"
+    ],
+    "group": "majo_defeatLine"
+  },
+  {
+    "id": "npc_shijin_fightStart_yoru",
+    "category": "npc",
+    "raw": "夜の話を語ります！",
+    "tokens": [
+      {
+        "surface": "夜",
+        "base": "夜",
+        "reading": "よる",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "の",
+        "reading": "の",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-no-possessive",
+            "title": "の",
+            "meaning": "of / belonging to",
+            "shortExplanation": "Links two nouns so the first describes or owns the second.",
+            "displayPattern": "Noun + の + Noun",
+            "readingOverride": "",
+            "matchedText": "の",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "話",
+        "base": "話",
+        "reading": "はなし",
+        "pos": "Noun",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "語り",
+        "base": "語る",
+        "reading": "かたり",
+        "pos": "Verb",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "語ります",
+            "tokenStart": 4,
+            "tokenEnd": 5
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "語ります",
+            "tokenStart": 4,
+            "tokenEnd": 5
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 6,
+        "rawTokenEnd": 6
+      }
+    ],
+    "words": [
+      "夜",
+      "話",
+      "語る"
+    ],
+    "group": "shijin_fightStart"
+  },
+  {
+    "id": "npc_shijin_defeatLine_hanashi",
+    "category": "npc",
+    "raw": "いい話ですね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい話",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "話",
+        "base": "話",
+        "reading": "はなし",
+        "pos": "Noun",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい話",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "です",
+        "reading": "です",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-desu-copula",
+            "title": "です",
+            "meaning": "to be / is",
+            "shortExplanation": "Marks a polite statement that something is something.",
+            "displayPattern": "Noun + です",
+            "readingOverride": "",
+            "matchedText": "です",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "ね",
+        "reading": "ね",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ne-confirmation",
+            "title": "ね",
+            "meaning": "right? / isn't it?",
+            "shortExplanation": "Invites agreement or shared feeling from the listener.",
+            "displayPattern": "Sentence + ね",
+            "readingOverride": "",
+            "matchedText": "ね",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
+      }
+    ],
+    "words": [
+      "いい",
+      "話"
+    ],
+    "group": "shijin_defeatLine"
+  },
+  {
+    "id": "npc_boukensha_fightStart_jikan",
+    "category": "npc",
+    "raw": "冒険の時間だ！",
+    "tokens": [
+      {
+        "surface": "冒険",
+        "base": "冒険",
+        "reading": "ぼうけん",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "の",
+        "reading": "の",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-no-possessive",
+            "title": "の",
+            "meaning": "of / belonging to",
+            "shortExplanation": "Links two nouns so the first describes or owns the second.",
+            "displayPattern": "Noun + の + Noun",
+            "readingOverride": "",
+            "matchedText": "の",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "時間",
+        "base": "時間",
+        "reading": "じかん",
+        "pos": "Noun",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      },
+      {
+        "surface": "だ",
+        "reading": "だ",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-da-copula",
+            "title": "だ",
+            "meaning": "to be / is",
+            "shortExplanation": "Marks a plain statement that something is something.",
+            "displayPattern": "Noun + だ",
+            "readingOverride": "",
+            "matchedText": "だ",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
+      }
+    ],
+    "words": [
+      "冒険",
+      "時間"
+    ],
+    "group": "boukensha_fightStart"
+  },
+  {
+    "id": "npc_boukensha_defeatLine_mata",
+    "category": "npc",
+    "raw": "また冒険しよう！",
+    "tokens": [
+      {
+        "surface": "また",
+        "base": "また",
+        "reading": "また",
+        "pos": "Conjunction",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 0,
+            "tokenEnd": 0
+          }
+        ]
+      },
+      {
+        "surface": "冒険",
+        "base": "冒険",
+        "reading": "ぼうけん",
+        "pos": "Noun",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1
+      },
+      {
+        "surface": "しよう",
+        "reading": "しよう",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l03-09-verb",
+            "title": "Verb[よう]",
+            "meaning": "Volitional)Let's, I shall (Casual volitional)",
+            "shortExplanation": "Adds the idea of volitional)Let's, I shall (Casual volitional) to the sentence.",
+            "displayPattern": "Verb[よう]",
+            "readingOverride": "",
+            "matchedText": "しよう",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          },
+          {
+            "grammarId": "n5-suru",
+            "title": "する",
+            "meaning": "do / make into",
+            "shortExplanation": "Uses する as the basic verb do or make.",
+            "displayPattern": "する",
+            "readingOverride": "",
+            "matchedText": "しよう",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
+      }
+    ],
+    "words": [
+      "また",
+      "冒険"
+    ],
+    "group": "boukensha_defeatLine"
   }
 ]

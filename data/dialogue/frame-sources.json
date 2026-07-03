@@ -1465,5 +1465,61 @@
     "group": "hime_defeatLine",
     "raw": "素晴らしい！",
     "slots": []
+  },
+  {
+    "id": "npc_hakase_fightStart_hoshi",
+    "category": "npc",
+    "group": "hakase_fightStart",
+    "raw": "星を見上げます！",
+    "slots": []
+  },
+  {
+    "id": "npc_hakase_defeatLine_kirei",
+    "category": "npc",
+    "group": "hakase_defeatLine",
+    "raw": "星がきれいですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_majo_fightStart_uranai",
+    "category": "npc",
+    "group": "majo_fightStart",
+    "raw": "占いましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_majo_defeatLine_mahou",
+    "category": "npc",
+    "group": "majo_defeatLine",
+    "raw": "いい魔法ね！",
+    "slots": []
+  },
+  {
+    "id": "npc_shijin_fightStart_yoru",
+    "category": "npc",
+    "group": "shijin_fightStart",
+    "raw": "夜の話を語ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_shijin_defeatLine_hanashi",
+    "category": "npc",
+    "group": "shijin_defeatLine",
+    "raw": "いい話ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_boukensha_fightStart_jikan",
+    "category": "npc",
+    "group": "boukensha_fightStart",
+    "raw": "冒険の時間だ！",
+    "slots": []
+  },
+  {
+    "id": "npc_boukensha_defeatLine_mata",
+    "category": "npc",
+    "group": "boukensha_defeatLine",
+    "raw": "また冒険しよう！",
+    "slots": []
   }
 ]
