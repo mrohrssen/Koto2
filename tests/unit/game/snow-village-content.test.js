@@ -52,3 +52,43 @@ describe('snow-village npcs', () => {
     });
   }
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'udon', word: 'うどん', category: 'food' },
+  { id: 'nabe', word: '鍋', category: 'food' },
+  { id: 'dango', word: '団子', category: 'food' },
+  { id: 'oyu', word: 'お湯', category: 'food' },
+  { id: 'taoru', word: 'タオル', category: 'equipment' },
+  { id: 'yukata', word: '浴衣', category: 'equipment' },
+  { id: 'obi', word: '帯', category: 'equipment' },
+  { id: 'sekken', word: '石鹸', category: 'equipment' },
+  { id: 'makura', word: '枕', category: 'equipment' },
+  { id: 'futon', word: '布団', category: 'equipment' },
+  { id: 'oke', word: '桶', category: 'equipment' },
+  { id: 'geta', word: '下駄', category: 'equipment' },
+  { id: 'tatami', word: '畳', category: 'equipment' }
+];
+
+describe('snow-village items', () => {
+  const villageItems = items.filter(i => i.area === 'snow-village');
+
+  it('has exactly the 13 approved items', () => {
+    assert.deepEqual(
+      villageItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = villageItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});

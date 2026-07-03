@@ -2266,5 +2266,235 @@
     "stage": 1,
     "area": "frozen-lake",
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "udon",
+    "word": "うどん",
+    "reading": "うどん",
+    "nameEn": "Udon",
+    "meaning": "udon (thick wheat noodles)",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "nabe",
+    "word": "鍋",
+    "reading": "なべ",
+    "nameEn": "Hotpot",
+    "meaning": "pot / hotpot dish",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "dango",
+    "word": "団子",
+    "reading": "だんご",
+    "nameEn": "Dango",
+    "meaning": "dango (sweet dumpling)",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "oyu",
+    "word": "お湯",
+    "reading": "おゆ",
+    "nameEn": "Hot Water",
+    "meaning": "hot water",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "taoru",
+    "word": "タオル",
+    "reading": "タオル",
+    "nameEn": "Towel",
+    "meaning": "towel",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 8
+    },
+    "description": "+8 base HP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yukata",
+    "word": "浴衣",
+    "reading": "ゆかた",
+    "nameEn": "Yukata",
+    "meaning": "yukata (light cotton kimono)",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "obi",
+    "word": "帯",
+    "reading": "おび",
+    "nameEn": "Obi",
+    "meaning": "obi / sash (for kimono)",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sekken",
+    "word": "石鹸",
+    "reading": "せっけん",
+    "nameEn": "Soap",
+    "meaning": "soap",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "makura",
+    "word": "枕",
+    "reading": "まくら",
+    "nameEn": "Pillow",
+    "meaning": "pillow",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "futon",
+    "word": "布団",
+    "reading": "ふとん",
+    "nameEn": "Futon",
+    "meaning": "futon / bedding",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "oke",
+    "word": "桶",
+    "reading": "おけ",
+    "nameEn": "Bath Bucket",
+    "meaning": "(wooden) bucket / tub",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "geta",
+    "word": "下駄",
+    "reading": "げた",
+    "nameEn": "Geta",
+    "meaning": "geta (wooden clogs)",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tatami",
+    "word": "畳",
+    "reading": "たたみ",
+    "nameEn": "Tatami",
+    "meaning": "tatami mat",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
   }
 ]
