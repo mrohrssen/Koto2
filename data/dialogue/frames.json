@@ -14720,5 +14720,656 @@
       "どうぞ"
     ],
     "group": "kaizoku_defeatLine"
+  },
+  {
+    "id": "npc_tenin_fightStart_keeki",
+    "category": "npc",
+    "raw": "ケーキを売ります！",
+    "tokens": [
+      {
+        "surface": "ケーキ",
+        "base": "ケーキ",
+        "reading": "けーき",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "売り",
+        "base": "売る",
+        "reading": "うり",
+        "pos": "Verb",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "売ります",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "売ります",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
+      }
+    ],
+    "words": [
+      "ケーキ",
+      "売る"
+    ],
+    "group": "tenin_fightStart"
+  },
+  {
+    "id": "npc_tenin_defeatLine_matadouzo",
+    "category": "npc",
+    "raw": "またどうぞ！",
+    "tokens": [
+      {
+        "surface": "また",
+        "base": "また",
+        "reading": "また",
+        "pos": "Conjunction",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 0,
+            "tokenEnd": 0
+          }
+        ]
+      },
+      {
+        "surface": "どうぞ",
+        "base": "どうぞ",
+        "reading": "どうぞ",
+        "pos": "Adverb",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      }
+    ],
+    "words": [
+      "また",
+      "どうぞ"
+    ],
+    "group": "tenin_defeatLine"
+  },
+  {
+    "id": "npc_panya_fightStart_pan",
+    "category": "npc",
+    "raw": "パンを包みます！",
+    "tokens": [
+      {
+        "surface": "パン",
+        "base": "パン",
+        "reading": "ぱん",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "包み",
+        "base": "包む",
+        "reading": "つつみ",
+        "pos": "Verb",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "包みます",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "包みます",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
+      }
+    ],
+    "words": [
+      "パン",
+      "包む"
+    ],
+    "group": "panya_fightStart"
+  },
+  {
+    "id": "npc_panya_defeatLine_douzo",
+    "category": "npc",
+    "raw": "パンをどうぞ！",
+    "tokens": [
+      {
+        "surface": "パン",
+        "base": "パン",
+        "reading": "ぱん",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1
+      },
+      {
+        "surface": "どうぞ",
+        "base": "どうぞ",
+        "reading": "どうぞ",
+        "pos": "Adverb",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
+      }
+    ],
+    "words": [
+      "パン",
+      "どうぞ"
+    ],
+    "group": "panya_defeatLine"
+  },
+  {
+    "id": "npc_keisatsukan_fightStart_machi",
+    "category": "npc",
+    "raw": "町を探します！",
+    "tokens": [
+      {
+        "surface": "町",
+        "base": "町",
+        "reading": "まち",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "探し",
+        "base": "探す",
+        "reading": "さがし",
+        "pos": "Verb",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "探します",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "探します",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
+      }
+    ],
+    "words": [
+      "町",
+      "探す"
+    ],
+    "group": "keisatsukan_fightStart"
+  },
+  {
+    "id": "npc_keisatsukan_defeatLine_kiotsukete",
+    "category": "npc",
+    "raw": "気をつけてね！",
+    "tokens": [
+      {
+        "surface": "気",
+        "base": "気",
+        "reading": "き",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "つけ",
+        "base": "つける",
+        "reading": "つけ",
+        "pos": "Verb",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-te-conjunction",
+            "title": "～て",
+            "meaning": "and / then",
+            "shortExplanation": "Links actions or clauses with the te-form.",
+            "displayPattern": "Verbて + phrase",
+            "readingOverride": "",
+            "matchedText": "つけて",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          },
+          {
+            "grammarId": "n5-te-sequence",
+            "title": "～て",
+            "meaning": "and then",
+            "shortExplanation": "Links actions in sequence with the te-form.",
+            "displayPattern": "Verbて + phrase",
+            "readingOverride": "",
+            "matchedText": "つけて",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "て",
+        "reading": "て",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-te-conjunction",
+            "title": "～て",
+            "meaning": "and / then",
+            "shortExplanation": "Links actions or clauses with the te-form.",
+            "displayPattern": "Verbて + phrase",
+            "readingOverride": "",
+            "matchedText": "つけて",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          },
+          {
+            "grammarId": "n5-te-sequence",
+            "title": "～て",
+            "meaning": "and then",
+            "shortExplanation": "Links actions in sequence with the te-form.",
+            "displayPattern": "Verbて + phrase",
+            "readingOverride": "",
+            "matchedText": "つけて",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ね",
+        "reading": "ね",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ne-confirmation",
+            "title": "ね",
+            "meaning": "right? / isn't it?",
+            "shortExplanation": "Invites agreement or shared feeling from the listener.",
+            "displayPattern": "Sentence + ね",
+            "readingOverride": "",
+            "matchedText": "ね",
+            "tokenStart": 4,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
+      }
+    ],
+    "words": [
+      "気",
+      "つける"
+    ],
+    "group": "keisatsukan_defeatLine"
+  },
+  {
+    "id": "npc_obaasan_fightStart_kukkii",
+    "category": "npc",
+    "raw": "クッキーを買いますか？",
+    "tokens": [
+      {
+        "surface": "クッキー",
+        "base": "クッキー",
+        "reading": "くっきー",
+        "pos": "Noun",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
+      },
+      {
+        "surface": "を",
+        "reading": "を",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "買い",
+        "base": "買う",
+        "reading": "かい",
+        "pos": "Verb",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "買います",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "買います",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "か",
+        "reading": "か",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ka-question",
+            "title": "か",
+            "meaning": "question marker",
+            "shortExplanation": "Turns a statement into a question.",
+            "displayPattern": "Sentence + か",
+            "readingOverride": "",
+            "matchedText": "か",
+            "tokenStart": 4,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "？",
+        "reading": "?",
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
+      }
+    ],
+    "words": [
+      "クッキー",
+      "買う"
+    ],
+    "group": "obaasan_fightStart"
+  },
+  {
+    "id": "npc_obaasan_defeatLine_iiko",
+    "category": "npc",
+    "raw": "いい子ね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective",
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい子",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "子",
+        "base": "子",
+        "reading": "こ",
+        "pos": "Noun",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい子",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
+      },
+      {
+        "surface": "ね",
+        "reading": "ね",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ne-confirmation",
+            "title": "ね",
+            "meaning": "right? / isn't it?",
+            "shortExplanation": "Invites agreement or shared feeling from the listener.",
+            "displayPattern": "Sentence + ね",
+            "readingOverride": "",
+            "matchedText": "ね",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
+      }
+    ],
+    "words": [
+      "いい",
+      "子"
+    ],
+    "group": "obaasan_defeatLine"
   }
 ]

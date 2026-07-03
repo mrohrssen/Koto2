@@ -1353,5 +1353,61 @@
     "group": "kaizoku_defeatLine",
     "raw": "宝をどうぞ！",
     "slots": []
+  },
+  {
+    "id": "npc_tenin_fightStart_keeki",
+    "category": "npc",
+    "group": "tenin_fightStart",
+    "raw": "ケーキを売ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_tenin_defeatLine_matadouzo",
+    "category": "npc",
+    "group": "tenin_defeatLine",
+    "raw": "またどうぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_panya_fightStart_pan",
+    "category": "npc",
+    "group": "panya_fightStart",
+    "raw": "パンを包みます！",
+    "slots": []
+  },
+  {
+    "id": "npc_panya_defeatLine_douzo",
+    "category": "npc",
+    "group": "panya_defeatLine",
+    "raw": "パンをどうぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_keisatsukan_fightStart_machi",
+    "category": "npc",
+    "group": "keisatsukan_fightStart",
+    "raw": "町を探します！",
+    "slots": []
+  },
+  {
+    "id": "npc_keisatsukan_defeatLine_kiotsukete",
+    "category": "npc",
+    "group": "keisatsukan_defeatLine",
+    "raw": "気をつけてね！",
+    "slots": []
+  },
+  {
+    "id": "npc_obaasan_fightStart_kukkii",
+    "category": "npc",
+    "group": "obaasan_fightStart",
+    "raw": "クッキーを買いますか？",
+    "slots": []
+  },
+  {
+    "id": "npc_obaasan_defeatLine_iiko",
+    "category": "npc",
+    "group": "obaasan_defeatLine",
+    "raw": "いい子ね！",
+    "slots": []
   }
 ]
