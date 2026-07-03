@@ -52,3 +52,42 @@ describe('blue-sea npcs', () => {
     });
   }
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'shio', word: '塩', category: 'food' },
+  { id: 'suika', word: 'スイカ', category: 'food' },
+  { id: 'sashimi', word: '刺身', category: 'food' },
+  { id: 'juusu', word: 'ジュース', category: 'food' },
+  { id: 'aisu', word: 'アイス', category: 'food' },
+  { id: 'mizugi', word: '水着', category: 'equipment' },
+  { id: 'sangurasu', word: 'サングラス', category: 'equipment' },
+  { id: 'kai', word: '貝', category: 'equipment' },
+  { id: 'takara', word: '宝', category: 'equipment' },
+  { id: 'ami', word: '網', category: 'equipment' },
+  { id: 'fune', word: '船', category: 'equipment' },
+  { id: 'shinju', word: '真珠', category: 'equipment' }
+];
+
+describe('blue-sea items', () => {
+  const seaItems = items.filter(i => i.area === 'blue-sea');
+
+  it('has exactly the 12 approved items', () => {
+    assert.deepEqual(
+      seaItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = seaItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});

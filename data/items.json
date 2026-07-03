@@ -1009,5 +1009,216 @@
     "stage": 1,
     "area": "morning-ranch",
     "createdAt": "2026-07-02"
+  },
+  {
+    "id": "shio",
+    "word": "塩",
+    "reading": "しお",
+    "nameEn": "Salt",
+    "meaning": "salt",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "suika",
+    "word": "スイカ",
+    "reading": "スイカ",
+    "nameEn": "Watermelon",
+    "meaning": "watermelon",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sashimi",
+    "word": "刺身",
+    "reading": "さしみ",
+    "nameEn": "Sashimi",
+    "meaning": "sashimi (sliced raw fish)",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.45
+    },
+    "description": "Heals all living creatures for 45% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "juusu",
+    "word": "ジュース",
+    "reading": "ジュース",
+    "nameEn": "Juice",
+    "meaning": "juice",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.30
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "aisu",
+    "word": "アイス",
+    "reading": "アイス",
+    "nameEn": "Ice Cream",
+    "meaning": "ice cream",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "mizugi",
+    "word": "水着",
+    "reading": "みずぎ",
+    "nameEn": "Swimsuit",
+    "meaning": "swimsuit",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sangurasu",
+    "word": "サングラス",
+    "reading": "サングラス",
+    "nameEn": "Sunglasses",
+    "meaning": "sunglasses",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kai",
+    "word": "貝",
+    "reading": "かい",
+    "nameEn": "Shell",
+    "meaning": "shellfish / shell",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "takara",
+    "word": "宝",
+    "reading": "たから",
+    "nameEn": "Treasure",
+    "meaning": "treasure",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "ami",
+    "word": "網",
+    "reading": "あみ",
+    "nameEn": "Net",
+    "meaning": "net",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "fune",
+    "word": "船",
+    "reading": "ふね",
+    "nameEn": "Ship",
+    "meaning": "ship / boat",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "shinju",
+    "word": "真珠",
+    "reading": "しんじゅ",
+    "nameEn": "Pearl",
+    "meaning": "pearl",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 14
+    },
+    "description": "+14 base MP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
   }
 ]
