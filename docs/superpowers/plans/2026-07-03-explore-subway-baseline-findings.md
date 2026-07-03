@@ -24,7 +24,29 @@ purpose: these failures are the deliverable and form Stage 1's work queue.
 
 ## Distinct baseline failures (game bugs)
 
-### F1 — Support-room actions show the offline soft-pause while ONLINE  ⟵ headline
+### ~~F1 — Support-room actions show the offline soft-pause while ONLINE~~  ✅ FIXED (Task 3)
+
+> **Resolution (Task 3, 2026-07-04):** Two coupled root causes, both fixed.
+> **(a) Root cause of the literal `noPreparedRoom` soft-pause:** the legacy
+> `POST /api/game/proceed` did NOT rebuild `run.exploreRunway` after advancing.
+> `proceedToNextRoom` bumps `currentRoom`/`roomActionSeq`, invalidating the cached
+> runway; `getState()`'s sync snapshot (`exploreRunwaySnapshot`, loop.js:30) then
+> returns `preparedRooms: []` by design (async rebuild deferred). The session
+> client adopted that empty runway, so `recordRoomAction(...)` for the new room hit
+> `noPreparedRoom` → `showExploreSoftPause` while ONLINE. Fixed by rebuilding the
+> runway in the proceed route (`src/routes/game/run.js`,
+> `refreshExploreRunwayAfterProceed`), epoch-preserving, mirroring `/api/game/state`.
+> **(b) Coupled race (would have tripped `correctedSyncs === 0`):** support rooms
+> are not `proceed`-capable in the runway, so `shrine.choose`/`friendlyNpc.choose`
+> is queued in the session while the room auto-advances via the legacy proceed.
+> The legacy proceed raced ahead of the still-pending choose, moving the server
+> cursor past the room → the choose synced into a `room_index_mismatch` correction
+> (reward lost). Fixed by draining the session before the legacy proceed
+> (`public/js/ui/exploration.js`, `flushPendingSessionBeforeLegacyProceed`).
+> **Tests:** `tests/integration/flows/exploration.test.js`
+> ("proceed rebuilds the explore runway so the new room accepts session actions")
+> and `tests/unit/ui/explore-session-cutover.test.js`
+> ("drains pending session actions before a legacy proceed from a support room").
 
 - **Assertion (verbatim):** `soft pause "Connection is spotty" shown while ONLINE`
 - **State:** ONLINE (not offline). Reproduced at `phase: shrine` (room 0 / room 1)

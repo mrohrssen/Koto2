@@ -987,6 +987,27 @@ export function applyExploreSessionProceedResult(result) {
   return draft;
 }
 
+/**
+ * Before a LEGACY /api/game/proceed, flush any pending explore-session actions
+ * so support-room choices (shrine.choose, friendlyNpc.choose, …) commit
+ * server-side FIRST. Support rooms are not `proceed`-capable in the runway, so
+ * their completion is queued in the session while the room auto-advances via the
+ * legacy endpoint. Without this drain the legacy proceed races ahead of the
+ * choose, moving the server cursor past the room — the choose then syncs into a
+ * `room_index_mismatch` correction (losing the reward and tripping the subway
+ * harness's no-corrected-syncs invariant). Draining is a best-effort await:
+ * offline it simply fails and the legacy proceed below fails too, surfacing the
+ * sanctioned soft pause.
+ */
+async function flushPendingSessionBeforeLegacyProceed(session) {
+  if (!session || session.pendingCount?.() === 0) return;
+  try {
+    await session.syncNow();
+  } catch {
+    // Offline / transient: the legacy proceed will fail next and show the pause.
+  }
+}
+
 export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   const state = getGameState();
   const nextRoom = getNextRoom(state);
@@ -1013,6 +1034,7 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
     }
 
     try {
+      await flushPendingSessionBeforeLegacyProceed(session);
       const result = await apiProceed();
       if (!result?.state) return result || null;
       updateGameState(result.state);
@@ -1030,6 +1052,7 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
     }
   }
 
+  await flushPendingSessionBeforeLegacyProceed(session);
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);

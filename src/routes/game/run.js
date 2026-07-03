@@ -376,6 +376,26 @@ export default function createRunRoutes({
     }
   });
 
+  // Rebuild the explore runway after a room advance so the response carries a
+  // runway whose preparedRooms cover the NEW current room. proceedToNextRoom
+  // bumps run.currentRoom + roomActionSeq, which invalidates the cached runway;
+  // getState()'s sync snapshot then returns preparedRooms: [] by design
+  // (rebuilding is async). Without this, the session client adopts an empty
+  // runway and recordRoomAction(...) for the next room's interaction rejects
+  // with 'noPreparedRoom', surfacing the offline soft pause while ONLINE.
+  // Preserves the session epoch (does NOT rotate) so the client session is not
+  // reset mid-run.
+  async function refreshExploreRunwayAfterProceed(req) {
+    const gameManager = req.gameManager;
+    const run = gameManager?.run;
+    if (!run?.active || run.mode === 'kanjiKombat' || run.areaCleared) return;
+    run.exploreRunway = await gameManager.explorationService.buildExploreRunway({
+      userId: req.user?.id,
+      getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
+      getDialogueCardAudio,
+    });
+  }
+
   // Compatibility path for clients that have not adopted /api/game/explore/sync.
   // The session client should not call this endpoint after explore runway cutover.
   router.post('/proceed', async (req, res) => {
@@ -383,10 +403,14 @@ export default function createRunRoutes({
     return runOptimisticAction(req, res, {
       actionType: 'run.proceed',
       errorStatusCode: 409,
-      perform: () => {
+      perform: async () => {
         validateOptimisticProceedEnvelope(req);
         const { forceRoomType } = req.body || {};
         const room = gameManager.proceedToNextRoom(forceRoomType || null);
+
+        // Rebuild the runway for the new room before snapshotting state so the
+        // session client can accept the next room's interaction offline.
+        await refreshExploreRunwayAfterProceed(req);
 
         const narration = null; // DM narration disabled — frontend discards this
 

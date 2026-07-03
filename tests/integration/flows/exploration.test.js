@@ -85,4 +85,57 @@ describe('exploration flow', () => {
     assert.equal(proceedRes.body.state.phase, 'friendlyNpc',
       'phase should be friendlyNpc, not combat');
   });
+
+  // Regression: F1 (explore subway rooms tier). Proceeding via the legacy
+  // /api/game/proceed advances run.currentRoom + roomActionSeq, which
+  // invalidates the cached exploreRunway. getState()'s sync snapshot then
+  // returns an empty preparedRooms (by design — rebuilding is async), so the
+  // proceed route MUST rebuild the runway before responding. Otherwise the
+  // client adopts a runway with no prepared room for the new current room and
+  // getExploreSession().recordRoomAction(...) rejects with 'noPreparedRoom',
+  // surfacing the offline "Connection is spotty" soft pause while ONLINE.
+  it('proceed rebuilds the explore runway so the new room accepts session actions', async () => {
+    await client.post('/api/game/debug-skip-room', {});
+    await queueRooms(client, ['shrine']);
+
+    const proceedRes = await client.post('/api/game/proceed', {});
+    assert.equal(proceedRes.status, 200, `proceed failed: ${JSON.stringify(proceedRes.body)}`);
+
+    const state = proceedRes.body.state;
+    assert.equal(state.room.type, 'shrine');
+
+    const runway = state.run.exploreRunway;
+    assert.ok(runway, 'proceed response must include exploreRunway');
+    assert.equal(runway.currentRoom, state.run.currentRoom,
+      'runway cursor should track the advanced current room');
+    assert.ok(
+      Array.isArray(runway.preparedRooms) && runway.preparedRooms.length > 0,
+      `proceed must rebuild preparedRooms, got: ${JSON.stringify(runway.preparedRooms)}`
+    );
+
+    const currentPrepared = runway.preparedRooms.find(entry => entry.index === state.run.currentRoom);
+    assert.ok(currentPrepared,
+      'runway must include a prepared room for the new current room (else recordRoomAction -> noPreparedRoom -> soft pause online)');
+    assert.ok(
+      Array.isArray(currentPrepared.acceptedActions)
+        && currentPrepared.acceptedActions.includes('shrine.choose'),
+      `current prepared room must accept its interaction, got: ${JSON.stringify(currentPrepared.acceptedActions)}`
+    );
+    assert.equal(currentPrepared.offlineReady, true,
+      'freshly-prepared support room should be offline ready');
+
+    // The rebuild must PRESERVE the session epoch across proceeds (unlike
+    // /api/game/state, which deliberately rotates it): rotating mid-run would
+    // reset the client's queued session. A shrine room does not gate proceed,
+    // so a second proceed advances again and must keep the same epoch.
+    assert.match(runway.sessionEpoch, /^ese_[0-9a-f]{16}$/);
+    await queueRooms(client, ['encounter']);
+    const secondProceed = await client.post('/api/game/proceed', {});
+    assert.equal(secondProceed.status, 200, `second proceed failed: ${JSON.stringify(secondProceed.body)}`);
+    assert.equal(
+      secondProceed.body.state.run.exploreRunway.sessionEpoch,
+      runway.sessionEpoch,
+      'proceed must not rotate the explore session epoch (would reset the client session mid-run)'
+    );
+  });
 });
