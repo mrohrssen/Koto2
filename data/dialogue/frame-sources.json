@@ -1689,5 +1689,61 @@
     "group": "okyakusan_defeatLine",
     "raw": "いいお湯でした！",
     "slots": []
+  },
+  {
+    "id": "npc_ojisan_fightStart_matsuri",
+    "category": "npc",
+    "group": "ojisan_fightStart",
+    "raw": "お祭りだ！",
+    "slots": []
+  },
+  {
+    "id": "npc_ojisan_defeatLine_omedetou",
+    "category": "npc",
+    "group": "ojisan_defeatLine",
+    "raw": "おめでとう！",
+    "slots": []
+  },
+  {
+    "id": "npc_miko_fightStart_negai",
+    "category": "npc",
+    "group": "miko_fightStart",
+    "raw": "願いましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_miko_defeatLine_negai",
+    "category": "npc",
+    "group": "miko_defeatLine",
+    "raw": "いい願いですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_oneesan_fightStart_odori",
+    "category": "npc",
+    "group": "oneesan_fightStart",
+    "raw": "踊りましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_oneesan_defeatLine_odori",
+    "category": "npc",
+    "group": "oneesan_defeatLine",
+    "raw": "いい踊りでした！",
+    "slots": []
+  },
+  {
+    "id": "npc_aidoru_fightStart_uta",
+    "category": "npc",
+    "group": "aidoru_fightStart",
+    "raw": "歌の時間だ！",
+    "slots": []
+  },
+  {
+    "id": "npc_aidoru_defeatLine_uta",
+    "category": "npc",
+    "group": "aidoru_defeatLine",
+    "raw": "また歌いましょう！",
+    "slots": []
   }
 ]
