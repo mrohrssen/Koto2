@@ -42,7 +42,14 @@ const ALLOWED_AREA_PLACEMENTS = new Set([
   'desert:hebi',
   'desert:tokage',
   'desert:suishou',
-  'desert:boss:sunano-hebi'
+  'desert:boss:sunano-hebi',
+  'night-forest:tsuki',
+  'night-forest:hoshi',
+  'night-forest:ookami',
+  'night-forest:yuurei',
+  'night-forest:erufu',
+  'night-forest:kage',
+  'night-forest:boss:tsukino-ookami'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));

@@ -296,5 +296,50 @@
     "background": "areas/desert/desert_01.webp",
     "stage": 1,
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "night-forest",
+    "name": "夜の森",
+    "nameEn": "Night Forest",
+    "reading": "よるのもり",
+    "rank": 300,
+    "particle": "の",
+    "parallaxId": "night-forest",
+    "modifierWord": {
+      "word": "夜",
+      "reading": "よる",
+      "meaning": "night",
+      "rank": 300
+    },
+    "locationWord": {
+      "word": "森",
+      "reading": "もり",
+      "meaning": "forest",
+      "rank": 1400
+    },
+    "theme": "A quiet forest under a full moon — starlight, campfires, and gentle night magic.",
+    "creatures": [
+      "tsuki",
+      "hoshi",
+      "ookami",
+      "yuurei",
+      "erufu",
+      "fukurou",
+      "kage",
+      "mushi"
+    ],
+    "bossCreatureId": "tsukino-ookami",
+    "roomCount": 30,
+    "description": "A moonlit forest where stargazers camp and a great wolf howls from the clearing.",
+    "tags": [
+      "forest",
+      "night",
+      "stars",
+      "camp"
+    ],
+    "subAreas": [],
+    "background": "areas/night-forest/night-forest_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]
