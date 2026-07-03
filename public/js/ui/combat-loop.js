@@ -53,9 +53,11 @@ import {
   buildOptimisticKanjiKombatAnswer,
 } from './optimistic-combat-turn.js';
 import { applyLocalKanjiKombatWaveTransition } from './kanji-kombat-local-wave.js';
-import { applyKillXpToParty } from '../../../src/shared/combat/kanji-kombat-xp.js';
 import { applyKanjiKombatAnswerStreakProgress } from '../../../src/shared/combat/kanji-kombat-streak.js';
-import { createSeededRng } from '../../../src/shared/deterministic-rng.js';
+import {
+  advanceLocalChain,
+  applyLocalDeferredKillXp,
+} from './combat-local-prediction.js';
 import { getKanjiKombatSession } from './kanji-kombat-session.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
@@ -699,78 +701,9 @@ async function runOptimisticCreatureCombatTurn({
   return true;
 }
 
-/**
- * Advance the local turn-seed chain after an optimistic KK answer is applied.
- * Mutates the optimistic sub-object in place (state was already deep-cloned by
- * localStateAfterKanjiKombatPrediction before we call this).
- */
-function advanceLocalKanjiKombatChain(state) {
-  const optimistic = state?.combat?.optimistic;
-  if (!optimistic) return;
-  const seeds = Array.isArray(optimistic.turnSeeds) ? optimistic.turnSeeds.slice(1) : [];
-  optimistic.turnSeeds = seeds;
-  optimistic.nextTurnSeed = seeds[0] || null;
-  optimistic.stateVersion = (optimistic.stateVersion || 0) + 1;
-}
-
-/**
- * Apply deferred kill-XP for enemies newly defeated by THIS answer's ally
- * attacks, immediately after the turn — mirroring the server's
- * _collectDeferredKillXpEvents (combat-cycle-service.js), which runs after
- * EVERY answer with deferXpAwards:true, not just at wave boundaries.  Mid-wave
- * kills in multi-enemy waves must level/restore the party here too, or the
- * next transcript hash diverges from the server's (ally hp/level/xp are part
- * of the hashed stateSummary).
- * Mutates `state` in place (caller owns a deep clone).
- *
- * @param {object} state - The local game state (deep-cloned by caller).
- * @param {object} transcript - The predicted turn transcript (actionSegments carry
- *   targetDefeated markers on ally attack records and nested procs).
- * @param {string} seed - The turn seed; reproduces the server's
- *   `xpRng = createSeededRng(\`${seed}:xp\`)` so XP awards match exactly.
- */
-function applyLocalKanjiKombatDeferredKillXp(state, transcript, seed) {
-  if (!state?.combat || !state.run?.creatureParty) return;
-  const enemies = state.combat.enemies || [];
-  // Mirror the server's visit order: ally action segments' attack records first,
-  // recursing into partySkillProcs/procs; dedupe by enemy index.
-  const defeatedIndices = new Set();
-  const visit = (record) => {
-    if (!record || typeof record !== 'object') return;
-    if (record.targetDefeated === true && typeof record.targetIndex === 'number') {
-      defeatedIndices.add(record.targetIndex);
-    }
-    for (const proc of record.partySkillProcs || []) visit(proc);
-    for (const proc of record.procs || []) visit(proc);
-  };
-  for (const segment of transcript?.actionSegments || []) {
-    if (segment?.actor?.side !== 'ally') continue;
-    for (const attack of segment.attacks || []) visit(attack);
-  }
-  if (defeatedIndices.size === 0) return;
-
-  const xpRng = seed ? createSeededRng(`${seed}:xp`) : Math.random;
-  const metaMults = state.run.crestMults || null;
-  const itemBuffs = state.run.itemBuffs || null;
-  const runPartySkills = state.run.partySkills || [];
-  for (const enemyIndex of defeatedIndices) {
-    const enemy = enemies[enemyIndex];
-    if (!enemy) continue;
-    applyKillXpToParty(
-      state.run.creatureParty,
-      enemy.level || 1,
-      itemBuffs?.xpMultiplier,
-      itemBuffs?.xpBalanceStacks,
-      metaMults,
-      itemBuffs,
-      runPartySkills,
-      xpRng,
-    );
-  }
-  // Keep combat.allies in sync with creatureParty.active (mirrors the server's
-  // _finalizeKanjiKombatActionResult combat.allies reassignment).
-  state.combat.allies = state.run.creatureParty.active;
-}
+// advanceLocalChain + applyLocalDeferredKillXp (the game-mode-agnostic seed-chain
+// advance and deferred kill-XP visitor) now live in ./combat-local-prediction.js
+// and are shared by both the KK answer path and the explore-session combat path.
 
 /**
  * Advance the local streak and apply any milestone reward to the local draft
@@ -861,10 +794,10 @@ async function runOptimisticKanjiKombatAnswer({
   });
 
   const localState = localStateAfterKanjiKombatPrediction(getGameState(), optimistic, promptRef);
-  advanceLocalKanjiKombatChain(localState);
+  advanceLocalChain(localState);
   // Mirror the server's submitAnswer ordering: turn resolution → deferred
   // kill-XP for this answer's kills → (wave spawn) → streak reward.
-  applyLocalKanjiKombatDeferredKillXp(localState, optimistic.localTranscript, optimistic.envelope.seed);
+  applyLocalDeferredKillXp(localState, optimistic.localTranscript, optimistic.envelope.seed);
   // The streak milestone reward is applied AFTER the turn resolution — and on a
   // wave-clearing answer, after the deferred kill-XP and wave spawn — so on the
   // wave-clear path below it runs after applyLocalKanjiKombatWaveTransition instead.
