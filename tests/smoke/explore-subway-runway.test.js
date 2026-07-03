@@ -526,7 +526,16 @@ test.describe('explore subway full session', () => {
           narrationVisible: !!q('.narration-box.visible'),
           npcDialogueCard: !!q('.npc-dialogue-card'),
           fightButton: labels.some(l => l.includes('戦う')),
-          moveCells: document.querySelectorAll('.move-cell:not(.disabled)').length,
+          // Post-combat "learn a move" panel. Its cells are .move-cell BUTTONS
+          // with no click listener in the auto variant (only its OK button / the
+          // skip-or-replace confirm advances), so it must be handled BEFORE the
+          // combat branch and its cells excluded from the combat moveCells count
+          // — otherwise the driver no-op-clicks the first cell forever.
+          moveLearnPanel: !!q('.move-learn-panel'),
+          moveLearnOkBtn: !!q('.move-learn-ok-btn'),
+          moveLearnConfirmYes: !!q('.move-learn-confirm-btn--yes'),
+          moveCells: [...document.querySelectorAll('.move-cell:not(.disabled)')]
+            .filter(c => !c.closest('.move-learn-panel')).length,
           splitAttackCard: !!q('.split-attack-card'),
           // Combat move-target picker: renderChoices with the "Choose target"
           // heading and .ui-choice target cards (distinct from support rooms).
@@ -590,6 +599,28 @@ test.describe('explore subway full session', () => {
           + `(offline=${offline})`,
         ).toBeTruthy();
         return 'takeover-blocked';
+      }
+
+      // 1.7) Post-combat "learn a move" panel (public/js/ui/move-learn.js).
+      // Auto variant (already learned / <3 moves): only the OK button advances.
+      // Replace variant (3 moves): tap the NEW-move slot to decline learning
+      // (keeps the moveset unchanged — same "decline the minigame" philosophy),
+      // which opens a confirm modal whose Yes button resolves it.
+      if (d.moveLearnPanel) {
+        if (offline && !COMBAT_TIER) { await page.waitForTimeout(1000); return 'move-learn-offline-wait'; }
+        if (d.moveLearnConfirmYes) {
+          await page.locator('.move-learn-confirm-btn--yes').first().click().catch(() => {});
+          await page.waitForTimeout(500);
+          return 'move-learn-confirm';
+        }
+        if (d.moveLearnOkBtn) {
+          await page.locator('.move-learn-ok-btn').first().click().catch(() => {});
+          await page.waitForTimeout(500);
+          return 'move-learn-ok';
+        }
+        await page.locator('.move-learn-panel .move-learn-new-slot').first().click().catch(() => {});
+        await page.waitForTimeout(400);
+        return 'move-learn-skip';
       }
 
       // 2) Combat (DOM-detected so it holds offline): fight door, move cells, a
