@@ -17707,7 +17707,7 @@
     "group": "gaka_defeatLine"
   },
   {
-    "id": "npc_ryoushi_frozen_lake_fightStart_matsu",
+    "id": "npc_ryoushi-frozen-lake_fightStart_matsu",
     "category": "npc",
     "raw": "魚を待ちます！",
     "tokens": [
@@ -17789,10 +17789,10 @@
       "魚",
       "待つ"
     ],
-    "group": "ryoushi_frozen_lake_fightStart"
+    "group": "ryoushi-frozen-lake_fightStart"
   },
   {
-    "id": "npc_ryoushi_frozen_lake_defeatLine_sakana",
+    "id": "npc_ryoushi-frozen-lake_defeatLine_sakana",
     "category": "npc",
     "raw": "いい魚ですね！",
     "tokens": [
@@ -17887,7 +17887,7 @@
       "いい",
       "魚"
     ],
-    "group": "ryoushi_frozen_lake_defeatLine"
+    "group": "ryoushi-frozen-lake_defeatLine"
   },
   {
     "id": "npc_okami_fightStart_onsen",

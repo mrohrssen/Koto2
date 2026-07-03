@@ -1621,16 +1621,16 @@
     "slots": []
   },
   {
-    "id": "npc_ryoushi_frozen_lake_fightStart_matsu",
+    "id": "npc_ryoushi-frozen-lake_fightStart_matsu",
     "category": "npc",
-    "group": "ryoushi_frozen_lake_fightStart",
+    "group": "ryoushi-frozen-lake_fightStart",
     "raw": "魚を待ちます！",
     "slots": []
   },
   {
-    "id": "npc_ryoushi_frozen_lake_defeatLine_sakana",
+    "id": "npc_ryoushi-frozen-lake_defeatLine_sakana",
     "category": "npc",
-    "group": "ryoushi_frozen_lake_defeatLine",
+    "group": "ryoushi-frozen-lake_defeatLine",
     "raw": "いい魚ですね！",
     "slots": []
   },

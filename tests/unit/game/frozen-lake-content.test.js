@@ -34,7 +34,7 @@ const EXPECTED_NPCS = [
   { key: 'senshu', name: '選手', reading: 'せんしゅ', skill: 'suberu' },
   { key: 'ryourinin', name: '料理人', reading: 'りょうりにん', skill: 'mazeru' },
   { key: 'gaka', name: '画家', reading: 'がか', skill: 'egaku' },
-  { key: 'ryoushi_frozen_lake', name: '漁師', reading: 'りょうし', skill: 'matsu' }
+  { key: 'ryoushi-frozen-lake', name: '漁師', reading: 'りょうし', skill: 'matsu' }
 ];
 
 describe('frozen-lake npcs', () => {
@@ -53,7 +53,7 @@ describe('frozen-lake npcs', () => {
   }
 
   it('reuse NPC has its own id matching its key', () => {
-    assert.equal(npcs.ryoushi_frozen_lake.id, 'ryoushi_frozen_lake');
+    assert.equal(npcs['ryoushi-frozen-lake'].id, 'ryoushi-frozen-lake');
   });
 });
 
