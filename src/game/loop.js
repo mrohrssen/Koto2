@@ -9,7 +9,7 @@ import {
 
 import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES, AREAS } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
-import { buildClientRoomReveal } from './room-reveal-buffer.js';
+import { ensureRoomActionSeq } from './room-reveal-buffer.js';
 import { ExplorationService, CombatCycleService, KanjiKombatService } from './services/index.js';
 import { logger } from '../logger.js';
 import {
@@ -252,7 +252,6 @@ export class GameManager {
     }
 
     const player = this.run?.player || this.player;
-    const roomReveal = this.run ? buildClientRoomReveal(this.run) : null;
     const runState = this.run ? {
       mode: this.run.mode || null,
       // Area system
@@ -272,9 +271,7 @@ export class GameManager {
       totalEncounters: this.run.totalEncounters || 0,
       active: this.run.active,
       stats: this.run.stats,
-      roomActionSeq: roomReveal.roomActionSeq,
-      revealBufferSize: roomReveal.revealBufferSize,
-      revealedRooms: roomReveal.revealedRooms,
+      roomActionSeq: ensureRoomActionSeq(this.run),
       runStats: this.run.runStats,
       creatureParty: this.run.creatureParty,
       partySkills: this.run.partySkills || [],

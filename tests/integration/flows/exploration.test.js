@@ -26,9 +26,7 @@ describe('exploration flow', () => {
     assert.ok(res.body.run, 'run should exist');
     assert.ok(res.body.run.currentArea, 'run.currentArea should exist');
     assert.equal(Object.hasOwn(res.body.run, 'rooms'), false, 'client state must not expose full run.rooms');
-    assert.ok(Array.isArray(res.body.run.revealedRooms), 'client state should include the reveal buffer');
-    assert.ok(res.body.run.revealedRooms.length <= 2, 'reveal buffer should include current room plus at most one future room');
-    assert.equal(res.body.run.revealedRooms[0].index, res.body.run.currentRoom);
+    assert.equal(Object.hasOwn(res.body.run, 'revealedRooms'), false, 'retired legacy reveal buffer must not ride along');
     assert.ok(res.body.run.exploreRunway, 'client state should include exploreRunway');
     assert.equal(res.body.run.exploreRunway.preparedAhead, 5);
     assert.ok(
@@ -36,7 +34,6 @@ describe('exploration flow', () => {
       'runway includes current room plus at most five ahead'
     );
     assert.equal(res.body.run.exploreRunway.preparedRooms[0].index, res.body.run.currentRoom);
-    assert.equal(res.body.run.revealedRooms.length <= 2, true, 'legacy reveal remains current plus one');
     assert.equal(typeof res.body.run.roomActionSeq, 'number');
   });
 
@@ -64,8 +61,10 @@ describe('exploration flow', () => {
     assert.ok(room, 'state should include the current room');
     assert.equal(room.type, 'encounter');
     assert.equal(Object.hasOwn(proceedRes.body.state.run, 'rooms'), false, 'proceed state must not expose full run.rooms');
-    assert.ok(proceedRes.body.state.run.revealedRooms.length <= 2);
-    assert.equal(proceedRes.body.state.run.revealedRooms[0].index, proceedRes.body.state.run.currentRoom);
+    assert.equal(Object.hasOwn(proceedRes.body.state.run, 'revealedRooms'), false, 'proceed state must not expose the retired reveal buffer');
+    const proceedRunway = proceedRes.body.state.run.exploreRunway;
+    assert.ok(proceedRunway, 'proceed state should include exploreRunway');
+    assert.equal(proceedRunway.preparedRooms[0].index, proceedRes.body.state.run.currentRoom);
   });
 
   it('proceeds into a queued friendly NPC room without leaking combat state', async () => {

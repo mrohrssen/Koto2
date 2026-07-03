@@ -5,10 +5,7 @@ import { GameManager } from '../../../src/game/loop.js';
 import { createNewRun } from '../../../src/game/state.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { PHASES, derivePhase } from '../../../src/game/phase-machine.js';
-import {
-  buildClientRoomReveal,
-  getRoomFromRevealBuffer,
-} from '../../../src/game/room-reveal-buffer.js';
+import { ensureRoomActionSeq } from '../../../src/game/room-reveal-buffer.js';
 
 function makeRunWithRooms() {
   const player = { name: 'RevealTester', hp: 100, maxHp: 100, attack: 10 };
@@ -28,34 +25,14 @@ function makeRunWithRooms() {
   return { player, run };
 }
 
-describe('server-prepared room reveal buffer', () => {
-  it('serializes only the current room and one future room', () => {
-    const { run } = makeRunWithRooms();
-
-    const reveal = buildClientRoomReveal(run);
-
-    assert.equal(reveal.roomActionSeq, 7);
-    assert.equal(reveal.revealedRooms.length, 2);
-    assert.deepEqual(
-      reveal.revealedRooms.map(entry => [entry.index, entry.room.type]),
-      [
-        [1, ROOM_TYPES.friendlyNpc],
-        [2, ROOM_TYPES.shrine],
-      ]
-    );
-    assert.equal(getRoomFromRevealBuffer({ revealedRooms: reveal.revealedRooms }, 3), null);
+describe('server room action sequence + client state room shape', () => {
+  it('normalizes the room action sequence', () => {
+    assert.equal(ensureRoomActionSeq({ roomActionSeq: 7 }), 7);
+    assert.equal(ensureRoomActionSeq({ roomActionSeq: -3 }), 0);
+    assert.equal(ensureRoomActionSeq({}), 0);
   });
 
-  it('deep-clones revealed rooms so client mutations cannot affect the canonical spine', () => {
-    const { run } = makeRunWithRooms();
-
-    const reveal = buildClientRoomReveal(run);
-    reveal.revealedRooms[0].room.type = 'mutated';
-
-    assert.equal(run.rooms[1].type, ROOM_TYPES.friendlyNpc);
-  });
-
-  it('omits full run.rooms from GameManager client state while preserving current room data', () => {
+  it('omits full run.rooms and the legacy reveal buffer from GameManager client state', () => {
     const { player, run } = makeRunWithRooms();
     const gm = new GameManager();
     gm.player = player;
@@ -64,19 +41,19 @@ describe('server-prepared room reveal buffer', () => {
 
     const state = gm.getState();
 
+    // The canonical spine and the retired reveal buffer never reach the client;
+    // the runway (exploreRunway.preparedRooms) is the sole client room source.
     assert.equal(Object.hasOwn(state.run, 'rooms'), false);
+    assert.equal(Object.hasOwn(state.run, 'revealedRooms'), false);
+    assert.equal(Object.hasOwn(state.run, 'revealBufferSize'), false);
     assert.equal(state.run.roomActionSeq, 7);
     assert.equal(state.room.type, ROOM_TYPES.friendlyNpc);
-    assert.deepEqual(
-      state.run.revealedRooms.map(entry => [entry.index, entry.room.type]),
-      [
-        [1, ROOM_TYPES.friendlyNpc],
-        [2, ROOM_TYPES.shrine],
-      ]
-    );
   });
 
-  it('derives phase from revealed room data when full run.rooms is absent', () => {
+  it('derives client phase from state.room when full run.rooms is absent', () => {
+    // The client never receives run.rooms; the room-reveal buffer keeps the
+    // current room on state.room (sourced from exploreRunway.preparedRooms), so
+    // phase derivation falls through to state.room.
     const phase = derivePhase({
       player: { name: 'ClientPlayer' },
       combat: null,
@@ -88,12 +65,22 @@ describe('server-prepared room reveal buffer', () => {
         currentRoom: 2,
         initialSkillPick: { chosenId: 'buffMaster' },
         creatureParty: { active: [{ id: 'hi' }] },
-        revealedRooms: [
-          { index: 2, room: { type: ROOM_TYPES.friendlyNpc, interacted: false } },
-        ],
       },
     });
 
+    assert.equal(phase, PHASES.FRIENDLY_NPC);
+  });
+
+  it('derives server phase from the canonical run.rooms spine', () => {
+    const { run } = makeRunWithRooms();
+    const phase = derivePhase({
+      player: { name: 'ServerPlayer' },
+      combat: null,
+      room: null,
+      run,
+    });
+
+    // run.currentRoom === 1 -> friendlyNpc room, not yet interacted.
     assert.equal(phase, PHASES.FRIENDLY_NPC);
   });
 });

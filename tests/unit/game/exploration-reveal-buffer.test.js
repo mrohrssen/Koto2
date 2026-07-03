@@ -15,15 +15,17 @@ function makeReadyGameManager() {
 }
 
 describe('exploration reveal buffer state', () => {
-  it('initializes roomActionSeq and reveal metadata on area entry', () => {
+  it('initializes roomActionSeq and finalizes the current room on area entry', () => {
     const gm = makeReadyGameManager();
     const state = gm.getState();
 
+    // getState() runs prepareRoomRevealBuffer(), which finalizes the current
+    // room on the canonical spine. The client sees the current room via
+    // state.room (sourced from the runway), and roomActionSeq is normalized.
     assert.equal(gm.run.roomActionSeq, 0);
     assert.equal(state.run.roomActionSeq, 0);
-    assert.equal(state.run.revealedRooms[0].index, 0);
-    assert.equal(state.run.revealedRooms[0].room.type, gm.run.rooms[0].type);
-    assert.equal(state.run.revealedRooms.length, Math.min(2, gm.run.rooms.length));
+    assert.equal(Object.hasOwn(state.run, 'revealedRooms'), false);
+    assert.equal(state.room.type, gm.run.rooms[0].type);
   });
 
   it('exposes exploreRunway only for active regular exploration runs', () => {
@@ -105,26 +107,26 @@ describe('exploration reveal buffer state', () => {
 
     const state = gm.getState();
     assert.equal(state.run.roomActionSeq, 1);
-    assert.equal(state.run.revealedRooms[0].index, 1);
-    assert.equal(state.run.revealedRooms[0].room.type, gm.run.rooms[1].type);
+    assert.equal(state.run.currentRoom, 1);
+    assert.equal(state.room.type, gm.run.rooms[1].type);
   });
 
-  it('finalizes random and support rooms before they enter the reveal buffer', () => {
+  it('finalizes random and support rooms in place before they enter the reveal buffer', () => {
     const gm = makeReadyGameManager();
     gm.run.rooms[1].type = ROOM_TYPES.randomRoom;
     gm.run.rooms[1].randomRoom = { resolvedType: null };
     gm.run.rooms[2].type = ROOM_TYPES.support;
     gm.run.rooms[2].support = { resolvedType: null };
 
+    // prepareRoomRevealBuffer resolves placeholder rooms on the canonical spine
+    // so the runway never serializes an unresolved random/support room.
     gm.explorationService.prepareRoomRevealBuffer();
-    const state = gm.getState();
-
-    assert.notEqual(state.run.revealedRooms[1].room.type, ROOM_TYPES.randomRoom);
+    assert.notEqual(gm.run.rooms[1].type, ROOM_TYPES.randomRoom);
 
     gm.run.rooms[0].interacted = true;
     gm.proceedToNextRoom();
-    const nextState = gm.getState();
+    gm.explorationService.prepareRoomRevealBuffer();
 
-    assert.notEqual(nextState.run.revealedRooms[1].room.type, ROOM_TYPES.support);
+    assert.notEqual(gm.run.rooms[2].type, ROOM_TYPES.support);
   });
 });
