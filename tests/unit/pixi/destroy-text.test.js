@@ -45,6 +45,7 @@ await mock.module('../../../public/js/pixi/combat-effects-util.js', {
 
 const { destroyText, showDamageNumber, showEventPopup } =
   await import('../../../public/js/pixi/text.js');
+const { showBanner } = await import('../../../public/js/pixi/banners.js');
 
 const TEXTURE_OPTS = { texture: true, textureSource: true };
 
@@ -70,6 +71,12 @@ describe('floating text teardown frees GPU textures', () => {
 
   it('showEventPopup destroys its Text with texture options', async () => {
     await showEventPopup('Guard up!', { x: 100, y: 200 });
+    assert.equal(FakeText.instances.length, 1);
+    assert.deepEqual(FakeText.instances[0].destroyArgs, TEXTURE_OPTS);
+  });
+
+  it('showBanner destroys its Text with texture options', async () => {
+    await showBanner('Correct!', 'weak');
     assert.equal(FakeText.instances.length, 1);
     assert.deepEqual(FakeText.instances[0].destroyArgs, TEXTURE_OPTS);
   });

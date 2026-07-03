@@ -269,7 +269,7 @@ function _syncPixiStatusLabels(ctx, side, index, keys, statStages) {
   // Clear existing labels for this sprite
   if (sprite.statusLabels) {
     for (const pill of sprite.statusLabels) {
-      pill.destroy({ children: true });
+      pill.destroy({ children: true, texture: true, textureSource: true });
     }
   }
   sprite.statusLabels = [];
@@ -666,7 +666,7 @@ export function removeFormationSprite(ctx, side, uid) {
   ctx.creatureSprites[side].delete(uid);
   if (sprite.statusLabels) {
     for (const pill of sprite.statusLabels) {
-      pill.destroy({ children: true });
+      pill.destroy({ children: true, texture: true, textureSource: true });
     }
   }
   _destroyShadow(sprite);
@@ -863,7 +863,7 @@ export function destroyAllStatusLabels(ctx) {
     for (const sprite of sideMap.values()) {
       if (!sprite?.statusLabels?.length) continue;
       for (const pill of sprite.statusLabels) {
-        try { pill.destroy({ children: true }); } catch { /* already gone */ }
+        try { pill.destroy({ children: true, texture: true, textureSource: true }); } catch { /* already gone */ }
       }
       sprite.statusLabels = [];
     }

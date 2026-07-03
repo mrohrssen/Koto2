@@ -2,7 +2,7 @@ import { Graphics, Text, Container } from 'pixi.js';
 import { getApp } from './app.js';
 import { tween, wait } from './tween.js';
 import { burstParticles, screenFlash, ELEMENT_COLORS } from './effects.js';
-import { showEventPopup } from './text.js';
+import { showEventPopup, destroyText } from './text.js';
 
 // ============ STATUS COLORS ============
 
@@ -60,7 +60,7 @@ function _isLiveSprite(sprite) {
 function _stopOngoingForDeadTarget(cancel, container = null) {
   try { cancel?.(); } catch (e) { console.error('[status-vfx] cancel threw:', e); }
   if (container && !container.destroyed) {
-    try { container.destroy({ children: true }); } catch { /* already destroyed */ }
+    try { container.destroy({ children: true, texture: true, textureSource: true }); } catch { /* already destroyed */ }
   }
 }
 
@@ -206,7 +206,7 @@ function _startSleep(sprite, effectsLayer, registerUpdater) {
       z.y -= deltaMS * 0.03; // drift up
       z.alpha = Math.max(0, 1 - z._age / 1200);
       if (z._age >= 1200) {
-        z.destroy();
+        destroyText(z);
       }
     }
   });
@@ -424,7 +424,7 @@ function _restoreSpriteForEffect(sprite, effectType, entry) {
 function _teardownEntry(sprite, effectType, entry) {
   try { entry.cancel?.(); } catch (e) { console.error('[status-vfx] cancel threw:', e); }
   if (entry.container) {
-    try { entry.container.destroy({ children: true }); } catch { /* already destroyed */ }
+    try { entry.container.destroy({ children: true, texture: true, textureSource: true }); } catch { /* already destroyed */ }
   }
   _restoreSpriteForEffect(sprite, effectType, entry);
 }
