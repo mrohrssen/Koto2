@@ -1633,5 +1633,61 @@
     "group": "ryoushi_frozen_lake_defeatLine",
     "raw": "いい魚ですね！",
     "slots": []
+  },
+  {
+    "id": "npc_okami_fightStart_onsen",
+    "category": "npc",
+    "group": "okami_fightStart",
+    "raw": "温泉へようこそ！",
+    "slots": []
+  },
+  {
+    "id": "npc_okami_defeatLine_yasunde",
+    "category": "npc",
+    "group": "okami_defeatLine",
+    "raw": "ゆっくり休んでね！",
+    "slots": []
+  },
+  {
+    "id": "npc_sonchou_fightStart_atsumare",
+    "category": "npc",
+    "group": "sonchou_fightStart",
+    "raw": "村に集まって！",
+    "slots": []
+  },
+  {
+    "id": "npc_sonchou_defeatLine_mura",
+    "category": "npc",
+    "group": "sonchou_defeatLine",
+    "raw": "いい村でしょう？",
+    "slots": []
+  },
+  {
+    "id": "npc_shokunin_fightStart_geta",
+    "category": "npc",
+    "group": "shokunin_fightStart",
+    "raw": "下駄を作ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_shokunin_defeatLine_ude",
+    "category": "npc",
+    "group": "shokunin_defeatLine",
+    "raw": "いい腕ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_okyakusan_fightStart_oyu",
+    "category": "npc",
+    "group": "okyakusan_fightStart",
+    "raw": "お湯に入ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_okyakusan_defeatLine_oyu",
+    "category": "npc",
+    "group": "okyakusan_defeatLine",
+    "raw": "いいお湯でした！",
+    "slots": []
   }
 ]
