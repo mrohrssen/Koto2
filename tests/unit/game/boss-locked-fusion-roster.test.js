@@ -22,7 +22,8 @@ const ALLOWED_FUSION_AREA_PLACEMENTS = new Set([
   'night-forest:boss:tsukino-ookami',
   'thunder-mountain:boss:kaminarino-tori',
   'frozen-lake:boss:koorino-kuma',
-  'snow-village:boss:yukino-kitsune'
+  'snow-village:boss:yukino-kitsune',
+  'summer-festival:boss:honeno-oni'
 ]);
 
 const EXPECTED_FUSIONS = [

@@ -69,7 +69,13 @@ const ALLOWED_AREA_PLACEMENTS = new Set([
   'snow-village:hitsuji',
   'snow-village:koori',
   'snow-village:tsuru',
-  'snow-village:boss:yukino-kitsune'
+  'snow-village:boss:yukino-kitsune',
+  'summer-festival:hone',
+  'summer-festival:oni',
+  'summer-festival:akuma',
+  'summer-festival:yuurei',
+  'summer-festival:kitsune',
+  'summer-festival:boss:honeno-oni'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));

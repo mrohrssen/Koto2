@@ -474,5 +474,48 @@
     "background": "areas/snow-village/snow-village_01.webp",
     "stage": 1,
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "summer-festival",
+    "name": "夏の祭り",
+    "nameEn": "Summer Festival",
+    "reading": "なつのまつり",
+    "rank": 1200,
+    "particle": "の",
+    "parallaxId": "summer-festival",
+    "modifierWord": {
+      "word": "夏",
+      "reading": "なつ",
+      "meaning": "summer",
+      "rank": 1200
+    },
+    "locationWord": {
+      "word": "祭り",
+      "reading": "まつり",
+      "meaning": "festival",
+      "rank": 4300
+    },
+    "theme": "A summer festival night — lantern-lit stalls, taiko drums, fireworks, and a spooky-fun test-of-courage trail.",
+    "creatures": [
+      "hone",
+      "oni",
+      "akuma",
+      "yuurei",
+      "kitsune",
+      "hi"
+    ],
+    "bossCreatureId": "honeno-oni",
+    "roomCount": 30,
+    "description": "The grand festival finale, where a great oni presides over the test-of-courage trail.",
+    "tags": [
+      "festival",
+      "summer",
+      "night",
+      "celebration"
+    ],
+    "subAreas": [],
+    "background": "areas/summer-festival/summer-festival_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]
