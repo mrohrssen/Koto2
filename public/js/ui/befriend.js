@@ -28,6 +28,7 @@ import { clear as clearTargetSelect } from './target-select.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
+import { getExploreSession } from './explore-session.js';
 
 const API_BASE = PLATFORM.apiBase;
 
@@ -42,6 +43,37 @@ export function init(deps) {
   ctx = deps;
 }
 
+// ---- Online-only gating for befriend/talk ----
+// Talk hits live AI endpoints (/api/game/befriend-talk, /api/game/befriend-quiz-answer)
+// that act on SERVER combat state. With offline session combat, the client can be
+// turns ahead of the server, so a talk request would act on stale server combat.
+// The gate therefore holds when EITHER offline OR the explore-session log still has
+// unsynced combat entries (a `combat.cycle` cycle, or any `*.start` encounter kind).
+
+const COPY_CONNECTION_NEEDED = 'Connection needed to talk.';
+
+/** True when the explore-session log holds any unsynced combat entry. */
+export function sessionHasPendingCombat() {
+  const session = getExploreSession();
+  if (!session || typeof session.snapshot !== 'function') return false;
+  const entries = session.snapshot();
+  if (!Array.isArray(entries)) return false;
+  return entries.some(entry => {
+    const kind = entry?.kind;
+    return kind === 'combat.cycle' || (typeof kind === 'string' && kind.endsWith('.start'));
+  });
+}
+
+/**
+ * True when it is safe to start a befriend/talk exchange: the client is online
+ * (navigator.onLine can be undefined in tests/node — only a literal false gates)
+ * and no combat entries are still waiting to sync to the server.
+ */
+export function canStartBefriendTalk() {
+  const online = globalThis.navigator?.onLine !== false;
+  return online && !sessionHasPendingCombat();
+}
+
 function buildCreatureSpeaker(creature = {}, fallbackName = '') {
   const reading = creature.reading || creature.creatureReading || creature.name || fallbackName || '';
   const id = creature.id || creature.creatureId || '';
@@ -50,6 +82,57 @@ function buildCreatureSpeaker(creature = {}, fallbackName = '') {
 
 function simpleChoiceCards(labels) {
   return labels.map(label => ({ title: label }));
+}
+
+/**
+ * Decorate the はなす (Talk) choice card with the online-only gate. When gated,
+ * the card renders disabled with `Connection needed to talk.` and swallows taps
+ * (a tap kicks off getExploreSession().syncNow() so a working connection
+ * re-enables the card on the next render). When the gate is open, the underlying
+ * renderChoicesAsync handler resolves Talk normally.
+ *
+ * Idempotent: re-running re-evaluates the gate and installs the tap interceptor
+ * only once, so it can be called again after a sync to re-enable the card.
+ * @param {number} talkIndex - index of the Talk card within #action-area .ui-choice
+ */
+function decorateTalkGate(talkIndex = 1) {
+  const cards = document.querySelectorAll('#action-area .ui-choice');
+  const talkCard = cards[talkIndex];
+  if (!talkCard) return;
+
+  const gated = !canStartBefriendTalk();
+  talkCard.dataset.talkGated = gated ? '1' : '0';
+  // NB: don't use .ui-choice--disabled here — it sets pointer-events:none, which
+  // would stop the gated tap from reaching the syncNow() interceptor below.
+  // .befriend-talk-gated dims the card but keeps it tappable.
+  talkCard.classList.toggle('befriend-talk-gated', gated);
+  talkCard.setAttribute('aria-disabled', gated ? 'true' : 'false');
+
+  let note = talkCard.querySelector('.befriend-talk-gate-note');
+  if (gated) {
+    if (!note) {
+      note = document.createElement('div');
+      note.className = 'befriend-talk-gate-note';
+      note.textContent = COPY_CONNECTION_NEEDED;
+      talkCard.appendChild(note);
+    }
+  } else if (note) {
+    note.remove();
+  }
+
+  // Install the capture-phase tap interceptor exactly once. It runs before the
+  // bubble-phase select handler renderChoices attached, so a gated tap never
+  // resolves Talk.
+  if (talkCard.dataset.talkGateWired !== '1') {
+    talkCard.dataset.talkGateWired = '1';
+    talkCard.addEventListener('click', (event) => {
+      if (talkCard.dataset.talkGated !== '1') return; // gate open — let Talk resolve
+      event.stopImmediatePropagation();
+      event.preventDefault();
+      const syncResult = getExploreSession()?.syncNow();
+      Promise.resolve(syncResult).finally(() => decorateTalkGate(talkIndex));
+    }, true);
+  }
 }
 
 function dialogueOptionsForCreatureSpeaker(speaker) {
@@ -627,6 +710,10 @@ export async function renderBefriendQuiz(quizData, result) {
     heading: 'Choose an action',
     cards: simpleChoiceCards(['たたかう (Fight)', 'はなす (Talk)']),
   });
+
+  // Online-only gate on Talk (index 1): disable + intercept while offline or
+  // while combat entries are still unsynced to the server.
+  decorateTalkGate(1);
 
   // Tutorial step 1: lock to Talk with glow, then Cid encourages befriending
   const tutorialStep = ctx.getGameState()?.meta?.tutorialStep;

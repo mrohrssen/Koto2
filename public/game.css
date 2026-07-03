@@ -6537,6 +6537,19 @@ button.hud-chip {
   pointer-events: none;
 }
 
+/* Online-only gate on the はなす (Talk) choice: dim it but keep it tappable so a
+   tap can trigger a resync. Set by decorateTalkGate() in befriend.js. */
+.ui-choice.befriend-talk-gated {
+  opacity: 0.5;
+}
+
+.befriend-talk-gate-note {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
 .ui-choice__sprite {
   flex-shrink: 0;
   width: 48px;
