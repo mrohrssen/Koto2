@@ -177,9 +177,6 @@ function activeRoomDrafts(draft) {
   const preparedRoom = currentPreparedRoomDraft(draft);
   return uniqueObjects([
     draft?.room,
-    Number.isInteger(currentRoom)
-      ? run?.revealedRooms?.find(entry => entry?.index === currentRoom)?.room
-      : null,
     Number.isInteger(currentRoom) && Array.isArray(run?.rooms)
       ? run.rooms[currentRoom]
       : null,

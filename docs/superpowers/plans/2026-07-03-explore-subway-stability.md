@@ -382,7 +382,7 @@ Expected: PASS. Commit the final findings-doc update marking baseline cleared.
 
 **Files:**
 - Modify: `public/js/ui/exploration.js` (revealedRooms reads at `:198`, `:939-946`), `src/game/phase-machine.js`, `public/js/ui/room-transition.js`, `src/game/loop.js` (stop exposing `revealedRooms` once readers are migrated), `src/game/room-reveal-buffer.js` (keep `ensureRoomActionSeq`; the reveal-window builders become sync-service-internal or are deleted if unused)
-- Delete: `public/js/ui/optimistic-run-action.js`
+- ~~Delete: `public/js/ui/optimistic-run-action.js`~~ (CORRECTION 2026-07-04: load-bearing — `public/game.js` consumes all 4 exports for post-combat-shop; kept. The Step 2 deletion assertion below must NOT ship for this file.)
 - Test: `tests/unit/ui/explore-session-cleanup.test.js` (create — source-level deletion assertions, same pattern the 06-16 plan used), plus existing suites.
 
 **Interfaces:**

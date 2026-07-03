@@ -84,7 +84,7 @@ A single calm pause pattern (matching KK's `Connection is spotty…` copy) for: 
 ### Deletions (after the rooms tier is green)
 
 - Migrate the remaining `revealedRooms` readers (`src/game/phase-machine.js`, `public/js/ui/room-transition.js`, `public/js/ui/exploration.js` remnants) to the runway, then stop exposing the parallel legacy reveal buffer from `GameManager.getState()`.
-- Delete `public/js/ui/optimistic-run-action.js` (orphaned — no importers).
+- ~~Delete `public/js/ui/optimistic-run-action.js` (orphaned — no importers)~~ **CORRECTION (Task 5, 2026-07-04):** the file is LIVE — `public/game.js` imports all four exports for the post-combat-shop optimistic path (the audit grep missed `public/game.js`, searching only `public/js/`). It stays until the post-combat shop migrates off it.
 - Mark legacy room-mutation endpoints as compatibility paths server-side; remove client callers.
 - Delete the old stub harness (replaced in Stage 0).
 

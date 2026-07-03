@@ -13,8 +13,9 @@ export function getBufferedRoom(state, roomIndex) {
     return state.room;
   }
 
-  const entry = state.run?.revealedRooms?.find(candidate => candidate?.index === roomIndex);
-  return entry?.room || null;
+  const prepared = state.run?.exploreRunway?.preparedRooms
+    ?.find(candidate => candidate?.index === roomIndex);
+  return prepared?.room || null;
 }
 
 export function getCurrentRoom(state) {

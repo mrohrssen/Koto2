@@ -23,10 +23,12 @@ function sampleState() {
       totalRooms: 3,
       initialSkillPick: { chosenId: 'buffMaster' },
       creatureParty: { active: [{ id: 'hi' }] },
-      revealedRooms: [
-        { index: 0, room: { id: 'room-0', type: ROOM_TYPES.encounter, interacted: true } },
-        { index: 1, room: { id: 'room-1', type: ROOM_TYPES.friendlyNpc, interacted: false } },
-      ],
+      exploreRunway: {
+        preparedRooms: [
+          { index: 0, room: { id: 'room-0', type: ROOM_TYPES.encounter, interacted: true } },
+          { index: 1, room: { id: 'room-1', type: ROOM_TYPES.friendlyNpc, interacted: false } },
+        ],
+      },
     },
   };
 }
@@ -54,7 +56,9 @@ describe('client room reveal buffer helpers', () => {
 
   it('returns null when there is no buffered next room', () => {
     const state = sampleState();
-    state.run.revealedRooms = [{ index: 0, room: { id: 'room-0', type: ROOM_TYPES.encounter } }];
+    state.run.exploreRunway.preparedRooms = [
+      { index: 0, room: { id: 'room-0', type: ROOM_TYPES.encounter } },
+    ];
 
     assert.equal(getNextRoom(state), null);
     assert.equal(applyOptimisticRoomAdvance(state), null);

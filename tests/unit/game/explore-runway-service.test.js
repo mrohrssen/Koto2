@@ -6,6 +6,8 @@ import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { buildExploreRunway } from '../../../src/game/services/explore-runway-service.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
+import { getDialogueLineText } from '../../../src/services/dialogue-card-tts.js';
+import { hashKey } from '../../../src/services/tts-dialogue-cache.js';
 
 function makeGm(roomTypes) {
   const player = { name: 'RunwayTester', hp: 100, maxHp: 100, credits: 50 };
@@ -262,6 +264,117 @@ test('uses iterable known words when selecting frame-safe runway payloads', asyn
 
   const friendly = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
   assert.deepEqual(friendly.interactionPayload.greeting.words, ['よく', '来る']);
+});
+
+// Faithful stand-in for the production dialogue-card resolver on the
+// waitForSynthesis:false CACHE-HIT path: it resolves the speaker id the same
+// way (explicit speakerId, else game-master default 13), derives the line text
+// with the real getDialogueLineText, and keys the WAV with the real hashKey.
+// Attaching this lets us pin the ATTACHED key to the key the client's own
+// request would derive for THAT speaker — a mismatch (e.g. the service passing
+// the wrong speaker) fails the assertion.
+function makeAudioResolver({ calls } = {}) {
+  return async ({ userId, speakerKey, speakerId, line }) => {
+    const text = getDialogueLineText(line);
+    const resolvedSpeakerId = Number.isFinite(Number(speakerId)) ? Number(speakerId) : 13;
+    if (calls) calls.push({ userId, speakerKey, speakerId, resolvedSpeakerId, text });
+    return { userId, key: hashKey(resolvedSpeakerId, text), speakerId: resolvedSpeakerId };
+  };
+}
+
+test('attaches friendly NPC greeting audio under the client-matching cache key', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
+  gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC', speakerId: 42 };
+
+  const calls = [];
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: makeAudioResolver({ calls }),
+  });
+
+  const friendly = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
+  const greeting = friendly.interactionPayload.greeting;
+  assert.ok(greeting?.tokens?.length > 0, 'greeting frame still present');
+  assert.ok(greeting.audio, 'greeting carries an audio descriptor');
+
+  // The service must resolve the NPC's own voice, not a hard-coded game-master.
+  const call = calls.find(c => c.speakerKey === 'test_npc');
+  assert.ok(call, 'resolver called with the NPC speakerKey');
+  assert.equal(call.speakerId, 42, 'resolver called with the NPC speakerId');
+
+  // Pin: the attached key equals the key the client would derive for this
+  // speaker + line, using the real tts-dialogue-cache derivation.
+  const expectedText = getDialogueLineText(greeting);
+  assert.equal(greeting.audio.key, hashKey(42, expectedText));
+  assert.equal(greeting.audio.userId, 'runway-user');
+});
+
+test('attaches shrine greeting audio under the game-master (13) client-matching key', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.shrine]);
+
+  const calls = [];
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: makeAudioResolver({ calls }),
+  });
+
+  const shrine = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.shrine);
+  const greeting = shrine.interactionPayload.greeting;
+  assert.ok(greeting?.tokens?.length > 0, 'shrine greeting frame still present');
+  assert.ok(greeting.audio, 'shrine greeting carries an audio descriptor');
+
+  // Shrine uses the legacy 'shrine_fox' speakerKey, which the resolver maps to
+  // the game-master voice (13 unless settings override).
+  const call = calls.find(c => c.speakerKey === 'shrine_fox');
+  assert.ok(call, 'resolver called with the shrine_fox speakerKey');
+
+  const expectedText = getDialogueLineText(greeting);
+  assert.equal(greeting.audio.key, hashKey(13, expectedText));
+});
+
+test('reuses the persisted greeting audio descriptor across rebuilds without recompute', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
+  gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC', speakerId: 42 };
+
+  let resolveCalls = 0;
+  const opts = {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async ({ userId, speakerId, line }) => {
+      resolveCalls += 1;
+      return { userId, key: hashKey(Number(speakerId) || 13, getDialogueLineText(line)), speakerId };
+    },
+  };
+
+  await buildExploreRunway(gm, opts);
+  assert.equal(resolveCalls, 1, 'audio resolved once on first build');
+  assert.ok(gm.run.rooms[1].friendlyNpc.greetingAudio, 'descriptor persisted on room state');
+
+  // A second build for the same prepared room reuses the persisted descriptor.
+  const rebuilt = await buildExploreRunway(gm, opts);
+  assert.equal(resolveCalls, 1, 'audio not re-resolved on rebuild');
+  const friendly = rebuilt.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
+  assert.ok(friendly.interactionPayload.greeting.audio, 'rebuild still carries attached audio');
+});
+
+test('a failing audio resolver never fails the runway build and emits no audio', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
+  gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC', speakerId: 42 };
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => { throw new Error('voicevox down'); },
+  });
+
+  const friendly = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
+  const greeting = friendly.interactionPayload.greeting;
+  assert.ok(greeting?.tokens?.length > 0, 'greeting still present without audio');
+  assert.equal(Object.hasOwn(greeting, 'audio'), false, 'no audio attached on synthesis failure');
+  assert.equal(friendly.offlineReady, true, 'room still offline-ready without audio');
+  assert.equal(gm.run.rooms[1].friendlyNpc.greetingAudio, undefined, 'no descriptor persisted on failure');
 });
 
 test('marks skill master without offers as missing payload', async () => {

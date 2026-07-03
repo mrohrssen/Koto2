@@ -585,4 +585,53 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     assert.match(actionArea.innerHTML, /Arc Strike - Lvl\. 1/);
     assert.match(actionArea.innerHTML, /30% damage/);
   });
+
+  // Regression (explore subway rooms tier): an NPC battle reward with no skills
+  // to offer (e.g. every party skill tree maxed) previously dead-ended on
+  // "No skills available." with no control to advance — a soft lock for the
+  // player and the subway harness (loops to MAX_INTERACTIONS). It must
+  // auto-proceed instead.
+  it('auto-proceeds when the NPC battle reward has no skills to offer', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    let proceedCalls = 0;
+    init({
+      getGameState: () => ({
+        phase: 'npc_skill_selection',
+        run: {
+          stats: { startTime: 777 },
+          currentRoom: 5,
+          revealedRooms: [],
+          creatureParty: { active: [] },
+          exploreRunway: null,
+        },
+        room: {
+          id: 'npc-battle-no-skills',
+          type: 'npcBattle',
+          npcBattle: { skillSelectionPending: true, npc: { id: 'nagi', name: 'ナギ', nameEn: 'Nagi' } },
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => {} },
+      apiProceed: async () => { proceedCalls += 1; return null; },
+    });
+
+    try {
+      await renderNpcBattleSkillSelection({
+        fetchOffers: async () => ({ offered: [], skillSelectPrompt: null }),
+        onSkillChosen: async () => {},
+      });
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(proceedCalls, 1, 'empty NPC battle reward must auto-proceed, not dead-end');
+  });
 });

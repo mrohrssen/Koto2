@@ -257,11 +257,21 @@ let gameState = {
 };
 
 store.set('gameState', gameState);
+if (typeof window !== 'undefined') {
+  window.__gameState = gameState;
+}
 
 function updateGameState(newState) {
   console.log('[DEBUG] updateGameState called. phase:', newState.phase, 'pendingBranch:', newState.run?.pendingBranch, 'currentRoom:', newState.run?.currentRoom);
   gameState = newState;
   store.set('gameState', gameState);
+  // Test seam: expose the live client state so automated harnesses can read
+  // phase / room / runway WITHOUT fetching GET /api/game/state (which rotates
+  // the explore session epoch and would spuriously invalidate the client's
+  // in-flight session). Mirrors window.__kkPhase for Kanji Kombat.
+  if (typeof window !== 'undefined') {
+    window.__gameState = gameState;
+  }
   setCrashContext(gameState);
   updateCurrentUserProperties(gameState);
 }
