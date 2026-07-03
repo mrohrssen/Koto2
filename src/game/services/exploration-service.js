@@ -523,6 +523,51 @@ export class ExplorationService {
     return this.proceedToNextRoom();
   }
 
+  // ============ COMBAT REPLAY (explore session log) ============
+
+  /**
+   * Replay an `encounter.start` / `npcBattle.start` / `boss.start` entry.
+   * Validates the current room type matches the entry kind, then consumes the
+   * room's prepared roll via startCreatureEncounter() (single-use). Idempotence
+   * rides the actionId ledger like every other entry — a genuinely duplicate
+   * actionId never reaches this performer, so an already-active combat here means
+   * a different actionId is trying to start over a live fight (a correction case);
+   * startCreatureEncounter() throws 'Combat already active' for that.
+   */
+  applyCombatStart(entry = {}) {
+    const kind = entry?.kind || '';
+    const expectedType = kind.endsWith('.start') ? kind.slice(0, -'.start'.length) : kind;
+    if (expectedType !== ROOM_TYPES.encounter
+      && expectedType !== ROOM_TYPES.npcBattle
+      && expectedType !== ROOM_TYPES.boss) {
+      throw new Error(`unsupported_combat_start:${kind}`);
+    }
+
+    const room = this.getCurrentRoom();
+    if (!room) {
+      throw new Error('No current room');
+    }
+    if (room.type !== expectedType) {
+      throw new Error(`combat_start_room_mismatch:${expectedType}:${room.type}`);
+    }
+
+    const started = this.gm.startCreatureEncounter();
+    return {
+      started: true,
+      combatId: started?.optimistic?.combatId ?? this.gm.combat?.optimistic?.combatId ?? null,
+      isBoss: !!started?.isBoss,
+      isNpcBattle: !!started?.isNpcBattle,
+    };
+  }
+
+  /**
+   * Replay a `combat.cycle` entry. One-line delegate to the combat cycle service,
+   * keeping the sync service's performer indirection consistent with support rooms.
+   */
+  applyCombatCycle(payload = {}) {
+    return this.gm.combatCycleService.replayCombatCycleEntry(payload);
+  }
+
   // ============ ROOM INTERACTIONS ============
 
   applyFriendlyNpcChoose({ itemId, targetCreatureIndex } = {}) {

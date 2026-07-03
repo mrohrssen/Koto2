@@ -88,7 +88,7 @@ import { selectBark } from '../dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
 import { selectBestFrame } from '../token-format.js';
 import { applyDebugSuperAttack } from '../debug-super-attack.js';
-import { ensureTurnSeeds, PVE_TURN_SEED_CHAIN_TARGET } from './combat-seed-chain.js';
+import { ensureTurnSeeds, advanceTurnSeeds, PVE_TURN_SEED_CHAIN_TARGET } from './combat-seed-chain.js';
 
 function createServerSeed() {
   return randomBytes(16).toString('hex');
@@ -661,8 +661,12 @@ export class CombatCycleService {
       suppressBarks: usesSharedPveCorePrediction,
       deferXpAwards: usesSharedPveCorePrediction,
     });
-    optimistic.stateVersion += 1;
-    optimistic.nextTurnSeed = createServerSeed();
+    // Advance the pre-committed turn-seed chain (shifts the head to the next
+    // prepared seed, refills, and bumps stateVersion) instead of minting a fresh
+    // random seed. This keeps an ONLINE verified turn aligned with the prepared
+    // chain so a fight can mix online and offline turns and still agree on which
+    // seed each turn replays with. advanceTurnSeeds bumps stateVersion itself.
+    advanceTurnSeeds(optimistic, { target: PVE_TURN_SEED_CHAIN_TARGET });
 
     const committedHash = usesSharedPveCorePrediction && sharedPveCoreHash
       ? sharedPveCoreHash
@@ -686,6 +690,53 @@ export class CombatCycleService {
     };
     rememberAcceptedActionReplay(optimistic, envelope, response);
     return response;
+  }
+
+  /**
+   * Replay a single offline-predicted combat turn from the explore session log.
+   * Mirrors the Kanji Kombat quiz replay branch (kanji-kombat-service.js): resolve
+   * the turn against the exact prepared seed the client predicted with, commit the
+   * grade through the same shared-core path the online verify uses, then advance the
+   * chain. On a transcript hash mismatch the grade is still committed (server owns
+   * the authoritative result) and the error carries `.committed` so the sync loop
+   * confirms the seq before snapping the client to authoritative state.
+   *
+   * @returns {Object} the committed turn result (combatEnded/victory/rewards ride along)
+   */
+  replayCombatCycleEntry({ actionType = 'attack', moveChoices = [], predictedHash } = {}) {
+    const optimistic = this.gm.combat?.optimistic;
+    if (!optimistic) throw new Error('no_active_creature_combat');
+    ensureTurnSeeds(this.gm.combat, { target: PVE_TURN_SEED_CHAIN_TARGET });
+    const seed = optimistic.nextTurnSeed;
+    const resolvedActionType = normalizeCombatActionType(actionType);
+    const resolved = resolvedActionType === 'attack' && this.gm.combat?.actionCursor
+      ? resolvePveCursorTurn(
+          { combat: this.gm.combat, run: this.gm.run, moveChoices },
+          { actionType: resolvedActionType, seed },
+        )
+      : resolvePveTurn({
+          snapshot: { combat: this.gm.combat, run: this.gm.run },
+          actionType: resolvedActionType,
+          moveChoices,
+          seed,
+          processKoSwaps: true,
+        });
+    const serverHash = hashTranscript(resolved.transcript);
+    const hashMatches = serverHash === predictedHash;
+    const committed = this.creatureCombatCycle(resolvedActionType, moveChoices, {
+      rng: createSeededRng(seed),
+      verifiedSeed: seed,
+      suppressBarks: true,
+      deferXpAwards: true,
+    });
+    advanceTurnSeeds(optimistic, { target: PVE_TURN_SEED_CHAIN_TARGET });
+    if (!hashMatches) {
+      // Grade already landed — confirm the seq, then stop the batch (KK pattern).
+      const error = new Error('transcript_mismatch');
+      error.committed = committed;
+      throw error;
+    }
+    return committed;
   }
 
   _collectPoisonKoXpEvents(effectEvents, metaMults, rng = Math.random) {
