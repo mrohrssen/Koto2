@@ -82,8 +82,7 @@ import * as tts from './js/tts.js';
 import * as settings from './js/settings.js';
 import * as explorationUI from './js/ui/exploration.js';
 import { getExploreSession } from './js/ui/explore-session.js';
-import { createCombatState } from '../src/game/state.js';
-import { createPveOpeningCursor } from '../src/game/combat/action-cursor.js';
+import { buildLocalCombatFromStart } from '../src/shared/combat/local-combat-start.js';
 import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
@@ -1600,38 +1599,6 @@ async function enterCreatureCombatFromStart(result, { hasCreatures = true } = {}
   startCombatLoop();
 }
 
-// Build the local combat state from a runway-prepared combatStart payload,
-// exactly shaped like the state after a live /start-creature-encounter (allies,
-// enemies, opening action cursor, optimistic head + full pre-committed seed
-// chain). Mirrors combat-cycle-service.startCreatureEncounter's combat object so
-// the client can run offline turns and the server replay converges.
-function buildLocalCombatFromStart(combatStart, seedChain) {
-  const enemies = combatStart.enemies || (combatStart.enemy ? [combatStart.enemy] : []);
-  const allies = combatStart.allies || gameState.run?.creatureParty?.active || [];
-  const combat = createCombatState(enemies[0] || null);
-  combat.allies = allies;
-  combat.enemies = enemies;
-  combat.actionCursor = createPveOpeningCursor({ allies, enemies });
-  combat.actionCount = 0;
-  combat.cycleCount = 0;
-  combat.openingResolved = false;
-  combat.isCreatureCombat = true;
-  combat.isBoss = combatStart.isBoss === true;
-  combat.swapPhase = true;
-  combat.optimistic = {
-    combatId: combatStart.optimistic?.combatId ?? null,
-    stateVersion: combatStart.optimistic?.stateVersion ?? 0,
-    nextTurnSeed: combatStart.optimistic?.nextTurnSeed ?? (seedChain?.[0] || null),
-    turnSeeds: Array.isArray(seedChain) ? [...seedChain] : [],
-    acceptedActionIds: {},
-  };
-  if (combatStart.npc) {
-    combat.npcId = combatStart.npc.id;
-    combat.npcData = combatStart.npc;
-  }
-  return combat;
-}
-
 // Session-first combat start. Returns true when the fight was started locally
 // through the explore session; false to fall back to the online start path.
 async function startCreatureEncounterFromSession(session) {
@@ -1649,7 +1616,9 @@ async function startCreatureEncounterFromSession(session) {
   }
 
   const draft = structuredClone(gameState);
-  draft.combat = buildLocalCombatFromStart(combatStart, payload.seedChain);
+  draft.combat = buildLocalCombatFromStart(combatStart, payload.seedChain, {
+    fallbackAllies: gameState.run?.creatureParty?.active || [],
+  });
   draft.phase = 'combat';
   updateGameState(draft);
 

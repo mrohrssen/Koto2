@@ -8,6 +8,7 @@ import { CombatCycleService } from '../../../src/game/services/combat-cycle-serv
 import { ExploreSessionSyncService } from '../../../src/game/services/explore-session-sync-service.js';
 import { resolvePveCursorTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
 import { hashTranscript } from '../../../src/shared/action-protocol.js';
+import { buildLocalCombatFromStart } from '../../../src/shared/combat/local-combat-start.js';
 
 const AREA_ID = 'hajimari-no-hiroba';
 const LIVE_EPOCH = 'ese_1111111111111111';
@@ -375,5 +376,73 @@ describe('ExploreSessionSyncService — combat replay', () => {
     assert.equal(result.status, 'corrected');
     assert.match(result.reason, /combat_start_room_mismatch/);
     assert.equal(gm.combat, null, 'no combat started on a mismatch');
+  });
+});
+
+describe('local combat start — statStages hash parity with server', () => {
+  // Reproduces the runway-started-fight first-turn transcript_mismatch: the client
+  // builds combat via buildLocalCombatFromStart (which must mirror the server's
+  // resetStatStages step), the server builds via startCreatureEncounter, and the
+  // SAME first turn must hash identically. buildStateSummary serializes
+  // `statStages: creature.statStages || null`, so a client that skips the reset
+  // (fresh creatures → statStages absent → null) diverges from the server
+  // ({atk:0,def:0,dex:0}) on turn 1 of every offline-started fight.
+
+  // Shape the wire payload buildCombatPayload emits: allies/enemies cloned from
+  // the party + prepared roll BEFORE the server mutates them in startCreatureEncounter.
+  function buildClientCombatStart(gm, prepared) {
+    return {
+      combatStart: {
+        enemy: structuredClone(prepared.enemies[0] || null),
+        enemies: structuredClone(prepared.enemies || []),
+        allies: structuredClone(gm.run.creatureParty.active || []),
+        isBoss: prepared.isBoss === true,
+        isNpcBattle: prepared.isNpcBattle === true,
+        optimistic: {
+          combatId: prepared.combatId,
+          stateVersion: 0,
+          nextTurnSeed: prepared.turnSeeds[0] || null,
+        },
+      },
+      seedChain: [...prepared.turnSeeds],
+    };
+  }
+
+  function resolveFirstTurn(combat, run, seed) {
+    // clone:true (default) so the combat object is never mutated by resolution.
+    return resolvePveCursorTurn(
+      { combat, run, moveChoices: [{ creatureIndex: 0, moveId: BIG_MOVE.id, targetIndex: 0 }] },
+      { actionType: 'attack', seed },
+    );
+  }
+
+  it('client buildLocalCombatFromStart and server startCreatureEncounter hash the same first turn', () => {
+    const gm = makeCombatGm({ roomType: ROOM_TYPES.boss, enemyHp: 500, allyHp: 500 });
+    const room = gm.run.rooms[0];
+
+    // Real prepared roll (combatId + pre-committed seed chain), shared by both sides.
+    const prepared = gm.combatCycleService.prepareCombatStart(room);
+    const { combatStart, seedChain } = buildClientCombatStart(gm, prepared);
+    const seed = seedChain[0];
+
+    // Client path: fresh creatures, no statStages until buildLocalCombatFromStart resets them.
+    assert.equal(
+      Object.prototype.hasOwnProperty.call(combatStart.allies[0], 'statStages'), false,
+      'precondition: the wire payload carries fresh creatures without statStages',
+    );
+    const clientCombat = buildLocalCombatFromStart(combatStart, seedChain);
+
+    // Server path: consumes the same prepared roll (single-use) and resets stat stages.
+    gm.combatCycleService.startCreatureEncounter();
+    const serverCombat = gm.combat;
+    assert.equal(serverCombat.optimistic.nextTurnSeed, seed, 'both sides resolve the same head seed');
+
+    const clientHash = hashTranscript(resolveFirstTurn(clientCombat, gm.run, seed).transcript);
+    const serverHash = hashTranscript(resolveFirstTurn(serverCombat, gm.run, seed).transcript);
+
+    assert.equal(
+      clientHash, serverHash,
+      'first-turn transcript hashes must match across the client-build / server-build boundary',
+    );
   });
 });
