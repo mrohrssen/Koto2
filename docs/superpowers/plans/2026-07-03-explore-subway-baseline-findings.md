@@ -114,6 +114,22 @@ purpose: these failures are the deliverable and form Stage 1's work queue.
   post-combat handoff ever stalls for real, this is the assertion that will catch
   it.
 
+### F4 — NPC battle reward with no skills soft-locks the room  ✅ FIXED (Task 3, NEW — not in original baseline)
+
+> **Discovered (Task 3):** surfaced only after the F1 fix let a run reach an
+> `npcBattle` room. When `rollSkillMasterOffers` returns empty (every party skill
+> tree maxed / offer display resolves to none), `renderNpcBattleSkillSelection`
+> rendered `NPC Battle Reward — No skills available.` with **no control to
+> advance** — a soft lock (`npc_skill_selection` with `skillSelectionPending`, no
+> proceed affordance). The player is stuck and the harness loops to
+> `MAX_INTERACTIONS`. **Fix:** on empty offers, mark the reward resolved and
+> auto-proceed (`proceedToNextRoom` does not gate npcBattle rooms), mirroring the
+> "already completed → auto-proceed" path. `public/js/ui/exploration.js`,
+> `renderNpcBattleSkillSelection`; test
+> `tests/unit/ui/exploration-skill-master.test.js`
+> ("auto-proceeds when the NPC battle reward has no skills to offer").
+> Commit `1ed25b42`.
+
 ## Instrumentation / environment observations
 
 ### ~~O1 — `window.__gameState` test seam does not exist~~  ✅ ADDED (Task 3)
@@ -127,7 +143,7 @@ purpose: these failures are the deliverable and form Stage 1's work queue.
 > `corrected` (`session_epoch_mismatch`), tripping the rooms-tier `correctedSyncs
 > === 0` invariant. With the seam the harness reads state in-page and no longer
 > polls `/state` mid-run, so the epoch is not rotated under the live session.
-> Commit `<SEAM_SHA>`.
+> Commit `77d23149`.
 
 - **Finding:** The brief and `CLAUDE.md` reference reading client state via
   `window.__gameState`, but nothing in `public/js/**` assigns it (only
