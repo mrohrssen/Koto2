@@ -18,6 +18,7 @@ const BASE = args.url || 'http://localhost:3000';
 const BOTS = Number(args.bots || 10);
 const MINUTES = Number(args.minutes || 2);
 const SUBWAY = Number(args.subway ?? Math.max(1, Math.floor(BOTS / 10)));
+const RAMP_SECONDS = Number(args['ramp-seconds'] || 0);
 const DEADLINE = Date.now() + MINUTES * 60 * 1000;
 
 // Default starter creature: fresh accounts get creatureCollection ['hi', 'mizu', 'ki']
@@ -389,11 +390,20 @@ async function main() {
     bots.push((isSubway ? runSubwayBot(i) : runRegularBot(i)).catch(e => {
       console.error(`bot ${i} (${isSubway ? 'subway' : 'regular'}) died:`, e.message);
     }));
-    await sleep(150); // stagger ramp-up
+    // Ramp-up stagger: if RAMP_SECONDS > 0, spread bots uniformly over
+    // that window; otherwise use fixed 150ms stagger for backwards compatibility.
+    const delayMs = RAMP_SECONDS > 0
+      ? (i / BOTS) * RAMP_SECONDS * 1000
+      : 150;
+    const prevDelayMs = i === 0 ? 0 : (RAMP_SECONDS > 0
+      ? ((i - 1) / BOTS) * RAMP_SECONDS * 1000
+      : 150);
+    await sleep(delayMs - prevDelayMs);
   }
   await Promise.all(bots);
 
-  console.log(`\n=== kk-load: ${BOTS} bots (${SUBWAY} subway) x ${MINUTES}min vs ${BASE} ===`);
+  const rampLabel = RAMP_SECONDS > 0 ? ` ramp=${RAMP_SECONDS}s` : '';
+  console.log(`\n=== kk-load: ${BOTS} bots (${SUBWAY} subway) x ${MINUTES}min vs ${BASE}${rampLabel} ===`);
   console.log(
     `${'endpoint'.padEnd(12)} ${'count'.padEnd(9)} p50      p95      p99`
   );
