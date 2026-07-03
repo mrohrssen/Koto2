@@ -1015,10 +1015,18 @@ export class CombatCycleService {
     const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
     const counterAttacks = actionSegments.flatMap(segment => segment.counterAttacks || []);
     if (options.deferXpAwards === true) {
+      // Deferred kill-XP (session / shared-core prediction path) MUST use the
+      // browser-safe applyKillXpToParty, not the default awardKillXp: a mid-fight
+      // level-up must NOT learn a new move server-side, or the creature's `moves`
+      // array grows and the next turn's transcript hashes differently than the
+      // client mirror (applyLocalDeferredKillXp), forcing a transcript_mismatch
+      // correction. Mirrors the Kanji Kombat cursor path (see below) and the
+      // note in kanji-kombat-xp.js::addXpToCreatureShared.
       xpEvents.push(...this._collectDeferredKillXpEvents(
         actionSegments.flatMap(segment => segment.actor.side === 'ally' ? segment.attacks : []),
         this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
         xpRng,
+        applyKillXpToParty,
       ));
     }
 
@@ -1387,10 +1395,14 @@ export class CombatCycleService {
     const playerResult = resolvedTurn.transcript;
     playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
     if (deferXpAwards) {
+      // Browser-safe kill-XP (no move learning) so a mid-fight level-up hashes
+      // identically to the client mirror — see the note at the interleaved
+      // deferred-XP site above.
       playerResult.xpEvents.push(...this._collectDeferredKillXpEvents(
         playerResult.attacks || [],
         metaMults,
         xpRng,
+        applyKillXpToParty,
       ));
     }
     // Interleaved combat applies party skills inside each player initiative slot
