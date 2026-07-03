@@ -388,5 +388,48 @@
     "background": "areas/thunder-mountain/thunder-mountain_01.webp",
     "stage": 1,
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "frozen-lake",
+    "name": "氷の湖",
+    "nameEn": "Frozen Lake",
+    "reading": "こおりのみずうみ",
+    "rank": 2100,
+    "particle": "の",
+    "parallaxId": "frozen-lake",
+    "modifierWord": {
+      "word": "氷",
+      "reading": "こおり",
+      "meaning": "ice",
+      "rank": 2100
+    },
+    "locationWord": {
+      "word": "湖",
+      "reading": "みずうみ",
+      "meaning": "lake",
+      "rank": 4300
+    },
+    "theme": "A frozen lake in bright winter light — skaters glide, ice fishers wait, and cranes rest on the shore.",
+    "creatures": [
+      "koori",
+      "kuma",
+      "tsuru",
+      "kamo",
+      "sakana",
+      "mizu"
+    ],
+    "bossCreatureId": "koorino-kuma",
+    "roomCount": 30,
+    "description": "A wide frozen lake where a great bear guards the shore and cranes winter on the ice.",
+    "tags": [
+      "lake",
+      "ice",
+      "winter",
+      "open"
+    ],
+    "subAreas": [],
+    "background": "areas/frozen-lake/frozen-lake_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]

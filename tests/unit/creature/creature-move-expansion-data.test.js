@@ -57,7 +57,12 @@ const ALLOWED_AREA_PLACEMENTS = new Set([
   'thunder-mountain:tora',
   'thunder-mountain:kemono',
   'thunder-mountain:kumo',
-  'thunder-mountain:boss:kaminarino-tori'
+  'thunder-mountain:boss:kaminarino-tori',
+  'frozen-lake:koori',
+  'frozen-lake:kuma',
+  'frozen-lake:tsuru',
+  'frozen-lake:kamo',
+  'frozen-lake:boss:koorino-kuma'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));
