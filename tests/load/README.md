@@ -19,14 +19,15 @@ is fresh.
 
 ## Usage
 
-    node tests/load/kk-load.mjs --url <base-url> --bots <n> --minutes <n> --subway <n>
+    node tests/load/kk-load.mjs --url <base-url> --bots <n> --minutes <n> --subway <n> --ramp-seconds <n>
 
-| Flag        | Default              | Meaning                                  |
-|-------------|----------------------|-------------------------------------------|
-| `--url`     | `http://localhost:3000` | Target server base URL                 |
-| `--bots`    | `10`                 | Total concurrent bots                    |
-| `--minutes` | `2`                  | Test duration                            |
-| `--subway`  | `max(1, bots/10)`    | How many of `--bots` run the subway mode |
+| Flag            | Default              | Meaning                                  |
+|-----------------|----------------------|-------------------------------------------|
+| `--url`         | `http://localhost:3000` | Target server base URL                 |
+| `--bots`        | `10`                 | Total concurrent bots                    |
+| `--minutes`     | `2`                  | Test duration                            |
+| `--subway`      | `max(1, bots/10)`    | How many of `--bots` run the subway mode |
+| `--ramp-seconds` | `0`                 | Spread bot registrations uniformly over N seconds; 0 = fixed 150ms stagger |
 
 ## Smoke (local)
 
@@ -35,7 +36,9 @@ is fresh.
 
 ## Launch gate (dev environment)
 
-    node tests/load/kk-load.mjs --url https://jrpg-dev.up.railway.app --bots 100 --minutes 30 --subway 10
+    node tests/load/kk-load.mjs --url https://jrpg-dev.up.railway.app --bots 100 --minutes 30 --subway 10 --ramp-seconds 300
+
+Registrations include bcrypt hashing, so an instant 100-bot stampede saturates small instances and poisons setup-endpoint percentiles — ramp to measure steady-state honestly.
 
 ### Pass criteria
 
