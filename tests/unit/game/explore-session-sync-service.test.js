@@ -667,6 +667,52 @@ describe('ExploreSessionSyncService', () => {
     });
   });
 
+  it('replays a whackAMole.skip → proceed pair for the same room in order', async () => {
+    // A skip-type completion marks the room interacted; the paired proceed must
+    // then advance in the same batch (skip ordering: complete-then-proceed).
+    const gm = makeGm([ROOM_TYPES.whackAMole, ROOM_TYPES.friendlyNpc]);
+    gm.run.roomActionSeq = 0;
+    gm.run.rooms[0].whackAMole = { score: 0, completed: false };
+    const room = gm.run.rooms[0];
+    let skipCalls = 0;
+    gm.explorationService.applyWhackAMoleSkip = () => {
+      skipCalls += 1;
+      room.whackAMole.completed = true;
+      room.interacted = true;
+      return { skipped: true };
+    };
+    const service = new ExploreSessionSyncService(gm);
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 1,
+          actionId: 'run_es_00006001',
+          kind: 'whackAMole.skip',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+        }),
+        makeEntry(gm, {
+          seq: 2,
+          actionId: 'run_es_00006002',
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'ok');
+    assert.equal(result.confirmedThroughSeq, 2);
+    assert.equal(skipCalls, 1);
+    assert.equal(room.interacted, true);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 1);
+  });
+
   it('whackAMole.complete replay advances to the next canonical room once', async () => {
     const gm = makeGm([ROOM_TYPES.whackAMole, ROOM_TYPES.friendlyNpc]);
     gm.run.roomActionSeq = 5;

@@ -20,6 +20,23 @@ test('advanceTurnSeeds shifts the head, bumps stateVersion, and refills', () => 
   assert.equal(combat.optimistic.turnSeeds.length, 5);
 });
 
+test('advanceTurnSeeds resets the chain when the head desyncs from nextTurnSeed', () => {
+  // If turnSeeds[0] no longer equals nextTurnSeed (e.g. a stale/corrupted chain),
+  // advanceTurnSeeds must discard the old chain and refill from a fresh head
+  // rather than shifting the wrong element.
+  const optimistic = {
+    stateVersion: 7,
+    nextTurnSeed: 'live-head',
+    turnSeeds: ['stale-head', 'stale-b', 'stale-c'],
+  };
+  advanceTurnSeeds(optimistic, { target: 4 });
+  assert.equal(optimistic.stateVersion, 8);
+  assert.equal(optimistic.turnSeeds.length, 4);
+  assert.equal(optimistic.turnSeeds[0], optimistic.nextTurnSeed);
+  assert.ok(!optimistic.turnSeeds.includes('stale-head'), 'stale chain discarded');
+  assert.ok(!optimistic.turnSeeds.includes('stale-b'), 'stale chain discarded');
+});
+
 test('kanji-kombat re-exports stay compatible', async () => {
   const kk = await import('../../../src/game/services/kanji-kombat-service.js');
   assert.equal(typeof kk.ensureKanjiKombatTurnSeeds, 'function');
