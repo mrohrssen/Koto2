@@ -303,12 +303,24 @@ test.describe('explore subway full session', () => {
     async function tapAndAssertAck(locator) {
       const before = await page.locator('#action-area').innerHTML().catch(() => '');
       await locator.click();
+      // Start measuring only AFTER the click resolves, so we time the
+      // acknowledgment (first observation of a changed #action-area), not the
+      // click dispatch. Poll generously so the check is robust, but make the
+      // 250ms bound the actual assertion: record the elapsed time to the first
+      // changed-DOM observation and assert it is under TAP_ACK_MS.
+      const started = Date.now();
+      let elapsed = null;
       await expect
         .poll(async () => {
           const now = await page.locator('#action-area').innerHTML().catch(() => before);
+          if (now !== before && elapsed === null) elapsed = Date.now() - started;
           return now !== before;
-        }, { timeout: TAP_ACK_MS + 200 })
+        }, { intervals: [25, 50, 50, 50, 50, 50], timeout: 1000 })
         .toBeTruthy();
+      expect(
+        elapsed,
+        `tap acknowledged in ${elapsed}ms, must be < ${TAP_ACK_MS}ms (offline=${offline})`,
+      ).toBeLessThan(TAP_ACK_MS);
     }
 
     /**
@@ -537,50 +549,61 @@ test.describe('explore subway full session', () => {
     let interactions = 0;
     let windowIndex = 0;
     let restoreAt = null;
-    while (interactions < MAX_INTERACTIONS) {
-      // Restore online if the current window has elapsed (do this BEFORE arming
-      // the next window so windows never merge into one long outage).
-      if (restoreAt !== null && Date.now() >= restoreAt) {
-        await goOnline();
-        restoreAt = null;
-        // Let the reconnect drain refill the client buffer before the next window.
-        await page.waitForTimeout(2000);
-      }
-
-      // Arm the next scripted offline window only while online, once we have
-      // reached the target room number (read from the room-progress badge, which
-      // is present online and offline).
-      const win = OFFLINE_WINDOWS[windowIndex];
-      const roomNo = await currentRoomNumber(page);
-      if (win && restoreAt === null && roomNo >= win.afterRoom) {
-        await goOffline();
-        restoreAt = Date.now() + win.durationMs;
-        windowIndex += 1;
-      }
-
-      // End-check only while online (server state is unreadable offline, and an
-      // area can never complete mid-outage because combat blocks offline).
-      if (!offline) {
-        const state = await gameState(page);
-        if (state?.phase === 'area_complete' || state?.phase === 'run_complete'
-          || state?.run?.areaCleared === true || state?.run?.victory) {
-          played.reachedEnd = true;
-          break;
+    // try/finally guarantees the network route is torn down even if an expect
+    // throws while an offline window is active — otherwise `context.route(...,
+    // abort)` would stay installed and leak into teardown. The finally only
+    // fires goOnline() when a route is actually installed (offline === true),
+    // since goOffline() sets `offline` and installs the route together.
+    try {
+      while (interactions < MAX_INTERACTIONS) {
+        // Restore online if the current window has elapsed (do this BEFORE arming
+        // the next window so windows never merge into one long outage).
+        if (restoreAt !== null && Date.now() >= restoreAt) {
+          await goOnline();
+          restoreAt = null;
+          // Let the reconnect drain refill the client buffer before the next window.
+          await page.waitForTimeout(2000);
         }
-      }
 
-      // Forbidden copy is asserted every iteration, offline or online.
-      const bodyText = await page.locator('body').innerText().catch(() => '');
-      for (const copy of FORBIDDEN_COPY) {
-        expect(bodyText.includes(copy), `forbidden copy "${copy}" (offline=${offline})`).toBeFalsy();
-      }
+        // Arm the next scripted offline window only while online, once we have
+        // reached the target room number (read from the room-progress badge, which
+        // is present online and offline).
+        const win = OFFLINE_WINDOWS[windowIndex];
+        const roomNo = await currentRoomNumber(page);
+        if (win && restoreAt === null && roomNo >= win.afterRoom) {
+          await goOffline();
+          restoreAt = Date.now() + win.durationMs;
+          windowIndex += 1;
+        }
 
-      await driveOneInteraction();
-      interactions += 1;
+        // End-check only while online (server state is unreadable offline, and an
+        // area can never complete mid-outage because combat blocks offline).
+        if (!offline) {
+          const state = await gameState(page);
+          if (state?.phase === 'area_complete' || state?.phase === 'run_complete'
+            || state?.run?.areaCleared === true || state?.run?.victory) {
+            played.reachedEnd = true;
+            break;
+          }
+        }
+
+        // Forbidden copy is asserted every iteration, offline or online.
+        const bodyText = await page.locator('body').innerText().catch(() => '');
+        for (const copy of FORBIDDEN_COPY) {
+          expect(bodyText.includes(copy), `forbidden copy "${copy}" (offline=${offline})`).toBeFalsy();
+        }
+
+        await driveOneInteraction();
+        interactions += 1;
+      }
+    } finally {
+      // Restore connectivity if a window is still active (normal exit or a
+      // mid-outage assertion throw). Guarded on `offline` so it only unroutes
+      // when a route is installed.
+      if (offline) await goOnline();
     }
 
     // --- final assertions ---
-    if (restoreAt !== null) await goOnline();
     await page.waitForTimeout(3000); // allow the final sync drain to land
     const server = await serverState(page).catch(() => null);
     assertServerMatchesPlayed(server, played);
