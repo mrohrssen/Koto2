@@ -1627,5 +1627,218 @@
     "stage": 1,
     "area": "desert",
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kinoko",
+    "word": "キノコ",
+    "reading": "キノコ",
+    "nameEn": "Mushroom",
+    "meaning": "mushroom",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "chokoreeto",
+    "word": "チョコレート",
+    "reading": "チョコレート",
+    "nameEn": "Chocolate",
+    "meaning": "chocolate",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kuri",
+    "word": "栗",
+    "reading": "くり",
+    "nameEn": "Chestnut",
+    "meaning": "chestnut",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tento",
+    "word": "テント",
+    "reading": "テント",
+    "nameEn": "Tent",
+    "meaning": "tent",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "moufu",
+    "word": "毛布",
+    "reading": "もうふ",
+    "nameEn": "Blanket",
+    "meaning": "blanket",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yakusou",
+    "word": "薬草",
+    "reading": "やくそう",
+    "nameEn": "Herb",
+    "meaning": "medicinal herb",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "takigi",
+    "word": "薪",
+    "reading": "たきぎ",
+    "nameEn": "Firewood",
+    "meaning": "firewood",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "bouenkyou",
+    "word": "望遠鏡",
+    "reading": "ぼうえんきょう",
+    "nameEn": "Telescope",
+    "meaning": "telescope",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 16
+    },
+    "description": "+16 base MP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yumi",
+    "word": "弓",
+    "reading": "ゆみ",
+    "nameEn": "Bow",
+    "meaning": "bow",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "ya",
+    "word": "矢",
+    "reading": "や",
+    "nameEn": "Arrow",
+    "meaning": "arrow",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 12
+    },
+    "description": "+12 base attack (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "houki",
+    "word": "箒",
+    "reading": "ほうき",
+    "nameEn": "Broom",
+    "meaning": "broom",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "koto",
+    "word": "琴",
+    "reading": "こと",
+    "nameEn": "Koto",
+    "meaning": "koto (Japanese zither)",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 14
+    },
+    "description": "+14 base MP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
   }
 ]

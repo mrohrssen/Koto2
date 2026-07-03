@@ -53,3 +53,42 @@ describe('night-forest npcs', () => {
     });
   }
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'kinoko', word: 'キノコ', category: 'food' },
+  { id: 'chokoreeto', word: 'チョコレート', category: 'food' },
+  { id: 'kuri', word: '栗', category: 'food' },
+  { id: 'tento', word: 'テント', category: 'equipment' },
+  { id: 'moufu', word: '毛布', category: 'equipment' },
+  { id: 'yakusou', word: '薬草', category: 'equipment' },
+  { id: 'takigi', word: '薪', category: 'equipment' },
+  { id: 'bouenkyou', word: '望遠鏡', category: 'equipment' },
+  { id: 'yumi', word: '弓', category: 'equipment' },
+  { id: 'ya', word: '矢', category: 'equipment' },
+  { id: 'houki', word: '箒', category: 'equipment' },
+  { id: 'koto', word: '琴', category: 'equipment' }
+];
+
+describe('night-forest items', () => {
+  const nightForestItems = items.filter(i => i.area === 'night-forest');
+
+  it('has exactly the 12 approved items', () => {
+    assert.deepEqual(
+      nightForestItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = nightForestItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});
