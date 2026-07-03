@@ -1521,5 +1521,61 @@
     "group": "boukensha_defeatLine",
     "raw": "また冒険しよう！",
     "slots": []
+  },
+  {
+    "id": "npc_souryo_fightStart_yama",
+    "category": "npc",
+    "group": "souryo_fightStart",
+    "raw": "山で祈ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_souryo_defeatLine_kokoro",
+    "category": "npc",
+    "group": "souryo_defeatLine",
+    "raw": "いい心ですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_kajiya_fightStart_kitae",
+    "category": "npc",
+    "group": "kajiya_fightStart",
+    "raw": "鎧を鍛えます！",
+    "slots": []
+  },
+  {
+    "id": "npc_kajiya_defeatLine_yoroi",
+    "category": "npc",
+    "group": "kajiya_defeatLine",
+    "raw": "いい鎧ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_tengu_fightStart_michibiki",
+    "category": "npc",
+    "group": "tengu_fightStart",
+    "raw": "私が導きます！",
+    "slots": []
+  },
+  {
+    "id": "npc_tengu_defeatLine_ningen",
+    "category": "npc",
+    "group": "tengu_defeatLine",
+    "raw": "面白い人間だ！",
+    "slots": []
+  },
+  {
+    "id": "npc_isha_fightStart_naoshi",
+    "category": "npc",
+    "group": "isha_fightStart",
+    "raw": "治しましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_isha_defeatLine_odaiji",
+    "category": "npc",
+    "group": "isha_defeatLine",
+    "raw": "お大事に！",
+    "slots": []
   }
 ]
