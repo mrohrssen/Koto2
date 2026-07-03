@@ -327,7 +327,13 @@ test.describe('explore subway full session', () => {
     page.on('response', async res => {
       if (!res.url().includes('/api/game/explore/sync')) return;
       const body = await res.json().catch(() => null);
-      if (body?.status === 'corrected') correctedSyncs += 1;
+      if (body?.status === 'corrected') {
+        correctedSyncs += 1;
+        process.stdout.write(
+          `[subway] CORRECTED sync #${correctedSyncs}: reason=${body.reason} `
+          + `rejectedSeq=${body.rejectedSeq} confirmedThroughSeq=${body.confirmedThroughSeq}\n`,
+        );
+      }
     });
     async function goOffline() {
       offline = true;
@@ -562,8 +568,23 @@ test.describe('explore subway full session', () => {
       // is itself rendered in the narration box — we must not click it away.
       const pauseVisible = d.bodyText.includes(PAUSE_COPY);
       if (pauseVisible) {
-        expect(offline, `soft pause "${PAUSE_COPY}" shown while ONLINE`).toBeTruthy();
-        await page.waitForTimeout(1000);
+        if (offline) {
+          // Legitimate offline pause (e.g. a combat door / combat-start that isn't
+          // offline-startable yet). Wait for it to lift on reconnect.
+          await page.waitForTimeout(1000);
+          return 'paused';
+        }
+        // Online: the soft pause auto-dismisses after ~1800ms. A pause observed
+        // right after the online transition is a stale offline pause fading out —
+        // wait it out. Only a pause that PERSISTS while online is a real violation.
+        const cleared = await page
+          .waitForFunction(
+            () => !(document.body?.innerText || '').includes('Connection is spotty'),
+            { timeout: 4000, polling: 300 },
+          )
+          .then(() => true)
+          .catch(() => false);
+        expect(cleared, `soft pause "${PAUSE_COPY}" persisted >4s while ONLINE`).toBeTruthy();
         return 'paused';
       }
 
@@ -633,6 +654,22 @@ test.describe('explore subway full session', () => {
         // Rooms tier: combat cannot proceed while offline (per-turn server
         // verification), so hold here until connectivity returns.
         if (offline && !COMBAT_TIER) { await page.waitForTimeout(1000); return 'combat-offline-wait'; }
+        // Combat tier: when the last turn of a fight is predicted OFFLINE, the
+        // client shows the pendingCombatEnd victory shell (a persistent
+        // split-attack-card) with combat locally resolved (all enemies defeated),
+        // stops move selection, and waits for the reconnect drain to deliver the
+        // server-confirmed combatEnded and finish the fight. Tapping that shell's
+        // SAC does nothing — spinning on it burns the interaction budget. Detect
+        // the locally-resolved fight (all enemies dead, no actionable move cells)
+        // and hold for reconnect, mirroring the rooms-tier combat-door wait.
+        if (offline && d.splitAttackCard && d.moveCells === 0 && !d.chooseTarget) {
+          const localVictoryPending = await page.evaluate(() => {
+            const enemies = window.__gameState?.combat?.enemies;
+            if (!Array.isArray(enemies) || enemies.length === 0) return false;
+            return enemies.every(e => !e || e.hp <= 0 || e.befriended);
+          }).catch(() => false);
+          if (localVictoryPending) { await page.waitForTimeout(1000); return 'combat-pending-victory-wait'; }
+        }
         if (d.fightButton) {
           await tapAndAssertAck(page.locator('button:has-text("戦う")').first());
           played.combatStarts += 1;
