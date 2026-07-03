@@ -1,15 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 
 // Source-level deletion assertions for the explore-subway legacy-layer retirement
 // (2026-07-03 spec). The explore session + runway (`exploreRunway.preparedRooms`)
-// is the single client room-reveal source; the parallel `revealedRooms` layer and
-// the orphaned optimistic-run-action module are deleted, not wrapped.
-
-test('legacy optimistic-run-action module is deleted', () => {
-  assert.equal(existsSync('public/js/ui/optimistic-run-action.js'), false);
-});
+// is the single client room-reveal source; the parallel `revealedRooms` layer is
+// deleted, not wrapped.
+//
+// NOTE: optimistic-run-action.js is intentionally NOT deleted. The task brief
+// listed it as orphaned, but public/game.js still uses createPendingRunAction /
+// confirm / correct for the post-combat-shop item-selection optimistic flow
+// (postCombatShop.select) — a path the explore session never replaced. Deleting
+// it broke the client module graph (Vite pre-transform 500). See task-5-report.
 
 test('client no longer reads run.revealedRooms', () => {
   const clientFiles = [
