@@ -19,7 +19,8 @@ const ALLOWED_FUSION_AREA_PLACEMENTS = new Set([
   'blue-sea:boss:kumono-sakana',
   'evening-town:boss:kageno-inu',
   'desert:boss:sunano-hebi',
-  'night-forest:boss:tsukino-ookami'
+  'night-forest:boss:tsukino-ookami',
+  'thunder-mountain:boss:kaminarino-tori'
 ]);
 
 const EXPECTED_FUSIONS = [

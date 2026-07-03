@@ -49,7 +49,15 @@ const ALLOWED_AREA_PLACEMENTS = new Set([
   'night-forest:yuurei',
   'night-forest:erufu',
   'night-forest:kage',
-  'night-forest:boss:tsukino-ookami'
+  'night-forest:boss:tsukino-ookami',
+  'thunder-mountain:kaminari',
+  'thunder-mountain:saru',
+  'thunder-mountain:shika',
+  'thunder-mountain:inoshishi',
+  'thunder-mountain:tora',
+  'thunder-mountain:kemono',
+  'thunder-mountain:kumo',
+  'thunder-mountain:boss:kaminarino-tori'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));

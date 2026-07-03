@@ -341,5 +341,52 @@
     "background": "areas/night-forest/night-forest_01.webp",
     "stage": 1,
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "thunder-mountain",
+    "name": "雷の山",
+    "nameEn": "Thunder Mountain",
+    "reading": "かみなりのやま",
+    "rank": 700,
+    "particle": "の",
+    "parallaxId": "thunder-mountain",
+    "modifierWord": {
+      "word": "雷",
+      "reading": "かみなり",
+      "meaning": "thunder / lightning",
+      "rank": 3600
+    },
+    "locationWord": {
+      "word": "山",
+      "reading": "やま",
+      "meaning": "mountain",
+      "rank": 700
+    },
+    "theme": "A storm-wreathed peak — temple bells, a roaring forge, and thunder rolling over the summit trail.",
+    "creatures": [
+      "kaminari",
+      "saru",
+      "shika",
+      "inoshishi",
+      "tora",
+      "kemono",
+      "tori",
+      "kaze",
+      "ishi",
+      "kumo"
+    ],
+    "bossCreatureId": "kaminarino-tori",
+    "roomCount": 30,
+    "description": "A high mountain where a great storm-bird nests above the temple and the forge.",
+    "tags": [
+      "mountain",
+      "storm",
+      "temple",
+      "forge"
+    ],
+    "subAreas": [],
+    "background": "areas/thunder-mountain/thunder-mountain_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]
