@@ -426,5 +426,89 @@
     "shopGreetings": ["おはよう！"],
     "defeatLine": "元気ですね！",
     "createdAt": "2026-07-02"
+  },
+  "ryoushi": {
+    "id": "ryoushi",
+    "name": "漁師",
+    "nameEn": "Fisherman",
+    "speakerId": 13,
+    "area": "blue-sea",
+    "reading": "りょうし",
+    "meaning": "fisherman",
+    "rank": 12700,
+    "attack": 18,
+    "skills": ["tsuru-npc"],
+    "personality": {
+      "traits": ["patient", "weathered"],
+      "speechStyle": "Slow and sure.",
+      "quirk": "Reads the weather from the clouds."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "すごいね！",
+    "createdAt": "2026-07-03"
+  },
+  "senchou": {
+    "id": "senchou",
+    "name": "船長",
+    "nameEn": "Captain",
+    "speakerId": 51,
+    "area": "blue-sea",
+    "reading": "せんちょう",
+    "meaning": "(ship's) captain",
+    "rank": 11000,
+    "attack": 18,
+    "skills": ["tasukeru"],
+    "personality": {
+      "traits": ["bold", "responsible"],
+      "speechStyle": "Loud and warm.",
+      "quirk": "Salutes everyone, even creatures."
+    },
+    "greeting": "ようこそ！",
+    "shopGreetings": ["ようこそ！"],
+    "defeatLine": "強いですね！",
+    "createdAt": "2026-07-03"
+  },
+  "ningyo": {
+    "id": "ningyo",
+    "name": "人魚",
+    "nameEn": "Mermaid",
+    "speakerId": 10,
+    "area": "blue-sea",
+    "reading": "にんぎょ",
+    "meaning": "mermaid",
+    "rank": 14500,
+    "attack": 18,
+    "skills": ["moguru-npc"],
+    "personality": {
+      "traits": ["playful", "curious"],
+      "speechStyle": "Sing-song and teasing.",
+      "quirk": "Collects shiny shells."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "楽しかった！",
+    "createdAt": "2026-07-03"
+  },
+  "kaizoku": {
+    "id": "kaizoku",
+    "name": "海賊",
+    "nameEn": "Pirate",
+    "speakerId": 12,
+    "area": "blue-sea",
+    "reading": "かいぞく",
+    "meaning": "pirate",
+    "rank": 10200,
+    "attack": 18,
+    "skills": ["oyogu"],
+    "personality": {
+      "traits": ["cheerful", "greedy"],
+      "speechStyle": "Boastful but friendly.",
+      "quirk": "Guards a treasure chest of snacks."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "宝をどうぞ！",
+    "createdAt": "2026-07-03"
   }
 }
