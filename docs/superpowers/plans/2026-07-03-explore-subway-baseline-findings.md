@@ -116,7 +116,18 @@ purpose: these failures are the deliverable and form Stage 1's work queue.
 
 ## Instrumentation / environment observations
 
-### O1 — `window.__gameState` test seam does not exist
+### ~~O1 — `window.__gameState` test seam does not exist~~  ✅ ADDED (Task 3)
+
+> **Resolution (Task 3, 2026-07-04):** Added the `window.__gameState` seam in
+> `public/game.js` (set in `updateGameState` and at init), mirroring
+> `window.__kkPhase`. This was not merely cosmetic: without it the harness's
+> `gameState()` fell back to `GET /api/game/state`, which **rotates the explore
+> session epoch** (`rotateExploreSessionEpoch`) out from under the client's live
+> session — the client's next sync then carried a stale epoch and came back
+> `corrected` (`session_epoch_mismatch`), tripping the rooms-tier `correctedSyncs
+> === 0` invariant. With the seam the harness reads state in-page and no longer
+> polls `/state` mid-run, so the epoch is not rotated under the live session.
+> Commit `<SEAM_SHA>`.
 
 - **Finding:** The brief and `CLAUDE.md` reference reading client state via
   `window.__gameState`, but nothing in `public/js/**` assigns it (only
