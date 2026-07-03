@@ -56,3 +56,42 @@ describe('frozen-lake npcs', () => {
     assert.equal(npcs.ryoushi_frozen_lake.id, 'ryoushi_frozen_lake');
   });
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'suupu', word: 'スープ', category: 'food' },
+  { id: 'shichuu', word: 'シチュー', category: 'food' },
+  { id: 'tebukuro', word: '手袋', category: 'equipment' },
+  { id: 'mafuraa', word: 'マフラー', category: 'equipment' },
+  { id: 'kooto', word: 'コート', category: 'equipment' },
+  { id: 'kutsushita', word: '靴下', category: 'equipment' },
+  { id: 'buutsu', word: 'ブーツ', category: 'equipment' },
+  { id: 'sao', word: '竿', category: 'equipment' },
+  { id: 'hari', word: '針', category: 'equipment' },
+  { id: 'e', word: '絵', category: 'equipment' },
+  { id: 'fude', word: '筆', category: 'equipment' },
+  { id: 'utsuwa', word: '器', category: 'equipment' }
+];
+
+describe('frozen-lake items', () => {
+  const lakeItems = items.filter(i => i.area === 'frozen-lake');
+
+  it('has exactly the 12 approved items', () => {
+    assert.deepEqual(
+      lakeItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = lakeItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});

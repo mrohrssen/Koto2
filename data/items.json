@@ -2052,5 +2052,219 @@
     "stage": 1,
     "area": "thunder-mountain",
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "suupu",
+    "word": "スープ",
+    "reading": "スープ",
+    "nameEn": "Soup",
+    "meaning": "soup",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "shichuu",
+    "word": "シチュー",
+    "reading": "シチュー",
+    "nameEn": "Stew",
+    "meaning": "stew",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tebukuro",
+    "word": "手袋",
+    "reading": "てぶくろ",
+    "nameEn": "Gloves",
+    "meaning": "glove(s)",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "mafuraa",
+    "word": "マフラー",
+    "reading": "マフラー",
+    "nameEn": "Scarf",
+    "meaning": "scarf / muffler",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kooto",
+    "word": "コート",
+    "reading": "コート",
+    "nameEn": "Coat",
+    "meaning": "coat",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kutsushita",
+    "word": "靴下",
+    "reading": "くつした",
+    "nameEn": "Socks",
+    "meaning": "socks",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "buutsu",
+    "word": "ブーツ",
+    "reading": "ブーツ",
+    "nameEn": "Boots",
+    "meaning": "boots",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sao",
+    "word": "竿",
+    "reading": "さお",
+    "nameEn": "Rod",
+    "meaning": "rod / pole",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hari",
+    "word": "針",
+    "reading": "はり",
+    "nameEn": "Hook",
+    "meaning": "needle / hook",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 12
+    },
+    "description": "+12 base attack (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "e",
+    "word": "絵",
+    "reading": "え",
+    "nameEn": "Painting",
+    "meaning": "picture / painting",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 16
+    },
+    "description": "+16 base MP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "fude",
+    "word": "筆",
+    "reading": "ふで",
+    "nameEn": "Brush",
+    "meaning": "brush",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "utsuwa",
+    "word": "器",
+    "reading": "うつわ",
+    "nameEn": "Bowl",
+    "meaning": "bowl / vessel",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 8
+    },
+    "description": "+8 base HP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
   }
 ]
