@@ -2518,16 +2518,24 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
 
     let offered = resp?.offered || resp?.offers || resp?.skills;
     if (!Array.isArray(offered) || offered.length === 0) {
-      npcBattleSkillState.fetched = false;
-      npcBattleSkillState.offered = null;
-      actions.setContent(`
-        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
-          <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
-          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-            No skills available.
-          </div>
-        </div>
-      `);
+      // No skills to offer (e.g. every party skill tree is maxed). There is
+      // nothing to choose, so the room would otherwise dead-end with no way to
+      // advance — a soft lock for both the player and the subway harness.
+      // Mark the reward resolved and auto-proceed, mirroring the
+      // "already completed -> auto-proceed" path. proceedToNextRoom does not gate
+      // npcBattle rooms, so the legacy proceed advances the server cursor.
+      npcBattleSkillState.choosing = true;
+      updateSupportRoomDraft(room => {
+        room.npcBattle ||= {};
+        room.npcBattle.skillSelectionPending = false;
+        room.interacted = true;
+      });
+      try {
+        await proceedWithRevealBuffer();
+      } catch {
+        // Fall through to updateUI — server state may already have advanced.
+      }
+      updateUI();
       return;
     }
 
