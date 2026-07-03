@@ -27,3 +27,29 @@ describe('thunder-mountain npc skills', () => {
     });
   }
 });
+
+const npcs = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/npcs.json'), 'utf8'));
+
+const EXPECTED_NPCS = [
+  { key: 'souryo', name: '僧侶', reading: 'そうりょ', skill: 'inoru' },
+  { key: 'kajiya', name: '鍛冶屋', reading: 'かじや', skill: 'kitaeru' },
+  { key: 'tengu', name: '天狗', reading: 'てんぐ', skill: 'michibiku' },
+  { key: 'isha', name: '医者', reading: 'いしゃ', skill: 'naosu' }
+];
+
+describe('thunder-mountain npcs', () => {
+  for (const expected of EXPECTED_NPCS) {
+    it(`defines ${expected.key}`, () => {
+      const npc = npcs[expected.key];
+      assert.ok(npc, `${expected.key} missing`);
+      assert.equal(npc.area, 'thunder-mountain');
+      assert.equal(npc.name, expected.name);
+      assert.equal(npc.reading, expected.reading);
+      assert.deepEqual(npc.skills, [expected.skill]);
+      assert.equal(npc.attack, 26);
+      assert.ok(Number.isFinite(npc.speakerId));
+      assert.ok(npc.greeting.length > 0);
+      assert.ok(npc.defeatLine.length > 0);
+    });
+  }
+});

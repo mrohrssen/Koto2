@@ -762,5 +762,89 @@
     "shopGreetings": ["こんばんは！"],
     "defeatLine": "また冒険しよう！",
     "createdAt": "2026-07-03"
+  },
+  "souryo": {
+    "id": "souryo",
+    "name": "僧侶",
+    "nameEn": "Monk",
+    "speakerId": 51,
+    "area": "thunder-mountain",
+    "reading": "そうりょ",
+    "meaning": "(Buddhist) monk",
+    "rank": 13900,
+    "attack": 26,
+    "skills": ["inoru"],
+    "personality": {
+      "traits": ["serene", "disciplined"],
+      "speechStyle": "Measured and gentle.",
+      "quirk": "Sweeps the temple steps at dawn, even in storms."
+    },
+    "greeting": "こんにちは。",
+    "shopGreetings": ["こんにちは。"],
+    "defeatLine": "いい心ですね。",
+    "createdAt": "2026-07-03"
+  },
+  "kajiya": {
+    "id": "kajiya",
+    "name": "鍛冶屋",
+    "nameEn": "Blacksmith",
+    "speakerId": 13,
+    "area": "thunder-mountain",
+    "reading": "かじや",
+    "meaning": "blacksmith",
+    "rank": 19600,
+    "attack": 26,
+    "skills": ["kitaeru"],
+    "personality": {
+      "traits": ["gruff", "warm-hearted"],
+      "speechStyle": "Short and booming.",
+      "quirk": "Has named every hammer in the forge."
+    },
+    "greeting": "いらっしゃい！",
+    "shopGreetings": ["いらっしゃい！"],
+    "defeatLine": "いい鎧ですね！",
+    "createdAt": "2026-07-03"
+  },
+  "tengu": {
+    "id": "tengu",
+    "name": "天狗",
+    "nameEn": "Tengu",
+    "speakerId": 12,
+    "area": "thunder-mountain",
+    "reading": "てんぐ",
+    "meaning": "tengu (long-nosed goblin)",
+    "rank": 17200,
+    "attack": 26,
+    "skills": ["michibiku"],
+    "personality": {
+      "traits": ["proud", "mischievous"],
+      "speechStyle": "Grand pronouncements.",
+      "quirk": "Arrives and departs in a gust of wind."
+    },
+    "greeting": "ようこそ！",
+    "shopGreetings": ["ようこそ！"],
+    "defeatLine": "面白い人間だ！",
+    "createdAt": "2026-07-03"
+  },
+  "isha": {
+    "id": "isha",
+    "name": "医者",
+    "nameEn": "Doctor",
+    "speakerId": 9,
+    "area": "thunder-mountain",
+    "reading": "いしゃ",
+    "meaning": "doctor / physician",
+    "rank": 2500,
+    "attack": 26,
+    "skills": ["naosu"],
+    "personality": {
+      "traits": ["calm", "tireless"],
+      "speechStyle": "Brisk bedside manner.",
+      "quirk": "Climbs the trail faster than the guides."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "お大事に！",
+    "createdAt": "2026-07-03"
   }
 }
