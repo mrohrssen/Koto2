@@ -738,6 +738,8 @@ export default function createRunRoutes({
     }
   });
 
+  // Compatibility path for clients that have not adopted /api/game/explore/sync.
+  // The session client should not call this endpoint after explore runway cutover.
   router.post('/speed-review-room/progress', (req, res) => {
     const { roomId, word, commitIndex } = req.body || {};
     if (!roomId) {
