@@ -162,3 +162,67 @@ describe('prefetchDialogueLine', () => {
     await waitFor(() => revokedUrls.includes(firstLruBlob), 'oldest blob revoked');
   });
 });
+
+describe('playDialogueLineAudio cache behavior', () => {
+  it('plays a prefetched line from the blob cache without a new request', async () => {
+    await tick(20); // drain straggling prefetch jobs from earlier tests before snapshotting
+    const blobsBefore = createdUrls.length;
+    prefetchDialogueLine({ text: 'hit-川', speakerId: 13 });
+    await waitFor(() => createdUrls.length === blobsBefore + 1, 'prefetch ready');
+    await tick();
+    const postsBefore = linePosts('hit-').length;
+    const meta = await playDialogueLineAudio({ text: 'hit-川', speakerId: 13 });
+    assert.equal(meta?.key, 'hit-川.wav');
+    assert.equal(linePosts('hit-').length, postsBefore);
+    assert.equal(FakeAudio.played.at(-1), createdUrls[blobsBefore]);
+  });
+
+  it('waits for an in-flight prefetch instead of refetching', async () => {
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    fetchHandler = async (url, options) => {
+      if (url.includes('/api/tts/dialogue-line')) {
+        const { text } = JSON.parse(options.body);
+        if (text === 'pending-本') await gate;
+      }
+      return defaultFetchHandler(url, options);
+    };
+    prefetchDialogueLine({ text: 'pending-本', speakerId: 13 });
+    const playPromise = playDialogueLineAudio({ text: 'pending-本', speakerId: 13 });
+    await tick();
+    assert.equal(linePosts('pending-').length, 1);
+    release();
+    const meta = await playPromise;
+    assert.equal(meta?.key, 'pending-本.wav');
+    assert.equal(linePosts('pending-').length, 1);
+  });
+
+  it('falls back to the network on a cache miss and caches for instant replay', async () => {
+    const meta = await playDialogueLineAudio({ text: 'miss-山', speakerId: 13 });
+    assert.equal(meta?.key, 'miss-山.wav');
+    assert.equal(linePosts('miss-').length, 1);
+    const again = await playDialogueLineAudio({ text: 'miss-山', speakerId: 13 });
+    assert.equal(again?.key, 'miss-山.wav');
+    assert.equal(linePosts('miss-').length, 1);
+  });
+
+  it('returns null when the synthesis request fails', async () => {
+    fetchHandler = async (url, options) => {
+      if (url.includes('/api/tts/dialogue-line')) return { ok: false, json: async () => ({}) };
+      return defaultFetchHandler(url, options);
+    };
+    const meta = await playDialogueLineAudio({ text: 'err-空', speakerId: 13 });
+    assert.equal(meta, null);
+  });
+
+  it('returns null while muted without fetching', async () => {
+    setMuted(true);
+    try {
+      const meta = await playDialogueLineAudio({ text: 'mutedplay-土', speakerId: 13 });
+      assert.equal(meta, null);
+      assert.equal(linePosts('mutedplay-').length, 0);
+    } finally {
+      setMuted(false);
+    }
+  });
+});

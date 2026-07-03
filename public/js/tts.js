@@ -375,17 +375,27 @@ export async function playDialogueLineAudio({ text, speakerId } = {}) {
   const resolvedSpeakerId = Number(speakerId);
   if (!Number.isFinite(resolvedSpeakerId)) return null;
 
-  try {
-    const response = await fetch(`${API_BASE}/api/tts/dialogue-line`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ text, speakerId: resolvedSpeakerId })
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data?.ok || !data.audio?.url) return null;
+  const key = dialogueLineKey(text, resolvedSpeakerId);
+  let entry = dialogueLineCache.get(key);
+  if (entry?.status === 'pending') entry = await entry.promise;
+  if (entry?.status === 'ready' && entry.blobUrl) {
+    await playAudioUrl(entry.blobUrl);
+    return entry.audioMeta;
+  }
 
-    await playAudioUrl(data.audio.url);
-    return data.audio;
+  // Cache miss or failed prefetch: fetch now, keep the blob for instant replay.
+  try {
+    const result = await fetchDialogueLine(text, resolvedSpeakerId);
+    if (!result) return null;
+    dialogueLineCache.set(key, {
+      status: 'ready',
+      blobUrl: result.blobUrl,
+      audioMeta: result.audioMeta,
+      promise: null
+    });
+    evictDialogueLineOverflow();
+    await playAudioUrl(result.blobUrl);
+    return result.audioMeta;
   } catch (error) {
     console.warn('[TTS] Dialogue line audio failed:', error.message);
     return null;
@@ -479,7 +489,9 @@ async function playAudioUrl(url) {
 
   stop();
 
-  const audioUrl = url.startsWith('http') ? url : `${API_BASE}${url}`;
+  const audioUrl = url.startsWith('http') || url.startsWith('blob:')
+    ? url
+    : `${API_BASE}${url}`;
   return new Promise((resolve) => {
     const audio = new Audio(audioUrl);
     currentAudio = trackTtsAudio(audio, () => {
