@@ -194,9 +194,6 @@ function activeRoomDrafts(draft) {
   const preparedRoom = preparedRoomForRunwayCursor(run?.exploreRunway, currentRoom);
   return uniqueObjects([
     draft?.room,
-    Number.isInteger(currentRoom)
-      ? run?.revealedRooms?.find(entry => entry?.index === currentRoom)?.room
-      : null,
     Number.isInteger(currentRoom) && Array.isArray(run?.rooms)
       ? run.rooms[currentRoom]
       : null,
@@ -210,10 +207,8 @@ function updateSupportRoomDraft(mutator, { phase = 'room', advance = false } = {
   const draft = cloneStateForExploreSession(currentState);
   activeRoomDrafts(draft).forEach(room => mutator(room, draft));
   if (advance) {
-    materializeRunwayRoomsAroundCursor(draft);
     advanceStateToBufferedNextRoom(draft);
     alignExploreRunwayCursor(draft);
-    materializeRunwayRoomsAroundCursor(draft);
   } else if (phase) {
     draft.phase = phase;
   }
@@ -241,6 +236,7 @@ async function completeWordDiscoveryOptimistically({ learnedWords = [] } = {}) {
 }
 
 function clearActionArea() {
+  if (typeof document === 'undefined') return;
   const el = document.getElementById('action-area');
   if (el) el.innerHTML = '';
 }
@@ -934,26 +930,6 @@ function isExploreRunwaySessionCapable(runway, run) {
   return Boolean(nextPreparedRoom) && nextPreparedRoom.offlineReady !== false;
 }
 
-function ensureRevealedRoomFromPreparedRoom(draft, preparedRoom) {
-  if (!draft?.run || !Number.isInteger(preparedRoom?.index) || !preparedRoom?.room) return;
-  if (!Array.isArray(draft.run.revealedRooms)) draft.run.revealedRooms = [];
-  const room = cloneStateForExploreSession(preparedRoom.room);
-  const existing = draft.run.revealedRooms.find(entry => entry?.index === preparedRoom.index);
-  if (existing) {
-    existing.room = room;
-  } else {
-    draft.run.revealedRooms.push({ index: preparedRoom.index, room });
-    draft.run.revealedRooms.sort((a, b) => (a?.index ?? 0) - (b?.index ?? 0));
-  }
-}
-
-function materializeRunwayRoomsAroundCursor(draft, currentRoom = draft?.run?.currentRoom) {
-  const runway = draft?.run?.exploreRunway;
-  if (!runway) return;
-  ensureRevealedRoomFromPreparedRoom(draft, preparedRoomForRunwayCursor(runway, currentRoom));
-  ensureRevealedRoomFromPreparedRoom(draft, nextPreparedRoomAfterRunwayCursor(runway, currentRoom));
-}
-
 function alignExploreRunwayCursor(draft) {
   const runway = draft?.run?.exploreRunway;
   if (!runway) return;
@@ -978,11 +954,8 @@ export function applyExploreSessionProceedResult(result) {
   const currentState = getGameState?.();
   if (!currentState) return null;
   const draft = cloneStateForExploreSession(currentState);
-  const nextPreparedRoom = nextPreparedRoomAfterRunwayCursor(draft.run?.exploreRunway, draft.run?.currentRoom);
-  ensureRevealedRoomFromPreparedRoom(draft, nextPreparedRoom);
   advanceStateToBufferedNextRoom(draft);
   alignExploreRunwayCursor(draft);
-  materializeRunwayRoomsAroundCursor(draft);
   updateGameState(draft);
   return draft;
 }
@@ -1056,6 +1029,7 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);
+    clearActionArea();
     await playRoomTransition(result.state, {
       ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
     });

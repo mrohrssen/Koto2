@@ -182,8 +182,10 @@ export function derivePhase(state) {
     return PHASES.AREA_COMPLETE;
   }
 
+  // Server owns the canonical `run.rooms` spine; the client (which never
+  // receives `run.rooms`) carries the current room on `state.room`, kept in
+  // sync from `exploreRunway.preparedRooms` by the room-reveal buffer.
   const currentRoom = run.rooms?.[run.currentRoom]
-    || getRoomFromRevealBuffer(run, run.currentRoom)
     || state.room
     || null;
   if (currentRoom) {
@@ -206,5 +208,4 @@ export function derivePhase(state) {
 
   return PHASES.EXPLORING;
 }
-import { getRoomFromRevealBuffer } from './room-reveal-buffer.js';
 
