@@ -1,6 +1,6 @@
 import { escapeHtml } from './html-utils.js';
 import { renderButtonsAsync } from './ui-components.js';
-import { getSpeakerId, playDialogueLineAudio } from '../tts.js';
+import { getSpeakerId, playDialogueLineAudio, prefetchDialogueLine } from '../tts.js';
 import {
   configureKanjiKombatSession,
   getKanjiKombatSession,
@@ -251,6 +251,7 @@ function rememberKanjiKombatState(state) {
       }
     }
   }
+  prefetchUpcomingKanjiKombatAudio(state);
 }
 
 function updateKanjiKombatGameState(state) {
@@ -632,6 +633,28 @@ function playCorrectAnswerAudio(answer) {
   Promise.resolve(playAudio(answer)).catch(error => {
     console.warn('[KanjiKombat] Correct answer TTS failed:', error.message);
   });
+}
+
+export const KANJI_KOMBAT_AUDIO_PREFETCH_DEPTH = 5;
+
+/**
+ * Warm the TTS cache for the next few buffered prompts so answer/intro audio
+ * starts instantly. Safe to call on every state pass — prefetchDialogueLine
+ * dedupes by text+speaker.
+ */
+export function prefetchUpcomingKanjiKombatAudio(state) {
+  const buffer = state?.run?.kanjiKombat?.promptBuffer;
+  if (!Array.isArray(buffer)) return;
+  const speakerId = getSpeakerId();
+  for (const prompt of buffer.slice(0, KANJI_KOMBAT_AUDIO_PREFETCH_DEPTH)) {
+    const card = prompt?.kind === 'quiz'
+      ? prompt.quiz
+      : prompt?.kind === 'intro'
+        ? prompt.intro?.card
+        : null;
+    const text = kanjiKombatAudioText(card);
+    if (text) prefetchDialogueLine({ text, speakerId });
+  }
 }
 
 function kanjiKombatAudioText(card) {
