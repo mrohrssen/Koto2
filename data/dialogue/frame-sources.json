@@ -1297,5 +1297,61 @@
     "group": "ojiisan_defeatLine",
     "raw": "元気ですね！",
     "slots": []
+  },
+  {
+    "id": "npc_ryoushi_fightStart_sakana",
+    "category": "npc",
+    "group": "ryoushi_fightStart",
+    "raw": "魚を釣ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryoushi_defeatLine_sugoi",
+    "category": "npc",
+    "group": "ryoushi_defeatLine",
+    "raw": "すごいね！",
+    "slots": []
+  },
+  {
+    "id": "npc_senchou_fightStart_fune",
+    "category": "npc",
+    "group": "senchou_fightStart",
+    "raw": "私の船です！",
+    "slots": []
+  },
+  {
+    "id": "npc_senchou_defeatLine_tsuyoi",
+    "category": "npc",
+    "group": "senchou_defeatLine",
+    "raw": "強いですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_ningyo_fightStart_oyogi",
+    "category": "npc",
+    "group": "ningyo_fightStart",
+    "raw": "泳ぎましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_ningyo_defeatLine_tanoshikatta",
+    "category": "npc",
+    "group": "ningyo_defeatLine",
+    "raw": "楽しかった！",
+    "slots": []
+  },
+  {
+    "id": "npc_kaizoku_fightStart_takara",
+    "category": "npc",
+    "group": "kaizoku_fightStart",
+    "raw": "宝は私のだ！",
+    "slots": []
+  },
+  {
+    "id": "npc_kaizoku_defeatLine_douzo",
+    "category": "npc",
+    "group": "kaizoku_defeatLine",
+    "raw": "宝をどうぞ！",
+    "slots": []
   }
 ]
