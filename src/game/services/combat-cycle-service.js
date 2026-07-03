@@ -88,6 +88,7 @@ import { selectBark } from '../dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
 import { selectBestFrame } from '../token-format.js';
 import { applyDebugSuperAttack } from '../debug-super-attack.js';
+import { ensureTurnSeeds, PVE_TURN_SEED_CHAIN_TARGET } from './combat-seed-chain.js';
 
 function createServerSeed() {
   return randomBytes(16).toString('hex');
@@ -231,18 +232,32 @@ export class CombatCycleService {
    * Start a creature encounter
    * Generates an enemy creature and sets up combat state
    */
-  startCreatureEncounter() {
-    if (!this.gm.run || !this.gm.run.active) {
-      throw new Error('No active run');
-    }
-    if (this.gm.combat?.active) {
-      throw new Error('Combat already active');
-    }
-
-    // Check if current room is a boss room or npcBattle room
-    const currentRoom = this.gm.run.rooms?.[this.gm.run.currentRoom];
-    const isBoss = currentRoom?.type === 'boss' && !!currentRoom?.boss?.creatureId;
-    const isNpcBattle = currentRoom?.type === 'npcBattle';
+  /**
+   * Roll the enemy creatures for a combat room (encounter / boss / npcBattle).
+   *
+   * Extracted so prepareCombatStart() and startCreatureEncounter() share ONE
+   * roll implementation — the enemies returned here are the concrete, already-
+   * rolled objects (element/species/level jitter is baked in), so a prepared
+   * roll and a start roll for the SAME room produce the SAME enemies only by
+   * reusing this method's OUTPUT (that is what preparedCombat.enemies stores),
+   * not by re-invoking it.
+   *
+   * Roll parameters are derived from the passed `room` plus current run state
+   * (highestLevel, stage, encounterIndex, totalEncounters, isStarterOnly,
+   * isFirstBattle). The Starting-Meadow tutorial branches (forced-cat encounter,
+   * fixed Hinoneko boss level, intro) read `run.currentRoom` directly; they only
+   * fire on the CURRENT tutorial room (index 0 forced-cat, or the boss room),
+   * which is always the current room when it is prepared (nothing precedes it to
+   * pre-roll ahead), so keying on live run state stays consistent between
+   * prepare and start for those rooms.
+   *
+   * @param {Object} room - the combat room to roll for (run.rooms[i])
+   * @returns {{ enemies: Array, isBoss: boolean, isNpcBattle: boolean }}
+   * @private
+   */
+  _rollEncounterEnemies(room) {
+    const isBoss = room?.type === 'boss' && !!room?.boss?.creatureId;
+    const isNpcBattle = room?.type === 'npcBattle';
 
     const highestLevel = Math.max(...this.gm.run.creatureParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.gm.run.currentAreaEncounters || 0) === 0;
@@ -253,22 +268,22 @@ export class CombatCycleService {
     const isStartingMeadow = this.gm.run.currentArea?.id === 'hajimari-no-hiroba';
     const adjustStartingMeadowLevel = level => isStartingMeadow ? Math.max(1, level - 2) : level;
 
-    let enemyCreatures;
+    let enemies;
     if (isBoss) {
       // Boss: solo creature, level × 1.25, double HP. Tutorial Hinoneko keeps its fixed level.
       const isStartingMeadowHinoneko = isStartingMeadowHinonekoBoss(this.gm.run);
       const bossLevel = isStartingMeadowHinoneko
         ? adjustStartingMeadowLevel(7)
         : adjustStartingMeadowLevel(Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25));
-      const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
+      const bossCreature = generateEnemyCreature(bossLevel, [room.boss.creatureId], stage);
       bossCreature.maxHp *= 2;
       bossCreature.hp = bossCreature.maxHp;
-      enemyCreatures = [bossCreature];
+      enemies = [bossCreature];
     } else if (isNpcBattle) {
       // NPC Battle: always 3 enemies at level × 1.1
       const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3 });
       const npcBattleLevel = adjustStartingMeadowLevel(Math.round(baseLevel * 1.1));
-      enemyCreatures = [
+      enemies = [
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
         generateEnemyCreature(npcBattleLevel, creaturePool, stage)
@@ -278,7 +293,7 @@ export class CombatCycleService {
       const totalCreatures = this.gm.run.creatureParty.active.length + (this.gm.run.creatureParty.reserves?.length || 0);
       const isStarterOnly = totalCreatures <= 1;
       if (shouldForceStartingMeadowCatEncounter(this.gm.meta, this.gm.run)) {
-        enemyCreatures = generateEnemyCreatures(highestLevel, {
+        enemies = generateEnemyCreatures(highestLevel, {
           maxEnemies: 1,
           creaturePool: ['neko'],
           stage,
@@ -287,7 +302,7 @@ export class CombatCycleService {
           levelOffset: isStartingMeadow ? -2 : 0
         });
       } else {
-        enemyCreatures = generateEnemyCreatures(highestLevel, {
+        enemies = generateEnemyCreatures(highestLevel, {
           maxEnemies: isStarterOnly ? 1 : (isFirstBattle ? 2 : undefined),
           creaturePool,
           stage,
@@ -296,6 +311,100 @@ export class CombatCycleService {
           levelOffset: isStartingMeadow ? -2 : 0
         });
       }
+    }
+
+    return { enemies, isBoss, isNpcBattle };
+  }
+
+  /**
+   * Pick an NPC from the current area's roster for an npcBattle room.
+   * Extracted so prepare and start share one pick. Returns the npcData shape
+   * (or null when no roster is available).
+   * @returns {?{id:string,name:string,nameEn:string,greeting:*,speakerId:*}}
+   * @private
+   */
+  _rollNpcForBattle() {
+    const areaId = this.gm.run.currentArea?.id || null;
+    const allNpcs = loadNpcs();
+    const areaEntries = Object.values(allNpcs).filter(npc => !areaId || npc.area === areaId || !npc.area);
+    const fallbackEntries = areaEntries.length > 0 ? areaEntries : Object.values(allNpcs);
+    if (fallbackEntries.length === 0) return null;
+    const npc = fallbackEntries[Math.floor(Math.random() * fallbackEntries.length)];
+    return {
+      id: npc.id, name: npc.name, nameEn: npc.nameEn,
+      greeting: npc.greeting, speakerId: npc.speakerId
+    };
+  }
+
+  /**
+   * Pre-roll a combat room's start so it can be delivered in the explore runway
+   * and started offline. Idempotent per room: the rolled enemies, NPC pick,
+   * combatId and pre-committed turn-seed chain are persisted on
+   * `room.preparedCombat` and returned unchanged on repeat calls (so
+   * responseContext rebuilds after replay reuse the prepared roll instead of
+   * re-rolling). startCreatureEncounter() consumes and clears it (single-use).
+   *
+   * Trade-off (spec-accepted, same class as Kanji Kombat's pre-rolled wave):
+   * enemy stat blocks for runway combat rooms are exposed to the client up to
+   * EXPLORE_RUNWAY_AHEAD (5) rooms early. Rewards/XP remain server-owned and are
+   * only granted when the combat actually resolves.
+   *
+   * @param {Object} room - the combat room to prepare (run.rooms[i])
+   * @returns {Object} the persisted preparedCombat payload
+   */
+  prepareCombatStart(room) {
+    if (!room) return null;
+    if (room.preparedCombat) return room.preparedCombat;
+
+    const { enemies, isBoss, isNpcBattle } = this._rollEncounterEnemies(room);
+    const npcData = isNpcBattle ? this._rollNpcForBattle() : null;
+
+    // Pre-commit the per-turn seed chain the online loop will replay against.
+    // Build it on a throwaway optimistic shell; startCreatureEncounter adopts it.
+    const seedShell = { optimistic: { nextTurnSeed: createServerSeed(), stateVersion: 0 } };
+    const turnSeeds = ensureTurnSeeds(seedShell, { target: PVE_TURN_SEED_CHAIN_TARGET });
+
+    room.preparedCombat = {
+      combatId: createCombatId(),
+      enemies,
+      npcId: npcData?.id || null,
+      npcData: npcData || null,
+      turnSeeds,
+      isBoss,
+      isNpcBattle,
+    };
+    return room.preparedCombat;
+  }
+
+  startCreatureEncounter() {
+    if (!this.gm.run || !this.gm.run.active) {
+      throw new Error('No active run');
+    }
+    if (this.gm.combat?.active) {
+      throw new Error('Combat already active');
+    }
+
+    const currentRoom = this.gm.run.rooms?.[this.gm.run.currentRoom];
+    const prepared = currentRoom?.preparedCombat || null;
+
+    let enemyCreatures;
+    let isBoss;
+    let isNpcBattle;
+    let npcDataFromPrepared = null;
+    if (prepared) {
+      // Consume the runway-prepared roll (single-use): reuse its enemies, NPC,
+      // combatId and pre-committed seed chain so the online start matches the
+      // payload the client already has. A level-up between prepare and start
+      // does not re-roll — the prepared roll pins the enemy level (spec-accepted).
+      enemyCreatures = prepared.enemies;
+      isBoss = prepared.isBoss;
+      isNpcBattle = prepared.isNpcBattle;
+      npcDataFromPrepared = prepared.npcData || null;
+    } else {
+      const rolled = this._rollEncounterEnemies(currentRoom);
+      enemyCreatures = rolled.enemies;
+      isBoss = rolled.isBoss;
+      isNpcBattle = rolled.isNpcBattle;
     }
 
     this.gm.combat = createCombatState(enemyCreatures[0]);
@@ -310,12 +419,23 @@ export class CombatCycleService {
     this.gm.combat.openingResolved = false;
     this.gm.combat.isCreatureCombat = true;
     this.gm.combat.isBoss = isBoss;
-    this.gm.combat.optimistic = {
-      combatId: createCombatId(),
-      stateVersion: 0,
-      nextTurnSeed: createServerSeed(),
-      acceptedActionIds: {},
-    };
+    if (prepared) {
+      // Adopt the pre-committed chain; head is the seed the client predicted with.
+      this.gm.combat.optimistic = {
+        combatId: prepared.combatId,
+        stateVersion: 0,
+        nextTurnSeed: prepared.turnSeeds[0],
+        turnSeeds: [...prepared.turnSeeds],
+        acceptedActionIds: {},
+      };
+    } else {
+      this.gm.combat.optimistic = {
+        combatId: createCombatId(),
+        stateVersion: 0,
+        nextTurnSeed: createServerSeed(),
+        acceptedActionIds: {},
+      };
+    }
     this.gm.combat.swapPhase = true; // Free swap available before first action
 
     // Reset stat stages for all combatants at battle start
@@ -328,25 +448,23 @@ export class CombatCycleService {
       applyDebugSuperAttack(this.gm.combat.allies);
     }
 
-    // NPC Battle rooms: always assign an NPC from the area's roster
+    // NPC Battle rooms: always assign an NPC from the area's roster. Reuse the
+    // prepared pick when present so the runway payload and the started combat
+    // agree on which NPC appears.
     if (isNpcBattle) {
-      const areaId = this.gm.run.currentArea?.id || null;
-      const allNpcs = loadNpcs();
-      const areaEntries = Object.values(allNpcs).filter(npc => !areaId || npc.area === areaId || !npc.area);
-      const fallbackEntries = areaEntries.length > 0 ? areaEntries : Object.values(allNpcs);
-      if (fallbackEntries.length > 0) {
-        const npc = fallbackEntries[Math.floor(Math.random() * fallbackEntries.length)];
+      const npc = npcDataFromPrepared || this._rollNpcForBattle();
+      if (npc) {
         this.gm.combat.npcId = npc.id;
-        this.gm.combat.npcData = {
-          id: npc.id, name: npc.name, nameEn: npc.nameEn,
-          greeting: npc.greeting, speakerId: npc.speakerId
-        };
+        this.gm.combat.npcData = npc;
       }
     }
     // Note: for regular encounters, random NPC overlay is disabled (Koto2 MVP).
     // NPCs only appear in deterministic npcBattle rooms.
 
-    // Boss speaks on encounter
+    // Single-use: drop the prepared roll now that combat state owns it.
+    if (prepared && currentRoom) delete currentRoom.preparedCombat;
+
+    // Boss speaks on encounter (start-time narration, not pre-rolled)
     if (isBoss && enemyCreatures[0]) {
       const bossTemplate = CREATURES_BY_ID[currentRoom.boss.creatureId];
       if (bossTemplate?.bossDialogue?.appear) {
