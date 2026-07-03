@@ -167,5 +167,51 @@
     "background": "areas/morning-ranch/morning-ranch_01.webp",
     "stage": 1,
     "createdAt": "2026-07-02"
+  },
+  {
+    "id": "blue-sea",
+    "name": "青い海",
+    "nameEn": "Blue Sea",
+    "reading": "あおいうみ",
+    "rank": 800,
+    "particle": "",
+    "parallaxId": "blue-sea",
+    "modifierWord": {
+      "word": "青い",
+      "reading": "あおい",
+      "meaning": "blue",
+      "rank": 1600
+    },
+    "locationWord": {
+      "word": "海",
+      "reading": "うみ",
+      "meaning": "sea / ocean",
+      "rank": 800
+    },
+    "theme": "A bright stretch of coast where clouds meet the horizon — beaches, boats, and busy water.",
+    "creatures": [
+      "kumo",
+      "kame",
+      "tako",
+      "ika",
+      "kani",
+      "kamo",
+      "kujira",
+      "sakana",
+      "mizu"
+    ],
+    "bossCreatureId": "kumono-sakana",
+    "roomCount": 30,
+    "description": "A sunny shoreline and harbor where sea creatures gather under drifting clouds.",
+    "tags": [
+      "sea",
+      "beach",
+      "harbor",
+      "open"
+    ],
+    "subAreas": [],
+    "background": "areas/blue-sea/blue-sea_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]

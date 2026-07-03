@@ -24,7 +24,15 @@ const ALLOWED_AREA_PLACEMENTS = new Set([
   'morning-ranch:hitsuji',
   'morning-ranch:nezumi',
   'morning-ranch:kaeru',
-  'morning-ranch:boss:hikarino-uma'
+  'morning-ranch:boss:hikarino-uma',
+  'blue-sea:kumo',
+  'blue-sea:kame',
+  'blue-sea:tako',
+  'blue-sea:ika',
+  'blue-sea:kani',
+  'blue-sea:kamo',
+  'blue-sea:kujira',
+  'blue-sea:boss:kumono-sakana'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));

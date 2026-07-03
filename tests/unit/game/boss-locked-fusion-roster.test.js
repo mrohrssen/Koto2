@@ -15,7 +15,8 @@ const creaturesById = new Map(creatures.map(creature => [creature.id, creature])
 const movesById = new Map(moves.map(move => [move.id, move]));
 const ALLOWED_FUSION_AREA_PLACEMENTS = new Set([
   'school:boss:hanano-yousei',
-  'morning-ranch:boss:hikarino-uma'
+  'morning-ranch:boss:hikarino-uma',
+  'blue-sea:boss:kumono-sakana'
 ]);
 
 const EXPECTED_FUSIONS = [
