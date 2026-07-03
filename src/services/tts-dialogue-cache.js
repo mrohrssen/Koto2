@@ -165,6 +165,6 @@ export class TtsDialogueCache {
   }
 }
 
-function hashKey(speakerId, text) {
+export function hashKey(speakerId, text) {
   return createHash('md5').update(`${speakerId}:${text}`).digest('hex').slice(0, 12) + '.wav';
 }

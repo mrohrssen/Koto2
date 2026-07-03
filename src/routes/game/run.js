@@ -28,7 +28,6 @@ import {
   selectBestFrame,
 } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
-import { makeGreetingTtsWarmer } from '../../services/dialogue-card-tts.js';
 import {
   normalizePartySkills,
   rollSkillMasterOffers,
@@ -394,7 +393,6 @@ export default function createRunRoutes({
       userId: req.user?.id,
       getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
       getDialogueCardAudio,
-      warmTts: makeGreetingTtsWarmer({ getDialogueCardAudio, userId: req.user?.id }),
     });
   }
 

@@ -69,28 +69,6 @@ export function createDialogueCardTtsResolver({
   };
 }
 
-/**
- * Build a fire-and-forget `warmTts(frame)` callback for the explore runway.
- *
- * The runway builder selects a greeting frame for prepared friendly-NPC and
- * shrine rooms and calls this with the frame so its audio is synthesized into
- * the shared dialogue cache before the player reaches the room. Delegates to
- * the existing dialogue-card resolver with `waitForSynthesis: false`, which is
- * content-addressed and swallows synthesis failures (VOICEVOX may be down), so
- * warming never blocks or fails a runway build.
- *
- * Returns null when audio is unavailable so the runway simply skips warming.
- */
-export function makeGreetingTtsWarmer({ getDialogueCardAudio, userId, speakerKey = 'game-master' } = {}) {
-  if (typeof getDialogueCardAudio !== 'function' || !userId) return null;
-  return frame => {
-    // Do not await: warming is background work relative to the runway build.
-    Promise.resolve(
-      getDialogueCardAudio({ userId, speakerKey, line: frame, waitForSynthesis: false })
-    ).catch(() => {});
-  };
-}
-
 export function createDialogueCardWordTtsResolver({
   ttsDialogueCache,
   synthesizeFn,

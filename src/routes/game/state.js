@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { rotateKanjiKombatSessionEpoch } from '../../game/services/kanji-kombat-service.js';
 import { rotateExploreSessionEpoch } from '../../game/services/explore-session-contract.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
-import { makeGreetingTtsWarmer } from '../../services/dialogue-card-tts.js';
 
 /**
  * Create game state router
@@ -29,7 +28,6 @@ export default function createGameStateRoutes({ getDialogueCardAudio } = {}) {
           userId: req.user?.id,
           getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
           getDialogueCardAudio,
-          warmTts: makeGreetingTtsWarmer({ getDialogueCardAudio, userId: req.user?.id }),
         });
         await req.saveGame();
       }

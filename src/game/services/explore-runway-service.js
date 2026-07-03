@@ -218,19 +218,47 @@ function knownSetForOpts(opts) {
   return opts?.knownSet instanceof Set ? opts.knownSet : new Set();
 }
 
-// Warm the dialogue TTS cache for a prepared greeting frame so audio is ready
-// (or in flight) by the time the player reaches the room. Fire-and-forget: a
-// synthesis failure must never fail or slow a runway build. The warmed flag
-// lives on the persisted room state so rebuilds (state enrichment,
-// refreshExploreRunwayAfterProceed) do not re-warm — one attempt per frame.
-function warmGreetingTts(frame, state, flagKey, opts) {
-  if (!frame || !state || state[flagKey] || typeof opts?.warmTts !== 'function') return;
-  state[flagKey] = true;
+// Resolve a dialogue TTS descriptor for a prepared greeting frame and attach it
+// so the client can play (cache hit) or request (cache miss) audio the moment
+// the player reaches the room. The descriptor's key is derived the same way the
+// client's on-demand request derives it (MD5 of speakerId:text in
+// tts-dialogue-cache), so a pre-warmed WAV is a guaranteed hit.
+//
+// getDialogueCardAudio with waitForSynthesis:false fires background synthesis
+// AND returns the cache descriptor, so this both warms and attaches in one call.
+// It is guarded (try/catch + the resolver swallows its own async rejection), so
+// a VOICEVOX failure returns null and the greeting is emitted WITHOUT audio —
+// the client renders a disabled ♪ and degrades silently.
+//
+// The resolved descriptor is persisted on the room state (`stateKey`) so rebuilds
+// across both build paths (state enrichment, refreshExploreRunwayAfterProceed)
+// reuse it without recompute — exactly-once, no retry storms.
+async function resolveGreetingAudio(frame, state, stateKey, opts, speaker) {
+  if (!frame || !state) return null;
+  if (state[stateKey]) return state[stateKey];
+  if (typeof opts?.getDialogueCardAudio !== 'function') return null;
   try {
-    opts.warmTts(frame);
+    const audio = await opts.getDialogueCardAudio({
+      userId: opts.userId,
+      speakerKey: speaker?.speakerKey,
+      speakerId: speaker?.speakerId,
+      line: frame,
+      waitForSynthesis: false,
+    });
+    if (audio) {
+      state[stateKey] = audio;
+      return audio;
+    }
   } catch {
-    // Warming is best-effort; VOICEVOX may be down. Swallow to protect the build.
+    // Best-effort; VOICEVOX may be down. Swallow to protect the build. The
+    // greeting is still emitted without audio and the client degrades.
   }
+  return null;
+}
+
+function greetingWithAudio(greeting, audio) {
+  if (!greeting) return greeting;
+  return audio ? { ...greeting, audio } : greeting;
 }
 
 function hydrateFriendlyNpcOfferFrames(item, knownSet) {
@@ -249,7 +277,7 @@ function hydrateFriendlyNpcOfferFrames(item, knownSet) {
   }
 }
 
-function buildFriendlyNpcPayload(gm, room, opts) {
+async function buildFriendlyNpcPayload(gm, room, opts) {
   if (!room.friendlyNpc) {
     room.friendlyNpc = { offerCategory: 'equipment', offered: null, chosenId: null, completed: false };
   }
@@ -271,17 +299,23 @@ function buildFriendlyNpcPayload(gm, room, opts) {
     room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
   }
 
-  warmGreetingTts(room.friendlyNpc.greeting, room.friendlyNpc, 'greetingTtsWarmed', opts);
+  const greetingAudio = await resolveGreetingAudio(
+    room.friendlyNpc.greeting,
+    room.friendlyNpc,
+    'greetingAudio',
+    opts,
+    { speakerKey: room.npc?.id || 'game-master', speakerId: room.npc?.speakerId },
+  );
 
   return {
     kind: 'friendlyNpc',
     npc: room.npc || null,
     offered: cloneExploreValue(room.friendlyNpc.offered || []),
-    greeting: room.friendlyNpc.greeting || null,
+    greeting: greetingWithAudio(room.friendlyNpc.greeting || null, greetingAudio),
   };
 }
 
-function buildShrinePayload(room, opts) {
+async function buildShrinePayload(room, opts) {
   if (!room.shrine) {
     room.shrine = { used: false, completed: false, chosenReward: null, greeting: null };
   }
@@ -293,12 +327,18 @@ function buildShrinePayload(room, opts) {
     room.shrine.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
   }
 
-  warmGreetingTts(room.shrine.greeting, room.shrine, 'greetingTtsWarmed', opts);
+  const greetingAudio = await resolveGreetingAudio(
+    room.shrine.greeting,
+    room.shrine,
+    'greetingAudio',
+    opts,
+    { speakerKey: 'shrine_fox' },
+  );
 
   return {
     kind: 'shrine',
     rewards: cloneExploreValue(SHRINE_REWARDS),
-    greeting: cloneExploreValue(room.shrine.greeting || null),
+    greeting: greetingWithAudio(cloneExploreValue(room.shrine.greeting || null), greetingAudio),
     completed: room.shrine.completed === true || room.shrine.used === true,
   };
 }
@@ -431,7 +471,7 @@ function buildSpeedReviewPayload(userId, room) {
   };
 }
 
-function buildInteractionPayload(gm, room, opts) {
+async function buildInteractionPayload(gm, room, opts) {
   switch (room?.type) {
     case ROOM_TYPES.friendlyNpc:
       return buildFriendlyNpcPayload(gm, room, opts);
@@ -513,7 +553,7 @@ export async function buildExploreRunway(gm, opts = {}) {
 
     prepareEntryIngredientDrops(gm, index, currentRoom);
     const entryPayload = buildEntryPayload(gm, room);
-    const interactionPayload = buildInteractionPayload(gm, room, payloadOpts);
+    const interactionPayload = await buildInteractionPayload(gm, room, payloadOpts);
     const acceptedActions = acceptedActionsForRoom(room);
     const missingPayloadReasons = missingPayloadReasonsFor(room, interactionPayload);
 
