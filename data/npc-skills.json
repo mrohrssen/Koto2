@@ -642,5 +642,53 @@
     "statusEffect": null,
     "statusChance": 0,
     "statusDuration": 0
+  },
+  {
+    "id": "iwau",
+    "name": "祝う",
+    "nameEn": "Celebrate",
+    "reading": "いわう",
+    "meaning": "to celebrate / to congratulate",
+    "element": "fire",
+    "category": "heal",
+    "target": "all_allies",
+    "power": 10,
+    "mpCost": 0,
+    "description": "A burst of celebration restores allies.",
+    "statusEffect": null,
+    "statusChance": 0,
+    "statusDuration": 0
+  },
+  {
+    "id": "negau",
+    "name": "願う",
+    "nameEn": "Wish",
+    "reading": "ねがう",
+    "meaning": "to wish / to hope for",
+    "element": "fire",
+    "category": "buff",
+    "target": "single_ally",
+    "power": 0,
+    "mpCost": 0,
+    "description": "A heartfelt wish steadies an ally.",
+    "statusEffect": null,
+    "statusChance": 0,
+    "statusDuration": 0
+  },
+  {
+    "id": "odoru",
+    "name": "踊る",
+    "nameEn": "Dance",
+    "reading": "おどる",
+    "meaning": "to dance",
+    "element": "fire",
+    "category": "damage",
+    "target": "all_enemies",
+    "power": 10,
+    "mpCost": 0,
+    "description": "A whirling dance sweeps the enemy line.",
+    "statusEffect": null,
+    "statusChance": 0,
+    "statusDuration": 0
   }
 ]
