@@ -31,6 +31,12 @@ let wordAudioEnabled = true;
 export const NEUTRAL_PRONUNCIATION_SPEAKER_ID = 11; // 玄野武宏 (ノーマル) - clear pronunciation
 const WORD_SPEAKER_ID = NEUTRAL_PRONUNCIATION_SPEAKER_ID;
 
+// Dialogue-line audio cache (background prefetch + instant replay).
+// Entries: { status: 'pending'|'ready'|'error', blobUrl, audioMeta, promise }
+const dialogueLineCache = new Map();
+const MAX_DIALOGUE_LINE_CACHE = 20;
+let dialogueLinePrefetchChain = Promise.resolve();
+
 // UI audio (for short texts like creature names)
 let currentUiAudio = null;
 
@@ -369,17 +375,27 @@ export async function playDialogueLineAudio({ text, speakerId } = {}) {
   const resolvedSpeakerId = Number(speakerId);
   if (!Number.isFinite(resolvedSpeakerId)) return null;
 
-  try {
-    const response = await fetch(`${API_BASE}/api/tts/dialogue-line`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ text, speakerId: resolvedSpeakerId })
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data?.ok || !data.audio?.url) return null;
+  const key = dialogueLineKey(text, resolvedSpeakerId);
+  let entry = dialogueLineCache.get(key);
+  if (entry?.status === 'pending') entry = await entry.promise;
+  if (entry?.status === 'ready' && entry.blobUrl) {
+    await playAudioUrl(entry.blobUrl);
+    return entry.audioMeta;
+  }
 
-    await playAudioUrl(data.audio.url);
-    return data.audio;
+  // Cache miss or failed prefetch: fetch now, keep the blob for instant replay.
+  try {
+    const result = await fetchDialogueLine(text, resolvedSpeakerId);
+    if (!result) return null;
+    dialogueLineCache.set(key, {
+      status: 'ready',
+      blobUrl: result.blobUrl,
+      audioMeta: result.audioMeta,
+      promise: null
+    });
+    evictDialogueLineOverflow();
+    await playAudioUrl(result.blobUrl);
+    return result.audioMeta;
   } catch (error) {
     console.warn('[TTS] Dialogue line audio failed:', error.message);
     return null;
@@ -393,12 +409,89 @@ export async function playNeutralLearnAudio(text) {
   });
 }
 
+function dialogueLineKey(text, speakerId) {
+  return `${speakerId}|${text}`;
+}
+
+function evictDialogueLineOverflow() {
+  while (dialogueLineCache.size > MAX_DIALOGUE_LINE_CACHE) {
+    let evicted = false;
+    for (const [key, entry] of dialogueLineCache) {
+      if (entry.status === 'pending') continue;
+      if (entry.blobUrl) URL.revokeObjectURL(entry.blobUrl);
+      dialogueLineCache.delete(key);
+      evicted = true;
+      break;
+    }
+    if (!evicted) break;
+  }
+}
+
+/**
+ * POST /api/tts/dialogue-line, then download the WAV as a blob URL.
+ * @returns {Promise<{blobUrl: string, audioMeta: object}|null>}
+ */
+async function fetchDialogueLine(text, speakerId) {
+  const response = await fetch(`${API_BASE}/api/tts/dialogue-line`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ text, speakerId })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data?.ok || !data.audio?.url) return null;
+
+  const wavUrl = data.audio.url.startsWith('http')
+    ? data.audio.url
+    : `${API_BASE}${data.audio.url}`;
+  const wavResponse = await fetch(wavUrl);
+  if (!wavResponse.ok) return null;
+  const blob = await wavResponse.blob();
+  return { blobUrl: URL.createObjectURL(blob), audioMeta: data.audio };
+}
+
+/**
+ * Prefetch a dialogue line's audio in the background so a later
+ * playDialogueLineAudio() with the same text+speaker starts instantly.
+ * Jobs run one at a time — VOICEVOX synthesis is the prod CPU bottleneck.
+ * Failed lines are not retried for the session.
+ */
+export function prefetchDialogueLine({ text, speakerId } = {}) {
+  if (!ttsEnabled || isAudioMuted() || !text) return;
+  const resolvedSpeakerId = Number(speakerId);
+  if (!Number.isFinite(resolvedSpeakerId)) return;
+
+  const key = dialogueLineKey(text, resolvedSpeakerId);
+  if (dialogueLineCache.has(key)) return;
+
+  const entry = { status: 'pending', blobUrl: null, audioMeta: null, promise: null };
+  entry.promise = dialogueLinePrefetchChain = dialogueLinePrefetchChain
+    .then(() => fetchDialogueLine(text, resolvedSpeakerId))
+    .then(result => {
+      if (result) {
+        entry.status = 'ready';
+        entry.blobUrl = result.blobUrl;
+        entry.audioMeta = result.audioMeta;
+      } else {
+        entry.status = 'error';
+      }
+      return entry;
+    })
+    .catch(() => {
+      entry.status = 'error';
+      return entry;
+    });
+  dialogueLineCache.set(key, entry);
+  evictDialogueLineOverflow();
+}
+
 async function playAudioUrl(url) {
   if (!ttsEnabled || isAudioMuted() || !url) return;
 
   stop();
 
-  const audioUrl = url.startsWith('http') ? url : `${API_BASE}${url}`;
+  const audioUrl = url.startsWith('http') || url.startsWith('blob:')
+    ? url
+    : `${API_BASE}${url}`;
   return new Promise((resolve) => {
     const audio = new Audio(audioUrl);
     currentAudio = trackTtsAudio(audio, () => {

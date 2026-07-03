@@ -72,23 +72,27 @@ describe('dialogue word audio', () => {
     const fetchCalls = [];
     const audioUrls = [];
     globalThis.fetch = async (url, options = {}) => {
-      fetchCalls.push({
-        url,
-        headers: options.headers,
-        body: JSON.parse(options.body)
-      });
-      return {
-        ok: true,
-        json: async () => ({
+      if (String(url).includes('/api/tts/dialogue-line')) {
+        fetchCalls.push({
+          url,
+          headers: options.headers,
+          body: JSON.parse(options.body)
+        });
+        return {
           ok: true,
-          audio: {
-            userId: 'user-1',
-            key: 'line12345678.wav',
-            url: '/api/tts/dialogue/user-1/line12345678.wav',
-            speakerId: 11
-          }
-        })
-      };
+          json: async () => ({
+            ok: true,
+            audio: {
+              userId: 'user-1',
+              key: 'line12345678.wav',
+              url: '/api/tts/dialogue/user-1/line12345678.wav',
+              speakerId: 11
+            }
+          })
+        };
+      }
+      fetchCalls.push({ url });
+      return { ok: true, blob: async () => ({ fakeWav: true }) };
     };
     globalThis.Audio = class {
       constructor(url) {
@@ -103,29 +107,41 @@ describe('dialogue word audio', () => {
 
       pause() {}
     };
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    URL.createObjectURL = () => 'blob:learn-line-audio';
+    URL.revokeObjectURL = () => {};
 
-    const {
-      NEUTRAL_PRONUNCIATION_SPEAKER_ID,
-      playNeutralLearnAudio
-    } = await import(`../../../public/js/tts.js?test=${Date.now()}-${Math.random()}`);
+    try {
+      const {
+        NEUTRAL_PRONUNCIATION_SPEAKER_ID,
+        playNeutralLearnAudio
+      } = await import(`../../../public/js/tts.js?test=${Date.now()}-${Math.random()}`);
 
-    assert.equal(NEUTRAL_PRONUNCIATION_SPEAKER_ID, 11);
-    const audio = await playNeutralLearnAudio('森で');
+      assert.equal(NEUTRAL_PRONUNCIATION_SPEAKER_ID, 11);
+      const audio = await playNeutralLearnAudio('森で');
 
-    assert.deepEqual(fetchCalls, [{
-      url: '/api/tts/dialogue-line',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer jwt-token'
-      },
-      body: { text: '森で', speakerId: 11 }
-    }]);
-    assert.deepEqual(audioUrls, ['/api/tts/dialogue/user-1/line12345678.wav']);
-    assert.deepEqual(audio, {
-      userId: 'user-1',
-      key: 'line12345678.wav',
-      url: '/api/tts/dialogue/user-1/line12345678.wav',
-      speakerId: 11
-    });
+      assert.deepEqual(fetchCalls, [
+        {
+          url: '/api/tts/dialogue-line',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer jwt-token'
+          },
+          body: { text: '森で', speakerId: 11 }
+        },
+        { url: '/api/tts/dialogue/user-1/line12345678.wav' }
+      ]);
+      assert.deepEqual(audioUrls, ['blob:learn-line-audio']);
+      assert.deepEqual(audio, {
+        userId: 'user-1',
+        key: 'line12345678.wav',
+        url: '/api/tts/dialogue/user-1/line12345678.wav',
+        speakerId: 11
+      });
+    } finally {
+      URL.createObjectURL = originalCreateObjectURL;
+      URL.revokeObjectURL = originalRevokeObjectURL;
+    }
   });
 });
