@@ -1014,5 +1014,89 @@
     "shopGreetings": ["こんにちは！"],
     "defeatLine": "いいお湯でした！",
     "createdAt": "2026-07-03"
+  },
+  "ojisan": {
+    "id": "ojisan",
+    "name": "おじさん",
+    "nameEn": "Stall Uncle",
+    "speakerId": 13,
+    "area": "summer-festival",
+    "reading": "おじさん",
+    "meaning": "uncle / middle-aged man",
+    "rank": 3200,
+    "attack": 32,
+    "skills": ["iwau"],
+    "personality": {
+      "traits": ["boisterous", "generous"],
+      "speechStyle": "Carnival barker.",
+      "quirk": "Gives extra helpings to anyone who smiles."
+    },
+    "greeting": "いらっしゃい！",
+    "shopGreetings": ["いらっしゃい！"],
+    "defeatLine": "おめでとう！",
+    "createdAt": "2026-07-03"
+  },
+  "miko": {
+    "id": "miko",
+    "name": "巫女",
+    "nameEn": "Shrine Maiden",
+    "speakerId": 10,
+    "area": "summer-festival",
+    "reading": "みこ",
+    "meaning": "shrine maiden",
+    "rank": 8400,
+    "attack": 32,
+    "skills": ["negau"],
+    "personality": {
+      "traits": ["serene", "attentive"],
+      "speechStyle": "Soft and formal.",
+      "quirk": "Ties every wish ribbon perfectly straight."
+    },
+    "greeting": "ようこそ。",
+    "shopGreetings": ["ようこそ。"],
+    "defeatLine": "いい願いですね。",
+    "createdAt": "2026-07-03"
+  },
+  "oneesan": {
+    "id": "oneesan",
+    "name": "お姉さん",
+    "nameEn": "Dancer",
+    "speakerId": 52,
+    "area": "summer-festival",
+    "reading": "おねえさん",
+    "meaning": "older sister / young woman",
+    "rank": 3200,
+    "attack": 32,
+    "skills": ["odoru"],
+    "personality": {
+      "traits": ["graceful", "playful"],
+      "speechStyle": "Light and teasing.",
+      "quirk": "Never misses a beat of the drums."
+    },
+    "greeting": "こんばんは！",
+    "shopGreetings": ["こんばんは！"],
+    "defeatLine": "いい踊りでした！",
+    "createdAt": "2026-07-03"
+  },
+  "aidoru": {
+    "id": "aidoru",
+    "name": "アイドル",
+    "nameEn": "Idol",
+    "speakerId": 69,
+    "area": "summer-festival",
+    "reading": "アイドル",
+    "meaning": "(pop) idol",
+    "rank": 4900,
+    "attack": 32,
+    "skills": ["utau"],
+    "personality": {
+      "traits": ["sparkling", "earnest"],
+      "speechStyle": "Stage announcements.",
+      "quirk": "Waves to every single person in the crowd."
+    },
+    "greeting": "こんばんは！",
+    "shopGreetings": ["こんばんは！"],
+    "defeatLine": "また歌いましょう！",
+    "createdAt": "2026-07-03"
   }
 }

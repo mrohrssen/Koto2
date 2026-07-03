@@ -31,3 +31,28 @@ describe('summer-festival npc skills', () => {
     assert.equal(utau.length, 1);
   });
 });
+
+const npcs = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/npcs.json'), 'utf8'));
+
+const EXPECTED_NPCS = [
+  { key: 'ojisan', name: 'おじさん', reading: 'おじさん', skill: 'iwau' },
+  { key: 'miko', name: '巫女', reading: 'みこ', skill: 'negau' },
+  { key: 'oneesan', name: 'お姉さん', reading: 'おねえさん', skill: 'odoru' },
+  { key: 'aidoru', name: 'アイドル', reading: 'アイドル', skill: 'utau' }
+];
+
+describe('summer-festival npcs', () => {
+  for (const expected of EXPECTED_NPCS) {
+    it(`defines ${expected.key}`, () => {
+      const npc = npcs[expected.key];
+      assert.ok(npc, `${expected.key} missing`);
+      assert.equal(npc.area, 'summer-festival');
+      assert.equal(npc.name, expected.name);
+      assert.equal(npc.reading, expected.reading);
+      assert.deepEqual(npc.skills, [expected.skill]);
+      assert.ok(Number.isFinite(npc.speakerId));
+      assert.ok(npc.greeting.length > 0);
+      assert.ok(npc.defeatLine.length > 0);
+    });
+  }
+});
