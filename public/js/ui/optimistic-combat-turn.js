@@ -11,8 +11,19 @@ import {
 } from '../../../src/shared/combat/pve-turn-resolver.js';
 import {
   hasUnsafeSharedPveOptimisticPrediction,
+  hasUnsafeSessionPvePrediction,
   SANITIZABLE_PVE_BLOCKERS,
 } from '../../../src/shared/combat/pve-prediction-contract.js';
+
+// Prediction policies gate which optimistically-resolved PvE turns are safe to
+// apply locally. 'strict' (default) is the online per-turn-verify bar; 'session'
+// is the relaxed explore-session bar that also allows koSwaps/koRemovals and
+// befriend-eligible terminal victory (reconciled by replayCombatCycleEntry +
+// the pendingCombatEnd shell). See pve-prediction-contract.js for the rationale.
+const PVE_PREDICTION_POLICIES = {
+  strict: hasUnsafeSharedPveOptimisticPrediction,
+  session: ({ transcript } = {}) => hasUnsafeSessionPvePrediction({ transcript }),
+};
 
 const OPTIMISTIC_PVE_ACTIONS = new Set(['attack', 'defend']);
 const SERVER_OWNED_TRANSCRIPT_FIELDS = new Set([
@@ -189,6 +200,7 @@ export function buildOptimisticCombatTurn({
   actionType = 'attack',
   moveChoices = [],
   actionId = createActionId('combat'),
+  predictionPolicy = 'strict',
 } = {}) {
   if (!canRunOptimisticPveTurn(state, actionType)) return null;
 
@@ -212,7 +224,9 @@ export function buildOptimisticCombatTurn({
   } catch {
     return null;
   }
-  if (hasUnsafeSharedPveOptimisticPrediction({
+  const isUnsafePrediction = PVE_PREDICTION_POLICIES[predictionPolicy]
+    || PVE_PREDICTION_POLICIES.strict;
+  if (isUnsafePrediction({
     combat: state.combat,
     transcript: resolved.transcript,
   })) return null;

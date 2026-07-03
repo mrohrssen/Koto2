@@ -59,6 +59,7 @@ import {
   applyLocalDeferredKillXp,
 } from './combat-local-prediction.js';
 import { getKanjiKombatSession } from './kanji-kombat-session.js';
+import { getExploreSession } from './explore-session.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -528,6 +529,42 @@ function buildOptimisticCreatureCombatRequest(actionType, moveChoices = []) {
   return buildOptimisticCombatTurn({ state: getGameState(), actionType, moveChoices });
 }
 
+/**
+ * Whether this creature-combat turn should flow through the explore-session log
+ * instead of a per-turn verify round-trip. True when an explore session is
+ * active, its current prepared room accepts `combat.cycle`, and the combat still
+ * has a pre-committed seed chain to draw the next turn's seed from
+ * (turnSeeds.length > 1: the head is this turn's seed, and at least one more must
+ * remain for the chain to advance). When any of these is false we fall back to
+ * the online per-turn path (which this task does not delete).
+ */
+function isExploreSessionCombatTurn() {
+  const session = getExploreSession?.();
+  if (!session) return false;
+  const preparedRoom = session.currentPreparedRoom?.();
+  const acceptsCombatCycle = Array.isArray(preparedRoom?.acceptedActions)
+    && preparedRoom.acceptedActions.includes('combat.cycle');
+  if (!acceptsCombatCycle) return false;
+  const turnSeeds = getGameState()?.combat?.optimistic?.turnSeeds;
+  return Array.isArray(turnSeeds) && turnSeeds.length > 1;
+}
+
+/**
+ * Build the session-mode optimistic turn with the relaxed prediction policy
+ * (allows koSwaps / befriend-eligible terminal victory — reconciled by the
+ * server replay + pendingCombatEnd shell). Returns null for genuinely
+ * non-simulatable turns (befriendQuizTriggered, nextWave), which drop to the
+ * legacy path.
+ */
+function buildSessionCreatureCombatTurn(actionType, moveChoices = []) {
+  return buildOptimisticCombatTurn({
+    state: getGameState(),
+    actionType,
+    moveChoices,
+    predictionPolicy: 'session',
+  });
+}
+
 function hasKanjiKombatPromptRef(promptRef) {
   return !!promptRef && typeof promptRef === 'object' && Object.keys(promptRef).length > 0;
 }
@@ -646,6 +683,81 @@ function localStateAfterKanjiKombatPrediction(state, optimistic, promptRef = {})
   return next;
 }
 
+/**
+ * Apply a session-predicted PvE turn to a deep-cloned game-state draft and
+ * commit it locally, mirroring the KK path's ordering: adopt the resolved next
+ * combat, advance the pre-committed seed chain, then apply this turn's deferred
+ * kill-XP. The server's replayCombatCycleEntry commits the same transcript on
+ * the next drain, so this local mutation only has to match its shape.
+ */
+function localStateAfterSessionPveTurn(optimistic) {
+  const next = structuredClone(getGameState() || {});
+  if (optimistic.localNextCombat && next.combat) {
+    next.combat = { ...next.combat, ...optimistic.localNextCombat };
+  }
+  advanceLocalChain(next);
+  applyLocalDeferredKillXp(next, optimistic.localTranscript, optimistic.envelope.seed);
+  return next;
+}
+
+/**
+ * Session-mode creature-combat turn: play the predicted transcript, commit the
+ * local next state, and append a `combat.cycle` entry to the explore session log
+ * — NO per-turn verify round-trip (the session drain carries it). On a locally
+ * predicted combat end the pendingCombatEnd shell is already in the transcript
+ * (playback shows it); the checkpoint handler hands the server-confirmed
+ * combatEnded result to finishCombatLoop. Returns true when handled, false when
+ * the turn is unsafe to predict offline (caller falls back / soft-pauses).
+ */
+async function runSessionCreatureCombatTurn({
+  actionType,
+  moveChoices = [],
+  turnTiming,
+  playback,
+  pendingFlag = 'player',
+} = {}) {
+  const optimistic = buildSessionCreatureCombatTurn(actionType, moveChoices);
+  if (!optimistic) {
+    // Genuinely non-simulatable turn (e.g. befriendQuizTriggered): drain what we
+    // have, then let the caller decide (online legacy path, or offline soft pause).
+    void getExploreSession()?.syncNow();
+    return false;
+  }
+
+  const hasPendingCombatEnd = !!optimistic.localTranscript?.pendingCombatEnd;
+  const requestStartedAt = performance.now();
+  markCombatAnimationStart(turnTiming, requestStartedAt);
+  await playback(optimistic.localTranscript);
+
+  updateGameState(localStateAfterSessionPveTurn(optimistic));
+
+  const session = getExploreSession();
+  session?.recordRoomAction('combat.cycle', {
+    actionType,
+    moveChoices,
+    predictedHash: optimistic.envelope.predictedHash,
+  });
+
+  if (pendingFlag === 'enemy') {
+    enemyAttackPending = false;
+  } else {
+    playerAttackPending = false;
+  }
+
+  if (hasPendingCombatEnd) {
+    // Combat resolved locally — the pendingCombatEnd shell is showing. Leave
+    // move selection stopped; the checkpoint replay delivers the authoritative
+    // combatEnded result and finishCombatLoop runs then.
+    combatActive = false;
+    logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'session_pending_combat_end');
+    return true;
+  }
+
+  combatActive = isRecoveredCombatActive(getGameState());
+  logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'session_queued');
+  return true;
+}
+
 async function runOptimisticCreatureCombatTurn({
   actionType,
   moveChoices = [],
@@ -658,6 +770,33 @@ async function runOptimisticCreatureCombatTurn({
   stopCombatLoop: finishCombatLoop = stopCombatLoop,
   getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
 } = {}) {
+  // Explore-session cutover: when the turn flows through the session log, commit
+  // it locally and append a combat.cycle entry — no per-turn verify. A false
+  // return means "unsafe to predict offline"; fall through to the online path.
+  if (isExploreSessionCombatTurn()) {
+    const sessionHandled = await runSessionCreatureCombatTurn({
+      actionType, moveChoices, turnTiming, playback, pendingFlag,
+    });
+    if (sessionHandled) {
+      const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
+      if (combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
+        await waitBeforeMoveSelection(nextSelectionDelayMs);
+        restartMoveSelection();
+      }
+      return true;
+    }
+    // Unsafe turn (session build returned null; syncNow already fired): when
+    // offline there is no online verify path to fall through to. Leave the loop
+    // paused with no move selection and no garbage entry — the session's
+    // reconnect drain delivers the authoritative state. When online, fall
+    // through to the legacy per-turn verify path below.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      playerAttackPending = false;
+      enemyAttackPending = false;
+      return true;
+    }
+  }
+
   const optimistic = buildOptimisticCreatureCombatRequest(actionType, moveChoices);
   if (!optimistic) return false;
 

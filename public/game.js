@@ -82,6 +82,8 @@ import * as tts from './js/tts.js';
 import * as settings from './js/settings.js';
 import * as explorationUI from './js/ui/exploration.js';
 import { getExploreSession } from './js/ui/explore-session.js';
+import { createCombatState } from '../src/game/state.js';
+import { createPveOpeningCursor } from '../src/game/combat/action-cursor.js';
 import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
@@ -1513,6 +1515,148 @@ function showCollectionToast(additions) {
   }
 }
 
+// Shared combat-entry UI flow, driven by a start-result-shaped object (either the
+// live /start-creature-encounter response or the runway-prepared combatStart clone).
+// Assumes gameState.combat is already populated (updateGameState ran first).
+async function enterCreatureCombatFromStart(result, { hasCreatures = true } = {}) {
+  // Store bootstrap NPC dialogue for use after combat (defeatLine)
+  if (result.npcDialogue) {
+    gameState._npcDialogue = result.npcDialogue;
+  }
+
+  // For NPC battles: play NPC intro before rendering combat.
+  // Lock scene transition so updateUI() won't kill the greeting narration.
+  if (result?.npc && hasCreatures) {
+    sceneTransitionActive = true;
+    try {
+      // Bug #9 fix: mount BattleScene with the allies seeded but NO enemies.
+      // The enemies are held off-stage while the NPC slides in, speaks, and
+      // slides out; playNpcBattleIntro then reveals them via syncCreatures
+      // so the player sees NPC-alone → NPC-leaves → enemies-appear. Prior
+      // behaviour seeded enemies immediately, so they rendered at full alpha
+      // overlapping the speaking NPC.
+      const combatAllies  = gameState.combat?.allies  ?? [];
+      const combatEnemies = gameState.combat?.enemies ?? [];
+      try {
+        const mgr = getSceneManager();
+        await mgr.transition(BattleScene, {
+          allies:  combatAllies,
+          enemies: [],
+          isBoss: !!gameState.combat?.isBoss,
+        });
+      } catch (sceneErr) {
+        console.error('[StartEncounter] BattleScene transition before NPC intro failed', sceneErr);
+      }
+      await playNpcBattleIntro(
+        result.npc,
+        (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
+        () => scene.hideNpcTrainer(),
+        result.npcDialogue,
+        { enemies: combatEnemies, allies: combatAllies, isBoss: !!gameState.combat?.isBoss },
+      );
+    } finally {
+      sceneTransitionActive = false;
+    }
+  }
+
+  // Hide enemy formation before updateUI to prevent visual flash.
+  // Set opacity:0 (not visibility:hidden) so layout is computed but nothing paints.
+  const ef = document.getElementById('enemy-formation');
+  if (hasCreatures && gameState.combat?.enemies?.length && ef) {
+    ef.style.opacity = '0';
+  }
+
+  updateUI();
+
+  // Non-creature encounters: show possessed dialogue (legacy path)
+  if (!hasCreatures) {
+    const enemy = gameState.combat?.enemy;
+    if (result?.dialogue || enemy?.dialogue?.possessed) {
+      const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
+        ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
+        : enemy.dialogue.possessed);
+      await showEnemyDialogue(text, 'possessed');
+    }
+  }
+
+  // Creature encounters: make enemy formation visible (PixiJS handles entrance animation)
+  if (hasCreatures && gameState.combat?.enemies?.length) {
+    const freshEf = document.getElementById('enemy-formation');
+    if (freshEf) freshEf.style.opacity = '1';
+  }
+
+  if (result?.tutorialBossIntro?.lines?.length) {
+    await playTutorialBossInterjection(
+      result.tutorialBossIntro.lines,
+      (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
+      () => scene.hideNpcTrainer(),
+      (line, opts) => narrationBox.show(line, opts),
+      gameState.combat?.enemies || [],
+      { waitFn: delay },
+    );
+  }
+
+  await delay(300);
+  startCombatLoop();
+}
+
+// Build the local combat state from a runway-prepared combatStart payload,
+// exactly shaped like the state after a live /start-creature-encounter (allies,
+// enemies, opening action cursor, optimistic head + full pre-committed seed
+// chain). Mirrors combat-cycle-service.startCreatureEncounter's combat object so
+// the client can run offline turns and the server replay converges.
+function buildLocalCombatFromStart(combatStart, seedChain) {
+  const enemies = combatStart.enemies || (combatStart.enemy ? [combatStart.enemy] : []);
+  const allies = combatStart.allies || gameState.run?.creatureParty?.active || [];
+  const combat = createCombatState(enemies[0] || null);
+  combat.allies = allies;
+  combat.enemies = enemies;
+  combat.actionCursor = createPveOpeningCursor({ allies, enemies });
+  combat.actionCount = 0;
+  combat.cycleCount = 0;
+  combat.openingResolved = false;
+  combat.isCreatureCombat = true;
+  combat.isBoss = combatStart.isBoss === true;
+  combat.swapPhase = true;
+  combat.optimistic = {
+    combatId: combatStart.optimistic?.combatId ?? null,
+    stateVersion: combatStart.optimistic?.stateVersion ?? 0,
+    nextTurnSeed: combatStart.optimistic?.nextTurnSeed ?? (seedChain?.[0] || null),
+    turnSeeds: Array.isArray(seedChain) ? [...seedChain] : [],
+    acceptedActionIds: {},
+  };
+  if (combatStart.npc) {
+    combat.npcId = combatStart.npc.id;
+    combat.npcData = combatStart.npc;
+  }
+  return combat;
+}
+
+// Session-first combat start. Returns true when the fight was started locally
+// through the explore session; false to fall back to the online start path.
+async function startCreatureEncounterFromSession(session) {
+  const preparedRoom = session.currentPreparedRoom?.();
+  const accepted = Array.isArray(preparedRoom?.acceptedActions) ? preparedRoom.acceptedActions : [];
+  const startKind = accepted.find(kind => kind.endsWith('.start'));
+  const payload = preparedRoom?.interactionPayload || null;
+  const combatStart = payload?.combatStart || null;
+  if (!startKind || !combatStart) return false;
+
+  const recorded = session.recordRoomAction(startKind, {});
+  if (!recorded?.accepted) {
+    // Room not ready / dependency / paused: let the online path handle it.
+    return false;
+  }
+
+  const draft = structuredClone(gameState);
+  draft.combat = buildLocalCombatFromStart(combatStart, payload.seedChain);
+  draft.phase = 'combat';
+  updateGameState(draft);
+
+  await enterCreatureCombatFromStart(combatStart, { hasCreatures: true });
+  return true;
+}
+
 let encounterStarting = false;
 async function startEncounter() {
   if (encounterStarting) return;
@@ -1529,6 +1673,16 @@ async function startEncounter() {
       }
     }
 
+    // Session-first: when the current prepared room advertises a combat start and
+    // carries an offline combatStart payload, start the fight locally and append a
+    // '<kind>.start' entry to the explore session log — no server round-trip. The
+    // sync drain replays the start (consuming the same prepared roll server-side)
+    // so online/offline state converges.
+    if (hasCreatures && exploreSession) {
+      const sessionStarted = await startCreatureEncounterFromSession(exploreSession);
+      if (sessionStarted) return;
+    }
+
     let result;
     if (hasCreatures) {
       result = await apiStartCreatureEncounter();
@@ -1543,86 +1697,7 @@ async function startEncounter() {
     }
 
     updateGameState(result.state);
-
-    // Store bootstrap NPC dialogue for use after combat (defeatLine)
-    if (result.npcDialogue) {
-      gameState._npcDialogue = result.npcDialogue;
-    }
-
-    // For NPC battles: play NPC intro before rendering combat.
-    // Lock scene transition so updateUI() won't kill the greeting narration.
-    if (result?.npc && hasCreatures) {
-      sceneTransitionActive = true;
-      try {
-        // Bug #9 fix: mount BattleScene with the allies seeded but NO enemies.
-        // The enemies are held off-stage while the NPC slides in, speaks, and
-        // slides out; playNpcBattleIntro then reveals them via syncCreatures
-        // so the player sees NPC-alone → NPC-leaves → enemies-appear. Prior
-        // behaviour seeded enemies immediately, so they rendered at full alpha
-        // overlapping the speaking NPC.
-        const combatAllies  = gameState.combat?.allies  ?? [];
-        const combatEnemies = gameState.combat?.enemies ?? [];
-        try {
-          const mgr = getSceneManager();
-          await mgr.transition(BattleScene, {
-            allies:  combatAllies,
-            enemies: [],
-            isBoss: !!gameState.combat?.isBoss,
-          });
-        } catch (sceneErr) {
-          console.error('[StartEncounter] BattleScene transition before NPC intro failed', sceneErr);
-        }
-        await playNpcBattleIntro(
-          result.npc,
-          (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
-          () => scene.hideNpcTrainer(),
-          result.npcDialogue,
-          { enemies: combatEnemies, allies: combatAllies, isBoss: !!gameState.combat?.isBoss },
-        );
-      } finally {
-        sceneTransitionActive = false;
-      }
-    }
-
-    // Hide enemy formation before updateUI to prevent visual flash.
-    // Set opacity:0 (not visibility:hidden) so layout is computed but nothing paints.
-    const ef = document.getElementById('enemy-formation');
-    if (hasCreatures && gameState.combat?.enemies?.length && ef) {
-      ef.style.opacity = '0';
-    }
-
-    updateUI();
-
-    // Non-creature encounters: show possessed dialogue (legacy path)
-    if (!hasCreatures) {
-      const enemy = gameState.combat?.enemy;
-      if (result?.dialogue || enemy?.dialogue?.possessed) {
-        const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
-          ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
-          : enemy.dialogue.possessed);
-        await showEnemyDialogue(text, 'possessed');
-      }
-    }
-
-    // Creature encounters: make enemy formation visible (PixiJS handles entrance animation)
-    if (hasCreatures && gameState.combat?.enemies?.length) {
-      const freshEf = document.getElementById('enemy-formation');
-      if (freshEf) freshEf.style.opacity = '1';
-    }
-
-    if (result?.tutorialBossIntro?.lines?.length) {
-      await playTutorialBossInterjection(
-        result.tutorialBossIntro.lines,
-        (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
-        () => scene.hideNpcTrainer(),
-        (line, opts) => narrationBox.show(line, opts),
-        gameState.combat?.enemies || [],
-        { waitFn: delay },
-      );
-    }
-
-    await delay(300);
-    startCombatLoop();
+    await enterCreatureCombatFromStart(result, { hasCreatures });
   } catch (error) {
     console.warn('[StartEncounter] Failed to start encounter:', error?.message || error);
     narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
