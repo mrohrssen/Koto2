@@ -146,6 +146,7 @@ function initCutoverHarness({
   let currentState = initialState;
   let updateUiCalls = 0;
   const actionClears = [];
+  const finishCombatCalls = [];
   init({
     getGameState: () => currentState,
     updateGameState: state => { currentState = state; },
@@ -155,6 +156,7 @@ function initCutoverHarness({
       setContent: () => {},
     },
     scene: { showNarration: () => {} },
+    finishCombatLoop: result => { finishCombatCalls.push(result); },
     apiProceed,
     apiSyncExploreSession,
   });
@@ -162,6 +164,7 @@ function initCutoverHarness({
     get currentState() { return currentState; },
     get updateUiCalls() { return updateUiCalls; },
     actionClears,
+    finishCombatCalls,
   };
 }
 
@@ -454,5 +457,86 @@ describe('explore session proceed cutover', () => {
       `sync must precede proceed, got order: ${JSON.stringify(events)}`
     );
     assert.equal(getExploreSession().pendingCount(), 0, 'session should be flushed after the drain');
+  });
+
+  // A checkpoint that carries a committed combat.cycle result with combatEnded ===
+  // true must hand that result to finishCombatLoop (the shared victory/defeat path).
+  it('finishes session combat when a checkpoint result reports combatEnded', async () => {
+    const combatRunway = {
+      sessionEpoch: 'ese_combat111111',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [
+        preparedRoom(0, {
+          room: room(0, { type: 'encounter' }),
+          acceptedActions: ['encounter.start', 'combat.cycle'],
+          actionEffects: { 'encounter.start': [], 'combat.cycle': ['partyStats'] },
+        }),
+        preparedRoom(1),
+      ],
+    };
+    const committedResult = {
+      seq: 1, actionId: 'run_es_combat_01',
+      combatEnded: true, victory: true, turnCount: 3,
+      enemies: [{ id: 'mizu', hp: 0, maxHp: 100 }],
+      creatureParty: { active: [{ id: 'hi', hp: 80, maxHp: 100 }], reserves: [] },
+    };
+    const harness = initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      apiSyncExploreSession: async () => ({
+        status: 'ok',
+        confirmedThroughSeq: 1,
+        results: [committedResult],
+        state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      }),
+    });
+
+    getExploreSession().adoptRunway(combatRunway);
+    const queued = getExploreSession().recordRoomAction('combat.cycle', {
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      predictedHash: 'abc123',
+    });
+    assert.equal(queued.accepted, true, 'combat.cycle accepted by the prepared combat room');
+
+    await getExploreSession().syncNow();
+
+    assert.equal(harness.finishCombatCalls.length, 1, 'finishCombatLoop fired once from the checkpoint');
+    assert.equal(harness.finishCombatCalls[0].victory, true);
+    assert.equal(harness.finishCombatCalls[0].combatEnded, true);
+    assert.ok(harness.finishCombatCalls[0].state, 'authoritative state rides along to the finish');
+  });
+
+  // A ledger-replayed combat-end result (replayed === true) was already resolved
+  // on the original POST; the checkpoint must NOT re-finish combat for it.
+  it('does not re-finish combat for a replayed combat-end checkpoint result', async () => {
+    const combatRunway = {
+      sessionEpoch: 'ese_replay111111',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [
+        preparedRoom(0, {
+          room: room(0, { type: 'encounter' }),
+          acceptedActions: ['encounter.start', 'combat.cycle'],
+          actionEffects: { 'encounter.start': [], 'combat.cycle': ['partyStats'] },
+        }),
+        preparedRoom(1),
+      ],
+    };
+    const harness = initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      apiSyncExploreSession: async () => ({
+        status: 'ok',
+        confirmedThroughSeq: 1,
+        results: [{ seq: 1, actionId: 'run_es_replay_01', combatEnded: true, victory: true, replayed: true }],
+        state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      }),
+    });
+
+    getExploreSession().adoptRunway(combatRunway);
+    getExploreSession().recordRoomAction('combat.cycle', { actionType: 'attack', moveChoices: [], predictedHash: 'x' });
+    await getExploreSession().syncNow();
+
+    assert.equal(harness.finishCombatCalls.length, 0, 'replayed combat-end result must not re-finish combat');
   });
 });

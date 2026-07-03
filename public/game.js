@@ -2326,6 +2326,9 @@ async function initGame() {
     startEncounter,
     startNewRun,
     returnToHub,
+    // Finish an explore-session combat when the checkpoint delivers the
+    // server-confirmed combatEnded result (same path as the live victory/defeat).
+    finishCombatLoop: result => combatLoopUI.stopCombatLoop(result),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {
       const result = await apiSelectArea(areaId);

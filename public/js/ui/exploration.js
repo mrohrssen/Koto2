@@ -74,6 +74,7 @@ let startEncounter = null;
 let startNewRun = null;
 let returnToHub = null;
 let showAdventureReport = null;
+let finishCombatLoop = null;
 let exploreSessionOnlineDrainTarget = null;
 let exploreSessionVisibilityDrainTarget = null;
 
@@ -120,13 +121,31 @@ function applyExploreSessionRunway(response) {
   state.run.exploreRunway = runway;
 }
 
+// Scan a checkpoint's committed results for a combat.cycle turn that ended the
+// fight, and hand it to the combat-loop finish path (the same one a live victory/
+// defeat uses). The replayed combat.cycle result IS the committed
+// creatureCombatCycle result (combatEnded/victory/rewards ride along) plus seq/
+// actionId, so finishCombatLoop consumes it directly. Skips ledger-replayed
+// results (replayed === true) — those were already resolved on the original POST.
+function finishSessionCombatFromResults(response) {
+  if (typeof finishCombatLoop !== 'function') return false;
+  const results = Array.isArray(response?.results) ? response.results : [];
+  const finalResult = results.findLast?.(r => r?.combatEnded === true && !r.replayed)
+    || results.slice().reverse().find(r => r?.combatEnded === true && !r.replayed);
+  if (!finalResult) return false;
+  finishCombatLoop({ ...finalResult, state: response.state });
+  return true;
+}
+
 function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
   if (logEmpty === false) {
     applyExploreSessionRunway(response);
+    finishSessionCombatFromResults(response);
     return;
   }
   if (response?.state) updateGameState(response.state);
   applyExploreSessionRunway(response);
+  finishSessionCombatFromResults(response);
 }
 
 function onExploreSessionCorrection(response) {
@@ -361,6 +380,7 @@ export function init(callbacks) {
   startEncounter = callbacks.startEncounter;
   startNewRun = callbacks.startNewRun;
   returnToHub = callbacks.returnToHub;
+  finishCombatLoop = callbacks.finishCombatLoop;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;
   apiSelectArea = callbacks.apiSelectArea;
   apiReturnToHub = callbacks.apiReturnToHub;
