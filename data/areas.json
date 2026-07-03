@@ -213,5 +213,48 @@
     "background": "areas/blue-sea/blue-sea_01.webp",
     "stage": 1,
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "evening-town",
+    "name": "夕方の町",
+    "nameEn": "Evening Town",
+    "reading": "ゆうがたのまち",
+    "rank": 800,
+    "particle": "の",
+    "parallaxId": "evening-town",
+    "modifierWord": {
+      "word": "夕方",
+      "reading": "ゆうがた",
+      "meaning": "evening / dusk",
+      "rank": 2200
+    },
+    "locationWord": {
+      "word": "町",
+      "reading": "まち",
+      "meaning": "town",
+      "rank": 800
+    },
+    "theme": "Lantern-lit streets at sunset — shops closing up, errands to run, and long shadows in the alleys.",
+    "creatures": [
+      "kage",
+      "suraimu",
+      "goburin",
+      "neko",
+      "inu",
+      "nezumi"
+    ],
+    "bossCreatureId": "kageno-inu",
+    "roomCount": 30,
+    "description": "A friendly town at dusk, where a loyal stray patrols the lantern-lit alleys.",
+    "tags": [
+      "town",
+      "evening",
+      "shops",
+      "streets"
+    ],
+    "subAreas": [],
+    "background": "areas/evening-town/evening-town_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]

@@ -16,7 +16,8 @@ const movesById = new Map(moves.map(move => [move.id, move]));
 const ALLOWED_FUSION_AREA_PLACEMENTS = new Set([
   'school:boss:hanano-yousei',
   'morning-ranch:boss:hikarino-uma',
-  'blue-sea:boss:kumono-sakana'
+  'blue-sea:boss:kumono-sakana',
+  'evening-town:boss:kageno-inu'
 ]);
 
 const EXPECTED_FUSIONS = [

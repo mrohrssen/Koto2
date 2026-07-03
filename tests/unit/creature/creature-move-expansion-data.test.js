@@ -32,7 +32,12 @@ const ALLOWED_AREA_PLACEMENTS = new Set([
   'blue-sea:kani',
   'blue-sea:kamo',
   'blue-sea:kujira',
-  'blue-sea:boss:kumono-sakana'
+  'blue-sea:boss:kumono-sakana',
+  'evening-town:kage',
+  'evening-town:suraimu',
+  'evening-town:goburin',
+  'evening-town:nezumi',
+  'evening-town:boss:kageno-inu'
 ]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));
