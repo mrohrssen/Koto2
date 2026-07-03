@@ -1047,6 +1047,13 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
       const result = await apiProceed();
       if (!result?.state) return result || null;
       updateGameState(result.state);
+      // The legacy proceed rebuilds the runway for the NEW room (currentRoom
+      // bumped, epoch preserved). Adopt it into the live session BEFORE updateUI
+      // so the session cursor advances — otherwise the next room's combat records
+      // `encounter.start` with the stale roomIndex and the sync rejects it as
+      // room_index_mismatch (a corrected sync). Combat rooms are not
+      // session-proceed-capable, so this legacy branch is the only cursor update.
+      session?.adoptRunway(result.state.run?.exploreRunway || null);
       clearActionArea();
       const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
       await playRoomTransition(result.state, { ingredientDrops });
@@ -1065,6 +1072,9 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);
+    // Adopt the refreshed runway so the session cursor tracks the advanced room
+    // before updateUI (mirrors the primary legacy-proceed branch above).
+    session?.adoptRunway(result.state.run?.exploreRunway || null);
     clearActionArea();
     await playRoomTransition(result.state, {
       ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],

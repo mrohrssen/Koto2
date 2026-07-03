@@ -462,6 +462,81 @@ describe('explore session proceed cutover', () => {
     assert.equal(getExploreSession().pendingCount(), 0, 'session should be flushed after the drain');
   });
 
+  // Regression: O1 (explore subway rooms/combat tier). A combat room is NOT
+  // `proceed`-capable in the runway, so advancing OUT of it (to the next room)
+  // goes through the LEGACY /api/game/proceed, which rebuilds the runway for the
+  // new room (currentRoom bumped, epoch preserved). If proceedWithRevealBuffer
+  // does NOT adopt that fresh runway into the live ExploreSession, the session's
+  // internal cursor (localCurrentRoom) stays on the PREVIOUS room. The next
+  // room's combat then records `encounter.start` stamped with the STALE roomIndex,
+  // and the sync rejects it as room_index_mismatch (a corrected sync — the
+  // no-corrected-syncs invariant is broken). The adopt must happen so the next
+  // recorded entry carries the advanced roomIndex.
+  it('adopts the refreshed runway after a legacy proceed so the next combat records the advanced roomIndex', async () => {
+    const combatActions = ['encounter.start', 'combat.cycle'];
+    const combatRoom0 = {
+      sessionEpoch: 'ese_combatadopt1',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [
+        preparedRoom(0, {
+          room: room(0, { type: 'encounter' }),
+          acceptedActions: combatActions,
+          actionEffects: { 'encounter.start': [], 'combat.cycle': [] },
+          interactionPayload: { combatStart: {} },
+        }),
+        preparedRoom(1, {
+          room: room(1, { type: 'encounter' }),
+          acceptedActions: combatActions,
+          actionEffects: { 'encounter.start': [], 'combat.cycle': [] },
+          interactionPayload: { combatStart: {} },
+        }),
+      ],
+    };
+    // The runway the server returns AFTER the legacy proceed advances to room 1:
+    // same epoch (proceed preserves it), currentRoom bumped to 1, preparedRooms
+    // now cover room 1 (and the reveal-ahead room 2).
+    const combatRoom1 = {
+      sessionEpoch: 'ese_combatadopt1',
+      currentRoom: 1,
+      roomActionSeq: 101,
+      preparedRooms: [
+        preparedRoom(1, {
+          room: room(1, { type: 'encounter' }),
+          acceptedActions: combatActions,
+          actionEffects: { 'encounter.start': [], 'combat.cycle': [] },
+          interactionPayload: { combatStart: {} },
+        }),
+        preparedRoom(2),
+      ],
+    };
+    const advancedState = makeState({ currentRoom: 1, exploreRunway: combatRoom1 });
+
+    initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: combatRoom0 }),
+      apiProceed: async () => ({ state: advancedState }),
+    });
+
+    // Seed the session with the entry runway (mirrors renderExploring's
+    // adopt-on-entry). Combat rooms are not session-proceed-capable, so this
+    // proceed takes the legacy apiProceed branch.
+    getExploreSession().adoptRunway(combatRoom0);
+
+    await proceedWithRevealBuffer();
+
+    // After the legacy proceed advanced the server to room 1, the session must
+    // have adopted the refreshed runway: recording the next room's combat start
+    // stamps roomIndex 1 (the advanced room), NOT the stale room 0.
+    const recorded = getExploreSession().recordRoomAction('encounter.start', {});
+    assert.equal(recorded.accepted, true, 'encounter.start should be accepted at the advanced room');
+    assert.equal(
+      recorded.entry.roomIndex, 1,
+      'the next combat start must carry the advanced roomIndex (1), not the stale previous room (0) — '
+      + 'otherwise the sync rejects it with room_index_mismatch',
+    );
+    assert.equal(recorded.entry.roomId, 'room-1', 'the entry roomId must match the advanced room');
+  });
+
   // A checkpoint that carries a committed combat.cycle result with combatEnded ===
   // true must hand that result to finishCombatLoop (the shared victory/defeat path).
   it('finishes session combat when a checkpoint result reports combatEnded', async () => {
