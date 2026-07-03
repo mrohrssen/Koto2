@@ -147,6 +147,7 @@ function initCutoverHarness({
   let updateUiCalls = 0;
   const actionClears = [];
   const finishCombatCalls = [];
+  const befriendResumeCalls = [];
   init({
     getGameState: () => currentState,
     updateGameState: state => { currentState = state; },
@@ -157,6 +158,7 @@ function initCutoverHarness({
     },
     scene: { showNarration: () => {} },
     finishCombatLoop: result => { finishCombatCalls.push(result); },
+    resumeSessionCombatBefriendQuiz: result => { befriendResumeCalls.push(result); },
     apiProceed,
     apiSyncExploreSession,
   });
@@ -165,6 +167,7 @@ function initCutoverHarness({
     get updateUiCalls() { return updateUiCalls; },
     actionClears,
     finishCombatCalls,
+    befriendResumeCalls,
   };
 }
 
@@ -505,6 +508,60 @@ describe('explore session proceed cutover', () => {
     assert.equal(harness.finishCombatCalls[0].victory, true);
     assert.equal(harness.finishCombatCalls[0].combatEnded, true);
     assert.ok(harness.finishCombatCalls[0].state, 'authoritative state rides along to the finish');
+  });
+
+  // The client optimistically predicts a plain terminal victory (pendingCombatEnd
+  // shell), but the server can divert that terminal turn to a befriend quiz on
+  // replay (25% roll; server-only). Such a result carries befriendQuizTriggered
+  // and combatEnded === false. The checkpoint must NOT try to finish (there is no
+  // combatEnded) — it must resume combat into the befriend quiz, or the client
+  // freezes on the victory shell forever (combat-tier subway stall).
+  it('resumes into the befriend quiz when a checkpoint reports a server befriend on a terminal turn', async () => {
+    const combatRunway = {
+      sessionEpoch: 'ese_befriend1111',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [
+        preparedRoom(0, {
+          room: room(0, { type: 'encounter' }),
+          acceptedActions: ['encounter.start', 'combat.cycle'],
+          actionEffects: { 'encounter.start': [], 'combat.cycle': ['partyStats'] },
+        }),
+        preparedRoom(1),
+      ],
+    };
+    const befriendResult = {
+      seq: 1, actionId: 'run_es_befriend01',
+      befriendQuizTriggered: true,
+      combatEnded: false,
+      befriendQuiz: { targetIndex: 0, creatureId: 'mizu', creatureName: 'みず', options: [] },
+      enemies: [{ id: 'mizu', hp: 1, maxHp: 100 }],
+      creatureParty: { active: [{ id: 'hi', hp: 80, maxHp: 100 }], reserves: [] },
+    };
+    const harness = initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      apiSyncExploreSession: async () => ({
+        status: 'ok',
+        confirmedThroughSeq: 1,
+        results: [befriendResult],
+        state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      }),
+    });
+
+    getExploreSession().adoptRunway(combatRunway);
+    getExploreSession().recordRoomAction('combat.cycle', {
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      predictedHash: 'abc123',
+    });
+
+    await getExploreSession().syncNow();
+
+    assert.equal(harness.finishCombatCalls.length, 0, 'must NOT finish combat — the fight is not over (befriend pending)');
+    assert.equal(harness.befriendResumeCalls.length, 1, 'must resume into the befriend quiz exactly once');
+    assert.equal(harness.befriendResumeCalls[0].befriendQuizTriggered, true);
+    assert.ok(harness.befriendResumeCalls[0].befriendQuiz, 'the befriend quiz payload rides along');
+    assert.ok(harness.befriendResumeCalls[0].state, 'authoritative state rides along to the resume');
   });
 
   // A ledger-replayed combat-end result (replayed === true) was already resolved

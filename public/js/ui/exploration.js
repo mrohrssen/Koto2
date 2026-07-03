@@ -75,6 +75,7 @@ let startNewRun = null;
 let returnToHub = null;
 let showAdventureReport = null;
 let finishCombatLoop = null;
+let resumeSessionCombatBefriendQuiz = null;
 let exploreSessionOnlineDrainTarget = null;
 let exploreSessionVisibilityDrainTarget = null;
 
@@ -130,6 +131,20 @@ function applyExploreSessionRunway(response) {
 function finishSessionCombatFromResults(response) {
   if (typeof finishCombatLoop !== 'function') return false;
   const results = Array.isArray(response?.results) ? response.results : [];
+
+  // The client optimistically predicts a plain terminal victory (pendingCombatEnd
+  // shell). The server may divert that terminal turn to a befriend quiz on replay
+  // (25% roll, server-only). Such a result carries befriendQuizTriggered but NOT
+  // combatEnded, so it would never match the finish scan below — the client would
+  // freeze on the victory shell. Reconcile it first: resume combat into the
+  // Fight/Talk befriend quiz from the authoritative state.
+  const befriendResult = results.findLast?.(r => r?.befriendQuizTriggered && !r.replayed)
+    || results.slice().reverse().find(r => r?.befriendQuizTriggered && !r.replayed);
+  if (befriendResult && typeof resumeSessionCombatBefriendQuiz === 'function') {
+    void resumeSessionCombatBefriendQuiz({ ...befriendResult, state: response.state });
+    return true;
+  }
+
   const finalResult = results.findLast?.(r => r?.combatEnded === true && !r.replayed)
     || results.slice().reverse().find(r => r?.combatEnded === true && !r.replayed);
   if (!finalResult) return false;
@@ -381,6 +396,7 @@ export function init(callbacks) {
   startNewRun = callbacks.startNewRun;
   returnToHub = callbacks.returnToHub;
   finishCombatLoop = callbacks.finishCombatLoop;
+  resumeSessionCombatBefriendQuiz = callbacks.resumeSessionCombatBefriendQuiz;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;
   apiSelectArea = callbacks.apiSelectArea;
   apiReturnToHub = callbacks.apiReturnToHub;

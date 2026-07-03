@@ -2705,6 +2705,30 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
 }
 
 /**
+ * Reconcile a session-mode terminal turn that the client optimistically predicted
+ * as a plain victory (pendingCombatEnd shell, combatActive stopped) but the server
+ * diverted to a befriend quiz on replay (25% roll; server-only, never in the
+ * shared resolver's transcript — see pve-prediction-contract.js). Delivered via
+ * the explore-session checkpoint (`result.befriendQuizTriggered`). Without this,
+ * the client stays frozen on the victory shell forever because
+ * finishSessionCombatFromResults only fires on `combatEnded === true`.
+ *
+ * The pendingCombatEnd shell does NOT tear down BattleScene, so the scene + enemy
+ * sprites are still mounted; we re-arm the loop, adopt the authoritative combat
+ * state (befriendQuiz set), and render the Fight/Talk befriend quiz through the
+ * same path the online turn uses. Returns true when it handled a befriend quiz.
+ */
+export async function resumeSessionCombatBefriendQuiz(result) {
+  if (!result?.befriendQuizTriggered || !result?.befriendQuiz) return false;
+  combatActive = true;
+  playerAttackPending = false;
+  enemyAttackPending = false;
+  syncFinalState(result);
+  await befriend.renderBefriendQuiz(result.befriendQuiz, result);
+  return true;
+}
+
+/**
  * Execute defend action: skip player attack, enemy attacks with reduced damage
  */
 async function executeDefendThenPause() {

@@ -861,6 +861,21 @@ async function loadGameState() {
 
   if (data.player) {
     updateGameState(data);
+    // GET /api/game/state (inside apiGetGameStateAfterExploreDrain above) rotates
+    // the explore session epoch server-side and rebuilds the runway under the new
+    // epoch. The drain that preceded it normally empties the session log; adopt the
+    // fresh runway here to re-sync the client's session epoch — otherwise the next
+    // entry syncs under the stale epoch and the server rejects it as
+    // session_epoch_mismatch (fired on every combat victory in session mode, which
+    // reloads state through this path). Guard on an empty log: adoptRunway resets
+    // the log on an epoch change (sessionBoundary), so only adopt when the drain
+    // actually cleared — if entries are still pending (a transient drain failure),
+    // leave them and let their next sync reconcile the epoch via a `corrected`
+    // response instead of silently discarding queued progress.
+    const _session = getExploreSession?.();
+    if (_session && (_session.pendingCount?.() ?? 0) === 0) {
+      _session.adoptRunway?.(data.run?.exploreRunway || null);
+    }
     const allCreatureIds = [
       ...(data.creatureParty?.active || []),
       ...(data.creatureParty?.reserves || []),
@@ -1634,22 +1649,29 @@ async function startEncounter() {
     diagnostics.logAction('start_encounter', { floor: gameState.run?.floor });
     const hasCreatures = gameState.run?.creatureParty?.active?.length > 0;
     const exploreSession = getExploreSession?.();
+
+    // Session-first: when the current prepared room advertises a combat start and
+    // carries an offline combatStart payload, start the fight locally and append a
+    // '<kind>.start' entry to the explore session log — no server round-trip. The
+    // sync drain replays the start (consuming the same prepared roll server-side)
+    // so online/offline state converges. This runs BEFORE the pending-session
+    // drain guard: an offline fight must start through the session, not soft-pause,
+    // so pending support-room entries simply queue ahead of the '.start' entry and
+    // replay in order on the next drain (combat-tier cutover).
+    if (hasCreatures && exploreSession) {
+      const sessionStarted = await startCreatureEncounterFromSession(exploreSession);
+      if (sessionStarted) return;
+    }
+
+    // Legacy/online start path (rooms with no offline combatStart payload): drain
+    // any pending session actions first so the fight starts against synced state.
+    // If the drain can't clear (offline), soft-pause until reconnection.
     if (exploreSession?.pendingCount?.() > 0) {
       await exploreSession.syncNow({ reason: 'combatStart' });
       if (exploreSession.pendingCount() > 0) {
         narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
         return;
       }
-    }
-
-    // Session-first: when the current prepared room advertises a combat start and
-    // carries an offline combatStart payload, start the fight locally and append a
-    // '<kind>.start' entry to the explore session log — no server round-trip. The
-    // sync drain replays the start (consuming the same prepared roll server-side)
-    // so online/offline state converges.
-    if (hasCreatures && exploreSession) {
-      const sessionStarted = await startCreatureEncounterFromSession(exploreSession);
-      if (sessionStarted) return;
     }
 
     let result;
@@ -2298,6 +2320,9 @@ async function initGame() {
     // Finish an explore-session combat when the checkpoint delivers the
     // server-confirmed combatEnded result (same path as the live victory/defeat).
     finishCombatLoop: result => combatLoopUI.stopCombatLoop(result),
+    // Resume into the befriend quiz when the checkpoint reports the server rolled
+    // befriend on a terminal turn the client optimistically predicted as victory.
+    resumeSessionCombatBefriendQuiz: result => combatLoopUI.resumeSessionCombatBefriendQuiz(result),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {
       const result = await apiSelectArea(areaId);
