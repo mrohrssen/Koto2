@@ -1297,5 +1297,453 @@
     "group": "ojiisan_defeatLine",
     "raw": "元気ですね！",
     "slots": []
+  },
+  {
+    "id": "npc_ryoushi_fightStart_sakana",
+    "category": "npc",
+    "group": "ryoushi_fightStart",
+    "raw": "魚を釣ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryoushi_defeatLine_sugoi",
+    "category": "npc",
+    "group": "ryoushi_defeatLine",
+    "raw": "すごいね！",
+    "slots": []
+  },
+  {
+    "id": "npc_senchou_fightStart_fune",
+    "category": "npc",
+    "group": "senchou_fightStart",
+    "raw": "私の船です！",
+    "slots": []
+  },
+  {
+    "id": "npc_senchou_defeatLine_tsuyoi",
+    "category": "npc",
+    "group": "senchou_defeatLine",
+    "raw": "強いですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_ningyo_fightStart_oyogi",
+    "category": "npc",
+    "group": "ningyo_fightStart",
+    "raw": "泳ぎましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_ningyo_defeatLine_tanoshikatta",
+    "category": "npc",
+    "group": "ningyo_defeatLine",
+    "raw": "楽しかった！",
+    "slots": []
+  },
+  {
+    "id": "npc_kaizoku_fightStart_takara",
+    "category": "npc",
+    "group": "kaizoku_fightStart",
+    "raw": "宝は私のだ！",
+    "slots": []
+  },
+  {
+    "id": "npc_kaizoku_defeatLine_douzo",
+    "category": "npc",
+    "group": "kaizoku_defeatLine",
+    "raw": "宝をどうぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_tenin_fightStart_keeki",
+    "category": "npc",
+    "group": "tenin_fightStart",
+    "raw": "ケーキを売ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_tenin_defeatLine_matadouzo",
+    "category": "npc",
+    "group": "tenin_defeatLine",
+    "raw": "またどうぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_panya_fightStart_pan",
+    "category": "npc",
+    "group": "panya_fightStart",
+    "raw": "パンを包みます！",
+    "slots": []
+  },
+  {
+    "id": "npc_panya_defeatLine_douzo",
+    "category": "npc",
+    "group": "panya_defeatLine",
+    "raw": "パンをどうぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_keisatsukan_fightStart_machi",
+    "category": "npc",
+    "group": "keisatsukan_fightStart",
+    "raw": "町を探します！",
+    "slots": []
+  },
+  {
+    "id": "npc_keisatsukan_defeatLine_kiotsukete",
+    "category": "npc",
+    "group": "keisatsukan_defeatLine",
+    "raw": "気をつけてね！",
+    "slots": []
+  },
+  {
+    "id": "npc_obaasan_fightStart_kukkii",
+    "category": "npc",
+    "group": "obaasan_fightStart",
+    "raw": "クッキーを買いますか？",
+    "slots": []
+  },
+  {
+    "id": "npc_obaasan_defeatLine_iiko",
+    "category": "npc",
+    "group": "obaasan_defeatLine",
+    "raw": "いい子ね！",
+    "slots": []
+  },
+  {
+    "id": "npc_shounin_fightStart_houseki",
+    "category": "npc",
+    "group": "shounin_fightStart",
+    "raw": "宝石を交換します！",
+    "slots": []
+  },
+  {
+    "id": "npc_shounin_defeatLine_koukan",
+    "category": "npc",
+    "group": "shounin_defeatLine",
+    "raw": "交換しましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_gakusha_fightStart_mitsuketa",
+    "category": "npc",
+    "group": "gakusha_fightStart",
+    "raw": "見つけました！",
+    "slots": []
+  },
+  {
+    "id": "npc_gakusha_defeatLine_omoshiroi",
+    "category": "npc",
+    "group": "gakusha_defeatLine",
+    "raw": "面白い！",
+    "slots": []
+  },
+  {
+    "id": "npc_tabibito_fightStart_oasisu",
+    "category": "npc",
+    "group": "tabibito_fightStart",
+    "raw": "オアシスで休みます！",
+    "slots": []
+  },
+  {
+    "id": "npc_tabibito_defeatLine_iitabi",
+    "category": "npc",
+    "group": "tabibito_defeatLine",
+    "raw": "いい旅を！",
+    "slots": []
+  },
+  {
+    "id": "npc_hime_fightStart_annai",
+    "category": "npc",
+    "group": "hime_fightStart",
+    "raw": "案内しましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_hime_defeatLine_subarashii",
+    "category": "npc",
+    "group": "hime_defeatLine",
+    "raw": "素晴らしい！",
+    "slots": []
+  },
+  {
+    "id": "npc_hakase_fightStart_hoshi",
+    "category": "npc",
+    "group": "hakase_fightStart",
+    "raw": "星を見上げます！",
+    "slots": []
+  },
+  {
+    "id": "npc_hakase_defeatLine_kirei",
+    "category": "npc",
+    "group": "hakase_defeatLine",
+    "raw": "星がきれいですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_majo_fightStart_uranai",
+    "category": "npc",
+    "group": "majo_fightStart",
+    "raw": "占いましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_majo_defeatLine_mahou",
+    "category": "npc",
+    "group": "majo_defeatLine",
+    "raw": "いい魔法ね！",
+    "slots": []
+  },
+  {
+    "id": "npc_shijin_fightStart_yoru",
+    "category": "npc",
+    "group": "shijin_fightStart",
+    "raw": "夜の話を語ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_shijin_defeatLine_hanashi",
+    "category": "npc",
+    "group": "shijin_defeatLine",
+    "raw": "いい話ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_boukensha_fightStart_jikan",
+    "category": "npc",
+    "group": "boukensha_fightStart",
+    "raw": "冒険の時間だ！",
+    "slots": []
+  },
+  {
+    "id": "npc_boukensha_defeatLine_mata",
+    "category": "npc",
+    "group": "boukensha_defeatLine",
+    "raw": "また冒険しよう！",
+    "slots": []
+  },
+  {
+    "id": "npc_souryo_fightStart_yama",
+    "category": "npc",
+    "group": "souryo_fightStart",
+    "raw": "山で祈ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_souryo_defeatLine_kokoro",
+    "category": "npc",
+    "group": "souryo_defeatLine",
+    "raw": "いい心ですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_kajiya_fightStart_kitae",
+    "category": "npc",
+    "group": "kajiya_fightStart",
+    "raw": "鎧を鍛えます！",
+    "slots": []
+  },
+  {
+    "id": "npc_kajiya_defeatLine_yoroi",
+    "category": "npc",
+    "group": "kajiya_defeatLine",
+    "raw": "いい鎧ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_tengu_fightStart_michibiki",
+    "category": "npc",
+    "group": "tengu_fightStart",
+    "raw": "私が導きます！",
+    "slots": []
+  },
+  {
+    "id": "npc_tengu_defeatLine_ningen",
+    "category": "npc",
+    "group": "tengu_defeatLine",
+    "raw": "面白い人間だ！",
+    "slots": []
+  },
+  {
+    "id": "npc_isha_fightStart_naoshi",
+    "category": "npc",
+    "group": "isha_fightStart",
+    "raw": "治しましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_isha_defeatLine_odaiji",
+    "category": "npc",
+    "group": "isha_defeatLine",
+    "raw": "お大事に！",
+    "slots": []
+  },
+  {
+    "id": "npc_senshu_fightStart_koori",
+    "category": "npc",
+    "group": "senshu_fightStart",
+    "raw": "氷で滑ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_senshu_defeatLine_jouzu",
+    "category": "npc",
+    "group": "senshu_defeatLine",
+    "raw": "上手ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryourinin_fightStart_suupu",
+    "category": "npc",
+    "group": "ryourinin_fightStart",
+    "raw": "スープを混ぜます！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryourinin_defeatLine_douzo",
+    "category": "npc",
+    "group": "ryourinin_defeatLine",
+    "raw": "スープをどうぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_gaka_fightStart_mizuumi",
+    "category": "npc",
+    "group": "gaka_fightStart",
+    "raw": "湖を描きます！",
+    "slots": []
+  },
+  {
+    "id": "npc_gaka_defeatLine_eninaru",
+    "category": "npc",
+    "group": "gaka_defeatLine",
+    "raw": "絵になりますね！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryoushi-frozen-lake_fightStart_matsu",
+    "category": "npc",
+    "group": "ryoushi-frozen-lake_fightStart",
+    "raw": "魚を待ちます！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryoushi-frozen-lake_defeatLine_sakana",
+    "category": "npc",
+    "group": "ryoushi-frozen-lake_defeatLine",
+    "raw": "いい魚ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_okami_fightStart_onsen",
+    "category": "npc",
+    "group": "okami_fightStart",
+    "raw": "温泉へようこそ！",
+    "slots": []
+  },
+  {
+    "id": "npc_okami_defeatLine_yasunde",
+    "category": "npc",
+    "group": "okami_defeatLine",
+    "raw": "ゆっくり休んでね！",
+    "slots": []
+  },
+  {
+    "id": "npc_sonchou_fightStart_atsumare",
+    "category": "npc",
+    "group": "sonchou_fightStart",
+    "raw": "村に集まって！",
+    "slots": []
+  },
+  {
+    "id": "npc_sonchou_defeatLine_mura",
+    "category": "npc",
+    "group": "sonchou_defeatLine",
+    "raw": "いい村でしょう？",
+    "slots": []
+  },
+  {
+    "id": "npc_shokunin_fightStart_geta",
+    "category": "npc",
+    "group": "shokunin_fightStart",
+    "raw": "下駄を作ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_shokunin_defeatLine_ude",
+    "category": "npc",
+    "group": "shokunin_defeatLine",
+    "raw": "いい腕ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_okyakusan_fightStart_oyu",
+    "category": "npc",
+    "group": "okyakusan_fightStart",
+    "raw": "お湯に入ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_okyakusan_defeatLine_oyu",
+    "category": "npc",
+    "group": "okyakusan_defeatLine",
+    "raw": "いいお湯でした！",
+    "slots": []
+  },
+  {
+    "id": "npc_ojisan_fightStart_matsuri",
+    "category": "npc",
+    "group": "ojisan_fightStart",
+    "raw": "お祭りだ！",
+    "slots": []
+  },
+  {
+    "id": "npc_ojisan_defeatLine_omedetou",
+    "category": "npc",
+    "group": "ojisan_defeatLine",
+    "raw": "おめでとう！",
+    "slots": []
+  },
+  {
+    "id": "npc_miko_fightStart_negai",
+    "category": "npc",
+    "group": "miko_fightStart",
+    "raw": "願いましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_miko_defeatLine_negai",
+    "category": "npc",
+    "group": "miko_defeatLine",
+    "raw": "いい願いですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_oneesan_fightStart_odori",
+    "category": "npc",
+    "group": "oneesan_fightStart",
+    "raw": "踊りましょう！",
+    "slots": []
+  },
+  {
+    "id": "npc_oneesan_defeatLine_odori",
+    "category": "npc",
+    "group": "oneesan_defeatLine",
+    "raw": "いい踊りでした！",
+    "slots": []
+  },
+  {
+    "id": "npc_aidoru_fightStart_uta",
+    "category": "npc",
+    "group": "aidoru_fightStart",
+    "raw": "歌の時間だ！",
+    "slots": []
+  },
+  {
+    "id": "npc_aidoru_defeatLine_uta",
+    "category": "npc",
+    "group": "aidoru_defeatLine",
+    "raw": "また歌いましょう！",
+    "slots": []
   }
 ]

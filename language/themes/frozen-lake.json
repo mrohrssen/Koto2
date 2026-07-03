@@ -1,0 +1,33 @@
+{
+  "themeId": "frozen-lake",
+  "areaWord": "湖",
+  "areaReading": "みずうみ",
+  "areaMeaning": "lake",
+  "areaRank": 4300,
+  "avgRank": 5900,
+  "computedStage": 6,
+  "generatedAt": "2026-07-03",
+  "words": [
+    { "word": "氷", "reading": "こおり", "meaning": "ice", "rank": 2100, "roles": ["modifier"], "source": "ledger", "assigned": "area:frozen-lake", "existingUses": [] },
+    { "word": "湖", "reading": "みずうみ", "meaning": "lake", "rank": 4300, "roles": ["sub-area"], "source": "ledger", "assigned": "area:frozen-lake", "existingUses": [] },
+    { "word": "選手", "reading": "せんしゅ", "meaning": "athlete / player", "rank": 3600, "roles": ["npc"], "source": "ledger", "assigned": "npc:senshu", "existingUses": [] },
+    { "word": "料理人", "reading": "りょうりにん", "meaning": "cook / chef", "rank": 8600, "roles": ["npc"], "source": "ledger", "assigned": "npc:ryourinin", "existingUses": [] },
+    { "word": "画家", "reading": "がか", "meaning": "painter / artist", "rank": 10800, "roles": ["npc"], "source": "ledger", "assigned": "npc:gaka", "existingUses": [] },
+    { "word": "滑る", "reading": "すべる", "meaning": "to slide / to glide / to slip", "rank": 3500, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:suberu", "existingUses": [] },
+    { "word": "混ぜる", "reading": "まぜる", "meaning": "to mix / to stir", "rank": 4200, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:mazeru", "existingUses": [] },
+    { "word": "描く", "reading": "えがく", "meaning": "to draw / to paint / to depict", "rank": 900, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:egaku", "existingUses": [] },
+    { "word": "待つ", "reading": "まつ", "meaning": "to wait", "rank": 200, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:matsu", "existingUses": [] },
+    { "word": "スープ", "reading": "スープ", "meaning": "soup", "rank": 4400, "roles": ["item"], "source": "ledger", "assigned": "item:suupu", "existingUses": [] },
+    { "word": "シチュー", "reading": "シチュー", "meaning": "stew", "rank": 12800, "roles": ["item"], "source": "ledger", "assigned": "item:shichuu", "existingUses": [] },
+    { "word": "手袋", "reading": "てぶくろ", "meaning": "glove(s)", "rank": 5500, "roles": ["item"], "source": "ledger", "assigned": "item:tebukuro", "existingUses": [] },
+    { "word": "マフラー", "reading": "マフラー", "meaning": "scarf / muffler", "rank": 11000, "roles": ["item"], "source": "ledger", "assigned": "item:mafuraa", "existingUses": [] },
+    { "word": "コート", "reading": "コート", "meaning": "coat", "rank": 4500, "roles": ["item"], "source": "ledger", "assigned": "item:kooto", "existingUses": [] },
+    { "word": "靴下", "reading": "くつした", "meaning": "socks", "rank": 9800, "roles": ["item"], "source": "ledger", "assigned": "item:kutsushita", "existingUses": [] },
+    { "word": "ブーツ", "reading": "ブーツ", "meaning": "boots", "rank": 10500, "roles": ["item"], "source": "ledger", "assigned": "item:buutsu", "existingUses": [] },
+    { "word": "竿", "reading": "さお", "meaning": "rod / pole", "rank": 11300, "roles": ["item"], "source": "ledger", "assigned": "item:sao", "existingUses": [] },
+    { "word": "針", "reading": "はり", "meaning": "needle / hook", "rank": 3500, "roles": ["item"], "source": "ledger", "assigned": "item:hari", "existingUses": [] },
+    { "word": "絵", "reading": "え", "meaning": "picture / painting", "rank": 1700, "roles": ["item"], "source": "ledger", "assigned": "item:e", "existingUses": [] },
+    { "word": "筆", "reading": "ふで", "meaning": "brush", "rank": 6800, "roles": ["item"], "source": "ledger", "assigned": "item:fude", "existingUses": [] },
+    { "word": "器", "reading": "うつわ", "meaning": "bowl / vessel", "rank": 3900, "roles": ["item"], "source": "ledger", "assigned": "item:utsuwa", "existingUses": [] }
+  ]
+}

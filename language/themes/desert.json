@@ -1,0 +1,31 @@
+{
+  "themeId": "desert",
+  "areaWord": "砂漠",
+  "areaReading": "さばく",
+  "areaMeaning": "desert",
+  "areaRank": 8400,
+  "avgRank": 5905,
+  "computedStage": 6,
+  "generatedAt": "2026-07-03",
+  "words": [
+    { "word": "砂漠", "reading": "さばく", "meaning": "desert", "rank": 8400, "roles": ["sub-area"], "source": "ledger", "assigned": "area:desert", "existingUses": [] },
+    { "word": "商人", "reading": "しょうにん", "meaning": "merchant / trader", "rank": 3700, "roles": ["npc"], "source": "ledger", "assigned": "npc:shounin", "existingUses": [] },
+    { "word": "学者", "reading": "がくしゃ", "meaning": "scholar", "rank": 6500, "roles": ["npc"], "source": "ledger", "assigned": "npc:gakusha", "existingUses": [] },
+    { "word": "旅人", "reading": "たびびと", "meaning": "traveler", "rank": 8900, "roles": ["npc"], "source": "ledger", "assigned": "npc:tabibito", "existingUses": [] },
+    { "word": "姫", "reading": "ひめ", "meaning": "princess", "rank": 3200, "roles": ["npc"], "source": "ledger", "assigned": "npc:hime", "existingUses": [] },
+    { "word": "交換", "reading": "こうかん", "meaning": "exchange / swap", "rank": 2600, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:koukan", "existingUses": [] },
+    { "word": "見つける", "reading": "みつける", "meaning": "to discover / to find", "rank": 400, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:mitsukeru", "existingUses": [] },
+    { "word": "休む", "reading": "やすむ", "meaning": "to rest / to take a break", "rank": 900, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:yasumu", "existingUses": [] },
+    { "word": "案内", "reading": "あんない", "meaning": "guidance / showing around", "rank": 1200, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:annai", "existingUses": [] },
+    { "word": "カレー", "reading": "カレー", "meaning": "curry", "rank": 4600, "roles": ["item"], "source": "ledger", "assigned": "item:karee", "existingUses": [] },
+    { "word": "果物", "reading": "くだもの", "meaning": "fruit", "rank": 5800, "roles": ["item"], "source": "ledger", "assigned": "item:kudamono", "existingUses": [] },
+    { "word": "砂糖", "reading": "さとう", "meaning": "sugar", "rank": 5200, "roles": ["item"], "source": "ledger", "assigned": "item:satou", "existingUses": [] },
+    { "word": "水筒", "reading": "すいとう", "meaning": "water flask / canteen", "rank": 13700, "roles": ["item"], "source": "ledger", "assigned": "item:suitou", "existingUses": [] },
+    { "word": "宝石", "reading": "ほうせき", "meaning": "gem / jewel", "rank": 3500, "roles": ["item"], "source": "ledger", "assigned": "item:houseki", "existingUses": [] },
+    { "word": "ランプ", "reading": "ランプ", "meaning": "lamp", "rank": 8600, "roles": ["item"], "source": "ledger", "assigned": "item:ranpu", "existingUses": [] },
+    { "word": "絨毯", "reading": "じゅうたん", "meaning": "carpet / rug", "rank": 8500, "roles": ["item"], "source": "ledger", "assigned": "item:juutan", "existingUses": [] },
+    { "word": "壺", "reading": "つぼ", "meaning": "jar / pot", "rank": 8800, "roles": ["item"], "source": "ledger", "assigned": "item:tsubo", "existingUses": [] },
+    { "word": "香水", "reading": "こうすい", "meaning": "perfume", "rank": 9400, "roles": ["item"], "source": "ledger", "assigned": "item:kousui", "existingUses": [] },
+    { "word": "マント", "reading": "マント", "meaning": "cloak / mantle", "rank": 8300, "roles": ["item"], "source": "ledger", "assigned": "item:manto", "existingUses": [] }
+  ]
+}

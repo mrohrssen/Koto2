@@ -1009,5 +1009,1705 @@
     "stage": 1,
     "area": "morning-ranch",
     "createdAt": "2026-07-02"
+  },
+  {
+    "id": "shio",
+    "word": "塩",
+    "reading": "しお",
+    "nameEn": "Salt",
+    "meaning": "salt",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "suika",
+    "word": "スイカ",
+    "reading": "スイカ",
+    "nameEn": "Watermelon",
+    "meaning": "watermelon",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sashimi",
+    "word": "刺身",
+    "reading": "さしみ",
+    "nameEn": "Sashimi",
+    "meaning": "sashimi (sliced raw fish)",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.45
+    },
+    "description": "Heals all living creatures for 45% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "juusu",
+    "word": "ジュース",
+    "reading": "ジュース",
+    "nameEn": "Juice",
+    "meaning": "juice",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.30
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "aisu",
+    "word": "アイス",
+    "reading": "アイス",
+    "nameEn": "Ice Cream",
+    "meaning": "ice cream",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "mizugi",
+    "word": "水着",
+    "reading": "みずぎ",
+    "nameEn": "Swimsuit",
+    "meaning": "swimsuit",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sangurasu",
+    "word": "サングラス",
+    "reading": "サングラス",
+    "nameEn": "Sunglasses",
+    "meaning": "sunglasses",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kai",
+    "word": "貝",
+    "reading": "かい",
+    "nameEn": "Shell",
+    "meaning": "shellfish / shell",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "takara",
+    "word": "宝",
+    "reading": "たから",
+    "nameEn": "Treasure",
+    "meaning": "treasure",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "ami",
+    "word": "網",
+    "reading": "あみ",
+    "nameEn": "Net",
+    "meaning": "net",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "fune",
+    "word": "船",
+    "reading": "ふね",
+    "nameEn": "Ship",
+    "meaning": "ship / boat",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "shinju",
+    "word": "真珠",
+    "reading": "しんじゅ",
+    "nameEn": "Pearl",
+    "meaning": "pearl",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 14
+    },
+    "description": "+14 base MP (scales with level).",
+    "stage": 1,
+    "area": "blue-sea",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "keeki",
+    "word": "ケーキ",
+    "reading": "ケーキ",
+    "nameEn": "Cake",
+    "meaning": "cake",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kukkii",
+    "word": "クッキー",
+    "reading": "クッキー",
+    "nameEn": "Cookie",
+    "meaning": "cookie",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "koohii",
+    "word": "コーヒー",
+    "reading": "コーヒー",
+    "nameEn": "Coffee",
+    "meaning": "coffee",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "purin",
+    "word": "プリン",
+    "reading": "プリン",
+    "nameEn": "Pudding",
+    "meaning": "custard pudding",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kagi",
+    "word": "鍵",
+    "reading": "かぎ",
+    "nameEn": "Key",
+    "meaning": "key",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "chizu",
+    "word": "地図",
+    "reading": "ちず",
+    "nameEn": "Map",
+    "meaning": "map",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "saifu",
+    "word": "財布",
+    "reading": "さいふ",
+    "nameEn": "Wallet",
+    "meaning": "wallet",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kasa",
+    "word": "傘",
+    "reading": "かさ",
+    "nameEn": "Umbrella",
+    "meaning": "umbrella",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "shinbun",
+    "word": "新聞",
+    "reading": "しんぶん",
+    "nameEn": "Newspaper",
+    "meaning": "newspaper",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tegami",
+    "word": "手紙",
+    "reading": "てがみ",
+    "nameEn": "Letter",
+    "meaning": "letter",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "omiyage",
+    "word": "お土産",
+    "reading": "おみやげ",
+    "nameEn": "Souvenir",
+    "meaning": "souvenir",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hanataba",
+    "word": "花束",
+    "reading": "はなたば",
+    "nameEn": "Bouquet",
+    "meaning": "bouquet",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "jitensha",
+    "word": "自転車",
+    "reading": "じてんしゃ",
+    "nameEn": "Bicycle",
+    "meaning": "bicycle",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "evening-town",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "karee",
+    "word": "カレー",
+    "reading": "カレー",
+    "nameEn": "Curry",
+    "meaning": "curry",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.30
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kudamono",
+    "word": "果物",
+    "reading": "くだもの",
+    "nameEn": "Fruit",
+    "meaning": "fruit",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "satou",
+    "word": "砂糖",
+    "reading": "さとう",
+    "nameEn": "Sugar",
+    "meaning": "sugar",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "suitou",
+    "word": "水筒",
+    "reading": "すいとう",
+    "nameEn": "Canteen",
+    "meaning": "water flask / canteen",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "houseki",
+    "word": "宝石",
+    "reading": "ほうせき",
+    "nameEn": "Gem",
+    "meaning": "gem / jewel",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "ranpu",
+    "word": "ランプ",
+    "reading": "ランプ",
+    "nameEn": "Lamp",
+    "meaning": "lamp",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "juutan",
+    "word": "絨毯",
+    "reading": "じゅうたん",
+    "nameEn": "Carpet",
+    "meaning": "carpet / rug",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tsubo",
+    "word": "壺",
+    "reading": "つぼ",
+    "nameEn": "Jar",
+    "meaning": "jar / pot",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kousui",
+    "word": "香水",
+    "reading": "こうすい",
+    "nameEn": "Perfume",
+    "meaning": "perfume",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "manto",
+    "word": "マント",
+    "reading": "マント",
+    "nameEn": "Cloak",
+    "meaning": "cloak / mantle",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "desert",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kinoko",
+    "word": "キノコ",
+    "reading": "キノコ",
+    "nameEn": "Mushroom",
+    "meaning": "mushroom",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "chokoreeto",
+    "word": "チョコレート",
+    "reading": "チョコレート",
+    "nameEn": "Chocolate",
+    "meaning": "chocolate",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kuri",
+    "word": "栗",
+    "reading": "くり",
+    "nameEn": "Chestnut",
+    "meaning": "chestnut",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tento",
+    "word": "テント",
+    "reading": "テント",
+    "nameEn": "Tent",
+    "meaning": "tent",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "moufu",
+    "word": "毛布",
+    "reading": "もうふ",
+    "nameEn": "Blanket",
+    "meaning": "blanket",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yakusou",
+    "word": "薬草",
+    "reading": "やくそう",
+    "nameEn": "Herb",
+    "meaning": "medicinal herb",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "takigi",
+    "word": "薪",
+    "reading": "たきぎ",
+    "nameEn": "Firewood",
+    "meaning": "firewood",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "bouenkyou",
+    "word": "望遠鏡",
+    "reading": "ぼうえんきょう",
+    "nameEn": "Telescope",
+    "meaning": "telescope",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 16
+    },
+    "description": "+16 base MP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yumi",
+    "word": "弓",
+    "reading": "ゆみ",
+    "nameEn": "Bow",
+    "meaning": "bow",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "ya",
+    "word": "矢",
+    "reading": "や",
+    "nameEn": "Arrow",
+    "meaning": "arrow",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 12
+    },
+    "description": "+12 base attack (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "houki",
+    "word": "箒",
+    "reading": "ほうき",
+    "nameEn": "Broom",
+    "meaning": "broom",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "koto",
+    "word": "琴",
+    "reading": "こと",
+    "nameEn": "Koto",
+    "meaning": "koto (Japanese zither)",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 14
+    },
+    "description": "+14 base MP (scales with level).",
+    "stage": 1,
+    "area": "night-forest",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "mochi",
+    "word": "餅",
+    "reading": "もち",
+    "nameEn": "Mochi",
+    "meaning": "mochi (rice cake)",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "misoshiru",
+    "word": "味噌汁",
+    "reading": "みそしる",
+    "nameEn": "Miso Soup",
+    "meaning": "miso soup",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "imo",
+    "word": "芋",
+    "reading": "いも",
+    "nameEn": "Potato",
+    "meaning": "potato / tuber",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kusuri",
+    "word": "薬",
+    "reading": "くすり",
+    "nameEn": "Medicine",
+    "meaning": "medicine / drug",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.45
+    },
+    "description": "Heals all living creatures for 45% of max HP.",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kusari",
+    "word": "鎖",
+    "reading": "くさり",
+    "nameEn": "Chain",
+    "meaning": "chain",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tsue",
+    "word": "杖",
+    "reading": "つえ",
+    "nameEn": "Staff",
+    "meaning": "staff / cane",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kane",
+    "word": "鐘",
+    "reading": "かね",
+    "nameEn": "Bell",
+    "meaning": "bell (large; temple bell)",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hanmaa",
+    "word": "ハンマー",
+    "reading": "ハンマー",
+    "nameEn": "Hammer",
+    "meaning": "hammer",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "omamori",
+    "word": "お守り",
+    "reading": "おまもり",
+    "nameEn": "Amulet",
+    "meaning": "amulet / charm",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hata",
+    "word": "旗",
+    "reading": "はた",
+    "nameEn": "Flag",
+    "meaning": "flag",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yoroi",
+    "word": "鎧",
+    "reading": "よろい",
+    "nameEn": "Armor",
+    "meaning": "armor",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 18
+    },
+    "description": "+18 base HP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tate",
+    "word": "盾",
+    "reading": "たて",
+    "nameEn": "Shield",
+    "meaning": "shield",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 16
+    },
+    "description": "+16 base HP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "suupu",
+    "word": "スープ",
+    "reading": "スープ",
+    "nameEn": "Soup",
+    "meaning": "soup",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "shichuu",
+    "word": "シチュー",
+    "reading": "シチュー",
+    "nameEn": "Stew",
+    "meaning": "stew",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tebukuro",
+    "word": "手袋",
+    "reading": "てぶくろ",
+    "nameEn": "Gloves",
+    "meaning": "glove(s)",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "mafuraa",
+    "word": "マフラー",
+    "reading": "マフラー",
+    "nameEn": "Scarf",
+    "meaning": "scarf / muffler",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kooto",
+    "word": "コート",
+    "reading": "コート",
+    "nameEn": "Coat",
+    "meaning": "coat",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kutsushita",
+    "word": "靴下",
+    "reading": "くつした",
+    "nameEn": "Socks",
+    "meaning": "socks",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "buutsu",
+    "word": "ブーツ",
+    "reading": "ブーツ",
+    "nameEn": "Boots",
+    "meaning": "boots",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sao",
+    "word": "竿",
+    "reading": "さお",
+    "nameEn": "Rod",
+    "meaning": "rod / pole",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hari",
+    "word": "針",
+    "reading": "はり",
+    "nameEn": "Hook",
+    "meaning": "needle / hook",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 12
+    },
+    "description": "+12 base attack (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "e",
+    "word": "絵",
+    "reading": "え",
+    "nameEn": "Painting",
+    "meaning": "picture / painting",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 16
+    },
+    "description": "+16 base MP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "fude",
+    "word": "筆",
+    "reading": "ふで",
+    "nameEn": "Brush",
+    "meaning": "brush",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "utsuwa",
+    "word": "器",
+    "reading": "うつわ",
+    "nameEn": "Bowl",
+    "meaning": "bowl / vessel",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 8
+    },
+    "description": "+8 base HP (scales with level).",
+    "stage": 1,
+    "area": "frozen-lake",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "udon",
+    "word": "うどん",
+    "reading": "うどん",
+    "nameEn": "Udon",
+    "meaning": "udon (thick wheat noodles)",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "nabe",
+    "word": "鍋",
+    "reading": "なべ",
+    "nameEn": "Hotpot",
+    "meaning": "pot / hotpot dish",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "dango",
+    "word": "団子",
+    "reading": "だんご",
+    "nameEn": "Dango",
+    "meaning": "dango (sweet dumpling)",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "oyu",
+    "word": "お湯",
+    "reading": "おゆ",
+    "nameEn": "Hot Water",
+    "meaning": "hot water",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.26
+    },
+    "description": "Heals all living creatures for 26% of max HP.",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "taoru",
+    "word": "タオル",
+    "reading": "タオル",
+    "nameEn": "Towel",
+    "meaning": "towel",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 8
+    },
+    "description": "+8 base HP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yukata",
+    "word": "浴衣",
+    "reading": "ゆかた",
+    "nameEn": "Yukata",
+    "meaning": "yukata (light cotton kimono)",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "obi",
+    "word": "帯",
+    "reading": "おび",
+    "nameEn": "Obi",
+    "meaning": "obi / sash (for kimono)",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sekken",
+    "word": "石鹸",
+    "reading": "せっけん",
+    "nameEn": "Soap",
+    "meaning": "soap",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "makura",
+    "word": "枕",
+    "reading": "まくら",
+    "nameEn": "Pillow",
+    "meaning": "pillow",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "futon",
+    "word": "布団",
+    "reading": "ふとん",
+    "nameEn": "Futon",
+    "meaning": "futon / bedding",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 12
+    },
+    "description": "+12 base HP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "oke",
+    "word": "桶",
+    "reading": "おけ",
+    "nameEn": "Bath Bucket",
+    "meaning": "(wooden) bucket / tub",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "geta",
+    "word": "下駄",
+    "reading": "げた",
+    "nameEn": "Geta",
+    "meaning": "geta (wooden clogs)",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tatami",
+    "word": "畳",
+    "reading": "たたみ",
+    "nameEn": "Tatami",
+    "meaning": "tatami mat",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "snow-village",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "takoyaki",
+    "word": "たこ焼き",
+    "reading": "たこやき",
+    "nameEn": "Takoyaki",
+    "meaning": "takoyaki (octopus dumplings)",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yakisoba",
+    "word": "焼きそば",
+    "reading": "やきそば",
+    "nameEn": "Yakisoba",
+    "meaning": "yakisoba (fried noodles)",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kakigoori",
+    "word": "かき氷",
+    "reading": "かきごおり",
+    "nameEn": "Shaved Ice",
+    "meaning": "shaved ice",
+    "category": "food",
+    "rarity": "rare",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.55
+    },
+    "description": "Heals all living creatures for 55% of max HP.",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hanabi",
+    "word": "花火",
+    "reading": "はなび",
+    "nameEn": "Fireworks",
+    "meaning": "fireworks",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 14
+    },
+    "description": "+14 base attack (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "taiko",
+    "word": "太鼓",
+    "reading": "たいこ",
+    "nameEn": "Taiko",
+    "meaning": "drum / taiko",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 12
+    },
+    "description": "+12 base attack (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "men",
+    "word": "面",
+    "reading": "めん",
+    "nameEn": "Festival Mask",
+    "meaning": "face / mask",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kingyo",
+    "word": "金魚",
+    "reading": "きんぎょ",
+    "nameEn": "Goldfish",
+    "meaning": "goldfish",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 16
+    },
+    "description": "+16 base MP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kuji",
+    "word": "くじ",
+    "reading": "くじ",
+    "nameEn": "Raffle Ticket",
+    "meaning": "lot / lottery / raffle",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "sensu",
+    "word": "扇子",
+    "reading": "せんす",
+    "nameEn": "Folding Fan",
+    "meaning": "folding fan",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 8
+    },
+    "description": "+8 base MP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "chouchin",
+    "word": "提灯",
+    "reading": "ちょうちん",
+    "nameEn": "Paper Lantern",
+    "meaning": "paper lantern",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "fuusen",
+    "word": "風船",
+    "reading": "ふうせん",
+    "nameEn": "Balloon",
+    "meaning": "balloon",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 8
+    },
+    "description": "+8 base HP (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "fue",
+    "word": "笛",
+    "reading": "ふえ",
+    "nameEn": "Flute",
+    "meaning": "flute / whistle",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "summer-festival",
+    "createdAt": "2026-07-03"
   }
 ]

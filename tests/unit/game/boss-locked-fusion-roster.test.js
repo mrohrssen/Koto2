@@ -15,7 +15,15 @@ const creaturesById = new Map(creatures.map(creature => [creature.id, creature])
 const movesById = new Map(moves.map(move => [move.id, move]));
 const ALLOWED_FUSION_AREA_PLACEMENTS = new Set([
   'school:boss:hanano-yousei',
-  'morning-ranch:boss:hikarino-uma'
+  'morning-ranch:boss:hikarino-uma',
+  'blue-sea:boss:kumono-sakana',
+  'evening-town:boss:kageno-inu',
+  'desert:boss:sunano-hebi',
+  'night-forest:boss:tsukino-ookami',
+  'thunder-mountain:boss:kaminarino-tori',
+  'frozen-lake:boss:koorino-kuma',
+  'snow-village:boss:yukino-kitsune',
+  'summer-festival:boss:honeno-oni'
 ]);
 
 const EXPECTED_FUSIONS = [

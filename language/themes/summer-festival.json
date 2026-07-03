@@ -1,0 +1,33 @@
+{
+  "themeId": "summer-festival",
+  "areaWord": "祭り",
+  "areaReading": "まつり",
+  "areaMeaning": "festival",
+  "areaRank": 4300,
+  "avgRank": 8957,
+  "computedStage": 7,
+  "generatedAt": "2026-07-03",
+  "words": [
+    { "word": "夏", "reading": "なつ", "meaning": "summer", "rank": 1200, "roles": ["modifier"], "source": "ledger", "assigned": "area:summer-festival", "existingUses": [] },
+    { "word": "祭り", "reading": "まつり", "meaning": "festival", "rank": 4300, "roles": ["sub-area"], "source": "ledger", "assigned": "area:summer-festival", "existingUses": [] },
+    { "word": "おじさん", "reading": "おじさん", "meaning": "uncle / middle-aged man", "rank": 3200, "roles": ["npc"], "source": "ledger", "assigned": "npc:ojisan", "existingUses": [] },
+    { "word": "巫女", "reading": "みこ", "meaning": "shrine maiden", "rank": 8400, "roles": ["npc"], "source": "ledger", "assigned": "npc:miko", "existingUses": [] },
+    { "word": "お姉さん", "reading": "おねえさん", "meaning": "older sister / young woman", "rank": 3200, "roles": ["npc"], "source": "ledger", "assigned": "npc:oneesan", "existingUses": [] },
+    { "word": "アイドル", "reading": "アイドル", "meaning": "(pop) idol", "rank": 4900, "roles": ["npc"], "source": "ledger", "assigned": "npc:aidoru", "existingUses": [] },
+    { "word": "祝う", "reading": "いわう", "meaning": "to celebrate / to congratulate", "rank": 5400, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:iwau", "existingUses": [] },
+    { "word": "願う", "reading": "ねがう", "meaning": "to wish / to hope for", "rank": 1100, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:negau", "existingUses": [] },
+    { "word": "踊る", "reading": "おどる", "meaning": "to dance", "rank": 2200, "roles": ["npc-skill"], "source": "ledger", "assigned": "npc-skill:odoru", "existingUses": ["move:odoru"] },
+    { "word": "たこ焼き", "reading": "たこやき", "meaning": "takoyaki (octopus dumplings)", "rank": 14500, "roles": ["item"], "source": "ledger", "assigned": "item:takoyaki", "existingUses": [] },
+    { "word": "焼きそば", "reading": "やきそば", "meaning": "yakisoba (fried noodles)", "rank": 15300, "roles": ["item"], "source": "ledger", "assigned": "item:yakisoba", "existingUses": [] },
+    { "word": "かき氷", "reading": "かきごおり", "meaning": "shaved ice", "rank": 20400, "roles": ["item"], "source": "ledger", "assigned": "item:kakigoori", "existingUses": [] },
+    { "word": "花火", "reading": "はなび", "meaning": "fireworks", "rank": 4900, "roles": ["item"], "source": "ledger", "assigned": "item:hanabi", "existingUses": [] },
+    { "word": "太鼓", "reading": "たいこ", "meaning": "drum / taiko", "rank": 12600, "roles": ["item"], "source": "ledger", "assigned": "item:taiko", "existingUses": [] },
+    { "word": "面", "reading": "めん", "meaning": "face / mask", "rank": 1300, "roles": ["item"], "source": "ledger", "assigned": "item:men", "existingUses": [] },
+    { "word": "金魚", "reading": "きんぎょ", "meaning": "goldfish", "rank": 15500, "roles": ["item"], "source": "ledger", "assigned": "item:kingyo", "existingUses": [] },
+    { "word": "くじ", "reading": "くじ", "meaning": "lot / lottery / raffle", "rank": 16400, "roles": ["item"], "source": "ledger", "assigned": "item:kuji", "existingUses": [] },
+    { "word": "扇子", "reading": "せんす", "meaning": "folding fan", "rank": 17300, "roles": ["item"], "source": "ledger", "assigned": "item:sensu", "existingUses": [] },
+    { "word": "提灯", "reading": "ちょうちん", "meaning": "paper lantern", "rank": 16000, "roles": ["item"], "source": "ledger", "assigned": "item:chouchin", "existingUses": [] },
+    { "word": "風船", "reading": "ふうせん", "meaning": "balloon", "rank": 11200, "roles": ["item"], "source": "ledger", "assigned": "item:fuusen", "existingUses": [] },
+    { "word": "笛", "reading": "ふえ", "meaning": "flute / whistle", "rank": 8800, "roles": ["item"], "source": "ledger", "assigned": "item:fue", "existingUses": [] }
+  ]
+}

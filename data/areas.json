@@ -167,5 +167,355 @@
     "background": "areas/morning-ranch/morning-ranch_01.webp",
     "stage": 1,
     "createdAt": "2026-07-02"
+  },
+  {
+    "id": "blue-sea",
+    "name": "青い海",
+    "nameEn": "Blue Sea",
+    "reading": "あおいうみ",
+    "rank": 800,
+    "particle": "",
+    "parallaxId": "blue-sea",
+    "modifierWord": {
+      "word": "青い",
+      "reading": "あおい",
+      "meaning": "blue",
+      "rank": 1600
+    },
+    "locationWord": {
+      "word": "海",
+      "reading": "うみ",
+      "meaning": "sea / ocean",
+      "rank": 800
+    },
+    "theme": "A bright stretch of coast where clouds meet the horizon — beaches, boats, and busy water.",
+    "creatures": [
+      "kumo",
+      "kame",
+      "tako",
+      "ika",
+      "kani",
+      "kamo",
+      "kujira",
+      "sakana",
+      "mizu"
+    ],
+    "bossCreatureId": "kumono-sakana",
+    "roomCount": 30,
+    "description": "A sunny shoreline and harbor where sea creatures gather under drifting clouds.",
+    "tags": [
+      "sea",
+      "beach",
+      "harbor",
+      "open"
+    ],
+    "subAreas": [],
+    "background": "areas/blue-sea/blue-sea_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "evening-town",
+    "name": "夕方の町",
+    "nameEn": "Evening Town",
+    "reading": "ゆうがたのまち",
+    "rank": 800,
+    "particle": "の",
+    "parallaxId": "evening-town",
+    "modifierWord": {
+      "word": "夕方",
+      "reading": "ゆうがた",
+      "meaning": "evening / dusk",
+      "rank": 2200
+    },
+    "locationWord": {
+      "word": "町",
+      "reading": "まち",
+      "meaning": "town",
+      "rank": 800
+    },
+    "theme": "Lantern-lit streets at sunset — shops closing up, errands to run, and long shadows in the alleys.",
+    "creatures": [
+      "kage",
+      "suraimu",
+      "goburin",
+      "neko",
+      "inu",
+      "nezumi"
+    ],
+    "bossCreatureId": "kageno-inu",
+    "roomCount": 30,
+    "description": "A friendly town at dusk, where a loyal stray patrols the lantern-lit alleys.",
+    "tags": [
+      "town",
+      "evening",
+      "shops",
+      "streets"
+    ],
+    "subAreas": [],
+    "background": "areas/evening-town/evening-town_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "desert",
+    "name": "砂漠",
+    "nameEn": "Desert",
+    "reading": "さばく",
+    "rank": 8400,
+    "particle": "",
+    "parallaxId": "desert",
+    "modifierWord": "",
+    "modifierReading": "",
+    "modifierMeaning": "",
+    "modifierRank": null,
+    "locationWord": "砂漠",
+    "locationReading": "さばく",
+    "locationMeaning": "desert",
+    "locationRank": 8400,
+    "theme": "Golden dunes under a blazing sun — caravans, buried ruins, and a cool oasis at the heart of it.",
+    "creatures": [
+      "suna",
+      "hebi",
+      "tokage",
+      "suishou",
+      "ishi",
+      "hi",
+      "kaze"
+    ],
+    "bossCreatureId": "sunano-hebi",
+    "roomCount": 30,
+    "description": "A bright desert crossed by merchant caravans, where a great snake sleeps beneath the dunes.",
+    "tags": [
+      "desert",
+      "dunes",
+      "oasis",
+      "open"
+    ],
+    "subAreas": [],
+    "background": "areas/desert/desert_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "night-forest",
+    "name": "夜の森",
+    "nameEn": "Night Forest",
+    "reading": "よるのもり",
+    "rank": 300,
+    "particle": "の",
+    "parallaxId": "night-forest",
+    "modifierWord": {
+      "word": "夜",
+      "reading": "よる",
+      "meaning": "night",
+      "rank": 300
+    },
+    "locationWord": {
+      "word": "森",
+      "reading": "もり",
+      "meaning": "forest",
+      "rank": 1400
+    },
+    "theme": "A quiet forest under a full moon — starlight, campfires, and gentle night magic.",
+    "creatures": [
+      "tsuki",
+      "hoshi",
+      "ookami",
+      "yuurei",
+      "erufu",
+      "fukurou",
+      "kage",
+      "mushi"
+    ],
+    "bossCreatureId": "tsukino-ookami",
+    "roomCount": 30,
+    "description": "A moonlit forest where stargazers camp and a great wolf howls from the clearing.",
+    "tags": [
+      "forest",
+      "night",
+      "stars",
+      "camp"
+    ],
+    "subAreas": [],
+    "background": "areas/night-forest/night-forest_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "thunder-mountain",
+    "name": "雷の山",
+    "nameEn": "Thunder Mountain",
+    "reading": "かみなりのやま",
+    "rank": 700,
+    "particle": "の",
+    "parallaxId": "thunder-mountain",
+    "modifierWord": {
+      "word": "雷",
+      "reading": "かみなり",
+      "meaning": "thunder / lightning",
+      "rank": 3600
+    },
+    "locationWord": {
+      "word": "山",
+      "reading": "やま",
+      "meaning": "mountain",
+      "rank": 700
+    },
+    "theme": "A storm-wreathed peak — temple bells, a roaring forge, and thunder rolling over the summit trail.",
+    "creatures": [
+      "kaminari",
+      "saru",
+      "shika",
+      "inoshishi",
+      "tora",
+      "kemono",
+      "tori",
+      "kaze",
+      "ishi",
+      "kumo"
+    ],
+    "bossCreatureId": "kaminarino-tori",
+    "roomCount": 30,
+    "description": "A high mountain where a great storm-bird nests above the temple and the forge.",
+    "tags": [
+      "mountain",
+      "storm",
+      "temple",
+      "forge"
+    ],
+    "subAreas": [],
+    "background": "areas/thunder-mountain/thunder-mountain_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "frozen-lake",
+    "name": "氷の湖",
+    "nameEn": "Frozen Lake",
+    "reading": "こおりのみずうみ",
+    "rank": 2100,
+    "particle": "の",
+    "parallaxId": "frozen-lake",
+    "modifierWord": {
+      "word": "氷",
+      "reading": "こおり",
+      "meaning": "ice",
+      "rank": 2100
+    },
+    "locationWord": {
+      "word": "湖",
+      "reading": "みずうみ",
+      "meaning": "lake",
+      "rank": 4300
+    },
+    "theme": "A frozen lake in bright winter light — skaters glide, ice fishers wait, and cranes rest on the shore.",
+    "creatures": [
+      "koori",
+      "kuma",
+      "tsuru",
+      "kamo",
+      "sakana",
+      "mizu"
+    ],
+    "bossCreatureId": "koorino-kuma",
+    "roomCount": 30,
+    "description": "A wide frozen lake where a great bear guards the shore and cranes winter on the ice.",
+    "tags": [
+      "lake",
+      "ice",
+      "winter",
+      "open"
+    ],
+    "subAreas": [],
+    "background": "areas/frozen-lake/frozen-lake_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "snow-village",
+    "name": "雪の村",
+    "nameEn": "Snow Village",
+    "reading": "ゆきのむら",
+    "rank": 1500,
+    "particle": "の",
+    "parallaxId": "snow-village",
+    "modifierWord": {
+      "word": "雪",
+      "reading": "ゆき",
+      "meaning": "snow",
+      "rank": 1800
+    },
+    "locationWord": {
+      "word": "村",
+      "reading": "むら",
+      "meaning": "village",
+      "rank": 1500
+    },
+    "theme": "A snow-covered hot-spring village — steam over the baths, warm lanterns, and snow monkeys soaking at dusk.",
+    "creatures": [
+      "yuki",
+      "kitsune",
+      "saru",
+      "hitsuji",
+      "koori",
+      "tsuru"
+    ],
+    "bossCreatureId": "yukino-kitsune",
+    "roomCount": 30,
+    "description": "A cozy onsen village deep in the snow, watched over by a white fox spirit.",
+    "tags": [
+      "village",
+      "snow",
+      "onsen",
+      "cozy"
+    ],
+    "subAreas": [],
+    "background": "areas/snow-village/snow-village_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "summer-festival",
+    "name": "夏の祭り",
+    "nameEn": "Summer Festival",
+    "reading": "なつのまつり",
+    "rank": 1200,
+    "particle": "の",
+    "parallaxId": "summer-festival",
+    "modifierWord": {
+      "word": "夏",
+      "reading": "なつ",
+      "meaning": "summer",
+      "rank": 1200
+    },
+    "locationWord": {
+      "word": "祭り",
+      "reading": "まつり",
+      "meaning": "festival",
+      "rank": 4300
+    },
+    "theme": "A summer festival night — lantern-lit stalls, taiko drums, fireworks, and a spooky-fun test-of-courage trail.",
+    "creatures": [
+      "hone",
+      "oni",
+      "akuma",
+      "yuurei",
+      "kitsune",
+      "hi"
+    ],
+    "bossCreatureId": "honeno-oni",
+    "roomCount": 30,
+    "description": "The grand festival finale, where a great oni presides over the test-of-courage trail.",
+    "tags": [
+      "festival",
+      "summer",
+      "night",
+      "celebration"
+    ],
+    "subAreas": [],
+    "background": "areas/summer-festival/summer-festival_01.webp",
+    "stage": 1,
+    "createdAt": "2026-07-03"
   }
 ]
