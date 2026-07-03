@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { makeGreetingTtsWarmer } from '../../services/dialogue-card-tts.js';
 import { ExploreSessionSyncService } from '../../game/services/explore-session-sync-service.js';
 import {
   enrichedState,
@@ -27,6 +28,7 @@ function buildRunwayOpts(req, { getDialogueCardAudio } = {}) {
     userId: req.user?.id,
     getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
     getDialogueCardAudio,
+    warmTts: makeGreetingTtsWarmer({ getDialogueCardAudio, userId: req.user?.id }),
   };
 }
 

@@ -218,6 +218,21 @@ function knownSetForOpts(opts) {
   return opts?.knownSet instanceof Set ? opts.knownSet : new Set();
 }
 
+// Warm the dialogue TTS cache for a prepared greeting frame so audio is ready
+// (or in flight) by the time the player reaches the room. Fire-and-forget: a
+// synthesis failure must never fail or slow a runway build. The warmed flag
+// lives on the persisted room state so rebuilds (state enrichment,
+// refreshExploreRunwayAfterProceed) do not re-warm — one attempt per frame.
+function warmGreetingTts(frame, state, flagKey, opts) {
+  if (!frame || !state || state[flagKey] || typeof opts?.warmTts !== 'function') return;
+  state[flagKey] = true;
+  try {
+    opts.warmTts(frame);
+  } catch {
+    // Warming is best-effort; VOICEVOX may be down. Swallow to protect the build.
+  }
+}
+
 function hydrateFriendlyNpcOfferFrames(item, knownSet) {
   if (!item?.word) return;
   if (!item.tokens?.length || !item.words?.length) {
@@ -256,6 +271,8 @@ function buildFriendlyNpcPayload(gm, room, opts) {
     room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
   }
 
+  warmGreetingTts(room.friendlyNpc.greeting, room.friendlyNpc, 'greetingTtsWarmed', opts);
+
   return {
     kind: 'friendlyNpc',
     npc: room.npc || null,
@@ -275,6 +292,8 @@ function buildShrinePayload(room, opts) {
       .map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
     room.shrine.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
   }
+
+  warmGreetingTts(room.shrine.greeting, room.shrine, 'greetingTtsWarmed', opts);
 
   return {
     kind: 'shrine',

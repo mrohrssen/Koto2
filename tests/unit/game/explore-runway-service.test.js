@@ -264,6 +264,66 @@ test('uses iterable known words when selecting frame-safe runway payloads', asyn
   assert.deepEqual(friendly.interactionPayload.greeting.words, ['よく', '来る']);
 });
 
+test('warms dialogue TTS for the friendly NPC greeting exactly once across rebuilds', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
+  gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC' };
+
+  const warmed = [];
+  const warmTts = frame => warmed.push(frame);
+  const opts = {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+    warmTts,
+  };
+
+  await buildExploreRunway(gm, opts);
+  assert.equal(warmed.length, 1, 'greeting warmed once on first build');
+  assert.ok(warmed[0]?.tokens?.length > 0, 'warmer receives the greeting frame');
+  assert.equal(gm.run.rooms[1].friendlyNpc.greetingTtsWarmed, true);
+
+  // A second build for the same prepared room must not re-warm.
+  await buildExploreRunway(gm, opts);
+  assert.equal(warmed.length, 1, 'greeting not re-warmed on rebuild');
+});
+
+test('warms dialogue TTS for the shrine greeting exactly once across rebuilds', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.shrine]);
+
+  const warmed = [];
+  const warmTts = frame => warmed.push(frame);
+  const opts = {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+    warmTts,
+  };
+
+  await buildExploreRunway(gm, opts);
+  assert.equal(warmed.length, 1, 'shrine greeting warmed once on first build');
+  assert.ok(warmed[0]?.tokens?.length > 0, 'warmer receives the shrine greeting frame');
+  assert.equal(gm.run.rooms[1].shrine.greetingTtsWarmed, true);
+
+  await buildExploreRunway(gm, opts);
+  assert.equal(warmed.length, 1, 'shrine greeting not re-warmed on rebuild');
+});
+
+test('a throwing warmTts never fails the runway build', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
+  gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC' };
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+    warmTts: () => { throw new Error('voicevox down'); },
+  });
+
+  const friendly = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
+  assert.ok(friendly.interactionPayload.greeting?.tokens?.length > 0);
+  assert.equal(friendly.offlineReady, true);
+});
+
 test('marks skill master without offers as missing payload', async () => {
   const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.skillMaster]);
   gm.run.partySkills = PARTY_SKILL_TREE_IDS.map(id => ({ id, level: 5 }));
