@@ -1577,5 +1577,61 @@
     "group": "isha_defeatLine",
     "raw": "お大事に！",
     "slots": []
+  },
+  {
+    "id": "npc_senshu_fightStart_koori",
+    "category": "npc",
+    "group": "senshu_fightStart",
+    "raw": "氷で滑ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_senshu_defeatLine_jouzu",
+    "category": "npc",
+    "group": "senshu_defeatLine",
+    "raw": "上手ですね！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryourinin_fightStart_suupu",
+    "category": "npc",
+    "group": "ryourinin_fightStart",
+    "raw": "スープを混ぜます！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryourinin_defeatLine_douzo",
+    "category": "npc",
+    "group": "ryourinin_defeatLine",
+    "raw": "スープをどうぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_gaka_fightStart_mizuumi",
+    "category": "npc",
+    "group": "gaka_fightStart",
+    "raw": "湖を描きます！",
+    "slots": []
+  },
+  {
+    "id": "npc_gaka_defeatLine_eninaru",
+    "category": "npc",
+    "group": "gaka_defeatLine",
+    "raw": "絵になりますね！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryoushi_frozen_lake_fightStart_matsu",
+    "category": "npc",
+    "group": "ryoushi_frozen_lake_fightStart",
+    "raw": "魚を待ちます！",
+    "slots": []
+  },
+  {
+    "id": "npc_ryoushi_frozen_lake_defeatLine_sakana",
+    "category": "npc",
+    "group": "ryoushi_frozen_lake_defeatLine",
+    "raw": "いい魚ですね！",
+    "slots": []
   }
 ]
