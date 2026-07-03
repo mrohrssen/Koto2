@@ -1840,5 +1840,217 @@
     "stage": 1,
     "area": "night-forest",
     "createdAt": "2026-07-03"
+  },
+  {
+    "id": "mochi",
+    "word": "餅",
+    "reading": "もち",
+    "nameEn": "Mochi",
+    "meaning": "mochi (rice cake)",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.5
+    },
+    "description": "Heals all living creatures for 50% of max HP.",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "misoshiru",
+    "word": "味噌汁",
+    "reading": "みそしる",
+    "nameEn": "Miso Soup",
+    "meaning": "miso soup",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.3
+    },
+    "description": "Heals all living creatures for 30% of max HP.",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "imo",
+    "word": "芋",
+    "reading": "いも",
+    "nameEn": "Potato",
+    "meaning": "potato / tuber",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.28
+    },
+    "description": "Heals all living creatures for 28% of max HP.",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kusuri",
+    "word": "薬",
+    "reading": "くすり",
+    "nameEn": "Medicine",
+    "meaning": "medicine / drug",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.45
+    },
+    "description": "Heals all living creatures for 45% of max HP.",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kusari",
+    "word": "鎖",
+    "reading": "くさり",
+    "nameEn": "Chain",
+    "meaning": "chain",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 10
+    },
+    "description": "+10 base HP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tsue",
+    "word": "杖",
+    "reading": "つえ",
+    "nameEn": "Staff",
+    "meaning": "staff / cane",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 10
+    },
+    "description": "+10 base MP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "kane",
+    "word": "鐘",
+    "reading": "かね",
+    "nameEn": "Bell",
+    "meaning": "bell (large; temple bell)",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 12
+    },
+    "description": "+12 base MP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hanmaa",
+    "word": "ハンマー",
+    "reading": "ハンマー",
+    "nameEn": "Hammer",
+    "meaning": "hammer",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 10
+    },
+    "description": "+10 base attack (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "omamori",
+    "word": "お守り",
+    "reading": "おまもり",
+    "nameEn": "Amulet",
+    "meaning": "amulet / charm",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 14
+    },
+    "description": "+14 base HP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "hata",
+    "word": "旗",
+    "reading": "はた",
+    "nameEn": "Flag",
+    "meaning": "flag",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 8
+    },
+    "description": "+8 base attack (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "yoroi",
+    "word": "鎧",
+    "reading": "よろい",
+    "nameEn": "Armor",
+    "meaning": "armor",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 18
+    },
+    "description": "+18 base HP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
+  },
+  {
+    "id": "tate",
+    "word": "盾",
+    "reading": "たて",
+    "nameEn": "Shield",
+    "meaning": "shield",
+    "category": "equipment",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 16
+    },
+    "description": "+16 base HP (scales with level).",
+    "stage": 1,
+    "area": "thunder-mountain",
+    "createdAt": "2026-07-03"
   }
 ]

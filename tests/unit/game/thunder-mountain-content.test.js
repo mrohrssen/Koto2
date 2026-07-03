@@ -53,3 +53,42 @@ describe('thunder-mountain npcs', () => {
     });
   }
 });
+
+const items = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/items.json'), 'utf8'));
+
+const EXPECTED_ITEMS = [
+  { id: 'mochi', word: '餅', category: 'food' },
+  { id: 'misoshiru', word: '味噌汁', category: 'food' },
+  { id: 'imo', word: '芋', category: 'food' },
+  { id: 'kusuri', word: '薬', category: 'food' },
+  { id: 'kusari', word: '鎖', category: 'equipment' },
+  { id: 'tsue', word: '杖', category: 'equipment' },
+  { id: 'kane', word: '鐘', category: 'equipment' },
+  { id: 'hanmaa', word: 'ハンマー', category: 'equipment' },
+  { id: 'omamori', word: 'お守り', category: 'equipment' },
+  { id: 'hata', word: '旗', category: 'equipment' },
+  { id: 'yoroi', word: '鎧', category: 'equipment' },
+  { id: 'tate', word: '盾', category: 'equipment' }
+];
+
+describe('thunder-mountain items', () => {
+  const thunderMountainItems = items.filter(i => i.area === 'thunder-mountain');
+
+  it('has exactly the 12 approved items', () => {
+    assert.deepEqual(
+      thunderMountainItems.map(i => i.id).sort(),
+      EXPECTED_ITEMS.map(i => i.id).sort()
+    );
+  });
+
+  for (const expected of EXPECTED_ITEMS) {
+    it(`defines ${expected.id} correctly`, () => {
+      const item = thunderMountainItems.find(i => i.id === expected.id);
+      assert.ok(item, `${expected.id} missing`);
+      assert.equal(item.word, expected.word);
+      assert.equal(item.category, expected.category);
+      assert.ok(['common', 'uncommon', 'rare'].includes(item.rarity));
+      assert.ok(item.effect && typeof item.effect === 'object');
+    });
+  }
+});
