@@ -27,3 +27,28 @@ describe('snow-village npc skills', () => {
     });
   }
 });
+
+const npcs = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/npcs.json'), 'utf8'));
+
+const EXPECTED_NPCS = [
+  { key: 'okami', name: '女将', reading: 'おかみ', skill: 'mukaeru' },
+  { key: 'sonchou', name: '村長', reading: 'そんちょう', skill: 'atsumaru' },
+  { key: 'shokunin', name: '職人', reading: 'しょくにん', skill: 'tsukuru' },
+  { key: 'okyakusan', name: 'お客さん', reading: 'おきゃくさん', skill: 'hairu' }
+];
+
+describe('snow-village npcs', () => {
+  for (const expected of EXPECTED_NPCS) {
+    it(`defines ${expected.key}`, () => {
+      const npc = npcs[expected.key];
+      assert.ok(npc, `${expected.key} missing`);
+      assert.equal(npc.area, 'snow-village');
+      assert.equal(npc.name, expected.name);
+      assert.equal(npc.reading, expected.reading);
+      assert.deepEqual(npc.skills, [expected.skill]);
+      assert.ok(Number.isFinite(npc.speakerId));
+      assert.ok(npc.greeting.length > 0);
+      assert.ok(npc.defeatLine.length > 0);
+    });
+  }
+});

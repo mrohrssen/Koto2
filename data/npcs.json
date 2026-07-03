@@ -930,5 +930,89 @@
     "shopGreetings": ["こんにちは！"],
     "defeatLine": "いい魚ですね！",
     "createdAt": "2026-07-03"
+  },
+  "okami": {
+    "id": "okami",
+    "name": "女将",
+    "nameEn": "Innkeeper",
+    "speakerId": 10,
+    "area": "snow-village",
+    "reading": "おかみ",
+    "meaning": "proprietress / landlady (of a ryokan)",
+    "rank": 13000,
+    "attack": 30,
+    "skills": ["mukaeru"],
+    "personality": {
+      "traits": ["gracious", "exacting"],
+      "speechStyle": "Polished and warm.",
+      "quirk": "Bows at exactly forty-five degrees."
+    },
+    "greeting": "いらっしゃいませ！",
+    "shopGreetings": ["いらっしゃいませ！"],
+    "defeatLine": "ゆっくり休んでね！",
+    "createdAt": "2026-07-03"
+  },
+  "sonchou": {
+    "id": "sonchou",
+    "name": "村長",
+    "nameEn": "Village Chief",
+    "speakerId": 51,
+    "area": "snow-village",
+    "reading": "そんちょう",
+    "meaning": "village chief",
+    "rank": 9400,
+    "attack": 30,
+    "skills": ["atsumaru"],
+    "personality": {
+      "traits": ["proud", "folksy"],
+      "speechStyle": "Rambling and fond.",
+      "quirk": "Claims the village snow is the best in the world."
+    },
+    "greeting": "ようこそ！",
+    "shopGreetings": ["ようこそ！"],
+    "defeatLine": "いい村でしょう？",
+    "createdAt": "2026-07-03"
+  },
+  "shokunin": {
+    "id": "shokunin",
+    "name": "職人",
+    "nameEn": "Craftsman",
+    "speakerId": 13,
+    "area": "snow-village",
+    "reading": "しょくにん",
+    "meaning": "craftsman / artisan",
+    "rank": 4300,
+    "attack": 30,
+    "skills": ["tsukuru"],
+    "personality": {
+      "traits": ["focused", "terse"],
+      "speechStyle": "Few words, well chosen.",
+      "quirk": "Carves geta by the fire all winter."
+    },
+    "greeting": "いらっしゃい！",
+    "shopGreetings": ["いらっしゃい！"],
+    "defeatLine": "いい腕ですね！",
+    "createdAt": "2026-07-03"
+  },
+  "okyakusan": {
+    "id": "okyakusan",
+    "name": "お客さん",
+    "nameEn": "Guest",
+    "speakerId": 12,
+    "area": "snow-village",
+    "reading": "おきゃくさん",
+    "meaning": "customer / guest",
+    "rank": 2400,
+    "attack": 30,
+    "skills": ["hairu"],
+    "personality": {
+      "traits": ["relaxed", "delighted"],
+      "speechStyle": "Blissed-out sighs.",
+      "quirk": "On their fifth soak of the day."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": ["こんにちは！"],
+    "defeatLine": "いいお湯でした！",
+    "createdAt": "2026-07-03"
   }
 }
