@@ -678,5 +678,89 @@
     "shopGreetings": ["ようこそ！"],
     "defeatLine": "素晴らしい！",
     "createdAt": "2026-07-03"
+  },
+  "hakase": {
+    "id": "hakase",
+    "name": "博士",
+    "nameEn": "Professor",
+    "speakerId": 9,
+    "area": "night-forest",
+    "reading": "はかせ",
+    "meaning": "expert / doctor (learned person)",
+    "rank": 4400,
+    "attack": 24,
+    "skills": ["miageru"],
+    "personality": {
+      "traits": ["brilliant", "nocturnal"],
+      "speechStyle": "Rapid bursts of wonder.",
+      "quirk": "Has named every star twice."
+    },
+    "greeting": "こんばんは！",
+    "shopGreetings": ["こんばんは！"],
+    "defeatLine": "星がきれいですね。",
+    "createdAt": "2026-07-03"
+  },
+  "majo": {
+    "id": "majo",
+    "name": "魔女",
+    "nameEn": "Witch",
+    "speakerId": 10,
+    "area": "night-forest",
+    "reading": "まじょ",
+    "meaning": "witch",
+    "rank": 8200,
+    "attack": 24,
+    "skills": ["uranau"],
+    "personality": {
+      "traits": ["kind", "mysterious"],
+      "speechStyle": "Sing-song riddles.",
+      "quirk": "Brews tea that glows in the dark."
+    },
+    "greeting": "いらっしゃい！",
+    "shopGreetings": ["いらっしゃい！"],
+    "defeatLine": "いい魔法ね！",
+    "createdAt": "2026-07-03"
+  },
+  "shijin": {
+    "id": "shijin",
+    "name": "詩人",
+    "nameEn": "Poet",
+    "speakerId": 51,
+    "area": "night-forest",
+    "reading": "しじん",
+    "meaning": "poet",
+    "rank": 12200,
+    "attack": 24,
+    "skills": ["kataru"],
+    "personality": {
+      "traits": ["dreamy", "soft-spoken"],
+      "speechStyle": "Almost-rhymes.",
+      "quirk": "Pauses mid-sentence to admire the moon."
+    },
+    "greeting": "こんばんは！",
+    "shopGreetings": ["こんばんは！"],
+    "defeatLine": "いい話ですね！",
+    "createdAt": "2026-07-03"
+  },
+  "boukensha": {
+    "id": "boukensha",
+    "name": "冒険者",
+    "nameEn": "Adventurer",
+    "speakerId": 12,
+    "area": "night-forest",
+    "reading": "ぼうけんしゃ",
+    "meaning": "adventurer",
+    "rank": 8300,
+    "attack": 24,
+    "skills": ["bouken"],
+    "personality": {
+      "traits": ["bold", "restless"],
+      "speechStyle": "Eager and loud.",
+      "quirk": "Maps the forest by moonlight."
+    },
+    "greeting": "こんばんは！",
+    "shopGreetings": ["こんばんは！"],
+    "defeatLine": "また冒険しよう！",
+    "createdAt": "2026-07-03"
   }
 }

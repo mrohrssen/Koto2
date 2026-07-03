@@ -27,3 +27,29 @@ describe('night-forest npc skills', () => {
     });
   }
 });
+
+const npcs = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/npcs.json'), 'utf8'));
+
+const EXPECTED_NPCS = [
+  { key: 'hakase', name: '博士', reading: 'はかせ', skill: 'miageru' },
+  { key: 'majo', name: '魔女', reading: 'まじょ', skill: 'uranau' },
+  { key: 'shijin', name: '詩人', reading: 'しじん', skill: 'kataru' },
+  { key: 'boukensha', name: '冒険者', reading: 'ぼうけんしゃ', skill: 'bouken' }
+];
+
+describe('night-forest npcs', () => {
+  for (const expected of EXPECTED_NPCS) {
+    it(`defines ${expected.key}`, () => {
+      const npc = npcs[expected.key];
+      assert.ok(npc, `${expected.key} missing`);
+      assert.equal(npc.area, 'night-forest');
+      assert.equal(npc.name, expected.name);
+      assert.equal(npc.reading, expected.reading);
+      assert.deepEqual(npc.skills, [expected.skill]);
+      assert.equal(npc.attack, 24);
+      assert.ok(Number.isFinite(npc.speakerId));
+      assert.ok(npc.greeting.length > 0);
+      assert.ok(npc.defeatLine.length > 0);
+    });
+  }
+});
