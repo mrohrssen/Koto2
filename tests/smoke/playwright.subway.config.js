@@ -33,11 +33,5 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 30_000,
     cwd: '../..',
-    // Capture the game server's console output in the test log. `npm run dev`
-    // runs concurrently(server, vite), which merges child streams into ITS
-    // stdout — without piping stdout the server-side diagnostics (e.g. the
-    // [ExploreSync] transcript_mismatch trace) are silently dropped.
-    stdout: 'pipe',
-    stderr: 'pipe',
   },
 });

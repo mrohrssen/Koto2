@@ -109,10 +109,6 @@ async function login(page) {
 
   await page.addInitScript(authToken => {
     localStorage.setItem('authToken', authToken);
-    // Enable the per-turn session-combat digest (combat-loop.js) so a
-    // transcript_mismatch correction can be root-caused from the run log:
-    // each predicted turn logs its pre-turn HPs + seed + predictedHash.
-    window.__exploreCombatDiag = true;
   }, token);
   await page.goto('/');
   await page.waitForLoadState('networkidle');
