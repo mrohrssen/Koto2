@@ -33,5 +33,13 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 30_000,
     cwd: '../..',
+    // Surface the game server's console in the harness log. `npm run dev` runs
+    // concurrently(server, vite), which merges the child streams into ITS stdout;
+    // without piping, the server-side [Exploration] / [Shrine] / [ExploreSync]
+    // lines are dropped. Harness-only and zero-cost (no effect on the app or
+    // production) — kept for future gate triage; the transcript-mismatch tracing
+    // it once carried was reverted with the rest of the diagnostics.
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 });
