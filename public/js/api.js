@@ -313,10 +313,20 @@ function isApiLoading() {
 
 /**
  * Get current game state from server
+ *
+ * Epoch contract: GET /state rotates the explore session epoch ONLY on a bare
+ * fetch (boot/reload — losing the unsynced offline log there is by design).
+ * Pass `adoptSession: true` for every IN-SESSION fetch (mid-run reloads,
+ * recovery/refresh) so the server PRESERVES the epoch and offline-queued
+ * session entries are not stranded as `session_epoch_mismatch` corrections.
+ *
+ * @param {object} [opts]
+ * @param {boolean} [opts.adoptSession=false] - in-session fetch: do not rotate the explore epoch
  * @returns {Promise<object>} Game state with player, run, combat, phase
  */
-async function getGameState() {
-  const data = await apiCall('/state', 'GET', null, null, {
+async function getGameState({ adoptSession = false } = {}) {
+  const endpoint = adoptSession ? '/state?adoptSession=1' : '/state';
+  const data = await apiCall(endpoint, 'GET', null, null, {
     returnErrorBody: true,
     timeoutMs: 10000,
   });

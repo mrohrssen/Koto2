@@ -118,16 +118,18 @@ async function login(page) {
 /**
  * Client game state, read ONLY from the in-page test seam window.__gameState.
  *
- * CRITICAL: this must never fall back to GET /api/game/state mid-run. That route
- * ROTATES the explore session epoch and rebuilds the runway server-side
- * (src/routes/game/state.js) — so a stray /state read while the client has
- * offline-queued session entries strands them under the old epoch, and their next
- * drain is rejected as `session_epoch_mismatch` (a corrected sync — the gate's
+ * CRITICAL: this must never fall back to a BARE GET /api/game/state mid-run. A
+ * bare fetch of that route ROTATES the explore session epoch and rebuilds the
+ * runway server-side (src/routes/game/state.js — rotation marks RELOAD
+ * boundaries) — so a stray bare /state read while the client has offline-queued
+ * session entries strands them under the old epoch, and their next drain is
+ * rejected as `session_epoch_mismatch` (a corrected sync — the gate's
  * no-corrected-syncs invariant broken). The seam is always wired
  * (public/game.js sets window.__gameState on every updateGameState), so retry it a
  * few frames on a transient evaluate hiccup and return null rather than fetching.
- * The final reconciliation calls serverState() explicitly, AFTER the loop, when a
- * fresh epoch no longer matters.
+ * The final reconciliation calls serverState() explicitly, AFTER the loop — and
+ * even that read passes adoptSession=1, because it is an in-session read of a
+ * possibly still-active run, not a reload.
  */
 async function gameState(page) {
   for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -141,11 +143,15 @@ async function gameState(page) {
 /**
  * Authoritative server state via GET /api/game/state with the bearer token.
  * Throws if the fetch itself fails while online; returns null on abort/offline.
+ *
+ * Passes adoptSession=1: this is an IN-SESSION read (final reconciliation of a
+ * run the driver just played, possibly still active), NOT a reload boundary —
+ * the server must not rotate the explore session epoch under the client.
  */
 async function serverState(page) {
   return page.evaluate(async () => {
     const token = localStorage.getItem('authToken');
-    const res = await fetch('/api/game/state', {
+    const res = await fetch('/api/game/state?adoptSession=1', {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     const body = await res.json().catch(() => null);

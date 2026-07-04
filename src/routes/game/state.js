@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { rotateKanjiKombatSessionEpoch } from '../../game/services/kanji-kombat-service.js';
-import { rotateExploreSessionEpoch } from '../../game/services/explore-session-contract.js';
+import {
+  ensureExploreSessionEpoch,
+  rotateExploreSessionEpoch,
+} from '../../game/services/explore-session-contract.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 
 /**
@@ -23,7 +26,19 @@ export default function createGameStateRoutes({ getDialogueCardAudio } = {}) {
         rotateKanjiKombatSessionEpoch(run.kanjiKombat);
         await req.saveGame();
       } else if (run?.active) {
-        rotateExploreSessionEpoch(run);
+        // Explore session epochs mark RELOAD boundaries only. A bare /state fetch is
+        // a boot/reload — rotate the epoch (a reload loses the unsynced offline log BY
+        // DESIGN). An IN-SESSION fetch (adoptSession=1, e.g. a combat-victory state
+        // reload, connection-recovery refresh, or the harness's final reconciliation)
+        // must NOT rotate: rotating out from under a client that still holds
+        // offline-queued session entries strands them, and their next drain is rejected
+        // as session_epoch_mismatch (a corrected sync). Create-if-absent in that case,
+        // then rebuild a fresh runway either way.
+        if (req.query.adoptSession === '1') {
+          ensureExploreSessionEpoch(run);
+        } else {
+          rotateExploreSessionEpoch(run);
+        }
         run.exploreRunway = await req.gameManager.explorationService.buildExploreRunway({
           userId: req.user?.id,
           getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),

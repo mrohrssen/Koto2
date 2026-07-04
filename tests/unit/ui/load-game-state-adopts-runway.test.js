@@ -41,11 +41,11 @@ test('loadGameState adopts the fresh explore runway after fetching rotated serve
   // `async function claimDailyCrystalBonus` immediately follows it in game.js.
   const loadGameStateSource = sourceBetween(
     gameSrc,
-    'async function loadGameState()',
+    'async function loadGameState(',
     'async function claimDailyCrystalBonus'
   );
 
-  const fetchIndex = loadGameStateSource.indexOf('apiGetGameStateAfterExploreDrain()');
+  const fetchIndex = loadGameStateSource.indexOf('apiGetGameStateAfterExploreDrain(');
   const updateStateIndex = loadGameStateSource.indexOf('updateGameState(data)');
   const adoptIndex = loadGameStateSource.indexOf('adoptRunway');
 
@@ -80,12 +80,12 @@ test('apiGetGameStateAfterExploreDrain skips the epoch-rotating /state fetch whi
   const drainFetchSource = sourceBetween(
     gameSrc,
     'async function apiGetGameStateAfterExploreDrain',
-    'async function loadGameState()'
+    'async function loadGameState('
   );
 
   const pendingGuardIndex = drainFetchSource.indexOf('pendingCount');
   const returnNullIndex = drainFetchSource.indexOf('return null');
-  const fetchIndex = drainFetchSource.indexOf('return apiGetGameState()');
+  const fetchIndex = drainFetchSource.indexOf('return apiGetGameState(');
 
   assert.ok(
     pendingGuardIndex >= 0,
@@ -103,11 +103,106 @@ test('apiGetGameStateAfterExploreDrain skips the epoch-rotating /state fetch whi
   // loadGameState must treat the skipped fetch (null) as "keep current state", not a failure.
   const loadGameStateSource = sourceBetween(
     gameSrc,
-    'async function loadGameState()',
+    'async function loadGameState(',
     'async function claimDailyCrystalBonus'
   );
   assert.ok(
     loadGameStateSource.indexOf('data === null') >= 0,
     'loadGameState must handle the null (fetch-skipped) return by keeping the current optimistic state',
+  );
+});
+
+/**
+ * Epoch contract (task 12e): explore session epochs mark RELOAD boundaries only.
+ * `GET /state` rotates the epoch ONLY on a bare fetch (boot/reload). Every
+ * IN-SESSION state fetch must pass the `adoptSession=1` signal so the server
+ * PRESERVES the epoch (create-if-absent, never rotate) — otherwise a mid-run
+ * reload (combat victory modal, post-combat-shop recovery, combat null-POST
+ * recovery) rotates the epoch out from under offline-queued entries and their
+ * next drain is rejected as `session_epoch_mismatch` (the 12d drain→rotate→adopt
+ * race).
+ *
+ * Layering (defense-in-depth, both layers required):
+ *  - Layer 1 (primary): in-session fetches pass adoptSession=1 → no rotation.
+ *  - Layer 2 (kept): the pending-entries guard still SKIPS the fetch entirely
+ *    while the drain left entries queued — even a non-rotating fetch returns a
+ *    server snapshot that predates the queued entries, and adopting it would
+ *    roll back optimistic progress.
+ */
+test('in-session state fetches pass the adoptSession signal; boot stays bare', () => {
+  // api.js getGameState must accept the signal and put it on the query string.
+  const apiSrc = readFileSync(resolve(repoRoot, 'public/js/api.js'), 'utf8');
+  const getGameStateSource = sourceBetween(
+    apiSrc,
+    'async function getGameState(',
+    'function isTransientGameStateFailure'
+  );
+  assert.ok(
+    getGameStateSource.indexOf('adoptSession') >= 0
+      && getGameStateSource.indexOf('adoptSession=1') >= 0,
+    'api.js getGameState must accept an adoptSession option and pass ?adoptSession=1 to GET /state',
+  );
+
+  // apiGetGameStateAfterExploreDrain must thread the signal through to the fetch.
+  const drainFetchSource = sourceBetween(
+    gameSrc,
+    'async function apiGetGameStateAfterExploreDrain',
+    'async function loadGameState('
+  );
+  assert.ok(
+    drainFetchSource.indexOf('adoptSession') >= 0,
+    'apiGetGameStateAfterExploreDrain must thread the adoptSession option to apiGetGameState',
+  );
+
+  // loadGameState must accept and thread the signal.
+  const loadGameStateSource = sourceBetween(
+    gameSrc,
+    'async function loadGameState(',
+    'async function claimDailyCrystalBonus'
+  );
+  assert.ok(
+    loadGameStateSource.indexOf('adoptSession') >= 0,
+    'loadGameState must accept an adoptSession option and thread it to the drain+fetch helper',
+  );
+
+  // The combat-victory state reload (showVictoryModal) is IN-SESSION: it must
+  // pass adoptSession — this is the exact path that stranded offline entries.
+  const victoryModalSource = sourceBetween(
+    gameSrc,
+    'function showVictoryModal(',
+    'async function showAdventureReport(',
+  );
+  assert.ok(
+    victoryModalSource.indexOf('loadGameState({ adoptSession: true })') >= 0,
+    'showVictoryModal must reload state with adoptSession: true (in-session fetch — must not rotate the epoch)',
+  );
+
+  // The post-combat-shop reload-recovery refresh is also in-session by the time
+  // it fires (the shop flow just completed inside a live run).
+  const shopRecoveryStart = gameSrc.indexOf('postCombatShopRecoveryDone = true');
+  assert.ok(shopRecoveryStart >= 0, 'post-combat-shop recovery block should exist');
+  const shopRecoverySource = gameSrc.slice(shopRecoveryStart, gameSrc.indexOf('break;', shopRecoveryStart));
+  assert.ok(
+    shopRecoverySource.indexOf('loadGameState({ adoptSession: true })') >= 0,
+    'the post-combat-shop recovery refresh must pass adoptSession: true',
+  );
+
+  // Boot-time initial load stays BARE — a reload is exactly where rotation is
+  // correct (losing the pre-reload offline log is by design).
+  assert.ok(
+    gameSrc.indexOf('const loadedState = await loadGameState();') >= 0,
+    'the boot-time initial loadGameState call must stay bare (no adoptSession) so a reload rotates the epoch',
+  );
+
+  // combat-loop's null-POST recovery fetch is in-session (active combat).
+  const combatLoopSrc = readFileSync(resolve(repoRoot, 'public/js/ui/combat-loop.js'), 'utf8');
+  const recoverySource = sourceBetween(
+    combatLoopSrc,
+    'async function recoverFromNullCombatPost(',
+    'async function handleOptimisticCombatVerification(',
+  );
+  assert.ok(
+    recoverySource.indexOf('apiGetGameState({ adoptSession: true })') >= 0,
+    'recoverFromNullCombatPost must fetch state with adoptSession: true (in-session recovery fetch)',
   );
 });

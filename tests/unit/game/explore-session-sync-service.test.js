@@ -5,6 +5,7 @@ import { createNewRun } from '../../../src/game/state.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { ExploreSessionSyncService } from '../../../src/game/services/explore-session-sync-service.js';
+import createGameStateRoutes from '../../../src/routes/game/state.js';
 
 const AREA_ID = 'hajimari-no-hiroba';
 const LIVE_EPOCH = 'ese_1111111111111111';
@@ -957,5 +958,116 @@ describe('ExploreSessionSyncService', () => {
       assert.equal(replay.results[0].replayed, true, testCase.kind);
       assert.equal(calls, 1, testCase.kind);
     }
+  });
+
+  // ---- The 12d drain→rotate→adopt race, sequenced at the service level ----
+  //
+  // Epoch contract: explore session epochs mark RELOAD boundaries only.
+  // GET /state rotates the epoch ONLY on a bare fetch; an in-session fetch
+  // (adoptSession=1 — combat-victory reload, recovery refresh) PRESERVES it.
+  // These two tests drive the REAL /state route handler against the same
+  // gameManager the sync service replays into, reproducing the exact sequence
+  // from the task-12d report: entries recorded under the live epoch, a mid-run
+  // state fetch, then the drain.
+
+  function getStateRouteHandler() {
+    const router = createGameStateRoutes();
+    for (const layer of router.stack) {
+      if (layer.route && layer.route.path === '/state') {
+        const routeLayer = layer.route.stack.find(s => s.method === 'get');
+        if (routeLayer) return routeLayer.handle;
+      }
+    }
+    throw new Error('GET /state handler not found');
+  }
+
+  function makeQueuedEntries(gm) {
+    const room = gm.run.rooms[0];
+    return [
+      makeEntry(gm, {
+        seq: 1,
+        actionId: 'run_es_race00001',
+        kind: 'friendlyNpc.choose',
+        roomIndex: 0,
+        roomId: room.id,
+        actionSeq: 0,
+        payload: { itemId: TEST_EQUIPMENT.id, targetCreatureIndex: 0 },
+      }),
+      makeEntry(gm, {
+        seq: 2,
+        actionId: 'run_es_race00002',
+        kind: 'proceed',
+        roomIndex: 0,
+        roomId: room.id,
+        actionSeq: 0,
+      }),
+    ];
+  }
+
+  async function fetchStateViaRoute(gm, query) {
+    const handler = getStateRouteHandler();
+    const req = {
+      query,
+      user: { id: 'race-user' },
+      gameManager: gm,
+      saveGame: () => {},
+      getEnrichedGameState: () => gm.getState(),
+    };
+    const res = {
+      statusCode: 200,
+      body: null,
+      status(code) { this.statusCode = code; return this; },
+      json(data) { this.body = data; return this; },
+    };
+    await handler(req, res);
+    assert.equal(res.statusCode, 200);
+    return res;
+  }
+
+  it('12d race sequence: queued entries survive an in-session (adoptSession) /state fetch and commit under the preserved epoch', async () => {
+    const gm = makeGm();
+    // 1. Entries recorded client-side under the live epoch (offline queue).
+    const entries = makeQueuedEntries(gm);
+
+    // 2. A mid-run IN-SESSION state fetch fires before the drain lands (the
+    //    combat-victory modal reload / recovery refresh) — adoptSession=1.
+    await fetchStateViaRoute(gm, { adoptSession: '1' });
+    assert.equal(
+      gm.run.exploreSessionEpoch,
+      LIVE_EPOCH,
+      'an in-session /state fetch must PRESERVE the explore session epoch',
+    );
+
+    // 3. The drain: the queued entries sync under the SAME epoch and commit.
+    const service = new ExploreSessionSyncService(gm);
+    const result = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries });
+
+    assert.equal(result.status, 'ok', 'the drain must commit — not a corrected sync');
+    assert.equal(result.confirmedThroughSeq, 2);
+    assert.equal(gm.run.currentRoom, 1, 'the queued proceed advanced the room');
+    assert.equal(gm.run.runSummary.itemsCollected, 1, 'the queued choose applied');
+  });
+
+  it('12d race counterfactual: a bare /state fetch (reload boundary) rotates the epoch and the stale drain is corrected', async () => {
+    const gm = makeGm();
+    const entries = makeQueuedEntries(gm);
+
+    // A BARE fetch is a boot/reload — it rotates BY DESIGN (the reload loses
+    // the unsynced log). This pins the reload-boundary side of the contract and
+    // documents the exact pre-fix race signature from the 12d report.
+    await fetchStateViaRoute(gm, {});
+    assert.notEqual(
+      gm.run.exploreSessionEpoch,
+      LIVE_EPOCH,
+      'a bare (reload) /state fetch must rotate the explore session epoch',
+    );
+
+    const service = new ExploreSessionSyncService(gm);
+    const result = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'session_epoch_mismatch');
+    assert.equal(result.rejectedSeq, 1);
+    assert.equal(gm.run.currentRoom, 0, 'nothing committed from the stale-epoch batch');
   });
 });

@@ -752,7 +752,9 @@ function updateGameContent() {
       if (!postCombatShopRecoveryDone) {
         postCombatShopRecoveryDone = true;
         showPostCombatShopFlow().then(() => {
-          loadGameState().then(state => {
+          // In-session refresh (the shop flow just completed inside a live run):
+          // adoptSession keeps the explore epoch — rotation is reload-only.
+          loadGameState({ adoptSession: true }).then(state => {
             if (state) {
               updateGameState(state);
               updateUI();
@@ -847,26 +849,32 @@ async function drainExploreSessionBeforeStateFetch(reason = 'stateFetch') {
   }
 }
 
-async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch') {
+async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSession = false } = {}) {
   await drainExploreSessionBeforeStateFetch(reason);
-  // GET /state ROTATES the explore session epoch and rebuilds the runway
-  // (src/routes/game/state.js). If the drain above did NOT clear the log
+  // Epoch contract (reload boundaries only) — two defensive layers here:
+  //
+  // Layer 1 (primary): GET /state only ROTATES the explore session epoch on a
+  // BARE fetch — a boot/reload, where losing the unsynced offline log is by
+  // design. In-session callers pass { adoptSession: true } → the server
+  // PRESERVES the epoch (create-if-absent) and still returns a fresh runway,
+  // so queued entries can never be stranded by the fetch itself.
+  //
+  // Layer 2 (defense-in-depth, KEEP): if the drain above did NOT clear the log
   // (offline / a transient sync failure, or optimistic progress queued ahead),
-  // fetching now would rotate the epoch out from under those still-pending
-  // entries — their next drain is then rejected as session_epoch_mismatch (a
-  // corrected sync). The epoch-adopt in loadGameState is already guarded on an
-  // empty log for the same reason, but the guard cannot help once /state has
-  // rotated. So DON'T fetch while entries are pending: keep the client's
-  // optimistic state and let the queued entries drain first (their own
-  // checkpoint refreshes the runway under the SAME epoch). Return null so callers
-  // keep their current state (all call sites already null-guard).
+  // don't fetch at all — even a non-rotating fetch returns a server snapshot
+  // that predates the still-pending entries, and updating client state from it
+  // would roll back optimistic progress (and a BARE caller here would still
+  // rotate). Keep the client's optimistic state and let the queued entries
+  // drain first (their own checkpoint refreshes the runway under the SAME
+  // epoch). Return null so callers keep their current state (all call sites
+  // already null-guard).
   const session = getExploreSession?.();
   if (session && (session.pendingCount?.() ?? 0) > 0) return null;
-  return apiGetGameState();
+  return apiGetGameState({ adoptSession });
 }
 
-async function loadGameState() {
-  const data = await apiGetGameStateAfterExploreDrain();
+async function loadGameState({ adoptSession = false } = {}) {
+  const data = await apiGetGameStateAfterExploreDrain('stateFetch', { adoptSession });
   // Fetch skipped because explore-session progress is still pending (see above):
   // keep the current optimistic client state; the drain will reconcile it under
   // the unrotated epoch. Not a failure — do not toast.
@@ -878,13 +886,13 @@ async function loadGameState() {
 
   if (data.player) {
     updateGameState(data);
-    // GET /api/game/state (inside apiGetGameStateAfterExploreDrain above) rotates
-    // the explore session epoch server-side and rebuilds the runway under the new
-    // epoch. The drain that preceded it normally empties the session log; adopt the
-    // fresh runway here to re-sync the client's session epoch — otherwise the next
-    // entry syncs under the stale epoch and the server rejects it as
-    // session_epoch_mismatch (fired on every combat victory in session mode, which
-    // reloads state through this path). Guard on an empty log: adoptRunway resets
+    // GET /api/game/state (inside apiGetGameStateAfterExploreDrain above) rebuilds
+    // the explore runway server-side. On a BARE fetch (boot/reload) it also ROTATES
+    // the session epoch; in-session fetches pass adoptSession and keep the epoch.
+    // Either way, adopt the fresh runway here so the client session tracks the
+    // server's epoch + prepared rooms — after a reload the next entry would
+    // otherwise sync under the stale pre-reload epoch and be rejected as
+    // session_epoch_mismatch. Guard on an empty log: adoptRunway resets
     // the log on an epoch change (sessionBoundary), so only adopt when the drain
     // actually cleared — if entries are still pending (a transient drain failure),
     // leave them and let their next sync reconcile the epoch via a `corrected`
@@ -1762,7 +1770,10 @@ function showVictoryModal(result) {
 
   return (async () => {
     try {
-      await loadGameState();
+      // In-session reload (fires on EVERY explore combat victory): adoptSession
+      // preserves the explore epoch so offline-queued session entries are never
+      // stranded as session_epoch_mismatch. Rotation is reload-only.
+      await loadGameState({ adoptSession: true });
       updateUI();
     } catch (err) {
       console.error('[showVictoryModal] state reload failed', err);

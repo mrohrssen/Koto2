@@ -25,7 +25,7 @@ function makeRes() {
   };
 }
 
-function makeStateReq({ app = {}, buildExploreRunway, saveGame } = {}) {
+function makeStateReq({ app = {}, buildExploreRunway, saveGame, query = {}, exploreSessionEpoch = 'ese_aaaaaaaaaaaaaaaa' } = {}) {
   const previousRunway = {
     sessionEpoch: 'ese_aaaaaaaaaaaaaaaa',
     roomActionSeq: 4,
@@ -36,12 +36,13 @@ function makeStateReq({ app = {}, buildExploreRunway, saveGame } = {}) {
   const run = {
     active: true,
     mode: null,
-    exploreSessionEpoch: 'ese_aaaaaaaaaaaaaaaa',
+    exploreSessionEpoch,
     exploreRunway: previousRunway,
   };
 
   return {
     app,
+    query,
     user: { id: 'route-user' },
     gameManager: {
       run,
@@ -143,6 +144,81 @@ describe('game state route', () => {
     assert.equal(res.body.error, 'save failed');
     assert.equal(req.gameManager.run.exploreSessionEpoch, 'ese_aaaaaaaaaaaaaaaa');
     assert.equal(req.gameManager.run.exploreRunway, req.previousRunway);
+  });
+
+  // ---- Epoch contract: /state rotates on RELOAD boundaries only ----
+  // A bare fetch (no adoptSession signal) is a boot/reload — it ROTATES the epoch
+  // (reload loses the unsynced log BY DESIGN). An in-session fetch (adoptSession=1)
+  // PRESERVES the epoch (create-if-absent, never rotate) so queued session entries
+  // are not stranded — but still rebuilds a fresh runway.
+
+  it('bare fetch (reload boundary) rotates the explore session epoch and rebuilds the runway', async () => {
+    const handler = getHandler(createGameStateRoutes(), 'get', '/state');
+    let buildCalled = false;
+    const req = makeStateReq({
+      query: {},
+      buildExploreRunway: async () => {
+        buildCalled = true;
+        return { sessionEpoch: 'ignored', roomActionSeq: 4, currentRoom: 2, preparedAhead: 5, preparedRooms: [] };
+      },
+    });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.notEqual(
+      req.gameManager.run.exploreSessionEpoch,
+      'ese_aaaaaaaaaaaaaaaa',
+      'a bare (reload) /state fetch MUST rotate the epoch',
+    );
+    assert.match(req.gameManager.run.exploreSessionEpoch, /^ese_[0-9a-f]{16}$/);
+    assert.equal(buildCalled, true, 'a bare /state fetch still rebuilds the runway');
+  });
+
+  it('adoptSession fetch (in-session) PRESERVES the epoch and still rebuilds the runway', async () => {
+    const handler = getHandler(createGameStateRoutes(), 'get', '/state');
+    let buildCalled = false;
+    const req = makeStateReq({
+      query: { adoptSession: '1' },
+      buildExploreRunway: async () => {
+        buildCalled = true;
+        return { sessionEpoch: 'ignored', roomActionSeq: 4, currentRoom: 2, preparedAhead: 5, preparedRooms: [] };
+      },
+    });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(
+      req.gameManager.run.exploreSessionEpoch,
+      'ese_aaaaaaaaaaaaaaaa',
+      'an in-session (adoptSession=1) /state fetch MUST NOT rotate the epoch — it would strand queued entries',
+    );
+    assert.equal(buildCalled, true, 'an in-session /state fetch still rebuilds a fresh runway');
+  });
+
+  it('creates the epoch when absent — bare fetch', async () => {
+    const handler = getHandler(createGameStateRoutes(), 'get', '/state');
+    const req = makeStateReq({ query: {}, exploreSessionEpoch: undefined });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.match(req.gameManager.run.exploreSessionEpoch, /^ese_[0-9a-f]{16}$/, 'bare fetch creates a valid epoch when absent');
+  });
+
+  it('creates the epoch when absent — adoptSession fetch', async () => {
+    const handler = getHandler(createGameStateRoutes(), 'get', '/state');
+    const req = makeStateReq({ query: { adoptSession: '1' }, exploreSessionEpoch: undefined });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.match(req.gameManager.run.exploreSessionEpoch, /^ese_[0-9a-f]{16}$/, 'adoptSession fetch creates a valid epoch when absent');
   });
 
   it('returns a clean error and restores explore session state when async saving rejects', async () => {

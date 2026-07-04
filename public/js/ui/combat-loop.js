@@ -470,7 +470,11 @@ async function recoverFromNullCombatPost(actionType, options = {}) {
 
   let fetchedState = null;
   try {
-    fetchedState = await apiGetGameState();
+    // In-session recovery fetch (active combat inside a live explore run):
+    // adoptSession preserves the explore session epoch — a bare GET /state
+    // would rotate it and strand any offline-queued session entries as
+    // session_epoch_mismatch corrections. Rotation is reload-only.
+    fetchedState = await apiGetGameState({ adoptSession: true });
   } catch (error) {
     console.warn('[CombatLoop] Combat recovery state fetch failed:', error?.message || error);
     return { recovered: false, outcome: 'recovery_failed', combatActive };

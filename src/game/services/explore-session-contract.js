@@ -76,6 +76,24 @@ export function createExploreSessionEpoch() {
   return `ese_${randomBytes(8).toString('hex')}`;
 }
 
+/**
+ * EPOCH CONTRACT — explore session epochs mark RELOAD boundaries ONLY.
+ *
+ * The epoch scopes the client's offline-queued session log: entries are stamped
+ * with the epoch they were recorded under, and applySessionSync rejects a batch
+ * whose epoch does not match the run's current epoch (`session_epoch_mismatch`,
+ * a corrected sync).
+ *
+ * - ensureExploreSessionEpoch — create-if-absent, NEVER rotates. The correct
+ *   call for every IN-SESSION touch point (runway builds mid-run, and
+ *   `GET /state?adoptSession=1` in-session state reloads): the client may still
+ *   hold queued entries under the current epoch, and rotating would strand them.
+ * - rotateExploreSessionEpoch — declares a NEW reload boundary. Correct ONLY on
+ *   a true boot/reload (a bare `GET /state`, src/routes/game/state.js), where
+ *   losing the unsynced offline log is BY DESIGN. Never call this while a live
+ *   client may have pending session entries — the drain→rotate→adopt race turns
+ *   each of them into a rejected `session_epoch_mismatch` correction.
+ */
 export function ensureExploreSessionEpoch(run) {
   if (!run || typeof run !== 'object') return null;
   if (!EXPLORE_SESSION_EPOCH_PATTERN.test(run.exploreSessionEpoch)) {
