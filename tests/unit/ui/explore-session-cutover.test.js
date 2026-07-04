@@ -784,3 +784,73 @@ describe('explore session proceed cutover', () => {
     assert.equal(harness.finishCombatCalls.length, 0, 'replayed combat-end result must not re-finish combat');
   });
 });
+
+// Online stall recovery (first-room spotty deadlock). When a session soft-pause
+// fires with an empty-log dead-end reason (noPreparedRoom / *NotReady /
+// runwayExhausted / missingPayload) while ONLINE and with no pending entries, the
+// pause can never self-heal via the drain (empty log → no drain). exploration.js
+// must fire a ONE-SHOT runway refresh (refreshRunwayState → loadGameState) to pull
+// a rebuilt runway server-side. An in-flight + cooldown guard keeps repeated taps
+// from stacking fetches.
+describe('explore session online stall recovery', () => {
+  beforeEach(() => {
+    actionArea = { innerHTML: '' };
+    resetExploreSession();
+  });
+  afterEach(() => {
+    resetExploreSession();
+  });
+
+  function initRecoveryHarness({ refreshRunwayState } = {}) {
+    let currentState = makeState({ currentRoom: 0, exploreRunway: null });
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => {},
+      actions: { clear: () => {}, setContent: () => {} },
+      scene: { showNarration: () => {} },
+      finishCombatLoop: () => {},
+      resumeSessionCombatBefriendQuiz: () => {},
+      apiProceed: async () => null,
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
+      refreshRunwayState,
+    });
+  }
+
+  // A runway where proceeding rejects `nextRoomNotReady` on an EMPTY log. That
+  // reject calls enterPause('nextRoomNotReady') → onPause (showExploreSoftPause),
+  // which is the recovery trigger. navigator.onLine is undefined in node (treated
+  // as online), so no offline mock is needed.
+  function pausingRunway() {
+    return {
+      sessionEpoch: 'ese_stallrecover1',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [
+        preparedRoom(0, { acceptedActions: ['proceed'], actionEffects: { proceed: ['areaProgress'] } }),
+        preparedRoom(1, { acceptedActions: ['proceed'], offlineReady: false }),
+      ],
+    };
+  }
+
+  it('fires refreshRunwayState exactly once (cooldown) when an empty-log soft-pause fires online', async () => {
+    let refreshCalls = 0;
+    initRecoveryHarness({ refreshRunwayState: () => { refreshCalls += 1; } });
+
+    getExploreSession().adoptRunway(pausingRunway());
+
+    // First proceed pauses (nextRoomNotReady, empty log) → recovery fires once.
+    const first = getExploreSession().recordRoomAction('proceed');
+    assert.equal(first.accepted, false);
+    assert.equal(first.reason, 'nextRoomNotReady');
+    await Promise.resolve();
+    assert.equal(refreshCalls, 1, 'the first empty-log online soft-pause triggers a runway refresh');
+
+    // A second attempt inside the cooldown window must NOT stack another fetch.
+    // (Already paused → reject('paused') short-circuits before onPause; the guard
+    // also blocks it. Either way, no second refresh.)
+    getExploreSession().recordRoomAction('proceed');
+    await Promise.resolve();
+    assert.equal(refreshCalls, 1, 'a repeat within the cooldown does not stack a second refresh');
+  });
+});

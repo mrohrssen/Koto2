@@ -339,6 +339,14 @@ export default function createRunRoutes({
     try {
       const { areaId, forceRoomType } = req.body;
       const result = gameManager.selectArea(areaId, forceRoomType || null);
+      // Rebuild the runway ONLY once a creature party is confirmed. A mid-run area
+      // transition (area 2+) regenerates rooms and would otherwise hand the client
+      // an empty runway at the new area's room 0. But on a FRESH run select-area
+      // precedes confirm-creatures, so building here would pre-roll combat rooms
+      // against an EMPTY ally party — skip it; confirm-creatures builds it later.
+      if ((req.gameManager.run?.creatureParty?.active || []).some(Boolean)) {
+        await refreshExploreRunwayAfterProceed(req);
+      }
       req.saveGame();
       res.json({
         ...result,
@@ -365,6 +373,15 @@ export default function createRunRoutes({
       }
 
       gameManager.confirmCreatures(starterIds);
+
+      // Build the explore runway now that the party is confirmed, BEFORE
+      // snapshotting the state below. confirm-creatures drops the player into
+      // room 0, and if that room is a support room (friendlyNpc / shrine) the
+      // client's first recordRoomAction would reject 'noPreparedRoom' against an
+      // empty runway — the online "first-room spotty" deadlock. Runway build
+      // needs the confirmed ally party (combat pre-roll), so it must run AFTER
+      // confirmCreatures.
+      await refreshExploreRunwayAfterProceed(req);
       req.saveGame();
 
       // Queue background dialogues now that party is finalized
@@ -446,8 +463,14 @@ export default function createRunRoutes({
     return runOptimisticAction(req, res, {
       actionType: 'skillMaster.choose',
       errorStatusCode: 409,
-      perform: () => {
+      perform: async () => {
         const result = req.gameManager.explorationService.applySkillMasterChoose({ skillId });
+        // skill-master-choose is the last step of the run-entry chain — it hands
+        // the player into room 0. Rebuild the runway BEFORE snapshotting state so
+        // a support-room room 0 has a prepared runway to adopt (otherwise the
+        // client's first recordRoomAction rejects 'noPreparedRoom' online — the
+        // first-room spotty deadlock). runOptimisticAction awaits perform().
+        await refreshExploreRunwayAfterProceed(req);
         return { ...result, state: req.getEnrichedGameState() };
       },
     });

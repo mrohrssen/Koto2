@@ -202,8 +202,16 @@ export function createExploreSession({
       syncing = false;
       attempts = 0;
       forceDrainRequested = false;
-      maybeResumeAfterDrain();
     }
+
+    // Adopting a refreshed runway is a recovery moment for a paused session whose
+    // log is empty: such a pause (nextRoomNotReady / currentRoomNotReady /
+    // runwayExhausted) can NEVER lift via the drain — runDrainLoop early-returns on
+    // an empty log, so drainOnce (the only other maybeResumeAfterDrain caller) never
+    // runs. Resume here on BOTH paths (boundary and same-epoch refresh), after the
+    // cursor/log are settled. maybeResumeAfterDrain already encodes the correct
+    // semantics (hardCap threshold, else resume only when the log is empty).
+    maybeResumeAfterDrain();
 
     return runway;
   }

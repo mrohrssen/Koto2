@@ -788,3 +788,50 @@ test('singleton lifecycle: configure / get / reset', () => {
   resetExploreSession();
   assert.equal(getExploreSession(), null);
 });
+
+// Regression (first-room spotty deadlock, client side): a session paused by a
+// rejected `proceed` (nextRoomNotReady) with an EMPTY log can never resume via
+// the drain — runDrainLoop early-returns on an empty log, so drainOnce (the only
+// caller of maybeResumeAfterDrain) never runs. Adopting a refreshed SAME-epoch
+// runway whose next room is now ready is the recovery moment: adoptRunway must
+// call maybeResumeAfterDrain on the non-boundary path too, so the pause lifts and
+// the proceed is accepted.
+test('adopting a refreshed same-epoch runway resumes a session paused on an empty log', () => {
+  const EPOCH = 'ese_resume11111111';
+  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+
+  // Room 0 can proceed; room 1 exists but is NOT offline-ready yet.
+  session.adoptRunway({
+    sessionEpoch: EPOCH,
+    roomActionSeq: 7,
+    currentRoom: 0,
+    preparedRooms: [
+      preparedRoom(0, { actionSeq: 7, acceptedActions: ['proceed'], actionEffects: { proceed: ['areaProgress'] } }),
+      preparedRoom(1, { actionSeq: 8, acceptedActions: ['proceed'], offlineReady: false }),
+    ],
+  });
+
+  const rejected = session.recordRoomAction('proceed');
+  assert.equal(rejected.accepted, false);
+  assert.equal(rejected.reason, 'nextRoomNotReady');
+  assert.equal(session.isPaused(), true, 'a not-ready next room pauses the session');
+  assert.equal(session.pendingCount(), 0, 'the rejected proceed leaves the log empty (nothing queued)');
+
+  // A refreshed runway arrives (SAME epoch — not a session boundary) with room 1
+  // now offline-ready. This must clear the empty-log pause.
+  session.adoptRunway({
+    sessionEpoch: EPOCH,
+    roomActionSeq: 7,
+    currentRoom: 0,
+    preparedRooms: [
+      preparedRoom(0, { actionSeq: 7, acceptedActions: ['proceed'], actionEffects: { proceed: ['areaProgress'] } }),
+      preparedRoom(1, { actionSeq: 8, acceptedActions: ['proceed'], offlineReady: true }),
+    ],
+  });
+
+  assert.equal(session.isPaused(), false, 'adopting the refreshed runway resumes the session');
+
+  const accepted = session.recordRoomAction('proceed');
+  assert.equal(accepted.accepted, true, 'the proceed is accepted once the next room is ready');
+  assert.equal(session.pendingCount(), 1);
+});

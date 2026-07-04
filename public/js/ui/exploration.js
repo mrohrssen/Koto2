@@ -78,6 +78,24 @@ let finishCombatLoop = null;
 let resumeSessionCombatBefriendQuiz = null;
 let exploreSessionOnlineDrainTarget = null;
 let exploreSessionVisibilityDrainTarget = null;
+// Injected in init(): pulls a rebuilt runway server-side (loadGameState with
+// adoptSession → /state?adoptSession=1, epoch preserved) to recover an online
+// stall. Guard state keeps repeated soft-pauses from stacking fetches.
+let refreshRunwayState = null;
+let runwayRecoveryInFlight = false;
+let runwayRecoveryLastAt = 0;
+// Soft-pause reasons whose session has an EMPTY log and therefore CANNOT self-heal
+// via the reconnect drain (drain no-ops on an empty log). These are the online
+// dead-ends the one-shot runway refresh recovers. Drain-recoverable reasons
+// ('dependency', 'hardCap', transport failures) are deliberately excluded.
+const RUNWAY_RECOVERY_REASONS = new Set([
+  'noPreparedRoom',
+  'currentRoomNotReady',
+  'nextRoomNotReady',
+  'runwayExhausted',
+  'missingPayload',
+]);
+const RUNWAY_RECOVERY_COOLDOWN_MS = 3000;
 
 function isInitialSkillPickState(state = getGameState?.()) {
   const room = state?.room || getActiveRoomFromRun(state?.run);
@@ -205,6 +223,33 @@ function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
     `${EXPLORE_SPOTTY_COPY}${detail}`,
     { autoDismiss: 1800 }
   );
+  maybeRecoverRunwayStall(reason);
+}
+
+// One-shot online recovery for an empty-log soft-pause. When the session dead-ends
+// on a reason it cannot drain out of, has no pending entries, and we are online,
+// pull a rebuilt runway server-side. Without this the run is stuck on a perfect
+// connection: no drain fires (empty log), no 'online' event fires (already online).
+// In-flight + cooldown guards keep repeated taps from stacking fetches.
+function maybeRecoverRunwayStall(reason) {
+  if (typeof refreshRunwayState !== 'function') return;
+  if (!RUNWAY_RECOVERY_REASONS.has(reason)) return;
+  if (globalThis.navigator?.onLine === false) return;
+  const pending = getExploreSession()?.pendingCount?.() ?? 0;
+  if (pending !== 0) return;
+  if (runwayRecoveryInFlight) return;
+  const now = Date.now();
+  if (now - runwayRecoveryLastAt < RUNWAY_RECOVERY_COOLDOWN_MS) return;
+
+  runwayRecoveryInFlight = true;
+  runwayRecoveryLastAt = now;
+  Promise.resolve()
+    .then(() => refreshRunwayState())
+    .catch(error => console.warn('[ExploreSession] runway stall recovery failed', error))
+    .finally(() => {
+      runwayRecoveryInFlight = false;
+      updateUI?.();
+    });
 }
 
 function hideExploreSoftPause() {
@@ -421,6 +466,7 @@ export function init(callbacks) {
   returnToHub = callbacks.returnToHub;
   finishCombatLoop = callbacks.finishCombatLoop;
   resumeSessionCombatBefriendQuiz = callbacks.resumeSessionCombatBefriendQuiz;
+  refreshRunwayState = callbacks.refreshRunwayState;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;
   apiSelectArea = callbacks.apiSelectArea;
   apiReturnToHub = callbacks.apiReturnToHub;
