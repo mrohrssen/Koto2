@@ -56,6 +56,7 @@ const MAX_INTERACTIONS = 400;
 // burns interactions without progress" symptom).
 const WAIT_CODES = new Set([
   'combat-pending-victory-wait',
+  'combat-sac-stuck-wait',
   'combat-offline-wait',
   'choice-offline-wait',
   'button-offline-wait',
@@ -375,12 +376,19 @@ test.describe('explore subway full session', () => {
         );
       }
     });
+    // No-progress tracking for the offline stuck-SAC guard (see the combat branch).
+    let lastOfflineSacSig = null;
+    let offlineSacRepeat = 0;
     async function goOffline() {
       offline = true;
+      lastOfflineSacSig = null;
+      offlineSacRepeat = 0;
       await context.route('**/api/**', route => route.abort('failed'));
     }
     async function goOnline() {
       offline = false;
+      lastOfflineSacSig = null;
+      offlineSacRepeat = 0;
       await context.unroute('**/api/**').catch(() => {});
     }
 
@@ -750,6 +758,37 @@ test.describe('explore subway full session', () => {
         // fires when the tap lands on #action-area (with the SAC as its first
         // child) or inside the SAC — NOT on .scene-area. Tap the SAC itself.
         if (d.splitAttackCard) {
+          // Guard against an OFFLINE stuck SAC. Most offline SACs advance on a tap
+          // (playback → next move grid, or the locally-resolved terminal shell
+          // caught by the pending-victory hold above). But an offline turn can
+          // occasionally leave a SAC that no tap resolves and no move grid replaces
+          // (e.g. move selection not re-armed because the cursor is mid-enemy-
+          // sequence), while at least one enemy is still alive so the pending-
+          // victory check does not fire. Tapping it forever is the "SAC spin" that
+          // burns the budget. Detect no-progress: if the combat signature (enemy
+          // HPs + cursor) is unchanged across consecutive offline SAC taps, stop
+          // tapping and HOLD for reconnect — the drain resolves the turn
+          // authoritatively, exactly like the pending-victory / combat-door wait.
+          if (offline) {
+            const sig = await page.evaluate(() => {
+              const c = window.__gameState?.combat;
+              if (!c) return 'none';
+              const enemies = (c.enemies || []).map(e => (e ? e.hp : 'x')).join(',');
+              const cur = c.actionCursor ? `${c.actionCursor.side}:${c.actionCursor.index}` : 'x';
+              return `${enemies}|${cur}`;
+            }).catch(() => 'none');
+            if (sig === lastOfflineSacSig) {
+              offlineSacRepeat += 1;
+            } else {
+              offlineSacRepeat = 0;
+              lastOfflineSacSig = sig;
+            }
+            // 3 consecutive identical-signature offline taps → treat as stuck; hold.
+            if (offlineSacRepeat >= 3) {
+              await page.waitForTimeout(1000);
+              return 'combat-sac-stuck-wait';
+            }
+          }
           await tapContinueSac(page);
           await page.waitForTimeout(400);
           return 'combat-sac';
