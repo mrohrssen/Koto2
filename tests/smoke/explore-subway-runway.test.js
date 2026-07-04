@@ -46,6 +46,28 @@ const DEV_TEAM = ['hi', 'mizu', 'ki'];
 const TAP_ACK_MS = 250;
 const MAX_INTERACTIONS = 400;
 
+// Driver return codes that represent a WAIT (holding for reconnect during an
+// outage, a soft pause, or an in-flight animation/transition), NOT a progress
+// action. These advance wall-clock but must not count against MAX_INTERACTIONS —
+// a fight that resolves early in a 75-100s offline window legitimately holds the
+// pendingCombatEnd shell for the whole window (one hold iteration per ~second),
+// and two scripted windows totalling ~175s would otherwise consume ~175 of the
+// 400-action budget before the area could finish (the combat-tier "SAC spin /
+// burns interactions without progress" symptom).
+const WAIT_CODES = new Set([
+  'combat-pending-victory-wait',
+  'combat-offline-wait',
+  'choice-offline-wait',
+  'button-offline-wait',
+  'move-learn-offline-wait',
+  'speed-review-offline-wait',
+  'paused',
+  'busy-no-button',
+  'combat-anim',
+  'transition',
+  'waiting',
+]);
+
 // Two offline windows with an online recovery gap between them, mirroring the
 // KK harness. Windows are keyed to ROOM PROGRESS (the "N/10" room-progress
 // badge) rather than proceeds/interactions: most rooms auto-advance after their
@@ -387,12 +409,29 @@ test.describe('explore subway full session', () => {
      * #action-area and only accepts a tap inside the SAC or directly on
      * #action-area (with the SAC as first child) — a .scene-area tap is ignored.
      * Click the SAC element itself so card.contains(target) is satisfied.
+     *
+     * Tap once, then wait for THIS card to actually leave (it gets `sac-fading-out`
+     * on continue, then is replaced by the next attack's card / the move grid).
+     * Polling for the specific card to detach means one call resolves one card,
+     * instead of the driver returning to the loop mid-fade and re-tapping the same
+     * card several times (each re-tap burned a loop pass — the churn that inflated
+     * offline fights toward the interaction cap).
      */
     async function tapContinueSac(pg) {
       const sac = pg.locator('.split-attack-card').first();
-      if (await sac.count()) {
-        await sac.click({ force: true }).catch(() => {});
-      }
+      if (!(await sac.count())) return;
+      const handle = await sac.elementHandle().catch(() => null);
+      await sac.click({ force: true }).catch(() => {});
+      if (!handle) return;
+      // Wait (bounded) for this exact card to fade out or detach — i.e. the tap
+      // took and playback advanced. Bounded so a genuinely stuck card still
+      // returns to the loop (where the pending-victory / stall paths handle it).
+      await pg.waitForFunction(
+        el => !el.isConnected || el.classList.contains('sac-fading-out'),
+        handle,
+        { timeout: 1500, polling: 100 },
+      ).catch(() => {});
+      await handle.dispose().catch(() => {});
     }
 
     /**
@@ -792,16 +831,34 @@ test.describe('explore subway full session', () => {
     }
 
     // --- main loop ---
-    let interactions = 0;
+    // Two distinct counters (a fight resolving early in a 75-100s offline window
+    // holds the pendingCombatEnd shell for the whole window — those are legitimate
+    // WAITS for reconnect, not progress, and must not exhaust the ACTION budget):
+    //   • actions — genuine progress taps (move/target/proceed/choice/…). Bounded
+    //     by MAX_INTERACTIONS: the real "did the run runaway?" gate.
+    //   • iterations — every loop pass, incl. offline holds. Bounded only by a
+    //     large safety cap + a wall-clock deadline, so a true infinite loop still
+    //     terminates but a legitimate 175s of offline holding does not.
+    // A WAIT code advances `iterations` (and time) but not `actions`, so the ~175s
+    // of scripted outage no longer burns ~175 of the action budget.
+    let actions = 0;
+    let iterations = 0;
     let windowIndex = 0;
     let restoreAt = null;
+    const ITERATION_SAFETY_CAP = 4000; // >> any legitimate hold count; catches a hard spin
+    const WALLCLOCK_DEADLINE_MS = 540_000; // 9m, under the 10m test timeout
+    const loopStartedAt = Date.now();
     // try/finally guarantees the network route is torn down even if an expect
     // throws while an offline window is active — otherwise `context.route(...,
     // abort)` would stay installed and leak into teardown. The finally only
     // fires goOnline() when a route is actually installed (offline === true),
     // since goOffline() sets `offline` and installs the route together.
     try {
-      while (interactions < MAX_INTERACTIONS) {
+      while (
+        actions < MAX_INTERACTIONS
+        && iterations < ITERATION_SAFETY_CAP
+        && (Date.now() - loopStartedAt) < WALLCLOCK_DEADLINE_MS
+      ) {
         // Restore online if the current window has elapsed (do this BEFORE arming
         // the next window so windows never merge into one long outage).
         if (restoreAt !== null && Date.now() >= restoreAt) {
@@ -839,8 +896,14 @@ test.describe('explore subway full session', () => {
           expect(bodyText.includes(copy), `forbidden copy "${copy}" (offline=${offline})`).toBeFalsy();
         }
 
-        await driveOneInteraction();
-        interactions += 1;
+        const code = await driveOneInteraction();
+        iterations += 1;
+        // Offline holds / pauses / transient yields wait for reconnect or an
+        // in-flight animation — they make no room/combat progress and must NOT
+        // count against the action budget (else a fight that ends early in a long
+        // outage burns one action per second of holding and the run "runs out of
+        // interactions" mid-area — the reported combat-tier flake).
+        if (!WAIT_CODES.has(code)) actions += 1;
       }
     } finally {
       // Restore connectivity if a window is still active (normal exit or a
@@ -854,6 +917,17 @@ test.describe('explore subway full session', () => {
     const server = await serverState(page).catch(() => null);
     assertServerMatchesPlayed(server, played);
     expect(correctedSyncs, 'no corrected syncs on the happy path').toBe(0);
-    expect(interactions, 'session should finish before MAX_INTERACTIONS').toBeLessThan(MAX_INTERACTIONS);
+    // The action budget bounds genuine progress taps (waits/holds excluded). A
+    // run that blows this is genuinely looping on actions, not merely holding
+    // through an outage.
+    expect(actions, 'session should finish before MAX_INTERACTIONS actions').toBeLessThan(MAX_INTERACTIONS);
+    // The safety bounds (iteration cap / wall-clock) must never be what stops the
+    // loop — hitting either means the run neither finished nor progressed and is a
+    // real hang, surfaced precisely rather than as a mislabeled action-budget miss.
+    expect(
+      iterations < ITERATION_SAFETY_CAP && (Date.now() - loopStartedAt) < WALLCLOCK_DEADLINE_MS,
+      `driver loop hit a safety bound without finishing (iterations=${iterations}, `
+      + `elapsedMs=${Date.now() - loopStartedAt}, actions=${actions}) — the run stalled`,
+    ).toBeTruthy();
   });
 });
