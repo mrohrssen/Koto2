@@ -741,6 +741,34 @@ test.describe('explore subway full session', () => {
         return 'combat-anim';
       }
 
+      // 2.5) NPC dialogue card with a dedicated continue button (shrine/friendlyNpc
+      // greeting speech: .npc-dialogue-shell + .npc-dialogue-continue plus translate/
+      // learn/audio tool buttons). The generic "tap the last action button" path
+      // (branch 7) can hang here: while the greeting streams its tokens / waits on a
+      // pending TTS, the card re-renders and Playwright's default click (no
+      // actionTimeout) blocks on the detaching button forever (observed as a hard
+      // freeze at a room-7 shrine). Force-click the continue button directly and
+      // wait (bounded) for the shell to leave — one resolved greeting per call, no
+      // dependence on token/audio timing.
+      if (d.npcDialogueCard) {
+        const cont = page.locator('.npc-dialogue-continue').first();
+        if (await cont.count().catch(() => 0)) {
+          const shell = await page.locator('.npc-dialogue-shell').first().elementHandle().catch(() => null);
+          await cont.click({ force: true }).catch(() => {});
+          if (shell) {
+            await page.waitForFunction(
+              el => !el.isConnected,
+              shell,
+              { timeout: 1500, polling: 100 },
+            ).catch(() => {});
+            await shell.dispose().catch(() => {});
+          } else {
+            await page.waitForTimeout(400);
+          }
+          return 'dialogue-continue';
+        }
+      }
+
       // 3) NPC dialogue card in an action area with NO actionable control yet
       // (shrine/dealer/friendlyNpc/minigame intro speech) -> dismiss by clicking
       // OUTSIDE the box, then re-loop so the room's choices render.
