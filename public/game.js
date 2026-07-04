@@ -849,11 +849,28 @@ async function drainExploreSessionBeforeStateFetch(reason = 'stateFetch') {
 
 async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch') {
   await drainExploreSessionBeforeStateFetch(reason);
+  // GET /state ROTATES the explore session epoch and rebuilds the runway
+  // (src/routes/game/state.js). If the drain above did NOT clear the log
+  // (offline / a transient sync failure, or optimistic progress queued ahead),
+  // fetching now would rotate the epoch out from under those still-pending
+  // entries — their next drain is then rejected as session_epoch_mismatch (a
+  // corrected sync). The epoch-adopt in loadGameState is already guarded on an
+  // empty log for the same reason, but the guard cannot help once /state has
+  // rotated. So DON'T fetch while entries are pending: keep the client's
+  // optimistic state and let the queued entries drain first (their own
+  // checkpoint refreshes the runway under the SAME epoch). Return null so callers
+  // keep their current state (all call sites already null-guard).
+  const session = getExploreSession?.();
+  if (session && (session.pendingCount?.() ?? 0) > 0) return null;
   return apiGetGameState();
 }
 
 async function loadGameState() {
   const data = await apiGetGameStateAfterExploreDrain();
+  // Fetch skipped because explore-session progress is still pending (see above):
+  // keep the current optimistic client state; the drain will reconcile it under
+  // the unrotated epoch. Not a failure — do not toast.
+  if (data === null) return gameState;
   if (isTransientGameStateFailure(data)) {
     scene.showToast?.('Connection is slow. Retrying...', 3000);
     return null;
