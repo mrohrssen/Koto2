@@ -130,12 +130,14 @@ test('maps predicted effects for every plan action kind', () => {
 
 test('maps room dependencies for every plan room type', () => {
   const roomDependencies = [
-    // Combat rooms are pre-rolled (Task 8): prepareCombatStart pins enemies +
-    // seed chain at prepare time, so queued earlier-room effects no longer
-    // invalidate them.
-    ['encounter', []],
-    ['boss', []],
-    ['npcBattle', []],
+    // Combat rooms are pre-rolled (Task 8): prepareCombatStart pins the ENEMIES +
+    // seed chain at prepare time. But the roll does NOT pin the ally-side stats,
+    // which feed the hashed transcript — so a PARTY_STATS effect queued ahead of a
+    // fight (shrine/friendlyNpc) must still pause the proceed into it, or the
+    // offline-built fight forks the transcript (task-12f transcript_mismatch fix).
+    ['encounter', ['partyStats']],
+    ['boss', ['partyStats']],
+    ['npcBattle', ['partyStats']],
     ['campfire', ['ingredients', 'partyStats']],
     ['dealer', ['credits']],
     ['speedReviewRoom', ['srs']],

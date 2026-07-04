@@ -43,14 +43,33 @@ const ACTION_EFFECTS = Object.freeze({
 });
 
 const ROOM_DEPENDENCIES = Object.freeze({
-  // Combat rooms are pre-rolled (prepareCombatStart pins enemies + seed chain onto
-  // the prepared payload), so a queued earlier-room stat/skill effect no longer
-  // invalidates them — the roll is fixed at prepare time. Same rationale as Kanji
-  // Kombat's pre-rolled wave. (An intervening level-up is governed by the prepared
-  // roll; spec-accepted.)
-  encounter: [],
-  boss: [],
-  npcBattle: [],
+  // Combat rooms are pre-rolled (prepareCombatStart pins the ENEMIES + seed chain
+  // onto the prepared payload), so a queued earlier-room roll-affecting effect no
+  // longer invalidates them — the enemy roll is fixed at prepare time. Same
+  // rationale as Kanji Kombat's pre-rolled wave.
+  //
+  // But the roll pins only the enemies. The ALLY-side stats (level/xp/attack/
+  // defense/dex/hp/mp — every field in buildStateSummary) still feed the hashed
+  // per-turn transcript, and a support-room PARTY_STATS effect queued AHEAD of the
+  // fight (shrine blessing, friendlyNpc stat item) mutates them on the server's
+  // replay but NOT on the client's offline optimistic path (the client only flags
+  // the room complete — exploration.js chooseShrineReward / applyItem). If the
+  // fight is then built offline against un-boosted allies, its first combat.cycle
+  // hash forks from the server's post-shrine replay → transcript_mismatch
+  // (task-12e attempt B, seq 7). Mirroring the stat mutation client-side is
+  // impractical: the mutations live in server-only modules that read data files at
+  // import (creatures.js addXpToCreature via CREATURES_BY_ID/learnset;
+  // item-service.js applyItem), so they are not browser-importable without a large
+  // extraction. Instead, declare the honest dependency: a PARTY_STATS effect
+  // pending ahead of a combat room makes the PROCEED into it pause
+  // (`dependency`) until the reconnect drain lands the effect server-side and the
+  // refreshed runway snapshots the boosted allies into combatStart.allies. The
+  // fight then starts against authoritative stats. Degrades offline continuity at
+  // the support→combat seam (an honest reconnect pause) rather than shipping a
+  // silent divergence.
+  encounter: [EXPLORE_EFFECTS.PARTY_STATS],
+  boss: [EXPLORE_EFFECTS.PARTY_STATS],
+  npcBattle: [EXPLORE_EFFECTS.PARTY_STATS],
   campfire: [EXPLORE_EFFECTS.INGREDIENTS, EXPLORE_EFFECTS.PARTY_STATS],
   dealer: [EXPLORE_EFFECTS.CREDITS],
   speedReviewRoom: [EXPLORE_EFFECTS.SRS],

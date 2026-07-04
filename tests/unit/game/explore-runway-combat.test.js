@@ -140,7 +140,11 @@ test('runway marks combat rooms offlineReady with combatStart + seedChain', asyn
   assert.deepEqual(combatRoom.acceptedActions, ['encounter.start', 'combat.cycle']);
 });
 
-test('runway combat dependencies drop to empty (pre-rolled combat pins them)', async () => {
+test('runway combat rooms carry a PARTY_STATS dependency (pre-roll pins enemies, not ally stats)', async () => {
+  // The prepared roll pins the ENEMIES (Task 8), but the ally-side stats still
+  // feed the hashed transcript, so a support-room PARTY_STATS effect queued ahead
+  // must pause the proceed into the fight (task-12f transcript_mismatch fix). The
+  // runway therefore stamps combat rooms with the partyStats dependency.
   const gm = makeGm([ROOM_TYPES.shrine, ROOM_TYPES.encounter, ROOM_TYPES.boss, ROOM_TYPES.npcBattle]);
   const runway = await buildExploreRunway(gm, {
     userId: 'runway-combat-user',
@@ -151,7 +155,7 @@ test('runway combat dependencies drop to empty (pre-rolled combat pins them)', a
   for (const type of [ROOM_TYPES.encounter, ROOM_TYPES.boss, ROOM_TYPES.npcBattle]) {
     const entry = runway.preparedRooms.find(r => r.room.type === type);
     assert.ok(entry, `${type} present`);
-    assert.deepEqual(entry.dependencies, [], `${type} dependencies empty`);
+    assert.deepEqual(entry.dependencies, ['partyStats'], `${type} depends on partyStats`);
     assert.deepEqual(entry.acceptedActions, [`${type === 'encounter' ? 'encounter' : type}.start`, 'combat.cycle']);
   }
 });

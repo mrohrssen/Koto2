@@ -11,6 +11,7 @@ import {
   EXPLORE_SYNC_DEBOUNCE_MS,
   EXPLORE_SYNC_RETRY_DELAYS_MS,
 } from '../../../public/js/ui/explore-session.js';
+import { roomDependenciesForType } from '../../../src/game/services/explore-session-contract.js';
 
 function makeManualScheduler() {
   const timers = [];
@@ -192,6 +193,52 @@ test('dependency pause keeps local room when unsynced effects intersect next dep
   assert.equal(pauses.length, 1);
   assert.equal(pauses[0].reason, 'dependency');
   assert.equal(pauses[0].pendingCount, 1);
+});
+
+test('shrine.choose pending pauses the proceed INTO a combat room (transcript_mismatch fix, task-12f)', () => {
+  // Regression for task-12e attempt B (transcript_mismatch seq 7). The runway
+  // now stamps combat rooms with their real ROOM_DEPENDENCIES, which include
+  // PARTY_STATS. A queued shrine.choose (predictedEffects: ['partyStats']) must
+  // therefore pause the proceed into an encounter room offline — the client must
+  // NOT build the fight against un-boosted allies. Uses roomDependenciesForType
+  // as the source of truth so this test tracks the contract, not a hardcoded tag.
+  const encounterDeps = roomDependenciesForType('encounter');
+  assert.ok(encounterDeps.includes('partyStats'), 'precondition: encounter rooms depend on partyStats');
+
+  const pauses = [];
+  const session = createExploreSession({
+    syncRequest: async () => okResponse(2),
+    onPause: detail => pauses.push(detail),
+  });
+  session.adoptRunway(makeRunway({
+    preparedRooms: [
+      preparedRoom(0, {
+        actionSeq: 3,
+        type: 'shrine',
+        acceptedActions: ['shrine.choose', 'proceed'],
+        actionEffects: {
+          'shrine.choose': ['partyStats'],
+          proceed: [],
+        },
+      }),
+      preparedRoom(1, {
+        actionSeq: 4,
+        type: 'encounter',
+        acceptedActions: ['encounter.start', 'combat.cycle'],
+        actionEffects: { 'encounter.start': [], 'combat.cycle': ['partyStats'] },
+        dependencies: encounterDeps,
+      }),
+    ],
+  }));
+
+  assert.equal(session.recordRoomAction('shrine.choose', { rewardType: 'level_up', creatureKey: 'hi' }).accepted, true);
+  const proceed = session.recordRoomAction('proceed');
+
+  assert.deepEqual(proceed, { accepted: false, reason: 'dependency', pendingCount: 1 });
+  assert.equal(session.isPaused(), true);
+  assert.equal(session.currentPreparedRoom().index, 0, 'stayed on the shrine room — never advanced into combat offline');
+  assert.deepEqual(session.snapshot().map(entry => entry.kind), ['shrine.choose']);
+  assert.equal(pauses[0].reason, 'dependency');
 });
 
 test('proceed predicted effects are included in dependency preflight without consuming seq', () => {
