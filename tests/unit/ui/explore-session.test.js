@@ -241,7 +241,17 @@ test('shrine.choose pending pauses the proceed INTO a combat room (transcript_mi
   assert.equal(pauses[0].reason, 'dependency');
 });
 
-test('proceed predicted effects are included in dependency preflight without consuming seq', () => {
+test('proceed with self-intersecting effects queues and pauses instead of rejecting', () => {
+  // A proceed whose OWN predicted effects (proceed → ['ingredients','areaProgress'])
+  // intersect the NEXT room's dependencies (campfire → ['ingredients','partyStats'])
+  // is a STATIC intersection: it holds before the entry is ever queued. Rejecting
+  // here deadlocks — the reject fires before the log ever contains the effect, so the
+  // drain can never land it and every retry re-trips the same static intersection
+  // (support→campfire "Connection is spotty" loop). The fix: QUEUE the proceed
+  // (its own effect can only land server-side once the entry syncs), advance the
+  // cursor, and pause('dependency') so the just-entered campfire's own actions
+  // (campfire.cook) are held until the proceed's ingredient award lands. The drain
+  // lifts the pause once the log empties (see the drain-resume test below).
   const pauses = [];
   const session = createExploreSession({
     syncRequest: async () => okResponse(1),
@@ -251,41 +261,101 @@ test('proceed predicted effects are included in dependency preflight without con
     preparedRooms: [
       preparedRoom(0, {
         actionSeq: 3,
-        acceptedActions: ['proceed'],
-        actionEffects: { proceed: ['ingredients'] },
+        type: 'whackAMole',
+        acceptedActions: ['whackAMole.complete', 'whackAMole.skip', 'proceed'],
+        actionEffects: {
+          'whackAMole.complete': ['credits'],
+          'whackAMole.skip': [],
+          proceed: ['ingredients', 'areaProgress'],
+        },
       }),
       preparedRoom(1, {
         actionSeq: 4,
-        acceptedActions: ['proceed'],
-        actionEffects: { proceed: [] },
-        dependencies: ['ingredients'],
+        type: 'campfire',
+        offlineReady: true,
+        acceptedActions: ['campfire.cook', 'campfire.feed', 'campfire.skip', 'proceed'],
+        actionEffects: {
+          'campfire.cook': ['ingredients'],
+          'campfire.feed': ['partyStats', 'ingredients'],
+          'campfire.skip': [],
+        },
+        dependencies: ['ingredients', 'partyStats'],
       }),
     ],
   }));
 
   const proceed = session.recordRoomAction('proceed');
 
-  assert.deepEqual(proceed, { accepted: false, reason: 'dependency', pendingCount: 0 });
-  assert.equal(session.pendingCount(), 0);
-  assert.equal(session.isPaused(), true);
-  assert.deepEqual(session.snapshot(), []);
+  assert.equal(proceed.accepted, true, 'the proceed is queued rather than rejected');
+  assert.equal(proceed.pendingCount, 1);
+  assert.equal(session.pendingCount(), 1);
+  assert.equal(session.isPaused(), true, 'pause holds the next room until the proceed syncs');
+
+  const [entry] = session.snapshot();
+  assert.equal(entry.kind, 'proceed');
+  assert.equal(entry.roomIndex, 0);
+  assert.deepEqual(entry.predictedEffects, ['ingredients', 'areaProgress']);
+  assert.equal(session.currentPreparedRoom().index, 1, 'cursor advanced into the campfire room');
+
   assert.equal(pauses.length, 1);
   assert.equal(pauses[0].reason, 'dependency');
-  assert.equal(pauses[0].pendingCount, 0);
+  assert.equal(pauses[0].pendingCount, 1);
 
+  // While paused, the campfire's own action is held (rejected with the pause reason).
+  const cook = session.recordRoomAction('campfire.cook', { recipeId: 'stew' });
+  assert.deepEqual(cook, { accepted: false, reason: 'dependency', pendingCount: 1 });
+});
+
+test('a self-intersecting proceed pause lifts after the drain lands it, then the next room accepts', async () => {
+  const scheduler = makeManualScheduler();
+  const resumes = [];
+  const session = createExploreSession({
+    syncRequest: async payload => okResponse(payload.entries.at(-1).seq),
+    onResume: detail => resumes.push(detail),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
   session.adoptRunway(makeRunway({
-    sessionEpoch: 'ese_2222222222222222',
     preparedRooms: [
       preparedRoom(0, {
         actionSeq: 3,
-        acceptedActions: ['friendlyNpc.choose'],
-        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+        type: 'whackAMole',
+        acceptedActions: ['whackAMole.complete', 'whackAMole.skip', 'proceed'],
+        actionEffects: {
+          'whackAMole.complete': ['credits'],
+          'whackAMole.skip': [],
+          proceed: ['ingredients', 'areaProgress'],
+        },
+      }),
+      preparedRoom(1, {
+        actionSeq: 4,
+        type: 'campfire',
+        offlineReady: true,
+        acceptedActions: ['campfire.cook', 'campfire.feed', 'campfire.skip', 'proceed'],
+        actionEffects: {
+          'campfire.cook': ['ingredients'],
+          'campfire.feed': ['partyStats', 'ingredients'],
+          'campfire.skip': [],
+        },
+        dependencies: ['ingredients', 'partyStats'],
       }),
     ],
   }));
-  const next = session.recordRoomAction('friendlyNpc.choose', { itemId: 'after-reject' });
-  assert.equal(next.accepted, true);
-  assertExploreActionId(next.entry.actionId, 1);
+
+  assert.equal(session.recordRoomAction('proceed').accepted, true);
+  assert.equal(session.isPaused(), true);
+
+  // The drain syncs the queued proceed; its ingredient award lands server-side and
+  // the log empties → the pause lifts.
+  await scheduler.fire();
+
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.isPaused(), false, 'the drain emptied the log and resumed the session');
+  assert.equal(resumes.length, 1);
+  assert.equal(resumes[0].reason, 'dependency');
+
+  const cook = session.recordRoomAction('campfire.cook', { recipeId: 'stew' });
+  assert.equal(cook.accepted, true, 'the campfire room accepts its action once the proceed has synced');
 });
 
 test('proceed rejects before logging when runway is exhausted', () => {

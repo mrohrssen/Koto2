@@ -304,6 +304,7 @@ export function createExploreSession({
     if (!isAcceptedAction(preparedRoom, kind)) return reject('actionNotAccepted');
 
     const nextRoom = kind === 'proceed' ? nextPreparedRoomAfter(preparedRoom) : null;
+    let pauseSelfEffectsAfterQueue = false;
     if (kind === 'proceed') {
       if (!nextRoom) {
         enterPause('runwayExhausted');
@@ -314,14 +315,29 @@ export function createExploreSession({
         return reject('nextRoomNotReady');
       }
       const nextDependencies = dependenciesFor(nextRoom);
-      const pendingEffects = effectsForAction(preparedRoom, kind);
-      if (
-        hasIntersectingEffect(log, nextDependencies)
-        || hasEffectIntersection(pendingEffects, nextDependencies)
-      ) {
+      // Two distinct dependency intersections, handled differently:
+      //
+      // 1. PRIOR-ENTRY: an already-queued earlier action (e.g. shrine.choose /
+      //    friendlyNpc.choose with a partyStats effect) whose effect feeds the next
+      //    room. REJECT before queuing — the drain empties the log, the effect lands
+      //    server-side, and the retried proceed passes. The reject is transient.
+      //
+      // 2. SELF-EFFECTS: the proceed's OWN predicted effects feed the next room
+      //    (proceed → ['ingredients'] × campfire deps ['ingredients','partyStats']).
+      //    This intersects STATICALLY, before the entry is ever queued, so a reject
+      //    can NEVER clear — the effect only lands if THIS entry syncs, but rejecting
+      //    means it's never queued, so every retry re-trips the same static
+      //    intersection (support→campfire deadlock, armed when proceed was granted to
+      //    support rooms). So QUEUE it and pause AFTER pushing: the drain lands the
+      //    effect and the pause holds the just-entered room's own actions until then.
+      if (hasIntersectingEffect(log, nextDependencies)) {
         enterPause('dependency');
         return reject('dependency');
       }
+      pauseSelfEffectsAfterQueue = hasEffectIntersection(
+        effectsForAction(preparedRoom, kind),
+        nextDependencies,
+      );
     }
 
     const entry = buildEntry(kind, payload, preparedRoom);
@@ -330,6 +346,11 @@ export function createExploreSession({
     if (kind === 'proceed') {
       localCurrentRoom = roomIndexFor(nextRoom);
     }
+
+    // Pause on a self-intersecting proceed's own effects (see above). Entering pause
+    // here first makes the hardCap enterPause below a no-op (enterPause early-returns
+    // while paused); the hardCap resume threshold still governs once this lifts.
+    if (pauseSelfEffectsAfterQueue) enterPause('dependency');
 
     if (log.length >= EXPLORE_SESSION_HARD_CAP) enterPause('hardCap');
     scheduleDrain(EXPLORE_SYNC_DEBOUNCE_MS);
