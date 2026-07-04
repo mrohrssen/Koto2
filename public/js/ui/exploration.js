@@ -1975,14 +1975,21 @@ export async function renderSkillMaster() {
   const run = gameState.run;
   const isInitialPick = run?.initialSkillPick && !run.initialSkillPick.chosenId;
   const room = isInitialPick ? null : (gameState.room || getActiveRoomFromRun(run));
-  const prepared = getExploreSession()?.currentPreparedRoom();
-  const payload = prepared?.interactionPayload;
   // Detect initial pick on the server side: phase is skillMaster but the
   // current room is NOT a skillMaster room (initialSkillPick is not sent
   // to the frontend, so we infer it).
   const isServerInitialPick = !isInitialPick
     && gameState.phase === 'skillMaster'
     && (!room || room.type !== 'skillMaster');
+  // The initial pick is not a room — the runway cursor points at room 0, so
+  // its prepared payload belongs to a different room type (a friendlyNpc
+  // payload's item `offered` would render as skills; a combat payload would
+  // dead-end "Failed to load offers."). Only consume the prepared payload
+  // when it belongs to an actual skillMaster room.
+  const prepared = getExploreSession()?.currentPreparedRoom();
+  const payload = (!isInitialPick && !isServerInitialPick && prepared?.room?.type === 'skillMaster')
+    ? prepared.interactionPayload
+    : null;
   const roomId = (isInitialPick || isServerInitialPick)
     ? 'initialSkillPick'
     : (room?.id || room?.type || 'unknown');

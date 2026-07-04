@@ -127,6 +127,11 @@ const {
   showTutorialNarration,
 } = await import('../../../public/js/ui/exploration.js');
 
+const {
+  configureExploreSession,
+  resetExploreSession,
+} = await import('../../../public/js/ui/explore-session.js');
+
 describe('renderSkillMaster tutorial Cid narration', () => {
   beforeEach(() => {
     sceneManagerState.currentScene = null;
@@ -633,5 +638,80 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     }
 
     assert.equal(proceedCalls, 1, 'empty NPC battle reward must auto-proceed, not dead-end');
+  });
+
+  // Regression (2026-07-04 dev bug reports): the run-entry initial skill pick
+  // fires the skillMaster PHASE while the explore runway's cursor points at
+  // room 0 — a different room type. renderSkillMaster consumed room 0's
+  // interactionPayload as if it were skill offers: a friendlyNpc room 0
+  // rendered its item ids as bare "skills" (tokei/kyoukasho/nooto), and a
+  // payload without an offered array (combat/whackAMole/campfire room 0)
+  // dead-ended on "Failed to load offers." with a Retry that never reached
+  // the network. The initial pick must always fetch real offers via the API.
+  it('fetches real offers for the initial pick even when room 0 has a prepared friendlyNpc payload', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    configureExploreSession({ syncRequest: async () => ({ results: [] }) });
+
+    let offersCalls = 0;
+    init({
+      getGameState: () => ({
+        phase: 'skillMaster',
+        meta: { tutorialStep: 1 },
+        run: {
+          stats: { startTime: 888 },
+          initialSkillPick: { chosenId: null },
+          creatureParty: { active: [] },
+          exploreRunway: {
+            sessionEpoch: 'epoch-initial-pick',
+            currentRoom: 0,
+            preparedRooms: [{
+              index: 0,
+              roomId: 'first-friendly',
+              actionSeq: 1,
+              room: { id: 'first-friendly', type: 'friendlyNpc' },
+              interactionPayload: {
+                kind: 'friendlyNpc',
+                npc: { id: 'ami' },
+                offered: [{ id: 'tokei' }, { id: 'kyoukasho' }, { id: 'nooto' }],
+              },
+              acceptedActions: ['friendlyNpc.choose', 'proceed'],
+            }],
+          },
+        },
+        room: { id: 'first-friendly', type: 'friendlyNpc' },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => {
+        offersCalls += 1;
+        return {
+          offered: [
+            { id: 'arcStrike', level: 1, name: 'Arc Strike', title: 'Arc Strike - Lvl. 1', desc: 'Your attacks arc to another enemy for 30% damage.' },
+            { id: 'guard', name: 'Guard', desc: 'Defend' },
+            { id: 'haste', name: 'Haste', desc: 'Speed up' },
+          ],
+        };
+      },
+    });
+
+    try {
+      await renderSkillMaster();
+    } finally {
+      globalThis.document = originalDocument;
+      resetExploreSession();
+    }
+
+    assert.equal(offersCalls, 1, "initial pick must fetch skill offers from the API, not consume room 0's prepared payload");
+    assert.equal(renderedChoices?.heading, 'Choose a skill');
+    assert.match(actionArea.innerHTML, /Arc Strike - Lvl\. 1/);
+    assert.doesNotMatch(actionArea.innerHTML, /tokei/);
   });
 });
