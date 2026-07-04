@@ -115,15 +115,26 @@ async function login(page) {
 }
 
 /**
- * Client game state. Prefer the in-page test seam window.__gameState when the
- * bundle exposes it; otherwise fall back to the authoritative server state so
- * the harness keeps working even before that seam is wired. (As of the baseline
- * run the seam is not present, so this resolves to server truth.)
+ * Client game state, read ONLY from the in-page test seam window.__gameState.
+ *
+ * CRITICAL: this must never fall back to GET /api/game/state mid-run. That route
+ * ROTATES the explore session epoch and rebuilds the runway server-side
+ * (src/routes/game/state.js) — so a stray /state read while the client has
+ * offline-queued session entries strands them under the old epoch, and their next
+ * drain is rejected as `session_epoch_mismatch` (a corrected sync — the gate's
+ * no-corrected-syncs invariant broken). The seam is always wired
+ * (public/game.js sets window.__gameState on every updateGameState), so retry it a
+ * few frames on a transient evaluate hiccup and return null rather than fetching.
+ * The final reconciliation calls serverState() explicitly, AFTER the loop, when a
+ * fresh epoch no longer matters.
  */
 async function gameState(page) {
-  const inPage = await page.evaluate(() => (window.__gameState ?? null)).catch(() => null);
-  if (inPage) return inPage;
-  return serverState(page).catch(() => null);
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const inPage = await page.evaluate(() => (window.__gameState ?? null)).catch(() => null);
+    if (inPage) return inPage;
+    await page.waitForTimeout(100);
+  }
+  return null;
 }
 
 /**
