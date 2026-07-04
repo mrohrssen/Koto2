@@ -163,19 +163,28 @@ function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
   const finished = finishSessionCombatFromResults(response);
   // Re-drive the phase after a fully-drained checkpoint (mirrors the correction
   // path's updateUI and KK's refreshKanjiKombatAction). Without this, a combat
-  // start that soft-paused offline — either startEncounter's pending-entries
-  // guard ("Combat will start when your progress syncs") or a partyStats
-  // dependency pause deferring the proceed into the fight — is stranded in
-  // `room_encounter`: the reconnect drain lands here and updates state, but
-  // updateGameState does NOT render, so updateGameContent's `case 'room_encounter'`
-  // never re-fires startEncounter and the fight never begins. Skip when the
-  // checkpoint already finished/advanced combat (finishSessionCombatFromResults
-  // owns that transition) and skip during a healthy active fight (the per-turn
-  // checkpoint stream must not re-render mid-combat). autoProceed/startEncounter
-  // are guarded against re-entry, so the re-drive is idempotent for room phases.
+  // start that soft-paused via startEncounter's pending-entries guard ("Combat
+  // will start when your progress syncs") is stranded in `room_encounter`: the
+  // reconnect drain lands here and updates state, but updateGameState does NOT
+  // render, so updateGameContent's `case 'room_encounter'` never re-fires
+  // startEncounter and the fight never begins.
+  //
+  // Guards — skip when:
+  //  • the checkpoint already finished/advanced combat (finishSessionCombatFromResults
+  //    owns that transition);
+  //  • a healthy fight is active (the per-turn checkpoint stream must not re-render
+  //    mid-combat);
+  //  • the SESSION IS PAUSED — a session enterPause (dependency / nextRoomNotReady /
+  //    runwayExhausted) resumes through onResume, which the drain fires AFTER this
+  //    checkpoint and AFTER adoptRunwayInternal. Re-driving here would run against
+  //    the not-yet-adopted (stale) runway AND set autoProceedInFlight, blocking the
+  //    resume's own autoProceed → the run stalls at the paused room (observed: a
+  //    friendlyNpc→combat partyStats pause never advanced past room 0). onResume
+  //    owns the paused re-drive; leave it to run post-adoption.
   const state = getGameState?.();
   const combatActive = state?.phase === 'combat' && state?.combat?.active !== false && !!state?.combat;
-  if (!finished && !combatActive) updateUI();
+  const sessionPaused = getExploreSession?.()?.isPaused?.() === true;
+  if (!finished && !combatActive && !sessionPaused) updateUI();
 }
 
 function onExploreSessionCorrection(response) {
