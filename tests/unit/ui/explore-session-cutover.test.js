@@ -462,6 +462,118 @@ describe('explore session proceed cutover', () => {
     assert.equal(getExploreSession().pendingCount(), 0, 'session should be flushed after the drain');
   });
 
+  // BLOCKER 1 (explore subway combat tier): a completed SUPPORT room advances OUT
+  // through the session, NOT the legacy /api/game/proceed. The server grants every
+  // support room `proceed` in its runway acceptedActions (Task 8 rider), so with a
+  // pending `shrine.choose` queued, recording `proceed` must append a second entry
+  // and advance the optimistic cursor — all with ZERO network. Offline the legacy
+  // apiProceed cannot run (it throws → bare soft pause → the room hangs forever,
+  // never retried on reconnect); routing through the session avoids that entirely.
+  // The queued pair's seq layout is asserted: the `proceed` carries the actionSeq
+  // of the room it LEAVES (the shrine's), stamped alongside the choose.
+  it('advances a completed support room through the session offline (queues [choose, proceed], no network)', async () => {
+    const supportRunway = {
+      sessionEpoch: 'ese_shrinesess111',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [
+        // REAL runway: the shrine accepts BOTH shrine.choose AND proceed.
+        preparedRoom(0, {
+          room: room(0, { type: 'shrine' }),
+          acceptedActions: ['shrine.choose', 'proceed'],
+          actionEffects: { 'shrine.choose': ['partyStats'], proceed: ['ingredients', 'areaProgress'] },
+          dependencies: ['partyStats'],
+        }),
+        // Next room is a plain combat encounter (deps []): no dependency-pause,
+        // offlineReady so the proceed queues rather than pausing.
+        preparedRoom(1, {
+          room: room(1, { type: 'encounter' }),
+          acceptedActions: ['encounter.start', 'combat.cycle'],
+          actionEffects: { 'encounter.start': [], 'combat.cycle': ['partyStats'] },
+          dependencies: [],
+          interactionPayload: { combatStart: {} },
+        }),
+      ],
+    };
+    let proceedCalls = 0;
+    let syncCalls = 0;
+    const harness = initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: supportRunway }),
+      apiProceed: async () => { proceedCalls += 1; throw new Error('OFFLINE: apiProceed must not run'); },
+      apiSyncExploreSession: async () => { syncCalls += 1; throw new Error('OFFLINE: sync must not run'); },
+    });
+
+    getExploreSession().adoptRunway(supportRunway);
+    const choose = getExploreSession().recordRoomAction('shrine.choose', { rewardType: 'heal_all', creatureKey: null });
+    assert.equal(choose.accepted, true, 'shrine.choose accepted by the prepared support room');
+
+    const result = await proceedWithRevealBuffer();
+
+    assert.equal(proceedCalls, 0, 'legacy apiProceed must NOT run — the support-room proceed routes through the session');
+    assert.equal(syncCalls, 0, 'no drain fires offline — the pair stays queued for the reconnect drain');
+    assert.equal(result?.status, 'queued', 'the proceed is queued locally, acknowledged instantly');
+    assert.equal(harness.currentState.run.currentRoom, 1, 'the optimistic cursor advanced to the next room');
+    // Seq layout: choose then proceed, BOTH stamped with the shrine room's actionSeq
+    // (the room being left). This is exactly what the server replays choose→proceed.
+    assert.deepEqual(
+      getExploreSession().snapshot().map(entry => ({ seq: entry.seq, kind: entry.kind, roomIndex: entry.roomIndex, actionSeq: entry.actionSeq })),
+      [
+        { seq: 1, kind: 'shrine.choose', roomIndex: 0, actionSeq: 100 },
+        { seq: 2, kind: 'proceed', roomIndex: 0, actionSeq: 100 },
+      ],
+      'queued pair is [shrine.choose@seq1, proceed@seq2], both carrying the shrine actionSeq (the room left)',
+    );
+  });
+
+  // BLOCKER 1 hang-prevention: when the room AFTER a completed support room is NOT
+  // offline-ready (combat pre-roll missing / support content uncached / beyond the
+  // reveal window), the OLD code fell to the legacy apiProceed — which offline
+  // throws → bare soft pause → the run hangs at the support room and is never
+  // retried. Routing through the session instead yields a RESUMABLE session pause
+  // (enterPause), whose onResume re-renders and re-attempts the advance once the
+  // reconnect drain refreshes the runway. The legacy apiProceed must never run.
+  it('does not fall to the hanging legacy proceed when the next room is not offline-ready (support room)', async () => {
+    const supportRunway = {
+      sessionEpoch: 'ese_shrinenotready',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [
+        preparedRoom(0, {
+          room: room(0, { type: 'shrine' }),
+          acceptedActions: ['shrine.choose', 'proceed'],
+          actionEffects: { 'shrine.choose': ['partyStats'], proceed: ['ingredients', 'areaProgress'] },
+          dependencies: ['partyStats'],
+        }),
+        // Next room's combat is NOT pre-rolled → offlineReady false.
+        preparedRoom(1, {
+          room: room(1, { type: 'encounter' }),
+          acceptedActions: ['encounter.start', 'combat.cycle'],
+          actionEffects: { 'encounter.start': [], 'combat.cycle': ['partyStats'] },
+          dependencies: [],
+          offlineReady: false,
+        }),
+      ],
+    };
+    let proceedCalls = 0;
+    const pauses = [];
+    initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: supportRunway }),
+      apiProceed: async () => { proceedCalls += 1; throw new Error('OFFLINE: apiProceed must not run'); },
+      apiSyncExploreSession: async () => { throw new Error('OFFLINE: sync must not run'); },
+    });
+
+    getExploreSession().adoptRunway(supportRunway);
+    getExploreSession().recordRoomAction('shrine.choose', { rewardType: 'heal_all', creatureKey: null });
+
+    const result = await proceedWithRevealBuffer();
+
+    assert.equal(proceedCalls, 0, 'the legacy (hanging) apiProceed must NOT run for a support room');
+    // The session rejected the proceed as not-ready and entered a resumable pause;
+    // the cursor stays on the shrine (no local advance) and no legacy call fired.
+    assert.equal(getExploreSession().isPaused(), true, 'a resumable session pause is entered (auto-resumes on reconnect drain)');
+    assert.equal(result, null, 'proceed returns null (paused), not a legacy hang');
+  });
+
   // Regression: O1 (explore subway rooms/combat tier). A combat room is NOT
   // `proceed`-capable in the runway, so advancing OUT of it (to the next room)
   // goes through the LEGACY /api/game/proceed, which rebuilds the runway for the

@@ -958,12 +958,20 @@ function isExploreRunwaySessionCapable(runway, run) {
   const currentRoom = run?.currentRoom;
   const currentPreparedRoom = preparedRoomForRunwayCursor(runway, currentRoom);
   if (!currentPreparedRoom) return false;
-  if (!Array.isArray(currentPreparedRoom.acceptedActions)
-    || !currentPreparedRoom.acceptedActions.includes('proceed')) {
-    return false;
-  }
-  const nextPreparedRoom = nextPreparedRoomAfterRunwayCursor(runway, currentRoom);
-  return Boolean(nextPreparedRoom) && nextPreparedRoom.offlineReady !== false;
+  // Only rooms whose runway grants `proceed` advance through the session — combat
+  // rooms (encounter/boss/npcBattle) do NOT, so they still take the legacy path.
+  // The server grants `proceed` to every SUPPORT room (Task 8 rider), so a
+  // completed support room reaches here and routes through the session.
+  //
+  // Readiness of the NEXT room is deliberately NOT gated here: the session's own
+  // `recordRoomAction('proceed')` owns those semantics — it queues the proceed
+  // when the next room is ready, or enters a RESUMABLE pause (nextRoomNotReady /
+  // dependency / runwayExhausted) that auto-resumes on the reconnect drain. Gating
+  // it here instead dropped support-room advances to the legacy apiProceed, which
+  // offline throws → a bare (un-retried) soft pause → the run hangs at the support
+  // room forever (Blocker 1, the "shrine soft-pause hang").
+  return Array.isArray(currentPreparedRoom.acceptedActions)
+    && currentPreparedRoom.acceptedActions.includes('proceed');
 }
 
 function alignExploreRunwayCursor(draft) {
