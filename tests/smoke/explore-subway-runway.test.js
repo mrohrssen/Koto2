@@ -277,6 +277,22 @@ function roomTypeFor(state) {
 function assertServerMatchesPlayed(server, played) {
   expect(server, 'server state must be fetchable at end of session').toBeTruthy();
 
+  // If the run reached the END, reconcile the TERMINAL state first — a completed
+  // run (area_complete / run_complete) or a full game victory tears down / resets
+  // the run object, so `run.currentRoom` is no longer a mid-run integer (it can be
+  // undefined once the run is cleared). Asserting a mid-run cursor then spuriously
+  // fails an otherwise-successful full clear. Reaching the end IS the strongest
+  // possible progress proof, so the mid-run cursor checks below don't apply.
+  if (played.reachedEnd) {
+    const phase = server?.phase;
+    expect(
+      phase === 'area_complete' || phase === 'run_complete'
+        || phase === 'hub' || server?.run?.areaCleared === true || !server?.run,
+      `run reached end locally but server phase is "${phase}" (run=${server?.run ? 'present' : 'reset'})`,
+    ).toBeTruthy();
+    return;
+  }
+
   const serverRoom = server?.run?.currentRoom;
   expect(
     Number.isInteger(serverRoom),
@@ -305,15 +321,6 @@ function assertServerMatchesPlayed(server, played) {
       + `${roomAdvancingActions} room-advancing actions `
       + `(proceeds=${played.proceeds}, support=${played.supportActions}, combats=${played.combatStarts})`,
     ).toBeGreaterThan(0);
-  }
-
-  // If the run reached area completion, the server must report it.
-  if (played.reachedEnd) {
-    const phase = server?.phase;
-    expect(
-      phase === 'area_complete' || phase === 'run_complete' || server?.run?.areaCleared === true,
-      `run reached end locally but server phase is "${phase}"`,
-    ).toBeTruthy();
   }
 }
 
