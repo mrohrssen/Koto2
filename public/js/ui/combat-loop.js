@@ -744,6 +744,23 @@ async function runSessionCreatureCombatTurn({
     return false;
   }
 
+  // Diagnostic (subway harness only — the driver sets window.__exploreCombatDiag):
+  // one compact line per predicted turn with the PRE-turn combat state the
+  // prediction ran against. Pairs with the server's transcript_mismatch diag to
+  // localize where client and server state forked.
+  if (typeof window !== 'undefined' && window.__exploreCombatDiag) {
+    const preState = getGameState();
+    console.log('[SessionCombat] turn queued', JSON.stringify({
+      actionType,
+      moveChoices,
+      predictedHash: optimistic.envelope?.predictedHash,
+      seed: optimistic.envelope?.seed,
+      enemyHps: (preState?.combat?.enemies || []).map(e => e?.hp),
+      allyHps: (preState?.combat?.allies || []).map(a => a?.hp),
+      pendingEnd: !!optimistic.localTranscript?.pendingCombatEnd,
+    }));
+  }
+
   const hasPendingCombatEnd = !!optimistic.localTranscript?.pendingCombatEnd;
   const requestStartedAt = performance.now();
   markCombatAnimationStart(turnTiming, requestStartedAt);
