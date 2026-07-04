@@ -642,32 +642,31 @@ test.describe('explore subway full session', () => {
       // wait for it to lift. Checked BEFORE narration dismissal because the pause
       // is itself rendered in the narration box — we must not click it away.
       //
-      // Gate on the narration box's ACTUAL visibility (.narration-box.visible),
-      // NOT raw body.innerText. narration-box hide()/forceHide() only remove the
-      // `.visible` class; they never clear the text node or set display:none, so
-      // the pause copy LINGERS in body.innerText after the box is visually hidden
-      // and the game has moved on (identical to the speed-review view's
-      // transform-hide caveat noted below). A resumed dependency pause
-      // (shrine/friendlyNpc → combat) that snaps straight into the next fight
-      // leaves that stale text behind; keying off innerText both false-triggers
-      // the pause branch AND makes the online "cleared" check un-satisfiable
-      // (the text never leaves innerText), a guaranteed >4s timeout on a run that
-      // actually recovered. `.visible` reflects the true paused state.
-      const pauseVisible = d.narrationVisible && d.bodyText.includes(PAUSE_COPY);
-      if (pauseVisible) {
-        if (offline) {
-          // Legitimate offline pause (e.g. a combat door / combat-start that isn't
-          // offline-startable yet). Wait for it to lift on reconnect.
-          await page.waitForTimeout(1000);
-          return 'paused';
-        }
-        // Online: the soft pause auto-dismisses after ~1800ms. A pause observed
-        // right after the online transition is a stale offline pause fading out —
-        // wait it out. Only a pause that PERSISTS while online is a real violation.
-        // Clear-check reads the visibility class, not innerText (see above): the
-        // pause is "cleared" once no VISIBLE narration box still shows the pause
-        // copy. A different narration re-adding .visible does not count as the
-        // pause persisting.
+      // OFFLINE vs ONLINE use DIFFERENT signals, because the soft-pause narration
+      // auto-dismisses (~1800ms) while the underlying pause persists for the whole
+      // outage, AND narration-box hide()/forceHide() only remove the `.visible`
+      // class — they never clear the text node — so the pause copy LINGERS in
+      // body.innerText after the box is hidden (same transform-hide caveat the
+      // speed-review view has, noted below).
+      //   • OFFLINE: hold whenever the pause copy is present at all (incl. the
+      //     auto-dismissed lingering text). A combat start that can't run offline
+      //     (startEncounter's pending guard, or a partyStats dependency pause)
+      //     shows the copy once, then auto-dismisses mid-outage; the game is still
+      //     legitimately paused, so the driver must keep holding for reconnect —
+      //     not spin because the box stopped being `.visible`.
+      //   • ONLINE: only a still-VISIBLE pause is a violation. Keying the online
+      //     check off innerText would (a) false-trigger on lingering stale text
+      //     after a resumed pause snapped into the next fight and (b) make the
+      //     "cleared" wait un-satisfiable (the text never leaves innerText) — a
+      //     guaranteed >4s timeout on a run that actually recovered. `.visible`
+      //     reflects the true paused state.
+      const pauseTextPresent = d.bodyText.includes(PAUSE_COPY);
+      if (pauseTextPresent && offline) {
+        await page.waitForTimeout(1000);
+        return 'paused';
+      }
+      if (d.narrationVisible && pauseTextPresent) {
+        // Online: wait for the VISIBLE pause to clear; a persisting one is a bug.
         const cleared = await page
           .waitForFunction(
             () => {
