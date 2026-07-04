@@ -742,18 +742,6 @@ export class CombatCycleService {
     this._applyVictoryLearnsetBackfill(committed);
     advanceTurnSeeds(optimistic, { target: PVE_TURN_SEED_CHAIN_TARGET });
     if (!hashMatches) {
-      // Diagnostic (stderr): the client predicted a DIFFERENT transcript for this
-      // seed than the server recomputed — a prediction-parity divergence. Log the
-      // server's full transcript + the entry inputs so the client's predicted
-      // transcript can be reconstructed offline (the predictedHash pins it).
-      console.warn('[ExploreSync] transcript_mismatch diag', JSON.stringify({
-        predictedHash,
-        serverHash,
-        actionType: resolvedActionType,
-        moveChoices,
-        seed,
-        serverTranscript: resolved.transcript,
-      }));
       // Grade already landed — confirm the seq, then stop the batch (KK pattern).
       const error = new Error('transcript_mismatch');
       error.committed = committed;

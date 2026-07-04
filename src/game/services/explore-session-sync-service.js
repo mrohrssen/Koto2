@@ -266,17 +266,6 @@ export class ExploreSessionSyncService {
         // seq and remember a corrected ledger entry — a re-POST of this actionId
         // replays from the ledger instead of re-committing — then stop the batch so
         // the client snaps to authoritative state. Mirrors the KK sync loop.
-        // Diagnostic (stderr): a replay divergence is always worth a trace — which
-        // entry, in which room, on which actionSeq. Pairs with the transcript diag
-        // in replayCombatCycleEntry (combat-cycle-service.js).
-        console.warn('[ExploreSync] entry replay corrected', JSON.stringify({
-          reason: error?.message || 'explore_entry_failed',
-          seq: entry?.seq ?? null,
-          kind: entry?.kind ?? null,
-          roomIndex: entry?.roomIndex ?? null,
-          actionSeq: entry?.actionSeq ?? null,
-          committed: !!error?.committed,
-        }));
         if (error?.committed) {
           confirmedThroughSeq = entry?.seq ?? confirmedThroughSeq;
           if (validActionId) {
