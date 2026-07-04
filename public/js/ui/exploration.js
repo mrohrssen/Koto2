@@ -74,6 +74,8 @@ let startEncounter = null;
 let startNewRun = null;
 let returnToHub = null;
 let showAdventureReport = null;
+let finishCombatLoop = null;
+let resumeSessionCombatBefriendQuiz = null;
 let exploreSessionOnlineDrainTarget = null;
 let exploreSessionVisibilityDrainTarget = null;
 
@@ -120,13 +122,69 @@ function applyExploreSessionRunway(response) {
   state.run.exploreRunway = runway;
 }
 
+// Scan a checkpoint's committed results for a combat.cycle turn that ended the
+// fight, and hand it to the combat-loop finish path (the same one a live victory/
+// defeat uses). The replayed combat.cycle result IS the committed
+// creatureCombatCycle result (combatEnded/victory/rewards ride along) plus seq/
+// actionId, so finishCombatLoop consumes it directly. Skips ledger-replayed
+// results (replayed === true) — those were already resolved on the original POST.
+function finishSessionCombatFromResults(response) {
+  if (typeof finishCombatLoop !== 'function') return false;
+  const results = Array.isArray(response?.results) ? response.results : [];
+
+  // The client optimistically predicts a plain terminal victory (pendingCombatEnd
+  // shell). The server may divert that terminal turn to a befriend quiz on replay
+  // (25% roll, server-only). Such a result carries befriendQuizTriggered but NOT
+  // combatEnded, so it would never match the finish scan below — the client would
+  // freeze on the victory shell. Reconcile it first: resume combat into the
+  // Fight/Talk befriend quiz from the authoritative state.
+  const befriendResult = results.findLast?.(r => r?.befriendQuizTriggered && !r.replayed)
+    || results.slice().reverse().find(r => r?.befriendQuizTriggered && !r.replayed);
+  if (befriendResult && typeof resumeSessionCombatBefriendQuiz === 'function') {
+    void resumeSessionCombatBefriendQuiz({ ...befriendResult, state: response.state });
+    return true;
+  }
+
+  const finalResult = results.findLast?.(r => r?.combatEnded === true && !r.replayed)
+    || results.slice().reverse().find(r => r?.combatEnded === true && !r.replayed);
+  if (!finalResult) return false;
+  finishCombatLoop({ ...finalResult, state: response.state });
+  return true;
+}
+
 function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
   if (logEmpty === false) {
     applyExploreSessionRunway(response);
+    finishSessionCombatFromResults(response);
     return;
   }
   if (response?.state) updateGameState(response.state);
   applyExploreSessionRunway(response);
+  const finished = finishSessionCombatFromResults(response);
+  // Re-drive the phase after a fully-drained checkpoint (mirrors the correction
+  // path's updateUI and KK's refreshKanjiKombatAction). Without this, a combat
+  // start that soft-paused via startEncounter's pending-entries guard ("Combat
+  // will start when your progress syncs") is stranded in `room_encounter`: the
+  // reconnect drain lands here and updates state, but updateGameState does NOT
+  // render, so updateGameContent's `case 'room_encounter'` never re-fires
+  // startEncounter and the fight never begins.
+  //
+  // Guards — skip when:
+  //  • the checkpoint already finished/advanced combat (finishSessionCombatFromResults
+  //    owns that transition);
+  //  • a healthy fight is active (the per-turn checkpoint stream must not re-render
+  //    mid-combat);
+  //  • the SESSION IS PAUSED — a session enterPause (dependency / nextRoomNotReady /
+  //    runwayExhausted) resumes through onResume, which the drain fires AFTER this
+  //    checkpoint and AFTER adoptRunwayInternal. Re-driving here would run against
+  //    the not-yet-adopted (stale) runway AND set autoProceedInFlight, blocking the
+  //    resume's own autoProceed → the run stalls at the paused room (observed: a
+  //    friendlyNpc→combat partyStats pause never advanced past room 0). onResume
+  //    owns the paused re-drive; leave it to run post-adoption.
+  const state = getGameState?.();
+  const combatActive = state?.phase === 'combat' && state?.combat?.active !== false && !!state?.combat;
+  const sessionPaused = getExploreSession?.()?.isPaused?.() === true;
+  if (!finished && !combatActive && !sessionPaused) updateUI();
 }
 
 function onExploreSessionCorrection(response) {
@@ -361,6 +419,8 @@ export function init(callbacks) {
   startEncounter = callbacks.startEncounter;
   startNewRun = callbacks.startNewRun;
   returnToHub = callbacks.returnToHub;
+  finishCombatLoop = callbacks.finishCombatLoop;
+  resumeSessionCombatBefriendQuiz = callbacks.resumeSessionCombatBefriendQuiz;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;
   apiSelectArea = callbacks.apiSelectArea;
   apiReturnToHub = callbacks.apiReturnToHub;
@@ -922,12 +982,20 @@ function isExploreRunwaySessionCapable(runway, run) {
   const currentRoom = run?.currentRoom;
   const currentPreparedRoom = preparedRoomForRunwayCursor(runway, currentRoom);
   if (!currentPreparedRoom) return false;
-  if (!Array.isArray(currentPreparedRoom.acceptedActions)
-    || !currentPreparedRoom.acceptedActions.includes('proceed')) {
-    return false;
-  }
-  const nextPreparedRoom = nextPreparedRoomAfterRunwayCursor(runway, currentRoom);
-  return Boolean(nextPreparedRoom) && nextPreparedRoom.offlineReady !== false;
+  // Only rooms whose runway grants `proceed` advance through the session — combat
+  // rooms (encounter/boss/npcBattle) do NOT, so they still take the legacy path.
+  // The server grants `proceed` to every SUPPORT room (Task 8 rider), so a
+  // completed support room reaches here and routes through the session.
+  //
+  // Readiness of the NEXT room is deliberately NOT gated here: the session's own
+  // `recordRoomAction('proceed')` owns those semantics — it queues the proceed
+  // when the next room is ready, or enters a RESUMABLE pause (nextRoomNotReady /
+  // dependency / runwayExhausted) that auto-resumes on the reconnect drain. Gating
+  // it here instead dropped support-room advances to the legacy apiProceed, which
+  // offline throws → a bare (un-retried) soft pause → the run hangs at the support
+  // room forever (Blocker 1, the "shrine soft-pause hang").
+  return Array.isArray(currentPreparedRoom.acceptedActions)
+    && currentPreparedRoom.acceptedActions.includes('proceed');
 }
 
 function alignExploreRunwayCursor(draft) {
@@ -1011,6 +1079,13 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
       const result = await apiProceed();
       if (!result?.state) return result || null;
       updateGameState(result.state);
+      // The legacy proceed rebuilds the runway for the NEW room (currentRoom
+      // bumped, epoch preserved). Adopt it into the live session BEFORE updateUI
+      // so the session cursor advances — otherwise the next room's combat records
+      // `encounter.start` with the stale roomIndex and the sync rejects it as
+      // room_index_mismatch (a corrected sync). Combat rooms are not
+      // session-proceed-capable, so this legacy branch is the only cursor update.
+      session?.adoptRunway(result.state.run?.exploreRunway || null);
       clearActionArea();
       const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
       await playRoomTransition(result.state, { ingredientDrops });
@@ -1029,6 +1104,9 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);
+    // Adopt the refreshed runway so the session cursor tracks the advanced room
+    // before updateUI (mirrors the primary legacy-proceed branch above).
+    session?.adoptRunway(result.state.run?.exploreRunway || null);
     clearActionArea();
     await playRoomTransition(result.state, {
       ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],

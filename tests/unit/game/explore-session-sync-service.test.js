@@ -5,6 +5,7 @@ import { createNewRun } from '../../../src/game/state.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { ExploreSessionSyncService } from '../../../src/game/services/explore-session-sync-service.js';
+import createGameStateRoutes from '../../../src/routes/game/state.js';
 
 const AREA_ID = 'hajimari-no-hiroba';
 const LIVE_EPOCH = 'ese_1111111111111111';
@@ -188,6 +189,90 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(result.results[1].roomNumber, 2);
     assert.equal(result.state.run.currentRoom, 1);
     assert.equal(result.exploreRunway.roomActionSeq, 1);
+  });
+
+  // RIDER (Task 8): support rooms proceed through the session log. Server-side
+  // proceed validation must match the legacy route: a choose→proceed pair for a
+  // completed support room succeeds in order; an uncompleted-support-room proceed
+  // fails validation (skillMaster is the support room with a completion gate).
+  it('applies a skillMaster choose→proceed pair through the session log in order', async () => {
+    const gm = makeGm([ROOM_TYPES.skillMaster, ROOM_TYPES.friendlyNpc]);
+    gm.run.roomActionSeq = 0;
+    gm.run.rooms[0].skillMaster = {
+      offered: [{ id: 'counterMaster', level: 1 }],
+      chosenId: null,
+      completed: false,
+    };
+    const room = gm.run.rooms[0];
+    // Stand in for the real choose so the test targets proceed validation, not
+    // party-skill mechanics: mark the room completed exactly as the real path does.
+    gm.explorationService.applySkillMasterChoose = () => {
+      room.skillMaster.completed = true;
+      room.skillMaster.chosenId = 'counterMaster';
+      room.interacted = true;
+      return { ok: true, chosenId: 'counterMaster' };
+    };
+    const service = new ExploreSessionSyncService(gm);
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 1,
+          actionId: 'run_es_00005001',
+          kind: 'skillMaster.choose',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+          payload: { skillId: 'counterMaster' },
+        }),
+        makeEntry(gm, {
+          seq: 2,
+          actionId: 'run_es_00005002',
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'ok');
+    assert.equal(result.confirmedThroughSeq, 2);
+    assert.equal(room.skillMaster.completed, true);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 1);
+  });
+
+  it('rejects a proceed for an uncompleted skillMaster support room', async () => {
+    const gm = makeGm([ROOM_TYPES.skillMaster, ROOM_TYPES.friendlyNpc]);
+    gm.run.roomActionSeq = 0;
+    gm.run.rooms[0].skillMaster = {
+      offered: [{ id: 'counterMaster', level: 1 }],
+      chosenId: null,
+      completed: false,
+    };
+    const service = new ExploreSessionSyncService(gm);
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 1,
+          actionId: 'run_es_00005003',
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: gm.run.rooms[0].id,
+          actionSeq: 0,
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.match(result.reason, /Skill Master/);
+    assert.equal(result.rejectedSeq, 1);
+    assert.equal(gm.run.currentRoom, 0);
+    assert.equal(gm.run.roomActionSeq, 0);
   });
 
   it('replays an exact duplicate actionId without rerunning the performer', async () => {
@@ -583,6 +668,52 @@ describe('ExploreSessionSyncService', () => {
     });
   });
 
+  it('replays a whackAMole.skip → proceed pair for the same room in order', async () => {
+    // A skip-type completion marks the room interacted; the paired proceed must
+    // then advance in the same batch (skip ordering: complete-then-proceed).
+    const gm = makeGm([ROOM_TYPES.whackAMole, ROOM_TYPES.friendlyNpc]);
+    gm.run.roomActionSeq = 0;
+    gm.run.rooms[0].whackAMole = { score: 0, completed: false };
+    const room = gm.run.rooms[0];
+    let skipCalls = 0;
+    gm.explorationService.applyWhackAMoleSkip = () => {
+      skipCalls += 1;
+      room.whackAMole.completed = true;
+      room.interacted = true;
+      return { skipped: true };
+    };
+    const service = new ExploreSessionSyncService(gm);
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 1,
+          actionId: 'run_es_00006001',
+          kind: 'whackAMole.skip',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+        }),
+        makeEntry(gm, {
+          seq: 2,
+          actionId: 'run_es_00006002',
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'ok');
+    assert.equal(result.confirmedThroughSeq, 2);
+    assert.equal(skipCalls, 1);
+    assert.equal(room.interacted, true);
+    assert.equal(gm.run.currentRoom, 1);
+    assert.equal(gm.run.roomActionSeq, 1);
+  });
+
   it('whackAMole.complete replay advances to the next canonical room once', async () => {
     const gm = makeGm([ROOM_TYPES.whackAMole, ROOM_TYPES.friendlyNpc]);
     gm.run.roomActionSeq = 5;
@@ -827,5 +958,116 @@ describe('ExploreSessionSyncService', () => {
       assert.equal(replay.results[0].replayed, true, testCase.kind);
       assert.equal(calls, 1, testCase.kind);
     }
+  });
+
+  // ---- The 12d drain→rotate→adopt race, sequenced at the service level ----
+  //
+  // Epoch contract: explore session epochs mark RELOAD boundaries only.
+  // GET /state rotates the epoch ONLY on a bare fetch; an in-session fetch
+  // (adoptSession=1 — combat-victory reload, recovery refresh) PRESERVES it.
+  // These two tests drive the REAL /state route handler against the same
+  // gameManager the sync service replays into, reproducing the exact sequence
+  // from the task-12d report: entries recorded under the live epoch, a mid-run
+  // state fetch, then the drain.
+
+  function getStateRouteHandler() {
+    const router = createGameStateRoutes();
+    for (const layer of router.stack) {
+      if (layer.route && layer.route.path === '/state') {
+        const routeLayer = layer.route.stack.find(s => s.method === 'get');
+        if (routeLayer) return routeLayer.handle;
+      }
+    }
+    throw new Error('GET /state handler not found');
+  }
+
+  function makeQueuedEntries(gm) {
+    const room = gm.run.rooms[0];
+    return [
+      makeEntry(gm, {
+        seq: 1,
+        actionId: 'run_es_race00001',
+        kind: 'friendlyNpc.choose',
+        roomIndex: 0,
+        roomId: room.id,
+        actionSeq: 0,
+        payload: { itemId: TEST_EQUIPMENT.id, targetCreatureIndex: 0 },
+      }),
+      makeEntry(gm, {
+        seq: 2,
+        actionId: 'run_es_race00002',
+        kind: 'proceed',
+        roomIndex: 0,
+        roomId: room.id,
+        actionSeq: 0,
+      }),
+    ];
+  }
+
+  async function fetchStateViaRoute(gm, query) {
+    const handler = getStateRouteHandler();
+    const req = {
+      query,
+      user: { id: 'race-user' },
+      gameManager: gm,
+      saveGame: () => {},
+      getEnrichedGameState: () => gm.getState(),
+    };
+    const res = {
+      statusCode: 200,
+      body: null,
+      status(code) { this.statusCode = code; return this; },
+      json(data) { this.body = data; return this; },
+    };
+    await handler(req, res);
+    assert.equal(res.statusCode, 200);
+    return res;
+  }
+
+  it('12d race sequence: queued entries survive an in-session (adoptSession) /state fetch and commit under the preserved epoch', async () => {
+    const gm = makeGm();
+    // 1. Entries recorded client-side under the live epoch (offline queue).
+    const entries = makeQueuedEntries(gm);
+
+    // 2. A mid-run IN-SESSION state fetch fires before the drain lands (the
+    //    combat-victory modal reload / recovery refresh) — adoptSession=1.
+    await fetchStateViaRoute(gm, { adoptSession: '1' });
+    assert.equal(
+      gm.run.exploreSessionEpoch,
+      LIVE_EPOCH,
+      'an in-session /state fetch must PRESERVE the explore session epoch',
+    );
+
+    // 3. The drain: the queued entries sync under the SAME epoch and commit.
+    const service = new ExploreSessionSyncService(gm);
+    const result = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries });
+
+    assert.equal(result.status, 'ok', 'the drain must commit — not a corrected sync');
+    assert.equal(result.confirmedThroughSeq, 2);
+    assert.equal(gm.run.currentRoom, 1, 'the queued proceed advanced the room');
+    assert.equal(gm.run.runSummary.itemsCollected, 1, 'the queued choose applied');
+  });
+
+  it('12d race counterfactual: a bare /state fetch (reload boundary) rotates the epoch and the stale drain is corrected', async () => {
+    const gm = makeGm();
+    const entries = makeQueuedEntries(gm);
+
+    // A BARE fetch is a boot/reload — it rotates BY DESIGN (the reload loses
+    // the unsynced log). This pins the reload-boundary side of the contract and
+    // documents the exact pre-fix race signature from the 12d report.
+    await fetchStateViaRoute(gm, {});
+    assert.notEqual(
+      gm.run.exploreSessionEpoch,
+      LIVE_EPOCH,
+      'a bare (reload) /state fetch must rotate the explore session epoch',
+    );
+
+    const service = new ExploreSessionSyncService(gm);
+    const result = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'session_epoch_mismatch');
+    assert.equal(result.rejectedSeq, 1);
+    assert.equal(gm.run.currentRoom, 0, 'nothing committed from the stale-epoch batch');
   });
 });

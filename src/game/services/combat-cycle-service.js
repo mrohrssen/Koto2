@@ -47,6 +47,7 @@ import {
 } from '../../shared/combat/pve-turn-resolver.js';
 import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
 import { applyKillXpToParty } from '../../shared/combat/kanji-kombat-xp.js';
+import { backfillPartyLearnset } from '../../shared/combat/learnset-backfill.js';
 import { hasUnsafeSharedPveOptimisticPrediction } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
@@ -88,6 +89,7 @@ import { selectBark } from '../dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
 import { selectBestFrame } from '../token-format.js';
 import { applyDebugSuperAttack } from '../debug-super-attack.js';
+import { ensureTurnSeeds, advanceTurnSeeds, PVE_TURN_SEED_CHAIN_TARGET } from './combat-seed-chain.js';
 
 function createServerSeed() {
   return randomBytes(16).toString('hex');
@@ -231,18 +233,32 @@ export class CombatCycleService {
    * Start a creature encounter
    * Generates an enemy creature and sets up combat state
    */
-  startCreatureEncounter() {
-    if (!this.gm.run || !this.gm.run.active) {
-      throw new Error('No active run');
-    }
-    if (this.gm.combat?.active) {
-      throw new Error('Combat already active');
-    }
-
-    // Check if current room is a boss room or npcBattle room
-    const currentRoom = this.gm.run.rooms?.[this.gm.run.currentRoom];
-    const isBoss = currentRoom?.type === 'boss' && !!currentRoom?.boss?.creatureId;
-    const isNpcBattle = currentRoom?.type === 'npcBattle';
+  /**
+   * Roll the enemy creatures for a combat room (encounter / boss / npcBattle).
+   *
+   * Extracted so prepareCombatStart() and startCreatureEncounter() share ONE
+   * roll implementation — the enemies returned here are the concrete, already-
+   * rolled objects (element/species/level jitter is baked in), so a prepared
+   * roll and a start roll for the SAME room produce the SAME enemies only by
+   * reusing this method's OUTPUT (that is what preparedCombat.enemies stores),
+   * not by re-invoking it.
+   *
+   * Roll parameters are derived from the passed `room` plus current run state
+   * (highestLevel, stage, encounterIndex, totalEncounters, isStarterOnly,
+   * isFirstBattle). The Starting-Meadow tutorial branches (forced-cat encounter,
+   * fixed Hinoneko boss level, intro) read `run.currentRoom` directly; they only
+   * fire on the CURRENT tutorial room (index 0 forced-cat, or the boss room),
+   * which is always the current room when it is prepared (nothing precedes it to
+   * pre-roll ahead), so keying on live run state stays consistent between
+   * prepare and start for those rooms.
+   *
+   * @param {Object} room - the combat room to roll for (run.rooms[i])
+   * @returns {{ enemies: Array, isBoss: boolean, isNpcBattle: boolean }}
+   * @private
+   */
+  _rollEncounterEnemies(room) {
+    const isBoss = room?.type === 'boss' && !!room?.boss?.creatureId;
+    const isNpcBattle = room?.type === 'npcBattle';
 
     const highestLevel = Math.max(...this.gm.run.creatureParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.gm.run.currentAreaEncounters || 0) === 0;
@@ -253,22 +269,22 @@ export class CombatCycleService {
     const isStartingMeadow = this.gm.run.currentArea?.id === 'hajimari-no-hiroba';
     const adjustStartingMeadowLevel = level => isStartingMeadow ? Math.max(1, level - 2) : level;
 
-    let enemyCreatures;
+    let enemies;
     if (isBoss) {
       // Boss: solo creature, level × 1.25, double HP. Tutorial Hinoneko keeps its fixed level.
       const isStartingMeadowHinoneko = isStartingMeadowHinonekoBoss(this.gm.run);
       const bossLevel = isStartingMeadowHinoneko
         ? adjustStartingMeadowLevel(7)
         : adjustStartingMeadowLevel(Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25));
-      const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
+      const bossCreature = generateEnemyCreature(bossLevel, [room.boss.creatureId], stage);
       bossCreature.maxHp *= 2;
       bossCreature.hp = bossCreature.maxHp;
-      enemyCreatures = [bossCreature];
+      enemies = [bossCreature];
     } else if (isNpcBattle) {
       // NPC Battle: always 3 enemies at level × 1.1
       const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3 });
       const npcBattleLevel = adjustStartingMeadowLevel(Math.round(baseLevel * 1.1));
-      enemyCreatures = [
+      enemies = [
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
         generateEnemyCreature(npcBattleLevel, creaturePool, stage)
@@ -278,7 +294,7 @@ export class CombatCycleService {
       const totalCreatures = this.gm.run.creatureParty.active.length + (this.gm.run.creatureParty.reserves?.length || 0);
       const isStarterOnly = totalCreatures <= 1;
       if (shouldForceStartingMeadowCatEncounter(this.gm.meta, this.gm.run)) {
-        enemyCreatures = generateEnemyCreatures(highestLevel, {
+        enemies = generateEnemyCreatures(highestLevel, {
           maxEnemies: 1,
           creaturePool: ['neko'],
           stage,
@@ -287,7 +303,7 @@ export class CombatCycleService {
           levelOffset: isStartingMeadow ? -2 : 0
         });
       } else {
-        enemyCreatures = generateEnemyCreatures(highestLevel, {
+        enemies = generateEnemyCreatures(highestLevel, {
           maxEnemies: isStarterOnly ? 1 : (isFirstBattle ? 2 : undefined),
           creaturePool,
           stage,
@@ -296,6 +312,100 @@ export class CombatCycleService {
           levelOffset: isStartingMeadow ? -2 : 0
         });
       }
+    }
+
+    return { enemies, isBoss, isNpcBattle };
+  }
+
+  /**
+   * Pick an NPC from the current area's roster for an npcBattle room.
+   * Extracted so prepare and start share one pick. Returns the npcData shape
+   * (or null when no roster is available).
+   * @returns {?{id:string,name:string,nameEn:string,greeting:*,speakerId:*}}
+   * @private
+   */
+  _rollNpcForBattle() {
+    const areaId = this.gm.run.currentArea?.id || null;
+    const allNpcs = loadNpcs();
+    const areaEntries = Object.values(allNpcs).filter(npc => !areaId || npc.area === areaId || !npc.area);
+    const fallbackEntries = areaEntries.length > 0 ? areaEntries : Object.values(allNpcs);
+    if (fallbackEntries.length === 0) return null;
+    const npc = fallbackEntries[Math.floor(Math.random() * fallbackEntries.length)];
+    return {
+      id: npc.id, name: npc.name, nameEn: npc.nameEn,
+      greeting: npc.greeting, speakerId: npc.speakerId
+    };
+  }
+
+  /**
+   * Pre-roll a combat room's start so it can be delivered in the explore runway
+   * and started offline. Idempotent per room: the rolled enemies, NPC pick,
+   * combatId and pre-committed turn-seed chain are persisted on
+   * `room.preparedCombat` and returned unchanged on repeat calls (so
+   * responseContext rebuilds after replay reuse the prepared roll instead of
+   * re-rolling). startCreatureEncounter() consumes and clears it (single-use).
+   *
+   * Trade-off (spec-accepted, same class as Kanji Kombat's pre-rolled wave):
+   * enemy stat blocks for runway combat rooms are exposed to the client up to
+   * EXPLORE_RUNWAY_AHEAD (5) rooms early. Rewards/XP remain server-owned and are
+   * only granted when the combat actually resolves.
+   *
+   * @param {Object} room - the combat room to prepare (run.rooms[i])
+   * @returns {Object} the persisted preparedCombat payload
+   */
+  prepareCombatStart(room) {
+    if (!room) return null;
+    if (room.preparedCombat) return room.preparedCombat;
+
+    const { enemies, isBoss, isNpcBattle } = this._rollEncounterEnemies(room);
+    const npcData = isNpcBattle ? this._rollNpcForBattle() : null;
+
+    // Pre-commit the per-turn seed chain the online loop will replay against.
+    // Build it on a throwaway optimistic shell; startCreatureEncounter adopts it.
+    const seedShell = { optimistic: { nextTurnSeed: createServerSeed(), stateVersion: 0 } };
+    const turnSeeds = ensureTurnSeeds(seedShell, { target: PVE_TURN_SEED_CHAIN_TARGET });
+
+    room.preparedCombat = {
+      combatId: createCombatId(),
+      enemies,
+      npcId: npcData?.id || null,
+      npcData: npcData || null,
+      turnSeeds,
+      isBoss,
+      isNpcBattle,
+    };
+    return room.preparedCombat;
+  }
+
+  startCreatureEncounter() {
+    if (!this.gm.run || !this.gm.run.active) {
+      throw new Error('No active run');
+    }
+    if (this.gm.combat?.active) {
+      throw new Error('Combat already active');
+    }
+
+    const currentRoom = this.gm.run.rooms?.[this.gm.run.currentRoom];
+    const prepared = currentRoom?.preparedCombat || null;
+
+    let enemyCreatures;
+    let isBoss;
+    let isNpcBattle;
+    let npcDataFromPrepared = null;
+    if (prepared) {
+      // Consume the runway-prepared roll (single-use): reuse its enemies, NPC,
+      // combatId and pre-committed seed chain so the online start matches the
+      // payload the client already has. A level-up between prepare and start
+      // does not re-roll — the prepared roll pins the enemy level (spec-accepted).
+      enemyCreatures = prepared.enemies;
+      isBoss = prepared.isBoss;
+      isNpcBattle = prepared.isNpcBattle;
+      npcDataFromPrepared = prepared.npcData || null;
+    } else {
+      const rolled = this._rollEncounterEnemies(currentRoom);
+      enemyCreatures = rolled.enemies;
+      isBoss = rolled.isBoss;
+      isNpcBattle = rolled.isNpcBattle;
     }
 
     this.gm.combat = createCombatState(enemyCreatures[0]);
@@ -310,12 +420,23 @@ export class CombatCycleService {
     this.gm.combat.openingResolved = false;
     this.gm.combat.isCreatureCombat = true;
     this.gm.combat.isBoss = isBoss;
-    this.gm.combat.optimistic = {
-      combatId: createCombatId(),
-      stateVersion: 0,
-      nextTurnSeed: createServerSeed(),
-      acceptedActionIds: {},
-    };
+    if (prepared) {
+      // Adopt the pre-committed chain; head is the seed the client predicted with.
+      this.gm.combat.optimistic = {
+        combatId: prepared.combatId,
+        stateVersion: 0,
+        nextTurnSeed: prepared.turnSeeds[0],
+        turnSeeds: [...prepared.turnSeeds],
+        acceptedActionIds: {},
+      };
+    } else {
+      this.gm.combat.optimistic = {
+        combatId: createCombatId(),
+        stateVersion: 0,
+        nextTurnSeed: createServerSeed(),
+        acceptedActionIds: {},
+      };
+    }
     this.gm.combat.swapPhase = true; // Free swap available before first action
 
     // Reset stat stages for all combatants at battle start
@@ -328,25 +449,23 @@ export class CombatCycleService {
       applyDebugSuperAttack(this.gm.combat.allies);
     }
 
-    // NPC Battle rooms: always assign an NPC from the area's roster
+    // NPC Battle rooms: always assign an NPC from the area's roster. Reuse the
+    // prepared pick when present so the runway payload and the started combat
+    // agree on which NPC appears.
     if (isNpcBattle) {
-      const areaId = this.gm.run.currentArea?.id || null;
-      const allNpcs = loadNpcs();
-      const areaEntries = Object.values(allNpcs).filter(npc => !areaId || npc.area === areaId || !npc.area);
-      const fallbackEntries = areaEntries.length > 0 ? areaEntries : Object.values(allNpcs);
-      if (fallbackEntries.length > 0) {
-        const npc = fallbackEntries[Math.floor(Math.random() * fallbackEntries.length)];
+      const npc = npcDataFromPrepared || this._rollNpcForBattle();
+      if (npc) {
         this.gm.combat.npcId = npc.id;
-        this.gm.combat.npcData = {
-          id: npc.id, name: npc.name, nameEn: npc.nameEn,
-          greeting: npc.greeting, speakerId: npc.speakerId
-        };
+        this.gm.combat.npcData = npc;
       }
     }
     // Note: for regular encounters, random NPC overlay is disabled (Koto2 MVP).
     // NPCs only appear in deterministic npcBattle rooms.
 
-    // Boss speaks on encounter
+    // Single-use: drop the prepared roll now that combat state owns it.
+    if (prepared && currentRoom) delete currentRoom.preparedCombat;
+
+    // Boss speaks on encounter (start-time narration, not pre-rolled)
     if (isBoss && enemyCreatures[0]) {
       const bossTemplate = CREATURES_BY_ID[currentRoom.boss.creatureId];
       if (bossTemplate?.bossDialogue?.appear) {
@@ -543,12 +662,22 @@ export class CombatCycleService {
       suppressBarks: usesSharedPveCorePrediction,
       deferXpAwards: usesSharedPveCorePrediction,
     });
-    optimistic.stateVersion += 1;
-    optimistic.nextTurnSeed = createServerSeed();
+    // Advance the pre-committed turn-seed chain (shifts the head to the next
+    // prepared seed, refills, and bumps stateVersion) instead of minting a fresh
+    // random seed. This keeps an ONLINE verified turn aligned with the prepared
+    // chain so a fight can mix online and offline turns and still agree on which
+    // seed each turn replays with. advanceTurnSeeds bumps stateVersion itself.
+    advanceTurnSeeds(optimistic, { target: PVE_TURN_SEED_CHAIN_TARGET });
 
     const committedHash = usesSharedPveCorePrediction && sharedPveCoreHash
       ? sharedPveCoreHash
       : hashTranscript(committed);
+    // Restore mid-run move learning the deferred-XP path skipped for hash parity.
+    // Applied AFTER committedHash so the non-shared-core path's hashTranscript(committed)
+    // — and the shared-core path's precomputed sharedPveCoreHash — both reflect the
+    // pre-backfill turn; the move lands on the live party for the next fight and
+    // rides out on the committed result (byte-identical to the offline-replay path).
+    this._applyVictoryLearnsetBackfill(committed);
     const protocolPayload = !sharedPveCoreUnsupported && committedHash === envelope.predictedHash
       ? buildAcceptedResponse({
           stateVersion: optimistic.stateVersion,
@@ -568,6 +697,57 @@ export class CombatCycleService {
     };
     rememberAcceptedActionReplay(optimistic, envelope, response);
     return response;
+  }
+
+  /**
+   * Replay a single offline-predicted combat turn from the explore session log.
+   * Mirrors the Kanji Kombat quiz replay branch (kanji-kombat-service.js): resolve
+   * the turn against the exact prepared seed the client predicted with, commit the
+   * grade through the same shared-core path the online verify uses, then advance the
+   * chain. On a transcript hash mismatch the grade is still committed (server owns
+   * the authoritative result) and the error carries `.committed` so the sync loop
+   * confirms the seq before snapping the client to authoritative state.
+   *
+   * @returns {Object} the committed turn result (combatEnded/victory/rewards ride along)
+   */
+  replayCombatCycleEntry({ actionType = 'attack', moveChoices = [], predictedHash } = {}) {
+    const optimistic = this.gm.combat?.optimistic;
+    if (!optimistic) throw new Error('no_active_creature_combat');
+    ensureTurnSeeds(this.gm.combat, { target: PVE_TURN_SEED_CHAIN_TARGET });
+    const seed = optimistic.nextTurnSeed;
+    const resolvedActionType = normalizeCombatActionType(actionType);
+    const resolved = resolvedActionType === 'attack' && this.gm.combat?.actionCursor
+      ? resolvePveCursorTurn(
+          { combat: this.gm.combat, run: this.gm.run, moveChoices },
+          { actionType: resolvedActionType, seed },
+        )
+      : resolvePveTurn({
+          snapshot: { combat: this.gm.combat, run: this.gm.run },
+          actionType: resolvedActionType,
+          moveChoices,
+          seed,
+          processKoSwaps: true,
+        });
+    const serverHash = hashTranscript(resolved.transcript);
+    const hashMatches = serverHash === predictedHash;
+    const committed = this.creatureCombatCycle(resolvedActionType, moveChoices, {
+      rng: createSeededRng(seed),
+      verifiedSeed: seed,
+      suppressBarks: true,
+      deferXpAwards: true,
+    });
+    // Restore mid-run move learning the deferred-XP path skipped for hash parity.
+    // Runs AFTER serverHash was computed above, so the victory turn's hash is
+    // untouched; mutates the live party so the next fight carries the move.
+    this._applyVictoryLearnsetBackfill(committed);
+    advanceTurnSeeds(optimistic, { target: PVE_TURN_SEED_CHAIN_TARGET });
+    if (!hashMatches) {
+      // Grade already landed — confirm the seq, then stop the batch (KK pattern).
+      const error = new Error('transcript_mismatch');
+      error.committed = committed;
+      throw error;
+    }
+    return committed;
   }
 
   _collectPoisonKoXpEvents(effectEvents, metaMults, rng = Math.random) {
@@ -629,6 +809,33 @@ export class CombatCycleService {
 
     for (const attack of attacks || []) visit(attack);
     return xpEvents;
+  }
+
+  /**
+   * On a committed VICTORY combat-end result, restore the deterministic
+   * level→moveset backfill the deferred kill-XP path deliberately skips for hash
+   * parity (it routes through the browser-safe applyKillXpToParty, which never
+   * learns moves — see O2 / kanji-kombat-xp.js). This runs AFTER the terminal
+   * turn's transcript hash is already computed by the caller, so the victory
+   * turn's hash is untouched; it mutates the live party's `moves` so the NEXT
+   * fight (which resolves against gm.run.creatureParty) carries the move on both
+   * the online-verify and offline-replay paths — byte-identical to the client's
+   * own combat-end backfill, which agrees even when fight 2 starts offline.
+   *
+   * Emits result.learnsetBackfill = [{ slot, creatureIndex, creatureId, move }]
+   * so the client's checkpoint-driven finish can surface the learn-prompt moment.
+   * No-op unless the result actually ended in victory.
+   *
+   * @param {object} committed - the committed creatureCombatCycle result.
+   * @returns {object} the same result object (with learnsetBackfill attached when applicable).
+   */
+  _applyVictoryLearnsetBackfill(committed) {
+    if (!committed || committed.combatEnded !== true || committed.victory !== true) return committed;
+    const backfilled = backfillPartyLearnset(this.gm.run?.creatureParty);
+    if (backfilled.length > 0) {
+      committed.learnsetBackfill = backfilled;
+    }
+    return committed;
   }
 
   _finishPoisonTerminalIfNeeded(actionType, effectEvents, roundStartEvents, poisonXpEvents = []) {
@@ -846,10 +1053,18 @@ export class CombatCycleService {
     const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
     const counterAttacks = actionSegments.flatMap(segment => segment.counterAttacks || []);
     if (options.deferXpAwards === true) {
+      // Deferred kill-XP (session / shared-core prediction path) MUST use the
+      // browser-safe applyKillXpToParty, not the default awardKillXp: a mid-fight
+      // level-up must NOT learn a new move server-side, or the creature's `moves`
+      // array grows and the next turn's transcript hashes differently than the
+      // client mirror (applyLocalDeferredKillXp), forcing a transcript_mismatch
+      // correction. Mirrors the Kanji Kombat cursor path (see below) and the
+      // note in kanji-kombat-xp.js::addXpToCreatureShared.
       xpEvents.push(...this._collectDeferredKillXpEvents(
         actionSegments.flatMap(segment => segment.actor.side === 'ally' ? segment.attacks : []),
         this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
         xpRng,
+        applyKillXpToParty,
       ));
     }
 
@@ -1218,10 +1433,14 @@ export class CombatCycleService {
     const playerResult = resolvedTurn.transcript;
     playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
     if (deferXpAwards) {
+      // Browser-safe kill-XP (no move learning) so a mid-fight level-up hashes
+      // identically to the client mirror — see the note at the interleaved
+      // deferred-XP site above.
       playerResult.xpEvents.push(...this._collectDeferredKillXpEvents(
         playerResult.attacks || [],
         metaMults,
         xpRng,
+        applyKillXpToParty,
       ));
     }
     // Interleaved combat applies party skills inside each player initiative slot

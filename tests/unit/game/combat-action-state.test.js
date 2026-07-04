@@ -4,7 +4,7 @@ import { createCombatState } from '../../../src/game/state.js';
 import { instantiateCreature, xpToNextLevel } from '../../../src/game/creatures.js';
 import { GameManager } from '../../../src/game/loop.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
-import { buildActionEnvelope } from '../../../src/shared/action-protocol.js';
+import { buildActionEnvelope, hashTranscript } from '../../../src/shared/action-protocol.js';
 import {
   resolvePveCursorTurn,
   resolvePveTurn,
@@ -137,6 +137,40 @@ describe('combat action state', () => {
     assert.equal(result.stateVersion, stateVersion + 1);
     assert.equal(result.nextSeed, gm.combat.optimistic.nextTurnSeed);
     assert.equal(gm.combat.actionCursor.side, 'ally');
+  });
+
+  it('produces an identical transcript hash for a cloned-state prediction and a live-reference replay (same seed)', () => {
+    // The explore sync replay resolves each combat.cycle against the LIVE gm.combat
+    // (by-reference enemies) while the client predicted against a structuredClone of
+    // that combat. The two states are value-equal, so transcript hashes must match
+    // for the same seed — even though the objects have different identities. This
+    // pins the "hash, not identity" contract the replay relies on.
+    const gm = createTestGameManagerWithCreatureCombat();
+    gm.combat.actionCursor = { side: 'ally', index: 0, opening: false };
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+
+    // Client-side prediction against a deep clone of the live combat/run.
+    const clonedCombat = structuredClone(gm.combat);
+    const clonedRun = structuredClone(gm.run);
+    clonedCombat.allies = clonedRun.creatureParty.active;
+    const clientPredicted = resolvePveCursorTurn(
+      { combat: clonedCombat, run: clonedRun, moveChoices },
+      { actionType: 'attack', seed },
+    );
+
+    // Server-side replay resolve against the live, by-reference combat/run.
+    const serverReplay = resolvePveCursorTurn(
+      { combat: gm.combat, run: gm.run, moveChoices },
+      { actionType: 'attack', seed },
+    );
+
+    assert.notEqual(clonedCombat.enemies[0], gm.combat.enemies[0], 'clone has distinct enemy identity');
+    assert.equal(
+      hashTranscript(clientPredicted.transcript),
+      hashTranscript(serverReplay.transcript),
+      'value-equal states hash identically for the same seed',
+    );
   });
 
   it('accepts browser action-cursor predictions when committed Exp Master XP is server-owned', () => {

@@ -23,6 +23,7 @@ const ACTION_EFFECTS = Object.freeze({
   'encounter.start': [],
   'npcBattle.start': [],
   'boss.start': [],
+  'combat.cycle': [EXPLORE_EFFECTS.PARTY_STATS],
   'friendlyNpc.choose': [EXPLORE_EFFECTS.PARTY_STATS],
   'shrine.choose': [EXPLORE_EFFECTS.PARTY_STATS],
   'skillMaster.choose': [EXPLORE_EFFECTS.PARTY_SKILLS],
@@ -42,9 +43,33 @@ const ACTION_EFFECTS = Object.freeze({
 });
 
 const ROOM_DEPENDENCIES = Object.freeze({
-  encounter: [EXPLORE_EFFECTS.PARTY_STATS, EXPLORE_EFFECTS.PARTY_SKILLS],
-  boss: [EXPLORE_EFFECTS.PARTY_STATS, EXPLORE_EFFECTS.PARTY_SKILLS],
-  npcBattle: [EXPLORE_EFFECTS.PARTY_STATS, EXPLORE_EFFECTS.PARTY_SKILLS],
+  // Combat rooms are pre-rolled (prepareCombatStart pins the ENEMIES + seed chain
+  // onto the prepared payload), so a queued earlier-room roll-affecting effect no
+  // longer invalidates them — the enemy roll is fixed at prepare time. Same
+  // rationale as Kanji Kombat's pre-rolled wave.
+  //
+  // But the roll pins only the enemies. The ALLY-side stats (level/xp/attack/
+  // defense/dex/hp/mp — every field in buildStateSummary) still feed the hashed
+  // per-turn transcript, and a support-room PARTY_STATS effect queued AHEAD of the
+  // fight (shrine blessing, friendlyNpc stat item) mutates them on the server's
+  // replay but NOT on the client's offline optimistic path (the client only flags
+  // the room complete — exploration.js chooseShrineReward / applyItem). If the
+  // fight is then built offline against un-boosted allies, its first combat.cycle
+  // hash forks from the server's post-shrine replay → transcript_mismatch
+  // (task-12e attempt B, seq 7). Mirroring the stat mutation client-side is
+  // impractical: the mutations live in server-only modules that read data files at
+  // import (creatures.js addXpToCreature via CREATURES_BY_ID/learnset;
+  // item-service.js applyItem), so they are not browser-importable without a large
+  // extraction. Instead, declare the honest dependency: a PARTY_STATS effect
+  // pending ahead of a combat room makes the PROCEED into it pause
+  // (`dependency`) until the reconnect drain lands the effect server-side and the
+  // refreshed runway snapshots the boosted allies into combatStart.allies. The
+  // fight then starts against authoritative stats. Degrades offline continuity at
+  // the support→combat seam (an honest reconnect pause) rather than shipping a
+  // silent divergence.
+  encounter: [EXPLORE_EFFECTS.PARTY_STATS],
+  boss: [EXPLORE_EFFECTS.PARTY_STATS],
+  npcBattle: [EXPLORE_EFFECTS.PARTY_STATS],
   campfire: [EXPLORE_EFFECTS.INGREDIENTS, EXPLORE_EFFECTS.PARTY_STATS],
   dealer: [EXPLORE_EFFECTS.CREDITS],
   speedReviewRoom: [EXPLORE_EFFECTS.SRS],
@@ -70,6 +95,24 @@ export function createExploreSessionEpoch() {
   return `ese_${randomBytes(8).toString('hex')}`;
 }
 
+/**
+ * EPOCH CONTRACT — explore session epochs mark RELOAD boundaries ONLY.
+ *
+ * The epoch scopes the client's offline-queued session log: entries are stamped
+ * with the epoch they were recorded under, and applySessionSync rejects a batch
+ * whose epoch does not match the run's current epoch (`session_epoch_mismatch`,
+ * a corrected sync).
+ *
+ * - ensureExploreSessionEpoch — create-if-absent, NEVER rotates. The correct
+ *   call for every IN-SESSION touch point (runway builds mid-run, and
+ *   `GET /state?adoptSession=1` in-session state reloads): the client may still
+ *   hold queued entries under the current epoch, and rotating would strand them.
+ * - rotateExploreSessionEpoch — declares a NEW reload boundary. Correct ONLY on
+ *   a true boot/reload (a bare `GET /state`, src/routes/game/state.js), where
+ *   losing the unsynced offline log is BY DESIGN. Never call this while a live
+ *   client may have pending session entries — the drain→rotate→adopt race turns
+ *   each of them into a rejected `session_epoch_mismatch` correction.
+ */
 export function ensureExploreSessionEpoch(run) {
   if (!run || typeof run !== 'object') return null;
   if (!EXPLORE_SESSION_EPOCH_PATTERN.test(run.exploreSessionEpoch)) {

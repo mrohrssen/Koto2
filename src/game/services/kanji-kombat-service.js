@@ -4,6 +4,11 @@ import { AREAS } from '../rooms.js';
 import { createPveOpeningCursor } from '../combat/action-cursor.js';
 import { createSeededRng } from '../../shared/deterministic-rng.js';
 import {
+  ensureTurnSeeds as ensureKanjiKombatTurnSeeds,
+  advanceTurnSeeds as advanceKanjiKombatTurnSeeds,
+  TURN_SEED_CHAIN_TARGET,
+} from './combat-seed-chain.js';
+import {
   advanceKanjiKombatStreakOnCorrect,
   applyKanjiKombatStreakReward,
   ensurePendingStreakRewardQueues,
@@ -76,7 +81,8 @@ function createCombatId() {
   return `cmb_${randomBytes(8).toString('hex')}`;
 }
 
-export const TURN_SEED_CHAIN_TARGET = 30;
+// Re-exported for existing KK callers; imported above for internal use too.
+export { ensureKanjiKombatTurnSeeds, advanceKanjiKombatTurnSeeds, TURN_SEED_CHAIN_TARGET };
 // Queue of pre-rolled upcoming waves: short per-wave seed chains (a 3-enemy wave
 // clears in ~3-6 answers; spawnNextWave extends the adopted chain to the full
 // target), depth capped so the queue never grows unbounded.
@@ -86,34 +92,6 @@ export const PENDING_WAVE_QUEUE_MAX = 30;
 // topped up to cover every milestone the buffered quiz prompts could reach,
 // capped so ally-join payloads (full creature objects) stay small in state.
 export const PENDING_STREAK_REWARD_QUEUE_MAX = 8;
-
-export function ensureKanjiKombatTurnSeeds(combat, { target = TURN_SEED_CHAIN_TARGET } = {}) {
-  const optimistic = combat?.optimistic;
-  if (!optimistic) return [];
-  if (!Array.isArray(optimistic.turnSeeds)
-    || optimistic.turnSeeds[0] !== optimistic.nextTurnSeed) {
-    optimistic.turnSeeds = optimistic.nextTurnSeed ? [optimistic.nextTurnSeed] : [];
-  }
-  while (optimistic.turnSeeds.length < target) {
-    optimistic.turnSeeds.push(createServerSeed());
-  }
-  if (!optimistic.nextTurnSeed) optimistic.nextTurnSeed = optimistic.turnSeeds[0] || null;
-  return optimistic.turnSeeds;
-}
-
-export function advanceKanjiKombatTurnSeeds(optimistic, { target = TURN_SEED_CHAIN_TARGET } = {}) {
-  if (!optimistic) return;
-  optimistic.stateVersion += 1;
-  if (Array.isArray(optimistic.turnSeeds) && optimistic.turnSeeds[0] === optimistic.nextTurnSeed) {
-    optimistic.turnSeeds.shift();
-  } else {
-    optimistic.turnSeeds = [];
-  }
-  while (optimistic.turnSeeds.length < target) {
-    optimistic.turnSeeds.push(createServerSeed());
-  }
-  optimistic.nextTurnSeed = optimistic.turnSeeds[0];
-}
 
 function ensureAcceptedActionCache(optimistic) {
   if (!optimistic.acceptedActionIds || typeof optimistic.acceptedActionIds !== 'object') {

@@ -126,6 +126,12 @@ export class ExploreSessionSyncService {
     switch (entry?.kind) {
       case 'proceed':
         return this.gm.explorationService.applyExploreProceed();
+      case 'encounter.start':
+      case 'npcBattle.start':
+      case 'boss.start':
+        return this.gm.explorationService.applyCombatStart(entry);
+      case 'combat.cycle':
+        return this.gm.explorationService.applyCombatCycle(entry.payload || {});
       case 'friendlyNpc.choose': {
         const payload = entry.payload || {};
         return this.gm.explorationService.applyFriendlyNpcChoose({
@@ -255,6 +261,21 @@ export class ExploreSessionSyncService {
       try {
         committed = this.applyExploreEntry(entry);
       } catch (error) {
+        // transcript_mismatch from a combat.cycle replay: the grade was still
+        // committed (server owns the authoritative combat result), so confirm the
+        // seq and remember a corrected ledger entry — a re-POST of this actionId
+        // replays from the ledger instead of re-committing — then stop the batch so
+        // the client snaps to authoritative state. Mirrors the KK sync loop.
+        if (error?.committed) {
+          confirmedThroughSeq = entry?.seq ?? confirmedThroughSeq;
+          if (validActionId) {
+            rememberActionLedgerResult(this.ledgerOwner, {
+              actionId: entry.actionId,
+              actionType: entry.kind,
+              response: { seq: entry.seq, corrected: true, entryFingerprint },
+            });
+          }
+        }
         return this.correction({
           reason: error?.message || 'explore_entry_failed',
           rejectedSeq: entry?.seq ?? null,

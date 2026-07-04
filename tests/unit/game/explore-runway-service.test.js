@@ -64,7 +64,7 @@ test('builds current plus five prepared rooms without removing legacy reveal com
   const dealer = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.dealer);
   assert.deepEqual(dealer.actionEffects['dealer.sell'], ['credits']);
   const boss = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.boss);
-  assert.deepEqual(boss.acceptedActions, []);
+  assert.deepEqual(boss.acceptedActions, ['boss.start', 'combat.cycle']);
 });
 
 test('finalizes random rooms before they enter the runway', async () => {

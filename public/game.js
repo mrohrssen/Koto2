@@ -82,6 +82,7 @@ import * as tts from './js/tts.js';
 import * as settings from './js/settings.js';
 import * as explorationUI from './js/ui/exploration.js';
 import { getExploreSession } from './js/ui/explore-session.js';
+import { buildLocalCombatFromStart } from '../src/shared/combat/local-combat-start.js';
 import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
@@ -751,7 +752,9 @@ function updateGameContent() {
       if (!postCombatShopRecoveryDone) {
         postCombatShopRecoveryDone = true;
         showPostCombatShopFlow().then(() => {
-          loadGameState().then(state => {
+          // In-session refresh (the shop flow just completed inside a live run):
+          // adoptSession keeps the explore epoch — rotation is reload-only.
+          loadGameState({ adoptSession: true }).then(state => {
             if (state) {
               updateGameState(state);
               updateUI();
@@ -846,13 +849,36 @@ async function drainExploreSessionBeforeStateFetch(reason = 'stateFetch') {
   }
 }
 
-async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch') {
+async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSession = false } = {}) {
   await drainExploreSessionBeforeStateFetch(reason);
-  return apiGetGameState();
+  // Epoch contract (reload boundaries only) — two defensive layers here:
+  //
+  // Layer 1 (primary): GET /state only ROTATES the explore session epoch on a
+  // BARE fetch — a boot/reload, where losing the unsynced offline log is by
+  // design. In-session callers pass { adoptSession: true } → the server
+  // PRESERVES the epoch (create-if-absent) and still returns a fresh runway,
+  // so queued entries can never be stranded by the fetch itself.
+  //
+  // Layer 2 (defense-in-depth, KEEP): if the drain above did NOT clear the log
+  // (offline / a transient sync failure, or optimistic progress queued ahead),
+  // don't fetch at all — even a non-rotating fetch returns a server snapshot
+  // that predates the still-pending entries, and updating client state from it
+  // would roll back optimistic progress (and a BARE caller here would still
+  // rotate). Keep the client's optimistic state and let the queued entries
+  // drain first (their own checkpoint refreshes the runway under the SAME
+  // epoch). Return null so callers keep their current state (all call sites
+  // already null-guard).
+  const session = getExploreSession?.();
+  if (session && (session.pendingCount?.() ?? 0) > 0) return null;
+  return apiGetGameState({ adoptSession });
 }
 
-async function loadGameState() {
-  const data = await apiGetGameStateAfterExploreDrain();
+async function loadGameState({ adoptSession = false } = {}) {
+  const data = await apiGetGameStateAfterExploreDrain('stateFetch', { adoptSession });
+  // Fetch skipped because explore-session progress is still pending (see above):
+  // keep the current optimistic client state; the drain will reconcile it under
+  // the unrotated epoch. Not a failure — do not toast.
+  if (data === null) return gameState;
   if (isTransientGameStateFailure(data)) {
     scene.showToast?.('Connection is slow. Retrying...', 3000);
     return null;
@@ -860,6 +886,21 @@ async function loadGameState() {
 
   if (data.player) {
     updateGameState(data);
+    // GET /api/game/state (inside apiGetGameStateAfterExploreDrain above) rebuilds
+    // the explore runway server-side. On a BARE fetch (boot/reload) it also ROTATES
+    // the session epoch; in-session fetches pass adoptSession and keep the epoch.
+    // Either way, adopt the fresh runway here so the client session tracks the
+    // server's epoch + prepared rooms — after a reload the next entry would
+    // otherwise sync under the stale pre-reload epoch and be rejected as
+    // session_epoch_mismatch. Guard on an empty log: adoptRunway resets
+    // the log on an epoch change (sessionBoundary), so only adopt when the drain
+    // actually cleared — if entries are still pending (a transient drain failure),
+    // leave them and let their next sync reconcile the epoch via a `corrected`
+    // response instead of silently discarding queued progress.
+    const _session = getExploreSession?.();
+    if (_session && (_session.pendingCount?.() ?? 0) === 0) {
+      _session.adoptRunway?.(data.run?.exploreRunway || null);
+    }
     const allCreatureIds = [
       ...(data.creatureParty?.active || []),
       ...(data.creatureParty?.reserves || []),
@@ -1513,6 +1554,118 @@ function showCollectionToast(additions) {
   }
 }
 
+// Shared combat-entry UI flow, driven by a start-result-shaped object (either the
+// live /start-creature-encounter response or the runway-prepared combatStart clone).
+// Assumes gameState.combat is already populated (updateGameState ran first).
+async function enterCreatureCombatFromStart(result, { hasCreatures = true } = {}) {
+  // Store bootstrap NPC dialogue for use after combat (defeatLine)
+  if (result.npcDialogue) {
+    gameState._npcDialogue = result.npcDialogue;
+  }
+
+  // For NPC battles: play NPC intro before rendering combat.
+  // Lock scene transition so updateUI() won't kill the greeting narration.
+  if (result?.npc && hasCreatures) {
+    sceneTransitionActive = true;
+    try {
+      // Bug #9 fix: mount BattleScene with the allies seeded but NO enemies.
+      // The enemies are held off-stage while the NPC slides in, speaks, and
+      // slides out; playNpcBattleIntro then reveals them via syncCreatures
+      // so the player sees NPC-alone → NPC-leaves → enemies-appear. Prior
+      // behaviour seeded enemies immediately, so they rendered at full alpha
+      // overlapping the speaking NPC.
+      const combatAllies  = gameState.combat?.allies  ?? [];
+      const combatEnemies = gameState.combat?.enemies ?? [];
+      try {
+        const mgr = getSceneManager();
+        await mgr.transition(BattleScene, {
+          allies:  combatAllies,
+          enemies: [],
+          isBoss: !!gameState.combat?.isBoss,
+        });
+      } catch (sceneErr) {
+        console.error('[StartEncounter] BattleScene transition before NPC intro failed', sceneErr);
+      }
+      await playNpcBattleIntro(
+        result.npc,
+        (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
+        () => scene.hideNpcTrainer(),
+        result.npcDialogue,
+        { enemies: combatEnemies, allies: combatAllies, isBoss: !!gameState.combat?.isBoss },
+      );
+    } finally {
+      sceneTransitionActive = false;
+    }
+  }
+
+  // Hide enemy formation before updateUI to prevent visual flash.
+  // Set opacity:0 (not visibility:hidden) so layout is computed but nothing paints.
+  const ef = document.getElementById('enemy-formation');
+  if (hasCreatures && gameState.combat?.enemies?.length && ef) {
+    ef.style.opacity = '0';
+  }
+
+  updateUI();
+
+  // Non-creature encounters: show possessed dialogue (legacy path)
+  if (!hasCreatures) {
+    const enemy = gameState.combat?.enemy;
+    if (result?.dialogue || enemy?.dialogue?.possessed) {
+      const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
+        ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
+        : enemy.dialogue.possessed);
+      await showEnemyDialogue(text, 'possessed');
+    }
+  }
+
+  // Creature encounters: make enemy formation visible (PixiJS handles entrance animation)
+  if (hasCreatures && gameState.combat?.enemies?.length) {
+    const freshEf = document.getElementById('enemy-formation');
+    if (freshEf) freshEf.style.opacity = '1';
+  }
+
+  if (result?.tutorialBossIntro?.lines?.length) {
+    await playTutorialBossInterjection(
+      result.tutorialBossIntro.lines,
+      (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
+      () => scene.hideNpcTrainer(),
+      (line, opts) => narrationBox.show(line, opts),
+      gameState.combat?.enemies || [],
+      { waitFn: delay },
+    );
+  }
+
+  await delay(300);
+  startCombatLoop();
+}
+
+// Session-first combat start. Returns true when the fight was started locally
+// through the explore session; false to fall back to the online start path.
+async function startCreatureEncounterFromSession(session) {
+  const preparedRoom = session.currentPreparedRoom?.();
+  const accepted = Array.isArray(preparedRoom?.acceptedActions) ? preparedRoom.acceptedActions : [];
+  const startKind = accepted.find(kind => kind.endsWith('.start'));
+  const payload = preparedRoom?.interactionPayload || null;
+  const combatStart = payload?.combatStart || null;
+  if (!startKind || !combatStart) return false;
+
+  const recorded = session.recordRoomAction(startKind, {});
+  if (!recorded?.accepted) {
+    // Room not ready / dependency / paused: let the online path handle it.
+    return false;
+  }
+
+  const draft = structuredClone(gameState);
+  draft.combat = buildLocalCombatFromStart(combatStart, payload.seedChain, {
+    fallbackAllies: gameState.run?.creatureParty?.active || [],
+  });
+  draft.phase = 'combat';
+  updateGameState(draft);
+
+  await enterCreatureCombatFromStart(combatStart, { hasCreatures: true });
+  return true;
+}
+
 let encounterStarting = false;
 async function startEncounter() {
   if (encounterStarting) return;
@@ -1521,6 +1674,23 @@ async function startEncounter() {
     diagnostics.logAction('start_encounter', { floor: gameState.run?.floor });
     const hasCreatures = gameState.run?.creatureParty?.active?.length > 0;
     const exploreSession = getExploreSession?.();
+
+    // Session-first: when the current prepared room advertises a combat start and
+    // carries an offline combatStart payload, start the fight locally and append a
+    // '<kind>.start' entry to the explore session log — no server round-trip. The
+    // sync drain replays the start (consuming the same prepared roll server-side)
+    // so online/offline state converges. This runs BEFORE the pending-session
+    // drain guard: an offline fight must start through the session, not soft-pause,
+    // so pending support-room entries simply queue ahead of the '.start' entry and
+    // replay in order on the next drain (combat-tier cutover).
+    if (hasCreatures && exploreSession) {
+      const sessionStarted = await startCreatureEncounterFromSession(exploreSession);
+      if (sessionStarted) return;
+    }
+
+    // Legacy/online start path (rooms with no offline combatStart payload): drain
+    // any pending session actions first so the fight starts against synced state.
+    // If the drain can't clear (offline), soft-pause until reconnection.
     if (exploreSession?.pendingCount?.() > 0) {
       await exploreSession.syncNow({ reason: 'combatStart' });
       if (exploreSession.pendingCount() > 0) {
@@ -1543,86 +1713,7 @@ async function startEncounter() {
     }
 
     updateGameState(result.state);
-
-    // Store bootstrap NPC dialogue for use after combat (defeatLine)
-    if (result.npcDialogue) {
-      gameState._npcDialogue = result.npcDialogue;
-    }
-
-    // For NPC battles: play NPC intro before rendering combat.
-    // Lock scene transition so updateUI() won't kill the greeting narration.
-    if (result?.npc && hasCreatures) {
-      sceneTransitionActive = true;
-      try {
-        // Bug #9 fix: mount BattleScene with the allies seeded but NO enemies.
-        // The enemies are held off-stage while the NPC slides in, speaks, and
-        // slides out; playNpcBattleIntro then reveals them via syncCreatures
-        // so the player sees NPC-alone → NPC-leaves → enemies-appear. Prior
-        // behaviour seeded enemies immediately, so they rendered at full alpha
-        // overlapping the speaking NPC.
-        const combatAllies  = gameState.combat?.allies  ?? [];
-        const combatEnemies = gameState.combat?.enemies ?? [];
-        try {
-          const mgr = getSceneManager();
-          await mgr.transition(BattleScene, {
-            allies:  combatAllies,
-            enemies: [],
-            isBoss: !!gameState.combat?.isBoss,
-          });
-        } catch (sceneErr) {
-          console.error('[StartEncounter] BattleScene transition before NPC intro failed', sceneErr);
-        }
-        await playNpcBattleIntro(
-          result.npc,
-          (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
-          () => scene.hideNpcTrainer(),
-          result.npcDialogue,
-          { enemies: combatEnemies, allies: combatAllies, isBoss: !!gameState.combat?.isBoss },
-        );
-      } finally {
-        sceneTransitionActive = false;
-      }
-    }
-
-    // Hide enemy formation before updateUI to prevent visual flash.
-    // Set opacity:0 (not visibility:hidden) so layout is computed but nothing paints.
-    const ef = document.getElementById('enemy-formation');
-    if (hasCreatures && gameState.combat?.enemies?.length && ef) {
-      ef.style.opacity = '0';
-    }
-
-    updateUI();
-
-    // Non-creature encounters: show possessed dialogue (legacy path)
-    if (!hasCreatures) {
-      const enemy = gameState.combat?.enemy;
-      if (result?.dialogue || enemy?.dialogue?.possessed) {
-        const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
-          ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
-          : enemy.dialogue.possessed);
-        await showEnemyDialogue(text, 'possessed');
-      }
-    }
-
-    // Creature encounters: make enemy formation visible (PixiJS handles entrance animation)
-    if (hasCreatures && gameState.combat?.enemies?.length) {
-      const freshEf = document.getElementById('enemy-formation');
-      if (freshEf) freshEf.style.opacity = '1';
-    }
-
-    if (result?.tutorialBossIntro?.lines?.length) {
-      await playTutorialBossInterjection(
-        result.tutorialBossIntro.lines,
-        (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
-        () => scene.hideNpcTrainer(),
-        (line, opts) => narrationBox.show(line, opts),
-        gameState.combat?.enemies || [],
-        { waitFn: delay },
-      );
-    }
-
-    await delay(300);
-    startCombatLoop();
+    await enterCreatureCombatFromStart(result, { hasCreatures });
   } catch (error) {
     console.warn('[StartEncounter] Failed to start encounter:', error?.message || error);
     narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
@@ -1679,7 +1770,10 @@ function showVictoryModal(result) {
 
   return (async () => {
     try {
-      await loadGameState();
+      // In-session reload (fires on EVERY explore combat victory): adoptSession
+      // preserves the explore epoch so offline-queued session entries are never
+      // stranded as session_epoch_mismatch. Rotation is reload-only.
+      await loadGameState({ adoptSession: true });
       updateUI();
     } catch (err) {
       console.error('[showVictoryModal] state reload failed', err);
@@ -2251,6 +2345,12 @@ async function initGame() {
     startEncounter,
     startNewRun,
     returnToHub,
+    // Finish an explore-session combat when the checkpoint delivers the
+    // server-confirmed combatEnded result (same path as the live victory/defeat).
+    finishCombatLoop: result => combatLoopUI.stopCombatLoop(result),
+    // Resume into the befriend quiz when the checkpoint reports the server rolled
+    // befriend on a terminal turn the client optimistically predicted as victory.
+    resumeSessionCombatBefriendQuiz: result => combatLoopUI.resumeSessionCombatBefriendQuiz(result),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {
       const result = await apiSelectArea(areaId);

@@ -46,6 +46,29 @@ const DEV_TEAM = ['hi', 'mizu', 'ki'];
 const TAP_ACK_MS = 250;
 const MAX_INTERACTIONS = 400;
 
+// Driver return codes that represent a WAIT (holding for reconnect during an
+// outage, a soft pause, or an in-flight animation/transition), NOT a progress
+// action. These advance wall-clock but must not count against MAX_INTERACTIONS —
+// a fight that resolves early in a 75-100s offline window legitimately holds the
+// pendingCombatEnd shell for the whole window (one hold iteration per ~second),
+// and two scripted windows totalling ~175s would otherwise consume ~175 of the
+// 400-action budget before the area could finish (the combat-tier "SAC spin /
+// burns interactions without progress" symptom).
+const WAIT_CODES = new Set([
+  'combat-pending-victory-wait',
+  'combat-sac-stuck-wait',
+  'combat-offline-wait',
+  'choice-offline-wait',
+  'button-offline-wait',
+  'move-learn-offline-wait',
+  'speed-review-offline-wait',
+  'paused',
+  'busy-no-button',
+  'combat-anim',
+  'transition',
+  'waiting',
+]);
+
 // Two offline windows with an online recovery gap between them, mirroring the
 // KK harness. Windows are keyed to ROOM PROGRESS (the "N/10" room-progress
 // badge) rather than proceeds/interactions: most rooms auto-advance after their
@@ -93,25 +116,42 @@ async function login(page) {
 }
 
 /**
- * Client game state. Prefer the in-page test seam window.__gameState when the
- * bundle exposes it; otherwise fall back to the authoritative server state so
- * the harness keeps working even before that seam is wired. (As of the baseline
- * run the seam is not present, so this resolves to server truth.)
+ * Client game state, read ONLY from the in-page test seam window.__gameState.
+ *
+ * CRITICAL: this must never fall back to a BARE GET /api/game/state mid-run. A
+ * bare fetch of that route ROTATES the explore session epoch and rebuilds the
+ * runway server-side (src/routes/game/state.js — rotation marks RELOAD
+ * boundaries) — so a stray bare /state read while the client has offline-queued
+ * session entries strands them under the old epoch, and their next drain is
+ * rejected as `session_epoch_mismatch` (a corrected sync — the gate's
+ * no-corrected-syncs invariant broken). The seam is always wired
+ * (public/game.js sets window.__gameState on every updateGameState), so retry it a
+ * few frames on a transient evaluate hiccup and return null rather than fetching.
+ * The final reconciliation calls serverState() explicitly, AFTER the loop — and
+ * even that read passes adoptSession=1, because it is an in-session read of a
+ * possibly still-active run, not a reload.
  */
 async function gameState(page) {
-  const inPage = await page.evaluate(() => (window.__gameState ?? null)).catch(() => null);
-  if (inPage) return inPage;
-  return serverState(page).catch(() => null);
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const inPage = await page.evaluate(() => (window.__gameState ?? null)).catch(() => null);
+    if (inPage) return inPage;
+    await page.waitForTimeout(100);
+  }
+  return null;
 }
 
 /**
  * Authoritative server state via GET /api/game/state with the bearer token.
  * Throws if the fetch itself fails while online; returns null on abort/offline.
+ *
+ * Passes adoptSession=1: this is an IN-SESSION read (final reconciliation of a
+ * run the driver just played, possibly still active), NOT a reload boundary —
+ * the server must not rotate the explore session epoch under the client.
  */
 async function serverState(page) {
   return page.evaluate(async () => {
     const token = localStorage.getItem('authToken');
-    const res = await fetch('/api/game/state', {
+    const res = await fetch('/api/game/state?adoptSession=1', {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     const body = await res.json().catch(() => null);
@@ -255,6 +295,22 @@ function roomTypeFor(state) {
 function assertServerMatchesPlayed(server, played) {
   expect(server, 'server state must be fetchable at end of session').toBeTruthy();
 
+  // If the run reached the END, reconcile the TERMINAL state first — a completed
+  // run (area_complete / run_complete) or a full game victory tears down / resets
+  // the run object, so `run.currentRoom` is no longer a mid-run integer (it can be
+  // undefined once the run is cleared). Asserting a mid-run cursor then spuriously
+  // fails an otherwise-successful full clear. Reaching the end IS the strongest
+  // possible progress proof, so the mid-run cursor checks below don't apply.
+  if (played.reachedEnd) {
+    const phase = server?.phase;
+    expect(
+      phase === 'area_complete' || phase === 'run_complete'
+        || phase === 'hub' || server?.run?.areaCleared === true || !server?.run,
+      `run reached end locally but server phase is "${phase}" (run=${server?.run ? 'present' : 'reset'})`,
+    ).toBeTruthy();
+    return;
+  }
+
   const serverRoom = server?.run?.currentRoom;
   expect(
     Number.isInteger(serverRoom),
@@ -283,15 +339,6 @@ function assertServerMatchesPlayed(server, played) {
       + `${roomAdvancingActions} room-advancing actions `
       + `(proceeds=${played.proceeds}, support=${played.supportActions}, combats=${played.combatStarts})`,
     ).toBeGreaterThan(0);
-  }
-
-  // If the run reached area completion, the server must report it.
-  if (played.reachedEnd) {
-    const phase = server?.phase;
-    expect(
-      phase === 'area_complete' || phase === 'run_complete' || server?.run?.areaCleared === true,
-      `run reached end locally but server phase is "${phase}"`,
-    ).toBeTruthy();
   }
 }
 
@@ -327,14 +374,27 @@ test.describe('explore subway full session', () => {
     page.on('response', async res => {
       if (!res.url().includes('/api/game/explore/sync')) return;
       const body = await res.json().catch(() => null);
-      if (body?.status === 'corrected') correctedSyncs += 1;
+      if (body?.status === 'corrected') {
+        correctedSyncs += 1;
+        process.stdout.write(
+          `[subway] CORRECTED sync #${correctedSyncs}: reason=${body.reason} `
+          + `rejectedSeq=${body.rejectedSeq} confirmedThroughSeq=${body.confirmedThroughSeq}\n`,
+        );
+      }
     });
+    // No-progress tracking for the offline stuck-SAC guard (see the combat branch).
+    let lastOfflineSacSig = null;
+    let offlineSacRepeat = 0;
     async function goOffline() {
       offline = true;
+      lastOfflineSacSig = null;
+      offlineSacRepeat = 0;
       await context.route('**/api/**', route => route.abort('failed'));
     }
     async function goOnline() {
       offline = false;
+      lastOfflineSacSig = null;
+      offlineSacRepeat = 0;
       await context.unroute('**/api/**').catch(() => {});
     }
 
@@ -381,12 +441,29 @@ test.describe('explore subway full session', () => {
      * #action-area and only accepts a tap inside the SAC or directly on
      * #action-area (with the SAC as first child) — a .scene-area tap is ignored.
      * Click the SAC element itself so card.contains(target) is satisfied.
+     *
+     * Tap once, then wait for THIS card to actually leave (it gets `sac-fading-out`
+     * on continue, then is replaced by the next attack's card / the move grid).
+     * Polling for the specific card to detach means one call resolves one card,
+     * instead of the driver returning to the loop mid-fade and re-tapping the same
+     * card several times (each re-tap burned a loop pass — the churn that inflated
+     * offline fights toward the interaction cap).
      */
     async function tapContinueSac(pg) {
       const sac = pg.locator('.split-attack-card').first();
-      if (await sac.count()) {
-        await sac.click({ force: true }).catch(() => {});
-      }
+      if (!(await sac.count())) return;
+      const handle = await sac.elementHandle().catch(() => null);
+      await sac.click({ force: true }).catch(() => {});
+      if (!handle) return;
+      // Wait (bounded) for this exact card to fade out or detach — i.e. the tap
+      // took and playback advanced. Bounded so a genuinely stuck card still
+      // returns to the loop (where the pending-victory / stall paths handle it).
+      await pg.waitForFunction(
+        el => !el.isConnected || el.classList.contains('sac-fading-out'),
+        handle,
+        { timeout: 1500, polling: 100 },
+      ).catch(() => {});
+      await handle.dispose().catch(() => {});
     }
 
     /**
@@ -560,10 +637,43 @@ test.describe('explore subway full session', () => {
       // 1) Sanctioned soft pause? Assert it is legitimate (we ARE offline) and
       // wait for it to lift. Checked BEFORE narration dismissal because the pause
       // is itself rendered in the narration box — we must not click it away.
-      const pauseVisible = d.bodyText.includes(PAUSE_COPY);
-      if (pauseVisible) {
-        expect(offline, `soft pause "${PAUSE_COPY}" shown while ONLINE`).toBeTruthy();
+      //
+      // OFFLINE vs ONLINE use DIFFERENT signals, because the soft-pause narration
+      // auto-dismisses (~1800ms) while the underlying pause persists for the whole
+      // outage, AND narration-box hide()/forceHide() only remove the `.visible`
+      // class — they never clear the text node — so the pause copy LINGERS in
+      // body.innerText after the box is hidden (same transform-hide caveat the
+      // speed-review view has, noted below).
+      //   • OFFLINE: hold whenever the pause copy is present at all (incl. the
+      //     auto-dismissed lingering text). A combat start that can't run offline
+      //     (startEncounter's pending guard, or a partyStats dependency pause)
+      //     shows the copy once, then auto-dismisses mid-outage; the game is still
+      //     legitimately paused, so the driver must keep holding for reconnect —
+      //     not spin because the box stopped being `.visible`.
+      //   • ONLINE: only a still-VISIBLE pause is a violation. Keying the online
+      //     check off innerText would (a) false-trigger on lingering stale text
+      //     after a resumed pause snapped into the next fight and (b) make the
+      //     "cleared" wait un-satisfiable (the text never leaves innerText) — a
+      //     guaranteed >4s timeout on a run that actually recovered. `.visible`
+      //     reflects the true paused state.
+      const pauseTextPresent = d.bodyText.includes(PAUSE_COPY);
+      if (pauseTextPresent && offline) {
         await page.waitForTimeout(1000);
+        return 'paused';
+      }
+      if (d.narrationVisible && pauseTextPresent) {
+        // Online: wait for the VISIBLE pause to clear; a persisting one is a bug.
+        const cleared = await page
+          .waitForFunction(
+            () => {
+              const box = document.querySelector('.narration-box.visible');
+              return !box || !(box.innerText || '').includes('Connection is spotty');
+            },
+            { timeout: 4000, polling: 300 },
+          )
+          .then(() => true)
+          .catch(() => false);
+        expect(cleared, `soft pause "${PAUSE_COPY}" persisted >4s while ONLINE`).toBeTruthy();
         return 'paused';
       }
 
@@ -633,6 +743,22 @@ test.describe('explore subway full session', () => {
         // Rooms tier: combat cannot proceed while offline (per-turn server
         // verification), so hold here until connectivity returns.
         if (offline && !COMBAT_TIER) { await page.waitForTimeout(1000); return 'combat-offline-wait'; }
+        // Combat tier: when the last turn of a fight is predicted OFFLINE, the
+        // client shows the pendingCombatEnd victory shell (a persistent
+        // split-attack-card) with combat locally resolved (all enemies defeated),
+        // stops move selection, and waits for the reconnect drain to deliver the
+        // server-confirmed combatEnded and finish the fight. Tapping that shell's
+        // SAC does nothing — spinning on it burns the interaction budget. Detect
+        // the locally-resolved fight (all enemies dead, no actionable move cells)
+        // and hold for reconnect, mirroring the rooms-tier combat-door wait.
+        if (offline && d.splitAttackCard && d.moveCells === 0 && !d.chooseTarget) {
+          const localVictoryPending = await page.evaluate(() => {
+            const enemies = window.__gameState?.combat?.enemies;
+            if (!Array.isArray(enemies) || enemies.length === 0) return false;
+            return enemies.every(e => !e || e.hp <= 0 || e.befriended);
+          }).catch(() => false);
+          if (localVictoryPending) { await page.waitForTimeout(1000); return 'combat-pending-victory-wait'; }
+        }
         if (d.fightButton) {
           await tapAndAssertAck(page.locator('button:has-text("戦う")').first());
           played.combatStarts += 1;
@@ -656,6 +782,37 @@ test.describe('explore subway full session', () => {
         // fires when the tap lands on #action-area (with the SAC as its first
         // child) or inside the SAC — NOT on .scene-area. Tap the SAC itself.
         if (d.splitAttackCard) {
+          // Guard against an OFFLINE stuck SAC. Most offline SACs advance on a tap
+          // (playback → next move grid, or the locally-resolved terminal shell
+          // caught by the pending-victory hold above). But an offline turn can
+          // occasionally leave a SAC that no tap resolves and no move grid replaces
+          // (e.g. move selection not re-armed because the cursor is mid-enemy-
+          // sequence), while at least one enemy is still alive so the pending-
+          // victory check does not fire. Tapping it forever is the "SAC spin" that
+          // burns the budget. Detect no-progress: if the combat signature (enemy
+          // HPs + cursor) is unchanged across consecutive offline SAC taps, stop
+          // tapping and HOLD for reconnect — the drain resolves the turn
+          // authoritatively, exactly like the pending-victory / combat-door wait.
+          if (offline) {
+            const sig = await page.evaluate(() => {
+              const c = window.__gameState?.combat;
+              if (!c) return 'none';
+              const enemies = (c.enemies || []).map(e => (e ? e.hp : 'x')).join(',');
+              const cur = c.actionCursor ? `${c.actionCursor.side}:${c.actionCursor.index}` : 'x';
+              return `${enemies}|${cur}`;
+            }).catch(() => 'none');
+            if (sig === lastOfflineSacSig) {
+              offlineSacRepeat += 1;
+            } else {
+              offlineSacRepeat = 0;
+              lastOfflineSacSig = sig;
+            }
+            // 3 consecutive identical-signature offline taps → treat as stuck; hold.
+            if (offlineSacRepeat >= 3) {
+              await page.waitForTimeout(1000);
+              return 'combat-sac-stuck-wait';
+            }
+          }
           await tapContinueSac(page);
           await page.waitForTimeout(400);
           return 'combat-sac';
@@ -663,6 +820,34 @@ test.describe('explore subway full session', () => {
         // Animation/verification in flight: yield and re-evaluate.
         await page.waitForTimeout(500);
         return 'combat-anim';
+      }
+
+      // 2.5) NPC dialogue card with a dedicated continue button (shrine/friendlyNpc
+      // greeting speech: .npc-dialogue-shell + .npc-dialogue-continue plus translate/
+      // learn/audio tool buttons). The generic "tap the last action button" path
+      // (branch 7) can hang here: while the greeting streams its tokens / waits on a
+      // pending TTS, the card re-renders and Playwright's default click (no
+      // actionTimeout) blocks on the detaching button forever (observed as a hard
+      // freeze at a room-7 shrine). Force-click the continue button directly and
+      // wait (bounded) for the shell to leave — one resolved greeting per call, no
+      // dependence on token/audio timing.
+      if (d.npcDialogueCard) {
+        const cont = page.locator('.npc-dialogue-continue').first();
+        if (await cont.count().catch(() => 0)) {
+          const shell = await page.locator('.npc-dialogue-shell').first().elementHandle().catch(() => null);
+          await cont.click({ force: true }).catch(() => {});
+          if (shell) {
+            await page.waitForFunction(
+              el => !el.isConnected,
+              shell,
+              { timeout: 1500, polling: 100 },
+            ).catch(() => {});
+            await shell.dispose().catch(() => {});
+          } else {
+            await page.waitForTimeout(400);
+          }
+          return 'dialogue-continue';
+        }
       }
 
       // 3) NPC dialogue card in an action area with NO actionable control yet
@@ -755,16 +940,34 @@ test.describe('explore subway full session', () => {
     }
 
     // --- main loop ---
-    let interactions = 0;
+    // Two distinct counters (a fight resolving early in a 75-100s offline window
+    // holds the pendingCombatEnd shell for the whole window — those are legitimate
+    // WAITS for reconnect, not progress, and must not exhaust the ACTION budget):
+    //   • actions — genuine progress taps (move/target/proceed/choice/…). Bounded
+    //     by MAX_INTERACTIONS: the real "did the run runaway?" gate.
+    //   • iterations — every loop pass, incl. offline holds. Bounded only by a
+    //     large safety cap + a wall-clock deadline, so a true infinite loop still
+    //     terminates but a legitimate 175s of offline holding does not.
+    // A WAIT code advances `iterations` (and time) but not `actions`, so the ~175s
+    // of scripted outage no longer burns ~175 of the action budget.
+    let actions = 0;
+    let iterations = 0;
     let windowIndex = 0;
     let restoreAt = null;
+    const ITERATION_SAFETY_CAP = 4000; // >> any legitimate hold count; catches a hard spin
+    const WALLCLOCK_DEADLINE_MS = 540_000; // 9m, under the 10m test timeout
+    const loopStartedAt = Date.now();
     // try/finally guarantees the network route is torn down even if an expect
     // throws while an offline window is active — otherwise `context.route(...,
     // abort)` would stay installed and leak into teardown. The finally only
     // fires goOnline() when a route is actually installed (offline === true),
     // since goOffline() sets `offline` and installs the route together.
     try {
-      while (interactions < MAX_INTERACTIONS) {
+      while (
+        actions < MAX_INTERACTIONS
+        && iterations < ITERATION_SAFETY_CAP
+        && (Date.now() - loopStartedAt) < WALLCLOCK_DEADLINE_MS
+      ) {
         // Restore online if the current window has elapsed (do this BEFORE arming
         // the next window so windows never merge into one long outage).
         if (restoreAt !== null && Date.now() >= restoreAt) {
@@ -802,8 +1005,14 @@ test.describe('explore subway full session', () => {
           expect(bodyText.includes(copy), `forbidden copy "${copy}" (offline=${offline})`).toBeFalsy();
         }
 
-        await driveOneInteraction();
-        interactions += 1;
+        const code = await driveOneInteraction();
+        iterations += 1;
+        // Offline holds / pauses / transient yields wait for reconnect or an
+        // in-flight animation — they make no room/combat progress and must NOT
+        // count against the action budget (else a fight that ends early in a long
+        // outage burns one action per second of holding and the run "runs out of
+        // interactions" mid-area — the reported combat-tier flake).
+        if (!WAIT_CODES.has(code)) actions += 1;
       }
     } finally {
       // Restore connectivity if a window is still active (normal exit or a
@@ -817,6 +1026,17 @@ test.describe('explore subway full session', () => {
     const server = await serverState(page).catch(() => null);
     assertServerMatchesPlayed(server, played);
     expect(correctedSyncs, 'no corrected syncs on the happy path').toBe(0);
-    expect(interactions, 'session should finish before MAX_INTERACTIONS').toBeLessThan(MAX_INTERACTIONS);
+    // The action budget bounds genuine progress taps (waits/holds excluded). A
+    // run that blows this is genuinely looping on actions, not merely holding
+    // through an outage.
+    expect(actions, 'session should finish before MAX_INTERACTIONS actions').toBeLessThan(MAX_INTERACTIONS);
+    // The safety bounds (iteration cap / wall-clock) must never be what stops the
+    // loop — hitting either means the run neither finished nor progressed and is a
+    // real hang, surfaced precisely rather than as a mislabeled action-budget miss.
+    expect(
+      iterations < ITERATION_SAFETY_CAP && (Date.now() - loopStartedAt) < WALLCLOCK_DEADLINE_MS,
+      `driver loop hit a safety bound without finishing (iterations=${iterations}, `
+      + `elapsedMs=${Date.now() - loopStartedAt}, actions=${actions}) — the run stalled`,
+    ).toBeTruthy();
   });
 });

@@ -120,6 +120,7 @@ test('maps predicted effects for every plan action kind', () => {
     ['encounter.start', []],
     ['npcBattle.start', []],
     ['boss.start', []],
+    ['combat.cycle', ['partyStats']],
   ];
 
   for (const [kind, expectedEffects] of actionEffects) {
@@ -129,9 +130,14 @@ test('maps predicted effects for every plan action kind', () => {
 
 test('maps room dependencies for every plan room type', () => {
   const roomDependencies = [
-    ['encounter', ['partyStats', 'partySkills']],
-    ['boss', ['partyStats', 'partySkills']],
-    ['npcBattle', ['partyStats', 'partySkills']],
+    // Combat rooms are pre-rolled (Task 8): prepareCombatStart pins the ENEMIES +
+    // seed chain at prepare time. But the roll does NOT pin the ally-side stats,
+    // which feed the hashed transcript — so a PARTY_STATS effect queued ahead of a
+    // fight (shrine/friendlyNpc) must still pause the proceed into it, or the
+    // offline-built fight forks the transcript (task-12f transcript_mismatch fix).
+    ['encounter', ['partyStats']],
+    ['boss', ['partyStats']],
+    ['npcBattle', ['partyStats']],
     ['campfire', ['ingredients', 'partyStats']],
     ['dealer', ['credits']],
     ['speedReviewRoom', ['srs']],
@@ -152,11 +158,11 @@ test('returns fresh effect and dependency arrays', () => {
   const effects = predictedEffectsForAction('dealer.sell');
   effects.push('partyStats');
 
-  const dependencies = roomDependenciesForType('encounter');
+  const dependencies = roomDependenciesForType('campfire');
   dependencies.push('credits');
 
   assert.deepEqual(predictedEffectsForAction('dealer.sell'), ['credits']);
-  assert.deepEqual(roomDependenciesForType('encounter'), ['partyStats', 'partySkills']);
+  assert.deepEqual(roomDependenciesForType('campfire'), ['ingredients', 'partyStats']);
 });
 
 test('builds correction response', () => {
