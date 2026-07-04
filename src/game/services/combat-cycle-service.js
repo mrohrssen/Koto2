@@ -47,6 +47,7 @@ import {
 } from '../../shared/combat/pve-turn-resolver.js';
 import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
 import { applyKillXpToParty } from '../../shared/combat/kanji-kombat-xp.js';
+import { backfillPartyLearnset } from '../../shared/combat/learnset-backfill.js';
 import { hasUnsafeSharedPveOptimisticPrediction } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
@@ -671,6 +672,12 @@ export class CombatCycleService {
     const committedHash = usesSharedPveCorePrediction && sharedPveCoreHash
       ? sharedPveCoreHash
       : hashTranscript(committed);
+    // Restore mid-run move learning the deferred-XP path skipped for hash parity.
+    // Applied AFTER committedHash so the non-shared-core path's hashTranscript(committed)
+    // — and the shared-core path's precomputed sharedPveCoreHash — both reflect the
+    // pre-backfill turn; the move lands on the live party for the next fight and
+    // rides out on the committed result (byte-identical to the offline-replay path).
+    this._applyVictoryLearnsetBackfill(committed);
     const protocolPayload = !sharedPveCoreUnsupported && committedHash === envelope.predictedHash
       ? buildAcceptedResponse({
           stateVersion: optimistic.stateVersion,
@@ -729,6 +736,10 @@ export class CombatCycleService {
       suppressBarks: true,
       deferXpAwards: true,
     });
+    // Restore mid-run move learning the deferred-XP path skipped for hash parity.
+    // Runs AFTER serverHash was computed above, so the victory turn's hash is
+    // untouched; mutates the live party so the next fight carries the move.
+    this._applyVictoryLearnsetBackfill(committed);
     advanceTurnSeeds(optimistic, { target: PVE_TURN_SEED_CHAIN_TARGET });
     if (!hashMatches) {
       // Grade already landed — confirm the seq, then stop the batch (KK pattern).
@@ -798,6 +809,33 @@ export class CombatCycleService {
 
     for (const attack of attacks || []) visit(attack);
     return xpEvents;
+  }
+
+  /**
+   * On a committed VICTORY combat-end result, restore the deterministic
+   * level→moveset backfill the deferred kill-XP path deliberately skips for hash
+   * parity (it routes through the browser-safe applyKillXpToParty, which never
+   * learns moves — see O2 / kanji-kombat-xp.js). This runs AFTER the terminal
+   * turn's transcript hash is already computed by the caller, so the victory
+   * turn's hash is untouched; it mutates the live party's `moves` so the NEXT
+   * fight (which resolves against gm.run.creatureParty) carries the move on both
+   * the online-verify and offline-replay paths — byte-identical to the client's
+   * own combat-end backfill, which agrees even when fight 2 starts offline.
+   *
+   * Emits result.learnsetBackfill = [{ slot, creatureIndex, creatureId, move }]
+   * so the client's checkpoint-driven finish can surface the learn-prompt moment.
+   * No-op unless the result actually ended in victory.
+   *
+   * @param {object} committed - the committed creatureCombatCycle result.
+   * @returns {object} the same result object (with learnsetBackfill attached when applicable).
+   */
+  _applyVictoryLearnsetBackfill(committed) {
+    if (!committed || committed.combatEnded !== true || committed.victory !== true) return committed;
+    const backfilled = backfillPartyLearnset(this.gm.run?.creatureParty);
+    if (backfilled.length > 0) {
+      committed.learnsetBackfill = backfilled;
+    }
+    return committed;
   }
 
   _finishPoisonTerminalIfNeeded(actionType, effectEvents, roundStartEvents, poisonXpEvents = []) {

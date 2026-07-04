@@ -58,6 +58,7 @@ import {
   advanceLocalChain,
   applyLocalDeferredKillXp,
 } from './combat-local-prediction.js';
+import { backfillPartyLearnset } from '../../../src/shared/combat/learnset-backfill.js';
 import { getKanjiKombatSession } from './kanji-kombat-session.js';
 import { getExploreSession } from './explore-session.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
@@ -697,6 +698,21 @@ function localStateAfterSessionPveTurn(optimistic) {
   }
   advanceLocalChain(next);
   applyLocalDeferredKillXp(next, optimistic.localTranscript, optimistic.envelope.seed);
+  // On a locally-predicted terminal VICTORY, restore the deterministic
+  // level→moveset backfill the deferred-XP mirror skips for hash parity (it uses
+  // the browser-safe applyKillXpToParty, which never learns moves). Applied AFTER
+  // the turn's predictedHash was computed upstream (buildSessionCreatureCombatTurn),
+  // so the victory turn's hash is untouched; mutating the committed party here means
+  // an offline fight 2 resolves against a party carrying the move — byte-identical
+  // to the server's own combat-end backfill, so the fight-2 turn-1 hashes agree
+  // even with no server round-trip between the fights. Mirrors the server gate
+  // (combatEnded && victory).
+  if (optimistic.localTranscript?.pendingCombatEnd?.victory === true) {
+    backfillPartyLearnset(next.run?.creatureParty);
+    if (next.combat && next.run?.creatureParty) {
+      next.combat.allies = next.run.creatureParty.active;
+    }
+  }
   return next;
 }
 
@@ -1581,6 +1597,35 @@ export async function processPendingMoveLearn(pendingList) {
       }
     }
   }
+}
+
+/**
+ * Map a committed combat-end result's `learnsetBackfill` (server-emitted, or the
+ * client's own combat-end backfill) into the pending-move-learn shape the
+ * existing prompt flow consumes. Only ACTIVE-slot creatures get a prompt — the
+ * prompt animates a formation slot and reserves have none; the move is already
+ * on the reserve creature either way. The move is already in the creature's
+ * `moves` (both sides backfilled it before this runs), so processPendingMoveLearn
+ * shows the display-only "learned!" confirmation (alreadyLearned === true), NOT a
+ * replace prompt — restoring the mid-run learn moment without new UI.
+ *
+ * @param {object} result - committed combat-end result with optional learnsetBackfill.
+ * @returns {Array<{creature, creatureIndex, newMove}>}
+ */
+function pendingMoveLearnFromBackfill(result) {
+  const backfill = Array.isArray(result?.learnsetBackfill) ? result.learnsetBackfill : [];
+  if (backfill.length === 0) return [];
+  const activeCreatures = getGameState()?.run?.creatureParty?.active;
+  if (!Array.isArray(activeCreatures)) return [];
+  const pending = [];
+  for (const entry of backfill) {
+    if (entry?.slot !== 'active' || !entry.move) continue;
+    const creature = activeCreatures.find(r => r && r.id === entry.creatureId);
+    if (!creature) continue;
+    const creatureIndex = activeCreatures.findIndex(r => r && r.id === entry.creatureId);
+    pending.push({ creature, creatureIndex, newMove: entry.move });
+  }
+  return pending;
 }
 
 // ============ COMBAT LOOP FUNCTIONS ============
@@ -2948,6 +2993,20 @@ export async function stopCombatLoop(result) {
     await modalPromise;
   } catch (err) {
     console.error('[CombatLoop] modal dismissal rejected — continuing to cleanup', err);
+  }
+
+  // Surface the mid-run move-learn moment restored by the deterministic learnset
+  // backfill (result.learnsetBackfill, emitted by the server's committed victory
+  // and mirrored by the client's own combat-end backfill). The move is already on
+  // the creature, so this reuses the existing display-only "learned!" confirmation
+  // (processPendingMoveLearn → showLearnPrompt with alreadyLearned) — no new UI,
+  // no backend call. Runs after the victory modal, before the ExplorationScene
+  // transition, so the prompt shows over the still-mounted post-victory scene.
+  if (result?.victory) {
+    const pendingBackfillLearn = pendingMoveLearnFromBackfill(result);
+    if (pendingBackfillLearn.length > 0) {
+      await processPendingMoveLearn(pendingBackfillLearn);
+    }
   }
 
   // Transition to ExplorationScene so BattleScene.beforeExit disposes of all
