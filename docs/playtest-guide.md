@@ -633,3 +633,14 @@ This workflow catches ~90-95% of iPhone visual issues. The remaining ~5% require
 - PWA standalone mode (Playwright runs in browser mode)
 - iOS system font rendering (San Francisco)
 - Scroll momentum and touch physics
+
+## Explore Offline Behavior (subway stability arc, 2026-07)
+
+Explore mode is designed to keep playing through connection drops (60–120s). What testers should expect while offline:
+
+- **Travel + support rooms keep working** from the prepared runway: proceed, shrine, friendly NPC, skill master, whack-a-mole, speed review, word discovery, dealer, campfire all accept taps instantly (<250ms) and queue to sync later.
+- **Fights start and play turn-by-turn offline** — damage, KOs, and victory/defeat play out locally. On victory you may see a brief "pending" state before rewards resolve when the connection returns.
+- **Talk/befriend is online-only**: the はなす card shows disabled with `Connection needed to talk.` while offline or while queued combat turns haven't synced. It re-enables automatically.
+- **The only sanctioned pause** is the calm `Connection is spotty…` narration. It appears when: the prepared runway runs out, a fight needs data only the server has (rare — befriend-quiz turns), or a stat-boosting room choice hasn't synced before the next fight (the fight waits so damage numbers stay honest). It auto-resumes when connectivity returns.
+- **Bugs to report**: any `did not save` / `Invalid choice` copy, a blank action area lasting more than a few seconds, a replayed/duplicated room or card, or rewards that never resolve after reconnecting.
+- **A reload while offline intentionally loses unsynced progress** — the server re-serves it later; this is by design, not a bug.
