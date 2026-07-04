@@ -160,7 +160,22 @@ function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
   }
   if (response?.state) updateGameState(response.state);
   applyExploreSessionRunway(response);
-  finishSessionCombatFromResults(response);
+  const finished = finishSessionCombatFromResults(response);
+  // Re-drive the phase after a fully-drained checkpoint (mirrors the correction
+  // path's updateUI and KK's refreshKanjiKombatAction). Without this, a combat
+  // start that soft-paused offline — either startEncounter's pending-entries
+  // guard ("Combat will start when your progress syncs") or a partyStats
+  // dependency pause deferring the proceed into the fight — is stranded in
+  // `room_encounter`: the reconnect drain lands here and updates state, but
+  // updateGameState does NOT render, so updateGameContent's `case 'room_encounter'`
+  // never re-fires startEncounter and the fight never begins. Skip when the
+  // checkpoint already finished/advanced combat (finishSessionCombatFromResults
+  // owns that transition) and skip during a healthy active fight (the per-turn
+  // checkpoint stream must not re-render mid-combat). autoProceed/startEncounter
+  // are guarded against re-entry, so the re-drive is idempotent for room phases.
+  const state = getGameState?.();
+  const combatActive = state?.phase === 'combat' && state?.combat?.active !== false && !!state?.combat;
+  if (!finished && !combatActive) updateUI();
 }
 
 function onExploreSessionCorrection(response) {
