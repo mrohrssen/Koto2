@@ -1,4 +1,5 @@
 import { tokenize } from '../tokenizer.js';
+import { isGrammarToken, getAllowedSurfaceSet } from './grammar-allowlist.js';
 
 // ============================================================================
 // CONFIGURATION
@@ -21,124 +22,6 @@ const CONFIG = {
   /** Legacy: max alternative words to suggest (not used in current repair) */
   maxAlternatives: 10
 };
-
-// ============================================================================
-// ALLOWED WORDS (PARTICLES & GRAMMAR)
-// ============================================================================
-
-/**
- * Words that are always allowed regardless of user's vocabulary.
- * These are fundamental grammar particles and expressions that:
- * - Are not useful to "learn" as vocabulary items
- * - Appear in virtually every Japanese sentence
- * - Would make repair impossible if counted as unknown
- *
- * This list should match ALLOWED_WORDS in server.js for consistency.
- *
- * @constant {Set<string>}
- */
-const ALLOWED_WORDS = new Set([
-  // ========== Basic Particles ==========
-  // Subject/object markers and connectors
-  'は', 'が', 'を', 'に', 'で', 'へ', 'と', 'も', 'の', 'か', 'よ', 'ね', 'や',
-
-  // Compound particles (multi-character)
-  'から',    // from
-  'まで',    // until
-  'より',    // than
-  'など',    // etc.
-  'って',    // quotation (casual)
-  'けど',    // but
-  'でも',    // but/even
-  'しか',    // only
-  'ばかり',  // only/just
-  'だけ',    // only
-  'ほど',    // extent
-  'くらい',  // about
-  'ぐらい',  // about (alternate)
-  'のに',    // despite
-  'ので',    // because
-  'のは',    // nominalizer + topic
-  'のが',    // nominalizer + subject
-  'のを',    // nominalizer + object
-
-  // ========== Common Grammar/Auxiliary ==========
-  // Copula and basic verbs that function as grammar
-  'です',    // polite copula
-  'ます',    // polite verb ending
-  'ました',  // polite past
-  'ません',  // polite negative
-  'だ',      // plain copula
-  'な',      // na-adjective connector
-  'ない',    // negative
-  'ある',    // existence (inanimate)
-  'いる',    // existence (animate)
-  'する',    // do (light verb)
-  'なる',    // become
-  'れる',    // passive
-  'られる',  // passive/potential
-  'せる',    // causative
-  'させる',  // causative
-  'たい',    // want to
-  'てる',    // continuous (casual)
-
-  // Grammatical nouns
-  'こと',    // abstract thing
-  'もの',    // concrete thing
-  'ところ',  // place/situation
-  'よう',    // appearance
-  'そう',    // hearsay/appearance
-  'らしい',  // seems like
-  'みたい',  // like/similar to
-
-  // ========== Combined Forms ==========
-  // Common sentence-ending patterns
-  'ですか',    // polite question
-  'ますか',    // polite verb question
-  'でした',    // polite past copula
-  'ましたか',  // polite past question
-  'ませんか',  // polite negative question (invitation)
-  'ですね',    // isn't it (agreement)
-  'ですよ',    // you know (emphasis)
-  'ますね',    // verb + agreement
-  'ますよ',    // verb + emphasis
-  'だった',    // plain past copula
-  'じゃない',  // isn't it (casual)
-  'ではない',  // is not (formal)
-  'かな',      // I wonder
-  'のか',      // question (embedded)
-  'んです',    // explanatory (casual)
-  'のです',    // explanatory (formal)
-  'んですか',  // explanatory question
-  'のですか',  // explanatory question (formal)
-  'でしょう',  // probably
-  'でしょうか', // probably? (question)
-
-  // ========== Question Words ==========
-  // These are vocabulary but so fundamental they're allowed
-  'なに', '何',  // what
-  'どう',       // how
-  'どこ',       // where
-  'いつ',       // when
-  'だれ', '誰', // who
-  'なぜ',       // why
-  'どれ',       // which one
-  'どの',       // which
-
-  // ========== Common Expressions ==========
-  // Set phrases that appear frequently
-  'こんにちは',  // hello
-  'こんばんは',  // good evening
-  'おはよう',    // good morning
-  'ありがとう',  // thank you
-  'すみません',  // excuse me
-  'ください',    // please
-  'お願い',      // request
-  'はい',        // yes
-  'いいえ',      // no
-  'うん',        // yeah (casual)
-  'ええ'         // yes (soft)
-]);
 
 // ============================================================================
 // SENTENCE PARSING
@@ -219,7 +102,7 @@ function splitIntoSentences(text) {
  *
  * A "violation" is a word that:
  * 1. Is not in the user's known vocabulary set
- * 2. Is not in ALLOWED_WORDS (particles/grammar)
+ * 2. Is not free grammar per the shared allowlist (POS, auxiliaries, particles)
  * 3. Is not a game-specific term (enemy names, etc.)
  * 4. Is not a single hiragana character (usually particles)
  *
@@ -270,27 +153,23 @@ function checkSentenceViolations(sentence, vocabSet, gameTerms = null) {
   for (const token of tokens) {
     const { surface, baseForm, pos } = token;
 
-    // Step 1: Skip particles, auxiliary verbs, punctuation, whitespace
-    if (pos.startsWith('助詞') || pos.startsWith('助動詞') ||
-        pos.startsWith('補助記号') || pos.startsWith('空白')) continue;
+    // Steps 1+3 unified: shared grammar allowlist (POS, auxiliary base forms,
+    // grammar chunks / formulaic surfaces) — same list the frames pipeline uses.
+    if (isGrammarToken({ surface, baseForm, pos })) continue;
 
     // Step 2: Deduplicate by baseForm
     if (seen.has(baseForm)) continue;
     seen.add(baseForm);
 
-    // Step 3: Allowed grammar words / particles
-    if (ALLOWED_WORDS.has(baseForm) || ALLOWED_WORDS.has(surface)) continue;
-
     // Step 4: Game-specific terms
     if (gameTermWords.has(baseForm) || gameTermWords.has(surface)) continue;
 
-    // Step 5: Single hiragana character
+    // Step 5: Single hiragana character (documented AI-side-only divergence)
     if (surface.length === 1 && /[\u3040-\u309F]/.test(surface)) continue;
 
     // Step 6: Vocabulary match (check both baseForm and surface)
     if (vocabSet.has(baseForm) || vocabSet.has(surface)) continue;
 
-    // Unknown word
     unknownWords.push(baseForm);
   }
 
@@ -730,6 +609,11 @@ export async function enforceVocabLimit(
 // ============================================================================
 // EXPORTS
 // ============================================================================
+
+// Back-compat: the old inline particle/grammar Set is now derived from the
+// shared allowlist's surface entries (the full grammar predicate lives in
+// isGrammarToken). Kept so existing importers of ALLOWED_WORDS keep working.
+const ALLOWED_WORDS = getAllowedSurfaceSet();
 
 // Named exports for individual functions
 export {
