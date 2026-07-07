@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the single per-user "Translator Upgrade" switch that flips all conversation surfaces (creature befriend, NPC one-liners, revived 3-round bond conversation) from static frames to AI-generated i+1 dialogue — triggered by vocab readiness (≥130 known words incl. ≥30 glue words) plus a verified pre-generated dialogue inventory, announced by a one-time Cid scene.
+**Goal:** Build the single per-user "Translator Upgrade" switch that flips all conversation surfaces (creature befriend, NPC one-liners, revived 3-round bond conversation, and the shop/shrine line pools) from static frames to AI-generated i+1 dialogue — triggered by vocab readiness (≥130 known words incl. ≥30 glue words) plus a verified pre-generated dialogue inventory, announced by a one-time Cid scene.
 
 **Architecture:** A new central `dialogue-director` module computes switch state from FSRS known words + a glue-word config, persists high-water state in player meta, and gates every AI-serving call site via `shouldUseAiDialogue`. Frames remain the permanent per-request fallback. Preflight generation reuses the existing narration-engine queue + i+1 repair pipeline; the Cid moment is a client scene triggered by a new evaluate/complete route pair.
 
@@ -34,6 +34,9 @@
 - Client conversation UI is INTACT: `runNpcDialogue()` in `public/js/ui/npc-dialogue-ui.js` handles `mode:'defeat_line'` AND the conversation shape `{ npc, freed, freedTts, userId, rounds: [{npcLine, npcLineTts?, options:[{text, tts?}]}] }` with `apiRespondNpcDialogue(i, selectedIndex)`.
 - `updateUserKeys(userId, keys, encryptionKey)` **replaces** the whole encrypted blob (`src/auth/users.js:142`) — merging requires decrypt+spread (Task 5 adds `mergeUserKeys`).
 - Test conventions: `import { describe, it } from 'node:test'; import assert from 'node:assert/strict';` — run one file via `node --experimental-test-module-mocks --test tests/unit/<file>.test.js`.
+- Shop/shrine frame serving sites (all follow `frames → assembleFrame → selectBestFrame`, `src/game/token-format.js:19,142`): `run.js hydrateFriendlyNpcOfferDisplayPayload:199-224` (shopPurchase per offered item + shopGreeting), `run.js /shrine-offers:545-575` (shrineGreeting, speaker `shrine_fox`), and `explore-runway-service.js` pool helpers `shrineGreetingFrames()/shopGreetingFrames()/shopPurchaseFrames()` (lines ~175-190) feeding `buildShrinePayload` + the friendly-NPC prepared payload.
+- Slot token shape in frames: a bare `{ "slot": "item" }` object spliced among normal tokens (see `shopPurchase_please` in `data/dialogue/frames.json`); `assembleFrame(frame, { item }, { dict })` fills it. `tokenizeDialogueTexts(texts, { dict })` (`src/game/dialogue-tokenizer.js`) is the runtime tokenizer (already used at serve time by the befriend display service) returning `[{ tokens, words }]`.
+- Entity-type dispatch is registry-driven (`src/narration-engine/entity-types/index.js` REGISTRY; generation.js, dialogue-repair.js, text-cache.js all call `getEntityType(entityType)`), EXCEPT: two hardcoded card-type ternaries in `src/narration-engine/index.js` (`loadCharacterCards(entityType === 'creature' ? 'creature' : 'npc')` at ~line 92 and `const cardType = ...` at ~line 184) and the `['npc', 'creature']` loop in `invalidateNarrationUser` (~line 57). `loadCharacterCards(type)` reads `data/character-cards/${type}s.json`.
 
 ---
 
@@ -517,7 +520,7 @@ node --experimental-test-module-mocks --test tests/unit/debug-translator-upgrade
 - Test: `tests/unit/auth-ai-conversations-unclamped.test.js`
 
 **Interfaces:**
-- Produces: `mergeUserKeys(userId, partialKeys, encryptionKey) -> void` (decrypt-merge-encrypt; Task 10's complete route uses it). `getUserKeys(userId).aiConversationsEnabled` now reflects the stored value for every user.
+- Produces: `mergeUserKeys(userId, partialKeys, encryptionKey) -> void` (decrypt-merge-encrypt; Task 11's complete route uses it). `getUserKeys(userId).aiConversationsEnabled` now reflects the stored value for every user.
 
 **Background:** today `aiConversationsEnabled` is hard-clamped to `false` unless `username === 'michia'` (`isPersonalizedDialogueDebugUser`). Post-switch, regular users must be able to hold `true`. Serving safety moves to `shouldUseAiDialogue` (needs `meta.translatorUpgrade.active`), so unclamping the key is safe.
 
@@ -781,7 +784,7 @@ In `queueBackgroundDialogues` (`src/routes/game/run.js:227`), replace the two ga
     if (!aiConfig) return;
 ```
 
-Add the same two imports to `run.js`. (Pre-switch warm-up generation is Task 10's preflight job — steady-state background regen only runs for switched users.)
+Add the same two imports to `run.js`. (Pre-switch warm-up generation is Task 11's preflight job — steady-state background regen only runs for switched users.)
 
 - [ ] **Step 6: Run tests + commit**
 
@@ -1334,7 +1337,585 @@ npm test 2>&1 | tail -5   # failing-set equality
 
 ---
 
-### Task 10: Preflight + evaluate/complete routes + Cid scene
+### Task 10: Shop & shrine AI line pools
+
+**Files:**
+- Create: `data/character-cards/line-pools.json`
+- Create: `src/narration-engine/entity-types/line-pool.js`
+- Modify: `src/narration-engine/entity-types/index.js` (register `linePool`)
+- Modify: `src/narration-engine/entity-types/npc.js`, `creature.js` (add `cardType` export)
+- Modify: `src/narration-engine/index.js` (card-type dispatch + invalidation loop)
+- Create: `src/game/services/dialogue-pool-service.js`
+- Modify: `src/routes/game/run.js` (`hydrateFriendlyNpcOfferDisplayPayload:199-224`, `/shrine-offers:545-575`)
+- Modify: `src/game/services/explore-runway-service.js` (pool helpers, lines ~175-190 + their callers)
+- Modify: `server.js` (add `queueMissingLinePoolsFn` wrapper), `src/app.js` (no-op default)
+- Test: `tests/unit/line-pool-entity.test.js`, `tests/unit/dialogue-pool-service.test.js`
+
+**Interfaces:**
+- Consumes: `shouldUseAiDialogue` (Task 2), `getUserKeys(userId)` (`src/auth/users.js:360`), `getDialogueFromCache(userId, id, 'linePool')` (narration engine — same function the DI'd `getNpcDialogueFromCache` wraps; it accepts the entityType arg, see `server.js:291` for the creature-type call pattern), `tokenizeDialogueTexts`, `assembleFrame`/`selectBestFrame` (untouched consumers).
+- Produces: `POOL_IDS = ['shopGreeting', 'shopPurchase', 'shrineGreeting']` (exported from `dialogue-pool-service.js`); `resolveFramePool(category, { userId, meta, getCached, getKeys? }) -> frames[]|null`; `tokenizePoolLines(lines, { dict }) -> frames[]`; narration engine accepts `entityType: 'linePool'` end-to-end. Task 11's preflight consumes `POOL_IDS` + the linePool cache.
+
+- [ ] **Step 1: Write the failing entity-type test**
+
+Create `tests/unit/line-pool-entity.test.js`:
+
+```js
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  validateShape,
+  extractStrings,
+  assemblePrompt,
+  getMemorySnapshot,
+  getPreviousLines,
+  cardType
+} from '../../src/narration-engine/entity-types/line-pool.js';
+import { getEntityType } from '../../src/narration-engine/entity-types/index.js';
+
+const shopPurchaseCard = {
+  id: 'shopPurchase', name: '店の人', nameEn: 'Shopkeeper',
+  personality: 'Warm, friendly merchant who loves their wares',
+  lineCount: 8, slot: '{item}'
+};
+
+describe('line-pool entity type', () => {
+  it('is registered in the entity-type registry', () => {
+    assert.equal(getEntityType('linePool').cardType, 'line-pool');
+    assert.equal(cardType, 'line-pool');
+  });
+
+  it('validateShape accepts 6-10 non-empty lines, rejects otherwise', () => {
+    assert.equal(validateShape({ lines: Array(8).fill('こんにちは') }).valid, true);
+    assert.equal(validateShape({ lines: Array(3).fill('こんにちは') }).valid, false);
+    assert.equal(validateShape({ lines: Array(11).fill('こんにちは') }).valid, false);
+    assert.equal(validateShape({ lines: ['', 'こんにちは', 'x', 'x', 'x', 'x'] }).valid, false);
+    assert.equal(validateShape({}).valid, false);
+    assert.equal(validateShape(null).valid, false);
+  });
+
+  it('extractStrings strips the {item} slot so vocab validation covers only the template', () => {
+    const entries = extractStrings({ lines: ['{item}をください', 'こんにちは'] });
+    assert.equal(entries.length, 2);
+    assert.equal(entries[0].path, 'lines[0]');
+    assert.equal(entries[0].text, 'をください');
+    assert.equal(entries[1].text, 'こんにちは');
+  });
+
+  it('assemblePrompt includes persona, line count, and the slot rule when card.slot is set', () => {
+    const { systemBlocks, userPrompt } = assemblePrompt({
+      characterCard: shopPurchaseCard, vocabWords: ['本'], jlptLevel: 'N4',
+      memory: null, previousLines: [], reinforceWords: []
+    });
+    const sys = systemBlocks.map(b => b.text).join('\n');
+    assert.match(sys, /Shopkeeper|店の人/);
+    assert.match(userPrompt, /8/);
+    assert.match(userPrompt, /\{item\}/);
+    assert.match(userPrompt, /"lines"/);
+  });
+
+  it('memory snapshot is empty and previous lines come from the cached pool', () => {
+    assert.deepEqual(getMemorySnapshot({ anything: true }), {});
+    assert.deepEqual(getPreviousLines({ lines: ['a', 'b'] }), ['a', 'b']);
+    assert.deepEqual(getPreviousLines(null), []);
+  });
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+```bash
+node --experimental-test-module-mocks --test tests/unit/line-pool-entity.test.js
+```
+
+Expected: FAIL — module not found.
+
+- [ ] **Step 3: Write the pool cards**
+
+Create `data/character-cards/line-pools.json`:
+
+```json
+{
+  "shopGreeting": {
+    "id": "shopGreeting",
+    "name": "店の人",
+    "nameEn": "Shopkeeper",
+    "personality": "Warm, welcoming merchant. Proud of their little shop, happy to see a familiar face. Speaks in short, friendly sentences.",
+    "lineCount": 8,
+    "slot": null,
+    "description": "Greeting lines shown when the player enters a friendly NPC shop room."
+  },
+  "shopPurchase": {
+    "id": "shopPurchase",
+    "name": "店の人",
+    "nameEn": "Shopkeeper",
+    "personality": "The same merchant offering a specific item for sale. Direct, cheerful sales patter.",
+    "lineCount": 8,
+    "slot": "{item}",
+    "description": "Lines offering a specific item; {item} is replaced with the item's name at serve time. The item word is the i+1 unknown — everything else must be known."
+  },
+  "shrineGreeting": {
+    "id": "shrineGreeting",
+    "name": "狐の神様",
+    "nameEn": "Shrine Fox",
+    "personality": "Serene, slightly mysterious fox spirit of the shrine. Kind but formal; blesses travelers. Speaks calmly.",
+    "lineCount": 8,
+    "slot": null,
+    "description": "Greeting lines when the player approaches a shrine room."
+  }
+}
+```
+
+- [ ] **Step 4: Write the entity type**
+
+Create `src/narration-engine/entity-types/line-pool.js`:
+
+```js
+import { buildVocabSection, buildReinforceSection } from '../vocab-constraints.js';
+
+export const cachePrefix = 'pool-dialogue-cache';
+export const memoryPrefix = 'pool-memory';
+export const cardType = 'line-pool';
+export const requiredCardFields = ['id', 'name', 'nameEn', 'personality', 'lineCount'];
+
+const MIN_LINES = 6;
+const MAX_LINES = 10;
+
+/**
+ * Validate a generated line pool: { lines: string[] } with 6-10 non-empty lines.
+ */
+export function validateShape(obj) {
+  if (!obj || typeof obj !== 'object') {
+    return { valid: false, errors: ['pool must be a non-null object'] };
+  }
+  if (!Array.isArray(obj.lines)) {
+    return { valid: false, errors: ['missing lines array'] };
+  }
+  const errors = [];
+  if (obj.lines.length < MIN_LINES || obj.lines.length > MAX_LINES) {
+    errors.push(`expected ${MIN_LINES}-${MAX_LINES} lines, got ${obj.lines.length}`);
+  }
+  obj.lines.forEach((line, i) => {
+    if (typeof line !== 'string' || line.length === 0) {
+      errors.push(`lines[${i}] must be a non-empty string`);
+    }
+  });
+  return errors.length === 0 ? { valid: true, errors: [] } : { valid: false, errors };
+}
+
+/**
+ * Extract strings for vocab validation. The {item} slot is stripped so the
+ * i+1 check covers only the template — the filled item word is the intended
+ * unknown, exactly like static shopPurchase frames.
+ */
+export function extractStrings(pool) {
+  if (!pool?.lines) return [];
+  return pool.lines.map((text, i) => ({
+    path: `lines[${i}]`,
+    text: String(text).replaceAll('{item}', '')
+  }));
+}
+
+export function buildRepairInstruction(violations) {
+  const violationLines = violations.map(v =>
+    `- ${v.path}: "${v.text}" contains unknown word(s): ${v.unknowns.join(', ')}`
+  ).join('\n');
+  return `The following lines violate the vocab constraint (i+1 rule):
+${violationLines}
+
+Replace only the violating lines with alternatives that use words from the allowed vocab list.
+Keep the same JSON structure: { "lines": [ ... ] } with the same number of lines.
+Lines that had the literal {item} placeholder must keep it.
+Return the complete corrected JSON.`;
+}
+
+export function assemblePrompt({ characterCard, vocabWords, jlptLevel, memory, previousLines, reinforceWords = [] }) {
+  const systemBlocks = [];
+
+  const slotRules = characterCard.slot
+    ? `\n- EVERY line MUST contain the literal placeholder ${characterCard.slot} exactly once — it is replaced with an item name at runtime.
+- Outside the placeholder, use ONLY known words from the vocab list (zero unknowns): the filled item is the line's one unknown word.`
+    : '';
+
+  systemBlocks.push({
+    label: 'instructions',
+    text: `You are generating a pool of short utility lines for a Japanese language learning RPG.
+
+The pool is reused often, so lines must be short (2-8 words), natural, and varied.
+
+CRITICAL RULES (i+1 comprehensible input):
+- Use words from the player's vocabulary list below; at most 1 unknown word per line.
+- If you cannot express something with the allowed vocabulary, simplify.${slotRules}`
+  });
+
+  systemBlocks.push({ label: 'vocab', text: buildVocabSection(vocabWords, jlptLevel) });
+
+  const reinforceText = buildReinforceSection(reinforceWords);
+  if (reinforceText) {
+    systemBlocks.push({ label: 'reinforce', text: reinforceText });
+  }
+
+  const charParts = [
+    `Speaker: ${characterCard.name} (${characterCard.nameEn})`,
+    `Personality: ${characterCard.personality}`
+  ];
+  if (characterCard.description) charParts.push(`Usage: ${characterCard.description}`);
+  systemBlocks.push({ label: 'character', text: charParts.join('\n') });
+
+  if (previousLines?.length > 0) {
+    systemBlocks.push({
+      label: 'anti-repetition',
+      text: `Avoid repeating these lines from the previous pool:\n${previousLines.map(l => `  - ${l}`).join('\n')}`
+    });
+  }
+
+  const slotExample = characterCard.slot ? `"${characterCard.slot}をください"` : '"こんにちは！"';
+  const userPrompt = `Generate exactly ${characterCard.lineCount} Japanese lines for ${characterCard.nameEn}.
+
+Return ONLY valid JSON matching this schema:
+{
+  "lines": [${slotExample}, "..."]
+}
+
+Rules:
+- Exactly ${characterCard.lineCount} lines, each a short natural utterance in character.
+- Vary sentence patterns and endings across lines.${characterCard.slot ? `\n- Every line contains ${characterCard.slot} exactly once.` : ''}
+- All Japanese text must follow the vocab constraints.`;
+
+  return { systemBlocks, userPrompt };
+}
+
+export function getPreviousLines(cached) {
+  return cached?.lines ? [...cached.lines] : [];
+}
+
+/**
+ * Pools have no encounter memory — snapshot is constant so cache staleness
+ * keys off vocab growth only.
+ */
+export function getMemorySnapshot() {
+  return {};
+}
+```
+
+- [ ] **Step 5: Register the type + fix the hardcoded dispatch**
+
+(a) `src/narration-engine/entity-types/index.js`:
+
+```js
+import * as npcType from './npc.js';
+import * as creatureType from './creature.js';
+import * as linePoolType from './line-pool.js';
+
+const REGISTRY = {
+  npc: npcType,
+  creature: creatureType,
+  linePool: linePoolType
+};
+```
+
+(b) Add `export const cardType = 'npc';` to `src/narration-engine/entity-types/npc.js` and `export const cardType = 'creature';` to `creature.js` (beside their existing `cachePrefix` exports).
+
+(c) In `src/narration-engine/index.js`, replace BOTH hardcoded ternaries (`loadCharacterCards(entityType === 'creature' ? 'creature' : 'npc')` at ~line 92 in `queueMissingDialogues`, and `const cardType = entityType === 'creature' ? 'creature' : 'npc';` at ~line 184 in `generateAndCache`) with:
+
+```js
+  const cards = loadCharacterCards(getEntityType(entityType).cardType);
+```
+```js
+  const card = getCharacterCard(entityId, getEntityType(entityType).cardType);
+```
+
+and extend `invalidateNarrationUser` (~line 57) to loop `['npc', 'creature', 'linePool']`.
+
+- [ ] **Step 6: Run the entity test**
+
+```bash
+node --experimental-test-module-mocks --test tests/unit/line-pool-entity.test.js
+```
+
+Expected: PASS.
+
+- [ ] **Step 7: Write the failing pool-service test**
+
+Create `tests/unit/dialogue-pool-service.test.js`:
+
+```js
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { resolveFramePool, tokenizePoolLines, POOL_IDS } from '../../src/game/services/dialogue-pool-service.js';
+
+const dict = new Map([
+  ['ください', { reading: 'ください', definitions: ['please give me'] }],
+  ['こんにちは', { reading: 'こんにちは', definitions: ['hello'] }]
+]);
+
+const activeMeta = { translatorUpgrade: { active: true, readyAt: 'x', seenAt: 'x' } };
+const okKeys = { aiDataSharingConsent: true, aiConversationsEnabled: true };
+const aiEnv = {
+  AI_DIALOGUE_PROVIDER: 'openai', AI_DIALOGUE_API_KEY: 'k', AI_DIALOGUE_MODEL: 'm'
+};
+
+describe('POOL_IDS', () => {
+  it('covers the three categories', () => {
+    assert.deepEqual(POOL_IDS, ['shopGreeting', 'shopPurchase', 'shrineGreeting']);
+  });
+});
+
+describe('tokenizePoolLines', () => {
+  it('splices a slot token for {item} templates', () => {
+    const [frame] = tokenizePoolLines(['{item}をください'], { dict });
+    assert.equal(frame.raw, '{item}をください');
+    assert.deepEqual(frame.tokens[0], { slot: 'item' });
+    assert.ok(frame.tokens.length > 1, 'segment tokens follow the slot');
+    assert.deepEqual(frame.slots, ['item']);
+  });
+
+  it('tokenizes slotless lines directly', () => {
+    const [frame] = tokenizePoolLines(['こんにちは'], { dict });
+    assert.equal(frame.raw, 'こんにちは');
+    assert.ok(frame.tokens.every(t => !t.slot));
+    assert.deepEqual(frame.slots, []);
+  });
+});
+
+describe('resolveFramePool', () => {
+  it('returns null when the gate is closed (no switch)', () => {
+    const result = resolveFramePool('shopGreeting', {
+      userId: 'u1', meta: {},
+      getCached: () => ({ lines: ['こんにちは'] }),
+      getKeys: () => okKeys, env: aiEnv
+    });
+    assert.equal(result, null);
+  });
+
+  it('returns null when no pool is cached', () => {
+    const result = resolveFramePool('shopGreeting', {
+      userId: 'u1', meta: activeMeta,
+      getCached: () => null,
+      getKeys: () => okKeys, env: aiEnv
+    });
+    assert.equal(result, null);
+  });
+
+  it('returns frame-shaped entries when gated open + cached', () => {
+    const result = resolveFramePool('shopGreeting', {
+      userId: 'u1', meta: activeMeta,
+      getCached: () => ({ lines: ['こんにちは'], generatedAt: 't1' }),
+      getKeys: () => okKeys, env: aiEnv, dict
+    });
+    assert.equal(result.length, 1);
+    assert.equal(result[0].category, 'shopGreeting');
+    assert.equal(result[0].raw, 'こんにちは');
+    assert.ok(Array.isArray(result[0].tokens));
+    assert.ok(Array.isArray(result[0].words));
+  });
+
+  it('drops shopPurchase lines missing the {item} slot; null when none survive', () => {
+    const good = resolveFramePool('shopPurchase', {
+      userId: 'u1', meta: activeMeta,
+      getCached: () => ({ lines: ['{item}をください', 'こんにちは'], generatedAt: 't2' }),
+      getKeys: () => okKeys, env: aiEnv, dict
+    });
+    assert.equal(good.length, 1);
+    assert.equal(good[0].raw, '{item}をください');
+
+    const none = resolveFramePool('shopPurchase', {
+      userId: 'u1', meta: activeMeta,
+      getCached: () => ({ lines: ['こんにちは'], generatedAt: 't3' }),
+      getKeys: () => okKeys, env: aiEnv, dict
+    });
+    assert.equal(none, null);
+  });
+});
+```
+
+- [ ] **Step 8: Run to verify it fails, then implement the service**
+
+```bash
+node --experimental-test-module-mocks --test tests/unit/dialogue-pool-service.test.js
+```
+
+Create `src/game/services/dialogue-pool-service.js`:
+
+```js
+import { tokenizeDialogueTexts } from '../dialogue-tokenizer.js';
+import { shouldUseAiDialogue } from '../dialogue-director.js';
+import { buildAiDialogueConfig } from '../../ai-dialogue/config.js';
+import { getUserKeys } from '../../auth/users.js';
+
+export const POOL_IDS = ['shopGreeting', 'shopPurchase', 'shrineGreeting'];
+
+// Tokenized pools memoized per user+category+generation (serve-time tokenization,
+// same tokenizer the befriend display path uses).
+const _tokenizedPools = new Map();
+
+/**
+ * Tokenize AI pool lines into the static-frame shape so assembleFrame /
+ * selectBestFrame / renderers work unchanged. {item} templates get a bare
+ * { slot: 'item' } token spliced at the placeholder position, matching
+ * frames.json slot tokens.
+ */
+export function tokenizePoolLines(lines, { dict }) {
+  const frames = [];
+  for (const raw of lines) {
+    if (typeof raw !== 'string' || raw.length === 0) continue;
+    if (raw.includes('{item}')) {
+      const segments = raw.split('{item}');
+      const nonEmpty = segments.filter(s => s.length > 0);
+      const tokenized = nonEmpty.length > 0 ? tokenizeDialogueTexts(nonEmpty, { dict }) : [];
+      let cursor = 0;
+      const tokens = [];
+      const words = [];
+      segments.forEach((segment, i) => {
+        if (i > 0) tokens.push({ slot: 'item' });
+        if (segment.length > 0) {
+          const seg = tokenized[cursor++];
+          tokens.push(...(seg?.tokens || []));
+          words.push(...(seg?.words || []));
+        }
+      });
+      frames.push({ raw, tokens, words, slots: ['item'] });
+    } else {
+      const [tok] = tokenizeDialogueTexts([raw], { dict });
+      frames.push({ raw, tokens: tok?.tokens || [], words: tok?.words || [], slots: [] });
+    }
+  }
+  return frames;
+}
+
+/**
+ * Resolve the AI line pool for a category, or null → caller uses static frames.
+ * Gate: server env + consent + toggle + earned switch (no debug override here;
+ * pre-threshold pool testing goes through the seed script + activation).
+ */
+export function resolveFramePool(category, {
+  userId,
+  meta,
+  getCached,
+  getKeys = getUserKeys,
+  env = process.env,
+  dict = null
+} = {}) {
+  if (!POOL_IDS.includes(category)) return null;
+  const aiConfig = buildAiDialogueConfig(env);
+  const userKeys = getKeys(userId) || {};
+  if (!shouldUseAiDialogue({ userKeys, meta, aiConfig })) return null;
+
+  const cached = getCached(userId, category, 'linePool');
+  if (!Array.isArray(cached?.lines) || cached.lines.length === 0) return null;
+
+  let lines = cached.lines;
+  if (category === 'shopPurchase') {
+    lines = lines.filter(l => typeof l === 'string' && l.includes('{item}'));
+    if (lines.length === 0) return null;
+  }
+
+  const memoKey = `${userId}:${category}:${cached.generatedAt || ''}`;
+  if (!_tokenizedPools.has(memoKey)) {
+    const frames = tokenizePoolLines(lines, { dict }).map((frame, i) => ({
+      id: `ai_${category}_${i}`,
+      category,
+      ...frame
+    }));
+    if (frames.length === 0) return null;
+    _tokenizedPools.set(memoKey, frames);
+  }
+  return _tokenizedPools.get(memoKey);
+}
+```
+
+Run the test — expected: PASS.
+
+- [ ] **Step 9: Swap the serving sites (static frames stay as fallback)**
+
+Thread the pool cache getter into the run routes and runway first: in `src/routes/game/index.js`, add `getNpcDialogueFromCache: deps.getNpcDialogueFromCache` to the `createRunRoutes({...})` deps object, and accept it in `createRunRoutes`'s destructured params in `run.js`. (`server.js` already passes the underlying `getDialogueFromCache` re-export into the routes object — verify with `grep -n "getNpcDialogueFromCache" src/routes/index.js server.js`. In `src/app.js` the default `getNpcDialogueFromCache: () => null` already exists.)
+
+(a) `run.js hydrateFriendlyNpcOfferDisplayPayload` — resolve pools first, keep static as fallback:
+
+```js
+  function hydrateFriendlyNpcOfferDisplayPayload(room, userId, meta) {
+    const knownWords = getKnownWordsFromFsrs(userId);
+    const knownSet = new Set(knownWords);
+    const poolOpts = { userId, meta, getCached: getNpcDialogueFromCache || (() => null), dict: getWordDict() };
+    const shopFrames = resolveFramePool('shopPurchase', poolOpts) || getShopPurchaseFrames();
+
+    for (const item of room.friendlyNpc.offered || []) {
+      if (!item?.word) continue;
+      if (!item.tokens?.length || !item.words?.length) {
+        const candidates = shopFrames.map(frame => assembleFrame(frame, { item }, { dict: getWordDict() }));
+        const best = selectBestFrame(candidates, knownSet, { dict: getWordDict() });
+        if (best) {
+          item.tokens = best.tokens || [];
+          item.words = best.words || [];
+        }
+      }
+      if (!item.nameToken) {
+        item.nameToken = entityToToken(item);
+      }
+    }
+
+    if (!room.friendlyNpc.greeting) {
+      const greetingFrames = resolveFramePool('shopGreeting', poolOpts) || getShopGreetingFrames();
+      const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
+      room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
+    }
+  }
+```
+
+Update the function's call sites in `run.js` (grep `hydrateFriendlyNpcOfferDisplayPayload(`) to pass `req.gameManager.getMeta()` as the third arg. Add imports for `resolveFramePool`.
+
+(b) `run.js /shrine-offers` — same swap:
+
+```js
+        const greetingFrames = resolveFramePool('shrineGreeting', {
+          userId: req.user.id,
+          meta: gm.getMeta(),
+          getCached: getNpcDialogueFromCache || (() => null),
+          dict: getWordDict()
+        }) || getShrineGreetingFrames();
+```
+
+(c) `explore-runway-service.js` — extend the three pool helpers to try the AI pool. The runway builders receive `opts` containing `userId` (see `knownSetForOpts`); the service has `this.gm` for meta. Change the helpers to accept a `poolOpts` argument and pass it from the builders:
+
+```js
+function shrineGreetingFrames(poolOpts = null) {
+  if (poolOpts) {
+    const pool = resolveFramePool('shrineGreeting', poolOpts);
+    if (pool) return pool;
+  }
+  const loaded = getShrineGreetingFrames();
+  if (loaded.length > 0) return loaded;
+  return getFallbackDialogueFrames().filter(frame => frame.category === 'shrineGreeting');
+}
+```
+
+(mirror for `shopGreetingFrames`/`shopPurchaseFrames`), and at each caller inside the runway builders construct:
+
+```js
+    const poolOpts = {
+      userId: opts.userId,
+      meta: gm.getMeta(),
+      getCached: opts.getDialogueFromCacheFn || (() => null),
+      dict: getWordDict()
+    };
+```
+
+Thread `getDialogueFromCacheFn` into the runway `opts` at both `buildExploreRunway` call sites (`src/routes/game/state.js:44` and the exploration-service caller — grep `buildExploreRunway(`), sourcing it from the DI'd `getNpcDialogueFromCache`. Where the builder lacks `gm` in scope, pass `meta` through `opts` the same way `userId` travels. Match each builder's existing local structure — the pattern is always: try pool, fall back to static.
+
+(d) `server.js`: add the pool queue wrapper beside the existing NPC one (grep `queueMissingNpcDialoguesFn` there and mirror its shape — chatFn injection, `'linePool'` entityType, `null` ttsOptions, forwarding the `options` arg). Name it `queueMissingLinePoolsFn` and thread it through `src/routes/index.js` → `src/routes/game/index.js` deps. Add `queueMissingLinePoolsFn: async () => {}` to the `src/app.js` defaults block.
+
+- [ ] **Step 10: Run tests + syntax checks + commit**
+
+```bash
+node --experimental-test-module-mocks --test tests/unit/line-pool-entity.test.js
+node --experimental-test-module-mocks --test tests/unit/dialogue-pool-service.test.js
+npm test 2>&1 | tail -5   # failing-set equality vs baseline
+/usr/bin/git add data/character-cards/line-pools.json src/narration-engine/ src/game/services/dialogue-pool-service.js src/routes/game/run.js src/routes/game/index.js src/game/services/explore-runway-service.js src/routes/game/state.js server.js src/app.js tests/unit/line-pool-entity.test.js tests/unit/dialogue-pool-service.test.js
+/usr/bin/git commit -m "feat: shop & shrine AI line pools behind translator-upgrade switch (frames fallback)"
+```
+
+---
+
+### Task 11: Preflight + evaluate/complete routes + Cid scene
 
 **Files:**
 - Modify: `src/game/dialogue-director.js` (add `getPreflightEntities`, `getPreflightStatus`)
@@ -1345,7 +1926,7 @@ npm test 2>&1 | tail -5   # failing-set equality
 - Test: `tests/unit/dialogue-director-preflight.test.js`, `tests/integration/translator-upgrade-routes.test.js`
 
 **Interfaces:**
-- Consumes: `AREAS` (`src/game/rooms.js`), `loadNpcs` (`npc-service.js`), `loadCharacterCards` (`narration-engine/character-cards.js`), DI'd narration fns: `getNpcDialogueFromCache(userId, id)`, `getCreatureDialogueFromCache(userId, id)`, `isNpcDialogueStaleFn(userId, id, vocabContext)` / `isCreatureDialogueStaleFn(userId, id, vocabContext, 'creature')`, `queueMissingNpcDialoguesFn`, `queueMissingCreatureDialoguesFn`, `mergeUserKeys` (Task 5), `markTranslatorUpgradeReady`/`activateTranslatorUpgrade` (Task 2), `getSwitchState` (Task 2).
+- Consumes: `AREAS` (`src/game/rooms.js`), `loadNpcs` (`npc-service.js`), `loadCharacterCards` (`narration-engine/character-cards.js`), `POOL_IDS` (Task 10), DI'd narration fns: `getNpcDialogueFromCache(userId, id[, entityType])`, `getCreatureDialogueFromCache(userId, id)`, `isNpcDialogueStaleFn(userId, id, vocabContext[, entityType])` / `isCreatureDialogueStaleFn(userId, id, vocabContext, 'creature')`, `queueMissingNpcDialoguesFn`, `queueMissingCreatureDialoguesFn`, `queueMissingLinePoolsFn` (Task 10), `mergeUserKeys` (Task 5), `markTranslatorUpgradeReady`/`activateTranslatorUpgrade` (Task 2), `getSwitchState` (Task 2).
 - Produces: `POST /api/game/translator-upgrade/evaluate -> { knownCount, glueCount, thresholdMet, ready, active, seen, preflight: {total, fresh} }`; `POST /api/game/translator-upgrade/complete -> { ok, state }`. Client `maybePlayTranslatorUpgrade()`.
 
 - [ ] **Step 1: Write the failing preflight unit test**
@@ -1372,26 +1953,35 @@ describe('preflight entity scoping', () => {
 
 describe('preflight completeness', () => {
   const meta = { levels: { highestUnlocked: 1 } };
-  it('complete only when every entity has a fresh cache entry', () => {
-    const { npcIds, creatureIds } = getPreflightEntities(meta);
-    const total = npcIds.length + creatureIds.length;
+  const freshDeps = {
+    getNpcCached: () => ({ rounds: [] }),
+    getCreatureCached: () => ({ rounds: [] }),
+    getPoolCached: () => ({ lines: ['x'] }),
+    isNpcStale: () => false,
+    isCreatureStale: () => false,
+    isPoolStale: () => false
+  };
 
-    const allFresh = getPreflightStatus('u1', meta, {
-      getNpcCached: () => ({ rounds: [] }),
-      getCreatureCached: () => ({ rounds: [] }),
-      isNpcStale: () => false,
-      isCreatureStale: () => false
-    });
+  it('complete only when every entity AND line pool has a fresh cache entry', () => {
+    const { npcIds, creatureIds } = getPreflightEntities(meta);
+    const total = npcIds.length + creatureIds.length + 3; // + POOL_IDS
+
+    const allFresh = getPreflightStatus('u1', meta, freshDeps);
     assert.deepEqual(allFresh, { total, fresh: total, complete: true });
 
-    const oneMissing = getPreflightStatus('u1', meta, {
-      getNpcCached: (uid, id) => id === npcIds[0] ? null : ({ rounds: [] }),
-      getCreatureCached: () => ({ rounds: [] }),
-      isNpcStale: () => false,
-      isCreatureStale: () => false
+    const oneNpcMissing = getPreflightStatus('u1', meta, {
+      ...freshDeps,
+      getNpcCached: (uid, id) => id === npcIds[0] ? null : ({ rounds: [] })
     });
-    assert.equal(oneMissing.complete, false);
-    assert.equal(oneMissing.fresh, total - 1);
+    assert.equal(oneNpcMissing.complete, false);
+    assert.equal(oneNpcMissing.fresh, total - 1);
+
+    const onePoolMissing = getPreflightStatus('u1', meta, {
+      ...freshDeps,
+      getPoolCached: (uid, id) => id === 'shopPurchase' ? null : ({ lines: ['x'] })
+    });
+    assert.equal(onePoolMissing.complete, false);
+    assert.equal(onePoolMissing.fresh, total - 1);
   });
 });
 ```
@@ -1421,6 +2011,9 @@ import { loadCharacterCards } from '../narration-engine/character-cards.js';
  * Entities the preflight must have generated: every card-backed NPC and
  * befriendable creature in the player's unlocked areas.
  */
+// POOL_IDS lives in dialogue-pool-service (Task 10); import it here:
+// import { POOL_IDS } from './services/dialogue-pool-service.js';
+
 export function getPreflightEntities(meta) {
   const highest = meta?.levels?.highestUnlocked || 1;
   const unlockedAreas = AREAS.slice(0, highest);
@@ -1444,10 +2037,14 @@ export function getPreflightEntities(meta) {
 }
 
 /**
- * Completeness check over the preflight scope. Deps are injected so routes
+ * Completeness check over the preflight scope: NPCs + creatures in unlocked
+ * areas, plus the three shop/shrine line pools. Deps are injected so routes
  * can pass the DI'd narration-engine functions and tests can stub them.
  */
-export function getPreflightStatus(userId, meta, { getNpcCached, getCreatureCached, isNpcStale, isCreatureStale }) {
+export function getPreflightStatus(userId, meta, {
+  getNpcCached, getCreatureCached, getPoolCached,
+  isNpcStale, isCreatureStale, isPoolStale
+}) {
   const { npcIds, creatureIds } = getPreflightEntities(meta);
   let fresh = 0;
   for (const id of npcIds) {
@@ -1458,7 +2055,11 @@ export function getPreflightStatus(userId, meta, { getNpcCached, getCreatureCach
     const cached = getCreatureCached(userId, id);
     if (cached && !isCreatureStale(userId, id)) fresh++;
   }
-  const total = npcIds.length + creatureIds.length;
+  for (const id of POOL_IDS) {
+    const cached = getPoolCached(userId, id);
+    if (cached && !isPoolStale(userId, id)) fresh++;
+  }
+  const total = npcIds.length + creatureIds.length + POOL_IDS.length;
   return { total, fresh, complete: total > 0 && fresh === total };
 }
 ```
@@ -1479,6 +2080,7 @@ import {
   markTranslatorUpgradeReady,
   activateTranslatorUpgrade
 } from '../../game/dialogue-director.js';
+import { POOL_IDS } from '../../game/services/dialogue-pool-service.js';
 import { buildAiDialogueConfig } from '../../ai-dialogue/config.js';
 import { mergeUserKeys } from '../../auth/users.js';
 import { getSuggestionsForNarration } from '../../game/vocab-manager.js';
@@ -1497,7 +2099,8 @@ export default function createTranslatorUpgradeRoutes(deps) {
     isNpcDialogueStaleFn,
     isCreatureDialogueStaleFn,
     queueMissingNpcDialoguesFn,
-    queueMissingCreatureDialoguesFn
+    queueMissingCreatureDialoguesFn,
+    queueMissingLinePoolsFn
   } = deps;
 
   const router = Router();
@@ -1525,8 +2128,10 @@ export default function createTranslatorUpgradeRoutes(deps) {
         preflight = getPreflightStatus(req.user.id, meta, {
           getNpcCached: (uid, id) => getNpcDialogueFromCache?.(uid, id) || null,
           getCreatureCached: (uid, id) => getCreatureDialogueFromCache?.(uid, id) || null,
+          getPoolCached: (uid, id) => getNpcDialogueFromCache?.(uid, id, 'linePool') || null,
           isNpcStale: (uid, id) => isNpcDialogueStaleFn ? isNpcDialogueStaleFn(uid, id, { words: vocabulary }) : false,
-          isCreatureStale: (uid, id) => isCreatureDialogueStaleFn ? isCreatureDialogueStaleFn(uid, id, { words: vocabulary }, 'creature') : false
+          isCreatureStale: (uid, id) => isCreatureDialogueStaleFn ? isCreatureDialogueStaleFn(uid, id, { words: vocabulary }, 'creature') : false,
+          isPoolStale: (uid, id) => isNpcDialogueStaleFn ? isNpcDialogueStaleFn(uid, id, { words: vocabulary }, 'linePool') : false
         });
 
         if (preflight.complete) {
@@ -1539,6 +2144,8 @@ export default function createTranslatorUpgradeRoutes(deps) {
             .catch(e => console.error('[TranslatorUpgrade] NPC preflight generation failed:', e.message));
           queueMissingCreatureDialoguesFn?.(req.user.id, aiConfig, vocabContext, { entityIds: scope.creatureIds })
             .catch(e => console.error('[TranslatorUpgrade] Creature preflight generation failed:', e.message));
+          queueMissingLinePoolsFn?.(req.user.id, aiConfig, vocabContext, { entityIds: POOL_IDS })
+            .catch(e => console.error('[TranslatorUpgrade] Line-pool preflight generation failed:', e.message));
         }
       }
 
@@ -1588,11 +2195,12 @@ import createTranslatorUpgradeRoutes from './translator-upgrade.js';
     isNpcDialogueStaleFn: deps.isNpcDialogueStaleFn,
     isCreatureDialogueStaleFn: deps.isCreatureDialogueStaleFn,
     queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn,
-    queueMissingCreatureDialoguesFn: deps.queueMissingCreatureDialoguesFn
+    queueMissingCreatureDialoguesFn: deps.queueMissingCreatureDialoguesFn,
+    queueMissingLinePoolsFn: deps.queueMissingLinePoolsFn
   }));
 ```
 
-Check `src/routes/index.js` forwards all eight deps into `createGameRoutes` (grep each name; `isNpcDialogueStaleFn` may need adding to the deps chain from `server.js` — the narration engine exports `isDialogueCacheStale`, wire it as `isNpcDialogueStaleFn: (uid, id, ctx) => isDialogueCacheStale(uid, id, ctx, 'npc')` in `server.js` beside the existing creature variant, and thread it through `src/app.js` defaults as `isNpcDialogueStaleFn: () => false`).
+Check `src/routes/index.js` forwards all nine deps into `createGameRoutes` (grep each name; `isNpcDialogueStaleFn` may need adding to the deps chain from `server.js` — the narration engine exports `isDialogueCacheStale`, wire it as `isNpcDialogueStaleFn: (uid, id, ctx, entityType = 'npc') => isDialogueCacheStale(uid, id, ctx, entityType)` in `server.js` beside the existing creature variant so the same dep also answers linePool staleness, and thread it through `src/app.js` defaults as `isNpcDialogueStaleFn: () => false`).
 
 - [ ] **Step 6: Integration test the two routes**
 
@@ -1699,7 +2307,7 @@ npm test 2>&1 | tail -5   # failing-set equality
 
 ---
 
-### Task 11: Glue runway — audit + curriculum wiring
+### Task 12: Glue runway — audit + curriculum wiring
 
 **Files:**
 - Modify: `scripts/validate-glue-progression.js` (extend to check switch-config coverage)
@@ -1801,7 +2409,7 @@ npm test 2>&1 | tail -5   # failing-set equality
 
 ---
 
-### Task 12: Admin visibility + dev threshold seed
+### Task 13: Admin visibility + dev threshold seed
 
 **Files:**
 - Modify: `src/routes/admin.js` (add switch state to the existing per-user word view, near line 239)
@@ -1861,7 +2469,7 @@ Expected: `thresholdMet=true` in the output. Then confirm evaluate flips ready o
 
 ---
 
-### Task 13: (STOP-GATED) どっち FREE-list addition
+### Task 14: (STOP-GATED) どっち FREE-list addition
 
 **Files:**
 - Modify: TBD by user decision — the i+1 validator's allowed-words source (locate via `grep -rn "ALLOWED_WORDS\|allowedWords" src/ scripts/`)
@@ -1876,7 +2484,7 @@ Per spec §5 and the repo dictionary rule, DO NOT implement without explicit con
 
 ---
 
-### Task 14: Full verification + merge
+### Task 15: Full verification + merge
 
 **Files:** none new
 
@@ -1902,7 +2510,7 @@ Pre-req: `AI_DIALOGUE_*` env set locally; `npm run dev`; navigate to `http://loc
 
 1. **Pre-switch (fresh devtester):** NPC battle shows frame one-liners; befriend shows name-quiz; Settings shows "Dynamic conversations" off.
 2. **Cross the threshold:** `node scripts/seed-translator-threshold.js devtester`, reload at hub → evaluate fires → background generation runs (watch server logs for `[NpcDialogue]/[CreatureDialogue]`) → after generation completes, reload hub again → **Cid scene plays once** → screenshot.
-3. **Post-switch:** NPC encounter uses AI greeting line (differs from frame pool); NPC victory → freed line → 3 bond rounds → bond summary → skill pick; befriend talk → AI conversation. Screenshot each; delete screenshots after showing (repo rule).
+3. **Post-switch:** NPC encounter uses AI greeting line (differs from frame pool); NPC victory → freed line → 3 bond rounds → bond summary → skill pick; befriend talk → AI conversation; friendly-NPC shop room shows AI greeting + AI purchase lines with the item name filled into the `{item}` slot; shrine room shows AI shrine-fox greeting. Screenshot each; delete screenshots after showing (repo rule).
 4. **Opt-out roundtrip:** Settings → toggle off → befriend returns name-quiz; toggle back on → AI resumes.
 5. **Fire-once:** reload hub → no second Cid scene.
 

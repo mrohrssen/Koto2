@@ -33,7 +33,7 @@ Experiments 11 vs 25).
 
 | Question | Decision |
 |---|---|
-| Which surfaces transition? | All conversations now (befriend + NPC lines + revived 3-round bond convo); every other frame category eventually (roadmap note only) |
+| Which surfaces transition? | All conversations now (befriend + NPC lines + revived 3-round bond convo) plus shop/shrine line pools (shopGreeting, shopPurchase, shrineGreeting); barks/gameMaster eventually (roadmap note only) |
 | Trigger shape | **Single switch, no tiers** — flips all conversation surfaces at once, only when we are confident output will be excellent |
 | Trigger condition | Vocab threshold (≥130 known words incl. ≥30 glue words) **AND** verified pre-generated runway (preflight) |
 | Unlock UX | **Cid moment**: she "changes your translator setting" — prologue-style scene, fires once |
@@ -77,9 +77,10 @@ dead output) — hence the compound condition.
 When Condition A is met, the server silently pre-generates the **complete dialogue
 inventory for the player's unlocked areas**: every NPC with a character card and
 every befriendable creature with a character card in those areas, through the
-existing generation + i+1 repair pipeline (`queueMissingDialogues` machinery).
-A completeness check then verifies every entity has a valid, fresh-enough cache
-entry.
+existing generation + i+1 repair pipeline (`queueMissingDialogues` machinery),
+plus the three shop/shrine line pools (§3).
+A completeness check then verifies every entity and pool has a valid,
+fresh-enough cache entry.
 
 - 100% clean → mark `translatorUpgrade.ready`; the Cid moment plays at the next
   hub entry and the switch activates.
@@ -154,9 +155,26 @@ lose ungated AI befriend until the switch activates — but that account is far 
   exits into `skillSelectionPending`, with the same prepared-room snapshot resync
   the defeat-line path performs today.
 
+### Shop & shrine line pools
+- **Pre-switch:** static frames (`shopGreeting`, `shopPurchase`, `shrineGreeting`)
+  selected per player via `assembleFrame` + `selectBestFrame`, unchanged.
+- **Post-switch:** the same three categories serve from **per-user AI line pools**
+  generated through the narration engine as a `linePool` entity type (one
+  pseudo-entity per category; personas: shopkeeper, shrine fox). A pool is ~8
+  short lines cached per user on the normal staleness cadence. `shopPurchase`
+  lines must contain the literal `{item}` slot, and vocab validation runs on the
+  template with the slot stripped — everything outside the slot must be known
+  words, leaving the i+1 budget for the item itself, exactly like the static
+  frames. Serving tokenizes pool lines into the standard frame shape (slot token
+  spliced), so the existing `assembleFrame`/`selectBestFrame` machinery and
+  serve-time TTS keep working untouched at every call site (friendly-NPC
+  hydration, shrine offers, and the explore-runway prepared payloads). Static
+  frames remain the per-request fallback (missing/stale pool, slot-malformed
+  lines, AI outage).
+
 ### Stays frames (this design)
-Barks, shopGreeting/shopPurchase, shrineGreeting, gameMaster lines, skill_select,
-and the befriend name-quiz prompts (they are the permanent fallback layer).
+Barks, gameMaster lines, skill_select, and the befriend name-quiz prompts
+(they are the permanent fallback layer).
 
 ## 4. Cid Moment
 
@@ -216,6 +234,8 @@ Players must actually reach 130+30-glue through play:
   the intact cache.
 - **Repair-loop failure for one entity post-switch:** that entity serves frames
   (existing "not caching — static fallback" behavior), everything else stays AI.
+- **Pool failure:** a missing, stale, or slot-malformed line pool falls back to
+  the static frame pool for that category, per request.
 
 ## 8. Testing
 
@@ -224,6 +244,8 @@ Players must actually reach 130+30-glue through play:
   completeness math (unlocked-areas entity scoping).
 - **Unit (prompts):** assembled prompts contain compound warnings, reinforcement
   list, wrong-option rules; JSON schema unchanged.
+- **Unit (pools):** line-pool shape + `{item}` slot validation, slot-token
+  splicing, pool resolver falling back to static frames.
 - **Integration:** befriend route serves name-quiz pre-switch / AI post-switch;
   NPC encounter serves frame lines pre-switch / cached AI post-switch; Cid moment
   fires exactly once (hub re-entry, re-login); opt-out round-trip.
@@ -244,7 +266,8 @@ Players must actually reach 130+30-glue through play:
    documented migration); dev accounts keep AI befriend via the debug override,
    which becomes the test vehicle. Prompt improvements land for whoever the
    override serves.
-3. **NPC AI one-liners + 3-round revival**, dark behind the switch/debug override.
+3. **NPC AI one-liners + 3-round revival + shop/shrine line pools**, dark behind
+   the switch/debug override.
 4. **Glue runway:** audit script, gap-filler frames, `curriculumWords` wiring.
 5. **Preflight + Cid moment + settings copy + admin dashboard state**
    (per-user known count, glue coverage, preflight %, switch status). This step
@@ -255,10 +278,9 @@ Players must actually reach 130+30-glue through play:
 
 ## 10. Roadmap (out of scope, recorded for "everything eventually")
 
-- **Utility lines** (barks, shop, shrine, gameMaster): post-switch, per-user
-  pre-generated *pools* per category — AI writes personalized pools into cache on
-  the existing staleness cadence; runtime selection stays the current word-gated
-  pick. Needs its own spec (new prompt shapes + pool validation).
+- **Utility lines** (barks, gameMaster): post-switch, per-user pre-generated
+  *pools* per category following the shop/shrine pool pattern (§3). Needs its
+  own spec (bark trigger coverage + pool validation).
 - **Out-of-combat NPC conversations:** liberated NPCs chat in hub/friendly rooms,
   reusing the same cache + bond system. Needs encounter/room design.
 - **Grammar-aware constraints:** the grammar tracking system (2026-05-24) could
