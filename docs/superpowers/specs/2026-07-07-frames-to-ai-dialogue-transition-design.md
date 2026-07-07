@@ -35,7 +35,7 @@ Experiments 11 vs 25).
 |---|---|
 | Which surfaces transition? | All conversations now (befriend + NPC lines + revived 3-round bond convo) plus shop/shrine line pools (shopGreeting, shopPurchase, shrineGreeting); barks/gameMaster eventually (roadmap note only) |
 | Trigger shape | **Single switch, no tiers** — flips all conversation surfaces at once, only when we are confident output will be excellent |
-| Trigger condition | Vocab threshold (≥130 known words incl. ≥40 of a 60-word glue pool) **AND** verified pre-generated runway (preflight) |
+| Trigger condition | Vocab threshold (≥130 known words incl. ≥50 of a 74-word glue pool) **AND** verified pre-generated runway (preflight) |
 | Unlock UX | **Cid moment**: she "changes your translator setting" — prologue-style scene, fires once |
 | Befriend quality fix | Gate behind the switch + prompt-improvement pass. No model benchmark in scope |
 | Architecture | Central **Dialogue Director** module; all surfaces query it; per-request frame fallback forever |
@@ -58,19 +58,26 @@ One per-user boolean, earned once, never auto-revoked.
 
 - `knownWords ≥ 130`, where known = FSRS card in Learning/Review/Relearning state
   (existing `getKnownWordsFromFsrs(userId)`).
-- `glueWordsKnown ≥ 40`, counted against a **60-word glue pool re-derived from
+- `glueWordsKnown ≥ 50`, counted against a **74-word glue pool re-derived from
   scratch on 2026-07-07** (superseding the April findings-doc Priority 1–5
-  curriculum, which was built with weaker models). The pool covers people/social,
-  deixis, time, degree/quantity, mental/communication verbs, motion verbs,
-  daily/game verbs (shop economics: 買う/高い/安い; game-talk: 難しい/簡単/出来る;
-  friendship loop: また/今度/会う; collection talk: 一番/たくさん/可愛い), and
-  descriptors. It deliberately **excludes** bark-guaranteed words (これ, 嬉しい,
-  新しい — free threshold credit measures nothing) and grammar-pattern words
-  (方, 時, 後 — pattern exposure, not flashcards). みんな and どっち received
-  user-approved dictionary entries (2026-07-07). The 20-word slack (40-of-60)
-  absorbs per-player path variance.
+  curriculum, which was built with weaker models) and **grounded against JPDB
+  frequency data the same day**: every pool word is JPDB "common" tier (median
+  rank 200, worst 2600) on JPDB's dialogue-heavy corpus. The pool covers
+  people/social, deixis, time, degree/quantity, mental/communication verbs and
+  nouns (話, 言葉, plus body/expression nouns 手/目/声/心 that the frequency
+  data reinstated), motion verbs, daily/game verbs (shop economics: 買う/高い/
+  安い; food/cooking: 食べる/甘い/美味しい; game-talk: 難しい/簡単/出来る;
+  friendship loop: また/今度/会う/楽しみ; collection talk: 一番/たくさん/
+  可愛い/大好き/見せる), and descriptors. It deliberately **excludes**
+  bark-guaranteed words (これ, 嬉しい, 新しい — free threshold credit measures
+  nothing), grammar-pattern words (方, 時, 後 — their high frequency measures
+  the patterns 〜の方が/〜時/〜た後, not flashcard value), ambiguous bare kanji
+  (気, 力, 道 — JPDB itself parses them as suffixes), and 天気 (rank 4900, the
+  only frequency-rejected candidate). みんな and どっち received user-approved
+  dictionary entries (2026-07-07). The 24-word slack (50-of-74) absorbs
+  per-player path variance.
 - Constants + glue list live in a new config: `data/dialogue-switch-config.json`
-  (`{ minKnownWords: 130, minGlueWords: 40, glueWords: [60 words] }`). Tunable
+  (`{ minKnownWords: 130, minGlueWords: 50, glueWords: [74 words] }`). Tunable
   without code changes.
 
 Research basis: at 130 words with strong glue coverage, full 3-round dialogue
@@ -220,10 +227,10 @@ documented as separate follow-up scope, not part of this design.
 
 ## 6. Readiness Runway (the "graceful" part)
 
-Players must actually reach 130+40-glue through play. The 2026-07-07 reachability
-audit found only 27 of the 60 pool words teachable from current content — 32 pool
+Players must actually reach 130+50-glue through play. The 2026-07-07 reachability
+audit found only 29 of the 74 pool words teachable from current content — 44 pool
 words have no i+1-eligible frames at all, and 前 is blocked by double-unknown
-lines — so the gap-filler authoring below is load-bearing (~40-60 short lines),
+lines — so the gap-filler authoring below is load-bearing (~55-75 short lines),
 not polish:
 
 - **Runway audit (one-time script):** verify every glue word required by the switch
@@ -252,7 +259,7 @@ not polish:
 
 ## 8. Testing
 
-- **Unit (director):** threshold boundaries (129/130 words, 39/40 glue), glue-list
+- **Unit (director):** threshold boundaries (129/130 words, 49/50 glue), glue-list
   counting, high-water persistence (active survives FSRS lapse), preflight
   completeness math (unlocked-areas entity scoping).
 - **Unit (prompts):** assembled prompts contain compound warnings, reinforcement
