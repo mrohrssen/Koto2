@@ -1,34 +1,22 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { tokenizeBatch } from '../src/tokenizer.js';
 import { loadWordDictionary } from '../src/game/word-dictionary.js';
 import { resolveLiveDictPath } from '../src/game/live-dict-path.js';
 import { loadGrammarCatalog, loadGrammarMatchers } from '../src/game/grammar/grammar-loader.js';
 import { findGrammarMatches } from '../src/game/grammar/grammar-matcher.js';
 import { annotateRenderTokens } from '../src/game/grammar/annotate-tokens.js';
+import {
+  getDemotedPosSet,
+  getDemotedBaseFormSet,
+  getAllowedSurfaceSet
+} from '../src/game/grammar-allowlist.js';
 
 const ROOT = join(import.meta.dirname, '..');
 const SOURCES_PATH = join(ROOT, 'data', 'dialogue', 'frame-sources.json');
 const OUTPUT_PATH = join(ROOT, 'data', 'dialogue', 'frames.json');
-
-// POS values that Sudachi assigns to grammar we want to demote to surface-only
-const DEMOTED_POS = new Set([
-  '助詞',    // particles (が, を, に, て, は, etc.)
-  '助動詞',  // auxiliaries (です, ます, た, ない, etc.)
-  '補助記号', // supplementary punctuation (「」、etc.)
-  '記号',    // symbols
-  '空白',    // whitespace
-  '接尾辞',  // counter suffixes (つ, 匹, etc.)
-  '接頭辞',  // honorific prefixes (お, ご, etc.)
-]);
-
-// Additional base forms to demote even if POS is verb/adj
-// (auxiliary いる in ている, ある in てある, etc.)
-const DEMOTED_BASE_FORMS = new Set([
-  'いる', 'ある', 'しまう', 'おく', 'みる', 'くる', 'いく',
-  'だ', 'です', 'ます', 'する',
-]);
 
 // Generic 普通名詞 stand-in for a {slot} so matchers like n5-wa-topic
 // ([Noun] + は) can fire when the noun lives in a slot fill.
@@ -51,10 +39,18 @@ function virtualSlotNounToken(index) {
   };
 }
 
-function isDemoted(sudachiToken) {
-  if (sudachiToken._isMerged) return false; // dictionary-merged tokens are always content
-  if (DEMOTED_POS.has(sudachiToken.pos)) return true;
-  if (DEMOTED_BASE_FORMS.has(sudachiToken.baseForm)) return true;
+export function isDemoted(sudachiToken) {
+  // Explicit listings demote even dictionary-merged tokens (formulaic
+  // greetings like こんにちは merge from the dictionary but are still grammar).
+  if (getDemotedBaseFormSet().has(sudachiToken.baseForm)) return true;
+  const surfaces = getAllowedSurfaceSet();
+  if (surfaces.has(sudachiToken.surface) || surfaces.has(sudachiToken.baseForm)) return true;
+
+  // Dictionary-merged compounds skip POS demotion (they are always content
+  // unless explicitly listed above).
+  if (sudachiToken._isMerged) return false;
+
+  if (getDemotedPosSet().has(sudachiToken.pos)) return true;
   if (/^[\p{P}\p{S}\s]+$/u.test(sudachiToken.surface)) return true;
   return false;
 }
@@ -280,4 +276,8 @@ function main() {
   console.log(`Wrote ${frames.length} frames to ${OUTPUT_PATH}`);
 }
 
-main();
+// Only run the CLI when executed directly (not when imported for unit tests) —
+// main() spawns python3 sudachi, which the test environment cannot run.
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  main();
+}
