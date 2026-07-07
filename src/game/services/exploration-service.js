@@ -40,6 +40,7 @@ import {
   rollRoomIngredientDrops
 } from './cooking-service.js';
 import { buildExploreRunway } from './explore-runway-service.js';
+import { cloneExploreValue } from './explore-session-contract.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
 import { applyItem } from './item-service.js';
 import { entityToToken } from '../token-format.js';
@@ -223,6 +224,24 @@ export class ExplorationService {
     return prepared;
   }
 
+  /**
+   * Re-clone the explore runway's prepared snapshot for a room from the
+   * authoritative run.rooms entry. buildExploreRunway snapshots each room once,
+   * on the proceed that reveals it, so a mid-room mutation — arming an npcBattle
+   * skill reward when its combat is won — never reaches the snapshot. The client
+   * reads its current room from this snapshot, so without a resync it treats the
+   * room as done (phase 'room'), auto-proceeds, and the reward is skipped.
+   */
+  syncPreparedRoomSnapshot(index = this.gm.run?.currentRoom) {
+    const run = this.gm.run;
+    if (!Number.isInteger(index)) return;
+    const room = run?.rooms?.[index];
+    const prepared = run?.exploreRunway?.preparedRooms?.find(entry => entry?.index === index);
+    if (room && prepared) {
+      prepared.room = cloneExploreValue(room);
+    }
+  }
+
   prepareRoomEntryIngredientDrops(roomIndex) {
     const run = this.gm.run;
     if (!run?.rooms?.length || !Number.isInteger(roomIndex)) return [];
@@ -395,6 +414,14 @@ export class ExplorationService {
 
     if (currentRoom.type === 'skillMaster' && currentRoom.skillMaster?.completed !== true) {
       throw new Error('Must complete Skill Master before proceeding');
+    }
+
+    // An npcBattle victory arms a party-skill reward (skillSelectionPending) that the
+    // player claims via the npc_skill_selection phase. That phase is only derivable
+    // while currentRoom still points at the npcBattle room, so advancing now would
+    // strand the reward — the player would "beat the NPC but get no reward."
+    if (currentRoom.type === 'npcBattle' && currentRoom.npcBattle?.skillSelectionPending) {
+      throw new Error('Must claim NPC battle reward before proceeding');
     }
 
     // Move to next room

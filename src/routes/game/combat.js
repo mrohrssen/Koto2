@@ -722,6 +722,11 @@ export default function createCombatRoutes({
         nameEn: npc.nameEn,
         speakerId: npc.speakerId
       };
+      // The runway snapshot for this room was taken on entry (pre-combat), so it
+      // still reads skillSelectionPending=false. The client derives its current
+      // room from that snapshot — resync it now so the client enters
+      // npc_skill_selection to claim the reward instead of auto-proceeding past it.
+      gameManager.explorationService.syncPreparedRoomSnapshot();
     }
 
     req.saveGame();

@@ -15,6 +15,7 @@ import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
 import { escapeHtml } from './html-utils.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
+import { preparedPayloadHasSkillOffers } from './combat-ui-utils.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
@@ -2581,7 +2582,11 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     const fetchRoomId = roomId;
     let resp;
     try {
-      resp = payload || await fetchOffers?.();
+      // The npcBattle prepared payload is the combat-start payload (enemies /
+      // seedChain), NOT the skill offers — only reuse it when it actually carries
+      // offers, otherwise fetch the reward offers from the server. Treating the
+      // combat payload as offers reads zero offers and silently auto-proceeds.
+      resp = preparedPayloadHasSkillOffers(payload) ? payload : await fetchOffers?.();
     } catch (err) {
       npcBattleSkillState.fetched = false;
       npcBattleSkillState.offered = null;

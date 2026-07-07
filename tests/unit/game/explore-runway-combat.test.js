@@ -156,7 +156,11 @@ test('runway combat rooms carry a PARTY_STATS dependency (pre-roll pins enemies,
     const entry = runway.preparedRooms.find(r => r.room.type === type);
     assert.ok(entry, `${type} present`);
     assert.deepEqual(entry.dependencies, ['partyStats'], `${type} depends on partyStats`);
-    assert.deepEqual(entry.acceptedActions, [`${type === 'encounter' ? 'encounter' : type}.start`, 'combat.cycle']);
+    // npcBattle additionally accepts the post-victory skill reward selection.
+    const expectedActions = type === ROOM_TYPES.npcBattle
+      ? ['npcBattle.start', 'combat.cycle', 'npcBattleSkill.choose']
+      : [`${type}.start`, 'combat.cycle'];
+    assert.deepEqual(entry.acceptedActions, expectedActions);
   }
 });
 

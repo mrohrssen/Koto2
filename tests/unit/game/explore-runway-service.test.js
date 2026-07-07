@@ -392,3 +392,20 @@ test('marks skill master without offers as missing payload', async () => {
   assert.equal(skillMaster.offlineReady, false);
   assert.ok(skillMaster.missingPayloadReasons.includes('skillMaster.offered'));
 });
+
+test('npcBattle prepared room accepts the post-victory skill-choose action', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.npcBattle]);
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+  const npcBattle = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.npcBattle);
+  assert.ok(npcBattle, 'npcBattle room should be in the prepared window');
+  // Without this the explore session rejects the reward selection ('actionNotAccepted'),
+  // soft-pausing the player on the skill-choose screen after they win the NPC battle.
+  assert.ok(
+    npcBattle.acceptedActions.includes('npcBattleSkill.choose'),
+    `expected npcBattleSkill.choose in acceptedActions, got ${JSON.stringify(npcBattle.acceptedActions)}`
+  );
+});

@@ -150,3 +150,15 @@ export function getCreatureStatusKeys(creature) {
   }
   return keys;
 }
+
+/**
+ * True when a prepared explore-runway interactionPayload actually carries NPC-battle
+ * skill offers. npcBattle rooms are combat rooms, so buildInteractionPayload gives
+ * them the combat-start payload (enemies / seedChain) — that must NOT be treated as
+ * the post-victory skill reward. If it is, the reward screen reads zero offers and
+ * silently auto-proceeds, skipping the reward the player just earned.
+ */
+export function preparedPayloadHasSkillOffers(payload) {
+  const offers = payload?.offered || payload?.offers || payload?.skills;
+  return Array.isArray(offers) && offers.length > 0;
+}

@@ -129,7 +129,10 @@ function acceptedActionsForRoom(room) {
     case ROOM_TYPES.encounter:
       return ['encounter.start', 'combat.cycle'];
     case ROOM_TYPES.npcBattle:
-      return ['npcBattle.start', 'combat.cycle'];
+      // 'npcBattleSkill.choose' lets the explore session accept the post-victory
+      // skill reward selection; without it the session rejects the choice
+      // ('actionNotAccepted') and soft-pauses the player on the reward screen.
+      return ['npcBattle.start', 'combat.cycle', 'npcBattleSkill.choose'];
     case ROOM_TYPES.boss:
       return ['boss.start', 'combat.cycle'];
     default:
