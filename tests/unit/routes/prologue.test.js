@@ -140,7 +140,8 @@ describe('prologue route — GET /prologue', () => {
     assert.equal(demo.type, 'jpDemo');
     assert.ok(Array.isArray(demo.tokens), 'tokens should be attached as an array');
     assert.ok(demo.tokens.length >= 1, 'tokens should be non-empty');
-    assert.equal(demo.tokens[0].base, 'こんにちは');
+    assert.equal(demo.tokens[0].surface, 'こんにちは');
+    assert.equal(demo.tokens[0].base, undefined, 'こんにちは is grammar (surface-only) after the allowlist reform');
     assert.ok(demo.tokens[0].reading, 'token should carry reading');
     // Meaning is resolved at render-time from the dictionary, not baked into the token.
   });

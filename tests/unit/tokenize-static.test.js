@@ -29,7 +29,8 @@ describe('tokenize-static output (frames.json)', () => {
     assert.deepEqual(polite.tokens[0], { slot: 'item' }, 'shopPurchase_please: slot should be first');
 
     const excuse = frames.find(f => f.id === 'shopPurchase_excuse');
-    assert.ok(excuse.tokens[0].base === 'すみません', 'shopPurchase_excuse: すみません should be first');
+    assert.equal(excuse.tokens[0].surface, 'すみません', 'shopPurchase_excuse: すみません surface should be first');
+    assert.equal(excuse.tokens[0].base, undefined, 'すみません is grammar (surface-only) after the allowlist reform');
     const slotIdx = excuse.tokens.findIndex(t => t.slot === 'item');
     assert.ok(slotIdx > 0, 'shopPurchase_excuse: slot should come after すみません');
   });
@@ -59,8 +60,8 @@ describe('tokenize-static output (frames.json)', () => {
   it('merged dictionary tokens preserve the raw token span they came from', () => {
     const frame = frames.find(f => f.id === 'shopPurchase_excuse');
     assert.ok(frame, 'shopPurchase_excuse frame should exist');
-    const sumimasen = frame.tokens.find(t => t.base === 'すみません');
-    assert.ok(sumimasen, 'should find merged すみません');
+    const sumimasen = frame.tokens.find(t => t.surface === 'すみません');
+    assert.ok(sumimasen, 'should find merged すみません (now surface-only grammar)');
     assert.equal(typeof sumimasen.rawTokenStart, 'number');
     assert.equal(typeof sumimasen.rawTokenEnd, 'number');
     assert.ok(sumimasen.rawTokenEnd >= sumimasen.rawTokenStart);
@@ -92,12 +93,12 @@ describe('tokenize-static output (frames.json)', () => {
   });
 
   it('content words have base, reading, and pos but NOT meaning', () => {
-    const polite = frames.find(f => f.id === 'shopPurchase_please');
-    const kudasai = polite.tokens.find(t => t.base === 'くださる');
-    assert.ok(kudasai, 'should have くださる content token');
-    assert.ok(kudasai.reading, 'くださる should have reading');
-    assert.ok(kudasai.pos, 'くださる should have pos');
-    assert.equal(kudasai.meaning, undefined, 'meaning should NOT be baked into tokens (live dict is source of truth)');
+    const frame = frames.find(f => f.raw === '心は強いです！');
+    const tsuyoi = frame.tokens.find(t => t.base === '強い');
+    assert.ok(tsuyoi, 'should have 強い content token');
+    assert.ok(tsuyoi.reading, '強い should have reading');
+    assert.ok(tsuyoi.pos, '強い should have pos');
+    assert.equal(tsuyoi.meaning, undefined, 'meaning should NOT be baked into tokens (live dict is source of truth)');
   });
 
   it('content words have a pos field with English POS', () => {
@@ -127,8 +128,8 @@ describe('tokenize-static output (frames.json)', () => {
 
   it('merges adjacent tokens into dictionary entries (すみません, ありがとうございます)', () => {
     const excuse = frames.find(f => f.id === 'shopPurchase_excuse');
-    const sumimasen = excuse.tokens.find(t => t.base === 'すみません');
-    assert.ok(sumimasen, 'should merge すみ+ませ+ん into すみません');
+    const sumimasen = excuse.tokens.find(t => t.surface === 'すみません');
+    assert.ok(sumimasen, 'should merge すみ+ませ+ん into すみません (now surface-only grammar)');
 
     const thanks = frames.find(f => f.id === 'shopPurchase_thanks');
     const arigatou = thanks.tokens.find(t => t.base === 'ありがとうございます');
@@ -144,10 +145,12 @@ describe('tokenize-static output (frames.json)', () => {
     }
   });
 
-  it('shopGreeting_hello has exactly 1 content word', () => {
+  it('shopGreeting_hello has no content words (こんにちは is grammar)', () => {
     const frame = frames.find(f => f.id === 'shopGreeting_hello');
     assert.ok(frame, 'shopGreeting_hello frame should exist');
-    assert.deepEqual(frame.words, ['こんにちは']);
+    assert.deepEqual(frame.words, [], 'こんにちは is a grammar greeting (surface-only) after the allowlist reform');
+    assert.equal(frame.tokens[0].surface, 'こんにちは', 'こんにちは should still render as a surface token');
+    assert.equal(frame.tokens[0].base, undefined, 'こんにちは should be surface-only (no base)');
   });
 
   it('いらっしゃいませ is merged into a single token', () => {

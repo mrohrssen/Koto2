@@ -136,9 +136,7 @@
     "tokens": [
       {
         "surface": "うわ",
-        "base": "うわ",
         "reading": "うわ",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       },
@@ -149,9 +147,7 @@
         "rawTokenEnd": 1
       }
     ],
-    "words": [
-      "うわ"
-    ]
+    "words": []
   },
   {
     "id": "bark_onHit_4",
@@ -160,9 +156,7 @@
     "tokens": [
       {
         "surface": "くっ",
-        "base": "くっ",
         "reading": "くっ",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       },
@@ -173,9 +167,7 @@
         "rawTokenEnd": 1
       }
     ],
-    "words": [
-      "くっ"
-    ]
+    "words": []
   },
   {
     "id": "bark_onHit_5",
@@ -184,9 +176,7 @@
     "tokens": [
       {
         "surface": "ああ",
-        "base": "ああ",
         "reading": "ああ",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       },
@@ -197,9 +187,7 @@
         "rawTokenEnd": 1
       }
     ],
-    "words": [
-      "ああ"
-    ]
+    "words": []
   },
   {
     "id": "bark_onHit_6",
@@ -1265,9 +1253,7 @@
     "tokens": [
       {
         "surface": "ありがとう",
-        "base": "ありがとう",
         "reading": "ありがとう",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       },
@@ -1278,9 +1264,7 @@
         "rawTokenEnd": 1
       }
     ],
-    "words": [
-      "ありがとう"
-    ]
+    "words": []
   },
   {
     "id": "bark_onHeal_1",
@@ -2394,16 +2378,12 @@
     "tokens": [
       {
         "surface": "こんにちは",
-        "base": "こんにちは",
         "reading": "こんにちは",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       }
     ],
-    "words": [
-      "こんにちは"
-    ],
+    "words": [],
     "group": "tutorial-translator-demo"
   },
   {
@@ -3005,9 +2985,7 @@
       },
       {
         "surface": "じゃない",
-        "base": "じゃない",
         "reading": "じゃない",
-        "pos": "Auxiliary",
         "rawTokenStart": 3,
         "rawTokenEnd": 4,
         "grammarHints": [
@@ -3033,8 +3011,7 @@
     ],
     "words": [
       "それ",
-      "名前",
-      "じゃない"
+      "名前"
     ]
   },
   {
@@ -3269,9 +3246,7 @@
     "tokens": [
       {
         "surface": "お願い",
-        "base": "お願い",
         "reading": "おねがい",
-        "pos": "Prefix",
         "rawTokenStart": 0,
         "rawTokenEnd": 1,
         "grammarHints": [
@@ -3336,9 +3311,7 @@
       },
       {
         "surface": "ください",
-        "base": "くださる",
         "reading": "ください",
-        "pos": "Verb",
         "rawTokenStart": 5,
         "rawTokenEnd": 5,
         "grammarHints": [
@@ -3363,9 +3336,7 @@
       }
     ],
     "words": [
-      "お願い",
-      "待つ",
-      "くださる"
+      "待つ"
     ]
   },
   {
@@ -3494,9 +3465,7 @@
       },
       {
         "surface": "ください",
-        "base": "くださる",
         "reading": "ください",
-        "pos": "Verb",
         "rawTokenStart": 3,
         "rawTokenEnd": 3,
         "grammarHints": [
@@ -3522,8 +3491,7 @@
     ],
     "words": [
       "少し",
-      "待つ",
-      "くださる"
+      "待つ"
     ]
   },
   {
@@ -3600,9 +3568,7 @@
       },
       {
         "surface": "ください",
-        "base": "くださる",
         "reading": "ください",
-        "pos": "Verb",
         "rawTokenStart": 4,
         "rawTokenEnd": 4,
         "grammarHints": [
@@ -3628,8 +3594,7 @@
     ],
     "words": [
       "今",
-      "待つ",
-      "くださる"
+      "待つ"
     ]
   },
   {
@@ -4600,9 +4565,7 @@
       },
       {
         "surface": "なる",
-        "base": "なる",
         "reading": "なる",
-        "pos": "Verb",
         "rawTokenStart": 2,
         "rawTokenEnd": 2,
         "grammarHints": [
@@ -4638,8 +4601,7 @@
       }
     ],
     "words": [
-      "友達",
-      "なる"
+      "友達"
     ],
     "group": "kodomo_fightStart"
   },
@@ -4766,9 +4728,7 @@
       },
       {
         "surface": "ですか",
-        "base": "ですか",
         "reading": "ですか",
-        "pos": "Auxiliary",
         "rawTokenStart": 3,
         "rawTokenEnd": 4,
         "grammarHints": [
@@ -4805,8 +4765,7 @@
     ],
     "words": [
       "準備",
-      "いい",
-      "ですか"
+      "いい"
     ],
     "group": "otona_fightStart"
   },
@@ -6326,9 +6285,7 @@
       },
       {
         "surface": "ですか",
-        "base": "ですか",
         "reading": "ですか",
-        "pos": "Auxiliary",
         "rawTokenStart": 3,
         "rawTokenEnd": 4,
         "grammarHints": [
@@ -6365,8 +6322,7 @@
     ],
     "words": [
       "準備",
-      "いい",
-      "ですか"
+      "いい"
     ],
     "group": "sensei_fightStart"
   },
@@ -8056,9 +8012,7 @@
       },
       {
         "surface": "なる",
-        "base": "なる",
         "reading": "なる",
-        "pos": "Verb",
         "rawTokenStart": 1,
         "rawTokenEnd": 1,
         "grammarHints": [
@@ -8089,8 +8043,7 @@
       }
     ],
     "words": [
-      "強い",
-      "なる"
+      "強い"
     ],
     "group": "otokonoko_defeatLine"
   },
@@ -9157,9 +9110,7 @@
     "tokens": [
       {
         "surface": "こんにちは",
-        "base": "こんにちは",
         "reading": "こんにちは",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       },
@@ -9170,9 +9121,7 @@
         "rawTokenEnd": 1
       }
     ],
-    "words": [
-      "こんにちは"
-    ]
+    "words": []
   },
   {
     "id": "shrineGreeting_hello",
@@ -9181,9 +9130,7 @@
     "tokens": [
       {
         "surface": "こんにちは",
-        "base": "こんにちは",
         "reading": "こんにちは",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       },
@@ -9194,9 +9141,7 @@
         "rawTokenEnd": 1
       }
     ],
-    "words": [
-      "こんにちは"
-    ]
+    "words": []
   },
   {
     "id": "shrineGreeting_energy",
@@ -9213,9 +9158,7 @@
       },
       {
         "surface": "ですか",
-        "base": "ですか",
         "reading": "ですか",
-        "pos": "Auxiliary",
         "rawTokenStart": 1,
         "rawTokenEnd": 2,
         "grammarHints": [
@@ -9251,8 +9194,7 @@
       }
     ],
     "words": [
-      "元気",
-      "ですか"
+      "元気"
     ]
   },
   {
@@ -10102,9 +10044,7 @@
       },
       {
         "surface": "ですか",
-        "base": "ですか",
         "reading": "ですか",
-        "pos": "Auxiliary",
         "rawTokenStart": 1,
         "rawTokenEnd": 2,
         "grammarHints": [
@@ -10140,8 +10080,7 @@
       }
     ],
     "words": [
-      "元気",
-      "ですか"
+      "元気"
     ]
   },
   {
@@ -10314,16 +10253,12 @@
       },
       {
         "surface": "ください",
-        "base": "くださる",
         "reading": "ください",
-        "pos": "Verb",
         "rawTokenStart": 2,
         "rawTokenEnd": 2
       }
     ],
-    "words": [
-      "くださる"
-    ]
+    "words": []
   },
   {
     "id": "shopPurchase_excuse",
@@ -10332,9 +10267,7 @@
     "tokens": [
       {
         "surface": "すみません",
-        "base": "すみません",
         "reading": "すみません",
-        "pos": "Verb",
         "rawTokenStart": 0,
         "rawTokenEnd": 2,
         "grammarHints": [
@@ -10381,17 +10314,12 @@
       },
       {
         "surface": "ください",
-        "base": "くださる",
         "reading": "ください",
-        "pos": "Verb",
         "rawTokenStart": 6,
         "rawTokenEnd": 6
       }
     ],
-    "words": [
-      "すみません",
-      "くださる"
-    ]
+    "words": []
   },
   {
     "id": "shopPurchase_this",
@@ -10443,16 +10371,13 @@
       },
       {
         "surface": "ください",
-        "base": "くださる",
         "reading": "ください",
-        "pos": "Verb",
         "rawTokenStart": 3,
         "rawTokenEnd": 3
       }
     ],
     "words": [
-      "この",
-      "くださる"
+      "この"
     ]
   },
   {
@@ -10502,16 +10427,13 @@
       },
       {
         "surface": "ください",
-        "base": "くださる",
         "reading": "ください",
-        "pos": "Verb",
         "rawTokenStart": 2,
         "rawTokenEnd": 2
       }
     ],
     "words": [
-      "それ",
-      "くださる"
+      "それ"
     ]
   },
   {
@@ -10952,9 +10874,7 @@
       },
       {
         "surface": "ください",
-        "base": "くださる",
         "reading": "ください",
-        "pos": "Verb",
         "rawTokenStart": 2,
         "rawTokenEnd": 2
       },
@@ -10966,8 +10886,7 @@
       }
     ],
     "words": [
-      "これ",
-      "くださる"
+      "これ"
     ]
   },
   {
@@ -11433,9 +11352,7 @@
       },
       {
         "surface": "ですか",
-        "base": "ですか",
         "reading": "ですか",
-        "pos": "Auxiliary",
         "rawTokenStart": 3,
         "rawTokenEnd": 4,
         "grammarHints": [
@@ -11472,8 +11389,7 @@
     ],
     "words": [
       "何",
-      "いい",
-      "ですか"
+      "いい"
     ]
   },
   {
@@ -13042,9 +12958,7 @@
       },
       {
         "surface": "なる",
-        "base": "なる",
         "reading": "なる",
-        "pos": "Verb",
         "rawTokenStart": 7,
         "rawTokenEnd": 7,
         "grammarHints": [
@@ -13082,8 +12996,7 @@
     "words": [
       "一緒に",
       "練習",
-      "友達",
-      "なる"
+      "友達"
     ]
   },
   {
@@ -13582,9 +13495,7 @@
     "tokens": [
       {
         "surface": "どの",
-        "base": "どの",
         "reading": "どの",
-        "pos": "Pre-noun",
         "rawTokenStart": 0,
         "rawTokenEnd": 0,
         "grammarHints": [
@@ -13617,7 +13528,6 @@
       }
     ],
     "words": [
-      "どの",
       "能力"
     ]
   },
@@ -13628,16 +13538,12 @@
     "tokens": [
       {
         "surface": "はい",
-        "base": "はい",
         "reading": "はい",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       }
     ],
-    "words": [
-      "はい"
-    ]
+    "words": []
   },
   {
     "id": "gm_no",
@@ -13646,16 +13552,12 @@
     "tokens": [
       {
         "surface": "いいえ",
-        "base": "いいえ",
         "reading": "いいえ",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       }
     ],
-    "words": [
-      "いいえ"
-    ]
+    "words": []
   },
   {
     "id": "npc_nouka_fightStart_yasai",
@@ -13749,9 +13651,7 @@
     "tokens": [
       {
         "surface": "ありがとう",
-        "base": "ありがとう",
         "reading": "ありがとう",
-        "pos": "Interjection",
         "rawTokenStart": 0,
         "rawTokenEnd": 0
       },
@@ -13762,9 +13662,7 @@
         "rawTokenEnd": 1
       }
     ],
-    "words": [
-      "ありがとう"
-    ],
+    "words": [],
     "group": "nouka_defeatLine"
   },
   {
@@ -17636,9 +17534,7 @@
       },
       {
         "surface": "なり",
-        "base": "なる",
         "reading": "なり",
-        "pos": "Verb",
         "rawTokenStart": 2,
         "rawTokenEnd": 2,
         "grammarHints": [
@@ -17701,8 +17597,7 @@
       }
     ],
     "words": [
-      "絵",
-      "なる"
+      "絵"
     ],
     "group": "gaka_defeatLine"
   },

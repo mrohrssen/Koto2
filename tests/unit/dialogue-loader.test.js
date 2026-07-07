@@ -54,7 +54,8 @@ describe('dialogue-loader (frames.json)', () => {
     assert.ok(Array.isArray(line.tokens), 'line should have tokens array');
     assert.ok(line.tokens.length >= 1, 'tokens array should be non-empty');
     const token = line.tokens[0];
-    assert.equal(token.base, 'こんにちは', 'first token base should be こんにちは');
+    assert.equal(token.surface, 'こんにちは', 'first token surface should be こんにちは');
+    assert.equal(token.base, undefined, 'こんにちは is grammar (surface-only) after the allowlist reform');
     assert.equal(token.reading, 'こんにちは', 'reading should be こんにちは (all-hiragana)');
     // Meaning is resolved at render-time from the dictionary, not baked into the token.
   });
