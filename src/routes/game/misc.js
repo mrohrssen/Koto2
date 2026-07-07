@@ -9,6 +9,7 @@ import { ensureCreatureCounts } from '../../game/services/creature-collection-se
 import { getCidScripts } from '../../game/dialogue-loader.js';
 import { getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { enrichTokens } from '../../game/enrich-tokens.js';
+import { ensureQuestionWordCards } from '../../game/question-word-cards.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -343,6 +344,7 @@ export default function createMiscRoutes({
     const gameManager = req.gameManager;
     const meta = gameManager.getMeta();
     meta.prologueComplete = true;
+    ensureQuestionWordCards(req.user.id);
     req.saveGame();
     res.json({ ok: true });
   });
