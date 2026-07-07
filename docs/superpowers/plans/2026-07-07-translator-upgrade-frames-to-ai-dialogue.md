@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the single per-user "Translator Upgrade" switch that flips all conversation surfaces (creature befriend, NPC one-liners, revived 3-round bond conversation, and the shop/shrine line pools) from static frames to AI-generated i+1 dialogue — triggered by vocab readiness (≥130 known words incl. ≥30 glue words) plus a verified pre-generated dialogue inventory, announced by a one-time Cid scene.
+**Goal:** Build the single per-user "Translator Upgrade" switch that flips all conversation surfaces (creature befriend, NPC one-liners, revived 3-round bond conversation, and the shop/shrine line pools) from static frames to AI-generated i+1 dialogue — triggered by vocab readiness (≥130 known words incl. ≥40 of a 60-word glue pool) plus a verified pre-generated dialogue inventory, announced by a one-time Cid scene.
 
 **Architecture:** A new central `dialogue-director` module computes switch state from FSRS known words + a glue-word config, persists high-water state in player meta, and gates every AI-serving call site via `shouldUseAiDialogue`. Frames remain the permanent per-request fallback. Preflight generation reuses the existing narration-engine queue + i+1 repair pipeline; the Cid moment is a client scene triggered by a new evaluate/complete route pair.
 
@@ -85,17 +85,22 @@ Expected: a stable list (~48 environmental failures). All later "run full tests"
 
 - [ ] **Step 1: Write the config file**
 
-Create `data/dialogue-switch-config.json`. The 40 glue words are the findings doc's Priority 1–4 lists verbatim (`docs/superpowers/specs/2026-04-04-minimum-viable-i1-dialogue-findings.md`):
+Create `data/dialogue-switch-config.json`. The 60-word glue pool was re-derived from scratch on 2026-07-07 (supersedes the April findings-doc curriculum — see spec §1 Condition A). It excludes bark-guaranteed words (これ/嬉しい/新しい) and grammar-pattern words (方/時/後); みんな and どっち have user-approved dictionary entries (added 2026-07-07):
 
 ```json
 {
   "minKnownWords": 130,
-  "minGlueWords": 30,
+  "minGlueWords": 40,
   "glueWords": [
-    "私", "一緒", "とても", "今", "知る", "思う", "これ", "それ", "まだ", "言う",
-    "この", "あの", "来る", "友達", "嬉しい", "今日", "少し", "出る", "入る", "上手",
-    "食べる", "大きい", "小さい", "新しい", "人", "前", "後", "時", "話", "方",
-    "気", "手", "目", "声", "心", "力", "道", "明日", "分かる", "教える"
+    "私", "人", "友達", "みんな", "名前", "一緒",
+    "この", "それ", "あの", "そこ", "どっち",
+    "今", "今日", "明日", "昨日", "今度", "また", "もう", "まだ", "いつも", "前",
+    "とても", "少し", "ちょっと", "もっと", "たくさん", "全部", "一番",
+    "思う", "知る", "分かる", "言う", "聞く", "話す", "教える", "言葉",
+    "来る", "会う", "帰る", "出る", "入る",
+    "食べる", "買う", "作る", "使う", "持つ", "休む", "出来る",
+    "大きい", "小さい", "可愛い", "欲しい", "古い", "高い", "安い", "難しい", "簡単", "上手", "大切",
+    "場所"
   ]
 }
 ```
@@ -131,27 +136,27 @@ function freshMeta() { return {}; }
 describe('dialogue-director switch state', () => {
   beforeEach(() => clearSwitchConfigCache());
 
-  it('loads config with 40 glue words and thresholds', () => {
+  it('loads config with 60 glue words and thresholds', () => {
     const cfg = loadSwitchConfig();
     assert.equal(cfg.minKnownWords, 130);
-    assert.equal(cfg.minGlueWords, 30);
-    assert.equal(cfg.glueWords.length, 40);
+    assert.equal(cfg.minGlueWords, 40);
+    assert.equal(cfg.glueWords.length, 60);
   });
 
-  it('threshold NOT met at 129 words / 30 glue', () => {
-    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(129, 30) });
+  it('threshold NOT met at 129 words / 40 glue', () => {
+    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(129, 40) });
     assert.equal(state.knownCount, 129);
-    assert.equal(state.glueCount, 30);
+    assert.equal(state.glueCount, 40);
     assert.equal(state.thresholdMet, false);
   });
 
-  it('threshold NOT met at 130 words / 29 glue', () => {
-    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(130, 29) });
+  it('threshold NOT met at 130 words / 39 glue', () => {
+    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(130, 39) });
     assert.equal(state.thresholdMet, false);
   });
 
-  it('threshold met at exactly 130 words / 30 glue', () => {
-    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(130, 30) });
+  it('threshold met at exactly 130 words / 40 glue', () => {
+    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(130, 40) });
     assert.equal(state.thresholdMet, true);
     assert.equal(state.ready, false);
     assert.equal(state.active, false);
@@ -2379,9 +2384,11 @@ Add `getMissingGlueWords` to the dialogue-director import in `combat.js`.
 Open `scripts/validate-glue-progression.js`, read its existing structure, and add a check (following its current reporting style) that:
 
 1. Loads `data/dialogue-switch-config.json`.
-2. Verifies every one of the 40 `glueWords` exists in the word dictionary (`data/dictionary.json` via the same loader the script already uses) — catches headword-form mismatches between the config and FSRS card ids.
-3. Verifies every glue word appears in at least one frame's `words[]` in `data/dialogue/frames.json` (i.e., is teachable through current content).
-4. Prints `MISSING FROM DICT: [...]` / `UNTEACHABLE (no frame): [...]` lists and exits non-zero if either list is non-empty.
+2. Verifies every one of the 60 `glueWords` exists in the word dictionary (`data/live-dictionary.json` via the same loader the script already uses) — catches headword-form mismatches between the config and FSRS card ids. Expected to pass: みんな and どっち entries were user-approved and added 2026-07-07; confirm 出来る (not できる) matches the tokenizer's base form, and fix the config if not.
+3. Verifies every glue word appears in at least one frame's `words[]` in `data/dialogue/frames.json` AND is reachable under i+1 iteration (i.e., actually teachable through current content — reuse the sim loop already in the script).
+4. Prints `MISSING FROM DICT: [...]` / `UNTEACHABLE: [...]` lists and exits non-zero if either list is non-empty.
+
+**Known state at plan time (2026-07-07 audit):** 27/60 reachable. 32 pool words have NO frames at all (みんな, 一緒, そこ, どっち, 昨日, 今度, もう, まだ, いつも, もっと, たくさん, 全部, 一番, 知る, 言う, 聞く, 話す, 言葉, 帰る, 出る, 食べる, 出来る, 大きい, 小さい, 可愛い, 欲しい, 古い, 高い, 安い, 難しい, 簡単, 大切) and 前 has frames blocked by double-unknown pairings (`npc_otona_fightStart_before`, `shopGreeting_before` both need 前+にも). Expect the gap-filler authoring to be ~40-60 short lines, not a handful.
 
 Run it:
 
@@ -2446,7 +2453,7 @@ Create `scripts/seed-translator-threshold.js` — pushes a local account across 
 The script must print before/after counts:
 
 ```
-before: known=12 glue=3  →  after: known=131 glue=40  thresholdMet=true
+before: known=12 glue=3  →  after: known=140 glue=60  thresholdMet=true
 ```
 
 (compute via `getSwitchState` with the target user's id and meta).
@@ -2469,18 +2476,24 @@ Expected: `thresholdMet=true` in the output. Then confirm evaluate flips ready o
 
 ---
 
-### Task 14: (STOP-GATED) どっち FREE-list addition
+### Task 14: ~~どっち FREE-list addition~~ — RESOLVED, SKIP
 
-**Files:**
-- Modify: TBD by user decision — the i+1 validator's allowed-words source (locate via `grep -rn "ALLOWED_WORDS\|allowedWords" src/ scripts/`)
+**Resolution (2026-07-07):** superseded before implementation. どっち joined the
+60-word glue pool as *taught* vocabulary (Task 2 config) with a user-approved
+`data/live-dictionary.json` entry (added 2026-07-07, alongside みんな). Do NOT
+add どっち to the validator's FREE list — that would exempt it from the i+1
+budget and undercut its role as a teachable pool word.
 
-- [ ] **Step 1: STOP — ask the user**
+Broader free-list reform (surface-vs-base bug: ください freed but frames count
+くださる; interjections ああ/うわ counted as content words; freed question words;
+two validators not sharing one list) is documented in spec §5 as separate
+follow-up scope — not part of this plan.
 
-Per spec §5 and the repo dictionary rule, DO NOT implement without explicit confirmation. Ask:
+- [ ] **Step 1: Verify nothing to do**
 
-> "The April findings recommend adding どっち to the i+1 validator's always-allowed list (it appeared naturally in 3+ experiments and burns the i+1 budget). This changes what validation permits everywhere. Approve adding どっち (and only どっち)?"
-
-- [ ] **Step 2: If approved:** add どっち to the allowed-words source found above, run `npm test` (failing-set equality), commit as `feat: add どっち to i+1 free list (user-approved)`. **If declined:** delete this task, note the decision in the plan.
+Confirm どっち is in `data/dialogue-switch-config.json` glueWords and has a
+dictionary entry (`node -e "const d=require('./data/live-dictionary.json'); console.log(d['どっち'])"`),
+then mark this task complete.
 
 ---
 

@@ -35,7 +35,7 @@ Experiments 11 vs 25).
 |---|---|
 | Which surfaces transition? | All conversations now (befriend + NPC lines + revived 3-round bond convo) plus shop/shrine line pools (shopGreeting, shopPurchase, shrineGreeting); barks/gameMaster eventually (roadmap note only) |
 | Trigger shape | **Single switch, no tiers** — flips all conversation surfaces at once, only when we are confident output will be excellent |
-| Trigger condition | Vocab threshold (≥130 known words incl. ≥30 glue words) **AND** verified pre-generated runway (preflight) |
+| Trigger condition | Vocab threshold (≥130 known words incl. ≥40 of a 60-word glue pool) **AND** verified pre-generated runway (preflight) |
 | Unlock UX | **Cid moment**: she "changes your translator setting" — prologue-style scene, fires once |
 | Befriend quality fix | Gate behind the switch + prompt-improvement pass. No model benchmark in scope |
 | Architecture | Central **Dialogue Director** module; all surfaces query it; per-request frame fallback forever |
@@ -58,14 +58,20 @@ One per-user boolean, earned once, never auto-revoked.
 
 - `knownWords ≥ 130`, where known = FSRS card in Learning/Review/Relearning state
   (existing `getKnownWordsFromFsrs(userId)`).
-- `glueWordsKnown ≥ 30`, counted against a canonical ~40-word glue list derived
-  from the findings doc Priority 1–4 curriculum intersected with
-  `data/glue-words.json` (a 40-word pool with a 30-word requirement leaves slack —
-  requiring all of a 30-word list would let one unlucky word block the switch
-  forever).
+- `glueWordsKnown ≥ 40`, counted against a **60-word glue pool re-derived from
+  scratch on 2026-07-07** (superseding the April findings-doc Priority 1–5
+  curriculum, which was built with weaker models). The pool covers people/social,
+  deixis, time, degree/quantity, mental/communication verbs, motion verbs,
+  daily/game verbs (shop economics: 買う/高い/安い; game-talk: 難しい/簡単/出来る;
+  friendship loop: また/今度/会う; collection talk: 一番/たくさん/可愛い), and
+  descriptors. It deliberately **excludes** bark-guaranteed words (これ, 嬉しい,
+  新しい — free threshold credit measures nothing) and grammar-pattern words
+  (方, 時, 後 — pattern exposure, not flashcards). みんな and どっち received
+  user-approved dictionary entries (2026-07-07). The 20-word slack (40-of-60)
+  absorbs per-player path variance.
 - Constants + glue list live in a new config: `data/dialogue-switch-config.json`
-  (`{ minKnownWords: 130, minGlueWords: 30, glueWords: [...] }`). Tunable without
-  code changes.
+  (`{ minKnownWords: 130, minGlueWords: 40, glueWords: [60 words] }`). Tunable
+  without code changes.
 
 Research basis: at 130 words with strong glue coverage, full 3-round dialogue
 generated 15/15 fields with zero unknowns and real narrative arcs (Experiment 25).
@@ -204,14 +210,21 @@ Applied to `src/narration-engine/entity-types/creature.js` and `npc.js` (+
    plausible, clearly non-responsive to the specific prompt, of similar length to
    the correct answer (no length tells), and never near-synonyms of it.
 
-**⚠️ Flagged for explicit user OK before implementation:** adding words like どっち
-to the validator's FREE/allowed list. This is dictionary-adjacent policy (affects
-what i+1 validation permits everywhere) and per project rules requires explicit
-confirmation. Listed as its own plan task with a stop-and-ask step.
+**Resolved 2026-07-07:** the earlier proposal to add どっち to the validator's
+FREE list is superseded — どっち joined the glue pool as *taught* vocabulary with
+a user-approved dictionary entry instead. Broader free-list reform (the
+surface-vs-base bug where ください is freed but frames count くださる;
+interjections ああ/うわ counted as content words; question words freed despite
+being teachable vocabulary; the two validators not sharing one list) is
+documented as separate follow-up scope, not part of this design.
 
 ## 6. Readiness Runway (the "graceful" part)
 
-Players must actually reach 130+30-glue through play:
+Players must actually reach 130+40-glue through play. The 2026-07-07 reachability
+audit found only 27 of the 60 pool words teachable from current content — 32 pool
+words have no i+1-eligible frames at all, and 前 is blocked by double-unknown
+lines — so the gap-filler authoring below is load-bearing (~40-60 short lines),
+not polish:
 
 - **Runway audit (one-time script):** verify every glue word required by the switch
   is teachable from current frame content — reuses/extends the April curriculum
@@ -239,7 +252,7 @@ Players must actually reach 130+30-glue through play:
 
 ## 8. Testing
 
-- **Unit (director):** threshold boundaries (129/130 words, 29/30 glue), glue-list
+- **Unit (director):** threshold boundaries (129/130 words, 39/40 glue), glue-list
   counting, high-water persistence (active survives FSRS lapse), preflight
   completeness math (unlocked-areas entity scoping).
 - **Unit (prompts):** assembled prompts contain compound warnings, reinforcement
