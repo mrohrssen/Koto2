@@ -761,7 +761,9 @@ npm test 2>&1 | tail -5   # failing-set equality vs baseline
 
 **Deploy note (record in the PR/merge message):** run `node scripts/backfill-question-word-cards.js` once on the Railway volume after this ships, BEFORE relying on question-word AI generation for existing users.
 
----### Task 7: Pool/allowlist disjointness guard + refresh reachability numbers
+---
+
+### Task 7: Pool/allowlist disjointness guard + refresh reachability numbers
 
 **Files:**
 - Modify: `scripts/validate-glue-progression.js` (add the disjointness check)
