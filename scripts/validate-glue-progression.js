@@ -1,20 +1,43 @@
 #!/usr/bin/env node
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { getAllowedSurfaceSet, getDemotedBaseFormSet } from '../src/game/grammar-allowlist.js';
 
 const dataDir = join(process.cwd(), 'data');
 const frames = JSON.parse(readFileSync(join(dataDir, 'dialogue', 'frames.json'), 'utf-8'));
 const creatures = JSON.parse(readFileSync(join(dataDir, 'creatures.json'), 'utf-8'));
 const items = JSON.parse(readFileSync(join(dataDir, 'items.json'), 'utf-8'));
 
-// The 50 glue words
+// The 74-word glue pool. Authoritative source: the glueWords array in
+// docs/superpowers/plans/2026-07-07-translator-upgrade-frames-to-ai-dialogue.md.
+// TODO: once data/dialogue-switch-config.json exists (translator-upgrade Task 1),
+// load the pool from there instead of hardcoding it here.
 const GLUE_WORDS = new Set([
-  '私','一緒','とても','今','知る','思う','これ','それ','まだ','言う',
-  'この','あの','来る','友達','嬉しい','今日','少し','出る','入る','上手',
-  '食べる','大きい','小さい','新しい','人','前','後','時','話','方',
-  '気','手','目','声','心','力','道','明日','分かる','教える',
-  '持つ','使う','作る','出来る','世界','場所','初めて','元気','名前','色'
+  '私', '人', '友達', 'みんな', '名前', '一緒', '一人',
+  'この', 'それ', 'あの', 'そこ', 'どっち',
+  '今', '今日', '明日', '昨日', '今度', 'また', 'もう', 'まだ', 'いつも', '前',
+  'とても', '少し', 'ちょっと', 'もっと', 'たくさん', '全部', '一番',
+  '思う', '知る', '分かる', '言う', '聞く', '話す', '教える', '言葉', '話',
+  '手', '目', '声', '心',
+  '来る', '会う', '帰る', '出る', '入る', '見せる',
+  '食べる', '買う', '作る', '使う', '持つ', '休む', '出来る',
+  '大きい', '小さい', '可愛い', '大好き', '欲しい', '古い', '高い', '安い',
+  '近い', '遠い', '遅い', '甘い', '美味しい', '難しい', '簡単', '上手', '大切', '楽しみ',
+  '場所'
 ]);
+
+// Guard: taught glue words must never be free grammar. The whole premise of the
+// glue pool is that these are TAUGHT vocab — if any leaked into the grammar
+// allowlist it would be silently free (never i+1-costed, never a teaching word).
+const allowed = getAllowedSurfaceSet();
+const demotedBases = getDemotedBaseFormSet();
+const overlap = [...GLUE_WORDS].filter(w => allowed.has(w) || demotedBases.has(w));
+if (overlap.length > 0) {
+  console.error(`❌ POOL/ALLOWLIST OVERLAP (${overlap.length}): ${overlap.join(' ')}`);
+  process.exitCode = 1;
+} else {
+  console.log('✓ glue pool and grammar allowlist are disjoint');
+}
 
 // isEligible from token-format.js (inlined to avoid ESM import issues in script)
 const SENTENCE_ENDERS = new Set(['。', '！', '？', '!', '?']);
@@ -102,7 +125,7 @@ while (changed) {
   }
   if (changed) {
     const glueCount = [...GLUE_WORDS].filter(w => known.has(w)).length;
-    console.log(`Step ${step}: Dialogue iteration → ${known.size} words known, ${glueCount}/50 glue words`);
+    console.log(`Step ${step}: Dialogue iteration → ${known.size} words known, ${glueCount}/74 glue words`);
   }
 }
 
@@ -111,7 +134,7 @@ console.log('\n=== RESULTS ===');
 const learned = [...GLUE_WORDS].filter(w => glueLearnedAt.has(w));
 const unreachable = [...GLUE_WORDS].filter(w => !known.has(w));
 
-console.log(`\nGlue words learned: ${learned.length}/50`);
+console.log(`\nGlue words learned: ${learned.length}/74`);
 if (learned.length > 0) {
   console.log('\nLearning order:');
   const sorted = [...glueLearnedAt.entries()].sort((a, b) => a[1] - b[1]);
@@ -133,5 +156,5 @@ if (unreachable.length > 0) {
   }
   process.exit(1);
 } else {
-  console.log('\n✅ All 50 glue words are reachable!');
+  console.log('\n✅ All 74 glue words are reachable!');
 }
