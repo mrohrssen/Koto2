@@ -35,7 +35,7 @@ Experiments 11 vs 25).
 |---|---|
 | Which surfaces transition? | All conversations now (befriend + NPC lines + revived 3-round bond convo) plus shop/shrine line pools (shopGreeting, shopPurchase, shrineGreeting); barks/gameMaster eventually (roadmap note only) |
 | Trigger shape | **Single switch, no tiers** — flips all conversation surfaces at once, only when we are confident output will be excellent |
-| Trigger condition | Vocab threshold (≥130 known words incl. ≥50 of a 74-word glue pool) **AND** verified pre-generated runway (preflight) |
+| Trigger condition | Vocab threshold (≥130 known words incl. ≥30 of a 74-word glue pool) **AND** verified pre-generated runway (preflight) |
 | Unlock UX | **Cid moment**: she "changes your translator setting" — prologue-style scene, fires once |
 | Befriend quality fix | Gate behind the switch + prompt-improvement pass. No model benchmark in scope |
 | Architecture | Central **Dialogue Director** module; all surfaces query it; per-request frame fallback forever |
@@ -58,7 +58,7 @@ One per-user boolean, earned once, never auto-revoked.
 
 - `knownWords ≥ 130`, where known = FSRS card in Learning/Review/Relearning state
   (existing `getKnownWordsFromFsrs(userId)`).
-- `glueWordsKnown ≥ 50`, counted against a **74-word glue pool re-derived from
+- `glueWordsKnown ≥ 30`, counted against a **74-word glue pool re-derived from
   scratch on 2026-07-07** (superseding the April findings-doc Priority 1–5
   curriculum, which was built with weaker models) and **grounded against JPDB
   frequency data the same day**: every pool word is JPDB "common" tier (median
@@ -74,10 +74,13 @@ One per-user boolean, earned once, never auto-revoked.
   the patterns 〜の方が/〜時/〜た後, not flashcard value), ambiguous bare kanji
   (気, 力, 道 — JPDB itself parses them as suffixes), and 天気 (rank 4900, the
   only frequency-rejected candidate). みんな and どっち received user-approved
-  dictionary entries (2026-07-07). The 24-word slack (50-of-74) absorbs
-  per-player path variance.
+  dictionary entries (2026-07-07). Requiring 30 of 74 keeps the vocab bar at
+  the research's exchange-comfort point while the expansive pool means any 30
+  a player happens to learn are all high-value; the preflight (Condition B) —
+  not the word count — is what guarantees generation quality before the
+  switch fires.
 - Constants + glue list live in a new config: `data/dialogue-switch-config.json`
-  (`{ minKnownWords: 130, minGlueWords: 50, glueWords: [74 words] }`). Tunable
+  (`{ minKnownWords: 130, minGlueWords: 30, glueWords: [74 words] }`). Tunable
   without code changes.
 
 Research basis: at 130 words with strong glue coverage, full 3-round dialogue
@@ -227,7 +230,7 @@ documented as separate follow-up scope, not part of this design.
 
 ## 6. Readiness Runway (the "graceful" part)
 
-Players must actually reach 130+50-glue through play. The 2026-07-07 reachability
+Players must actually reach 130+30-glue through play. The 2026-07-07 reachability
 audit found only 29 of the 74 pool words teachable from current content — 44 pool
 words have no i+1-eligible frames at all, and 前 is blocked by double-unknown
 lines — so the gap-filler authoring below is load-bearing (~55-75 short lines),
@@ -259,7 +262,7 @@ not polish:
 
 ## 8. Testing
 
-- **Unit (director):** threshold boundaries (129/130 words, 49/50 glue), glue-list
+- **Unit (director):** threshold boundaries (129/130 words, 29/30 glue), glue-list
   counting, high-water persistence (active survives FSRS lapse), preflight
   completeness math (unlocked-areas entity scoping).
 - **Unit (prompts):** assembled prompts contain compound warnings, reinforcement

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the single per-user "Translator Upgrade" switch that flips all conversation surfaces (creature befriend, NPC one-liners, revived 3-round bond conversation, and the shop/shrine line pools) from static frames to AI-generated i+1 dialogue — triggered by vocab readiness (≥130 known words incl. ≥50 of a 74-word glue pool) plus a verified pre-generated dialogue inventory, announced by a one-time Cid scene.
+**Goal:** Build the single per-user "Translator Upgrade" switch that flips all conversation surfaces (creature befriend, NPC one-liners, revived 3-round bond conversation, and the shop/shrine line pools) from static frames to AI-generated i+1 dialogue — triggered by vocab readiness (≥130 known words incl. ≥30 of a 74-word glue pool) plus a verified pre-generated dialogue inventory, announced by a one-time Cid scene.
 
 **Architecture:** A new central `dialogue-director` module computes switch state from FSRS known words + a glue-word config, persists high-water state in player meta, and gates every AI-serving call site via `shouldUseAiDialogue`. Frames remain the permanent per-request fallback. Preflight generation reuses the existing narration-engine queue + i+1 repair pipeline; the Cid moment is a client scene triggered by a new evaluate/complete route pair.
 
@@ -90,7 +90,7 @@ Create `data/dialogue-switch-config.json`. The 74-word glue pool was re-derived 
 ```json
 {
   "minKnownWords": 130,
-  "minGlueWords": 50,
+  "minGlueWords": 30,
   "glueWords": [
     "私", "人", "友達", "みんな", "名前", "一緒", "一人",
     "この", "それ", "あの", "そこ", "どっち",
@@ -141,24 +141,24 @@ describe('dialogue-director switch state', () => {
   it('loads config with 74 glue words and thresholds', () => {
     const cfg = loadSwitchConfig();
     assert.equal(cfg.minKnownWords, 130);
-    assert.equal(cfg.minGlueWords, 50);
+    assert.equal(cfg.minGlueWords, 30);
     assert.equal(cfg.glueWords.length, 74);
   });
 
-  it('threshold NOT met at 129 words / 50 glue', () => {
-    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(129, 50) });
+  it('threshold NOT met at 129 words / 30 glue', () => {
+    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(129, 30) });
     assert.equal(state.knownCount, 129);
-    assert.equal(state.glueCount, 50);
+    assert.equal(state.glueCount, 30);
     assert.equal(state.thresholdMet, false);
   });
 
-  it('threshold NOT met at 130 words / 49 glue', () => {
-    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(130, 49) });
+  it('threshold NOT met at 130 words / 29 glue', () => {
+    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(130, 29) });
     assert.equal(state.thresholdMet, false);
   });
 
-  it('threshold met at exactly 130 words / 50 glue', () => {
-    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(130, 50) });
+  it('threshold met at exactly 130 words / 30 glue', () => {
+    const state = getSwitchState('u1', freshMeta(), { getKnownWords: () => knownWords(130, 30) });
     assert.equal(state.thresholdMet, true);
     assert.equal(state.ready, false);
     assert.equal(state.active, false);
