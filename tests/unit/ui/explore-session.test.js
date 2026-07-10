@@ -905,3 +905,150 @@ test('adopting a refreshed same-epoch runway resumes a session paused on an empt
   assert.equal(accepted.accepted, true, 'the proceed is accepted once the next room is ready');
   assert.equal(session.pendingCount(), 1);
 });
+
+test('exposes pause reason and a monotonic local revision', () => {
+  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  session.adoptRunway(makeRunway());
+  const r0 = session.getLocalRevision();
+
+  const rejected = session.recordRoomAction('dealer.buy', {});
+  assert.equal(rejected.reason, 'actionNotAccepted');
+  assert.equal(session.getPauseReason(), 'actionNotAccepted');
+  assert.equal(session.getLocalRevision(), r0);
+
+  session.adoptRunway(makeRunway());
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'x' });
+  assert.equal(session.getLocalRevision(), r0 + 1);
+
+  session.reset();
+  assert.equal(session.getLocalRevision(), r0 + 2);
+});
+
+test('consumes each returned action result once per session epoch', () => {
+  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  session.adoptRunway(makeRunway());
+
+  assert.equal(session.consumeResultOnce('run_es_result_1'), true);
+  assert.equal(session.consumeResultOnce('run_es_result_1'), false);
+
+  session.adoptRunway(makeRunway({ sessionEpoch: 'ese_2222222222222222' }));
+  assert.equal(session.consumeResultOnce('run_es_result_1'), true);
+});
+
+test('a sync-delivered epoch change rotates result consumption and revision', async () => {
+  const nextEpochRunway = makeRunway({
+    sessionEpoch: 'ese_3333333333333333',
+  });
+  const session = createExploreSession({
+    syncRequest: async () => okResponse(1, {
+      exploreRunway: nextEpochRunway,
+    }),
+  });
+  session.adoptRunway(makeRunway({
+    sessionEpoch: 'ese_2222222222222222',
+  }));
+  const before = session.getLocalRevision();
+  assert.equal(session.consumeResultOnce('run_es_result_2'), true);
+  assert.equal(session.consumeResultOnce('run_es_result_2'), false);
+
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', {
+    itemId: 'field-tonic',
+  }).accepted, true);
+  await session.syncNow();
+
+  assert.ok(session.getLocalRevision() > before);
+  assert.equal(session.consumeResultOnce('run_es_result_2'), true);
+});
+
+test('sync callbacks see the response runway before a paused session resumes', async () => {
+  const scheduler = makeManualScheduler();
+  const events = [];
+  const refreshed = makeRunway({
+    currentRoom: 1,
+    roomActionSeq: 88,
+    preparedRooms: [preparedRoom(1, { actionSeq: 88 })],
+  });
+  let session;
+  session = createExploreSession({
+    syncRequest: async () => okResponse(1, { exploreRunway: refreshed }),
+    onCheckpoint: () => events.push([
+      'checkpoint',
+      session.currentPreparedRoom()?.actionSeq,
+      session.isPaused(),
+    ]),
+    onResume: () => events.push([
+      'resume',
+      session.currentPreparedRoom()?.actionSeq,
+      session.isPaused(),
+    ]),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway({
+    preparedRooms: [
+      preparedRoom(0, {
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: ['partyStats'] },
+      }),
+      preparedRoom(1, { dependencies: ['partyStats'] }),
+    ],
+  }));
+
+  assert.equal(session.recordRoomAction('proceed').accepted, true);
+  await scheduler.fire();
+
+  assert.deepEqual(events, [
+    ['checkpoint', 88, true],
+    ['resume', 88, false],
+  ]);
+});
+
+test('correction callback sees corrected runway before resume', async () => {
+  const scheduler = makeManualScheduler();
+  const events = [];
+  const correctedRunway = makeRunway({
+    currentRoom: 1,
+    roomActionSeq: 99,
+    preparedRooms: [preparedRoom(1, { actionSeq: 99 })],
+  });
+  let session;
+  session = createExploreSession({
+    syncRequest: async () => ({
+      status: 'corrected',
+      confirmedThroughSeq: null,
+      rejectedSeq: 1,
+      reason: 'server_correction',
+      results: [],
+      exploreRunway: correctedRunway,
+    }),
+    onCorrection: () => events.push([
+      'correction',
+      session.currentPreparedRoom()?.actionSeq,
+      session.isPaused(),
+    ]),
+    onResume: () => events.push([
+      'resume',
+      session.currentPreparedRoom()?.actionSeq,
+      session.isPaused(),
+    ]),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway({
+    preparedRooms: [
+      preparedRoom(0, {
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: ['partyStats'] },
+      }),
+      preparedRoom(1, { dependencies: ['partyStats'] }),
+    ],
+  }));
+
+  assert.equal(session.recordRoomAction('proceed').accepted, true);
+  await scheduler.fire();
+
+  assert.deepEqual(events, [
+    ['correction', 99, true],
+    ['resume', 99, false],
+  ]);
+});

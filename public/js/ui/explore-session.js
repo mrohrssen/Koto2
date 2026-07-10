@@ -121,10 +121,21 @@ export function createExploreSession({
   let paused = false;
   let pauseReason = null;
   let generation = 0;
+  let localRevision = 0;
+  let handledResultActionIds = new Set();
   let actionNonce = createSessionNonce();
 
   function pendingCount() { return log.length; }
   function isPaused() { return paused; }
+  function getPauseReason() { return pauseReason; }
+  function getLocalRevision() { return localRevision; }
+
+  function consumeResultOnce(actionId) {
+    if (typeof actionId !== 'string' || actionId.length === 0) return true;
+    if (handledResultActionIds.has(actionId)) return false;
+    handledResultActionIds.add(actionId);
+    return true;
+  }
 
   function cancelDebounceTimer() {
     if (debounceTimer != null) {
@@ -175,23 +186,29 @@ export function createExploreSession({
     if (log.length === 0) resumeIfPaused();
   }
 
-  function adoptRunwayInternal(nextRunway, { fromSync = false } = {}) {
+  function adoptRunwayInternal(
+    nextRunway,
+    { fromSync = false, deferResume = false } = {},
+  ) {
     const previousEpoch = sessionEpoch;
     const nextEpoch = nextRunway?.sessionEpoch ?? null;
-    const sessionBoundary = !fromSync
-      && Boolean(previousEpoch)
+    const epochChanged = Boolean(previousEpoch)
       && (!nextEpoch || previousEpoch !== nextEpoch);
+    const sessionBoundary = !fromSync && epochChanged;
 
     runway = cloneValue(nextRunway) ?? null;
     sessionEpoch = nextEpoch;
-
     const rooms = preparedRoomsFor(runway);
     const firstRoomIndex = roomIndexFor(rooms[0]);
     localCurrentRoom = Number.isInteger(runway?.currentRoom)
       ? runway.currentRoom
       : firstRoomIndex;
-
     if (fromSync) replayPendingProceedCursor();
+
+    if (epochChanged) {
+      localRevision += 1;
+      handledResultActionIds = new Set();
+    }
 
     if (sessionBoundary) {
       generation += 1;
@@ -211,7 +228,7 @@ export function createExploreSession({
     // runs. Resume here on BOTH paths (boundary and same-epoch refresh), after the
     // cursor/log are settled. maybeResumeAfterDrain already encodes the correct
     // semantics (hardCap threshold, else resume only when the log is empty).
-    maybeResumeAfterDrain();
+    if (!deferResume) maybeResumeAfterDrain();
 
     return runway;
   }
@@ -296,12 +313,18 @@ export function createExploreSession({
     }
 
     const preparedRoom = currentPreparedRoom();
-    if (!preparedRoom) return reject('noPreparedRoom');
+    if (!preparedRoom) {
+      enterPause('noPreparedRoom');
+      return reject('noPreparedRoom');
+    }
     if (!isRoomReady(preparedRoom)) {
       enterPause('currentRoomNotReady');
       return reject('currentRoomNotReady');
     }
-    if (!isAcceptedAction(preparedRoom, kind)) return reject('actionNotAccepted');
+    if (!isAcceptedAction(preparedRoom, kind)) {
+      enterPause('actionNotAccepted');
+      return reject('actionNotAccepted');
+    }
 
     const nextRoom = kind === 'proceed' ? nextPreparedRoomAfter(preparedRoom) : null;
     let pauseSelfEffectsAfterQueue = false;
@@ -342,6 +365,7 @@ export function createExploreSession({
 
     const entry = buildEntry(kind, payload, preparedRoom);
     log.push(entry);
+    localRevision += 1;
 
     if (kind === 'proceed') {
       localCurrentRoom = roomIndexFor(nextRoom);
@@ -405,20 +429,26 @@ export function createExploreSession({
 
       if (response.status === 'corrected') {
         log = [];
-        notify(onCorrection, response);
         if (Object.hasOwn(response, 'exploreRunway')) {
-          adoptRunwayInternal(response.exploreRunway, { fromSync: true });
+          adoptRunwayInternal(response.exploreRunway, {
+            fromSync: true,
+            deferResume: true,
+          });
         }
+        notify(onCorrection, response);
       } else {
         const confirmed = Number.isInteger(response.confirmedThroughSeq)
           ? response.confirmedThroughSeq
           : -1;
         log = log.filter(entry => entry.seq > confirmed);
         appendedAfterSnapshot = log.some(entry => entry.seq > snapshotMaxSeq);
-        notify(onCheckpoint, response, { logEmpty: log.length === 0 });
         if (Object.hasOwn(response, 'exploreRunway')) {
-          adoptRunwayInternal(response.exploreRunway, { fromSync: true });
+          adoptRunwayInternal(response.exploreRunway, {
+            fromSync: true,
+            deferResume: true,
+          });
         }
+        notify(onCheckpoint, response, { logEmpty: log.length === 0 });
       }
 
       maybeResumeAfterDrain();
@@ -439,6 +469,7 @@ export function createExploreSession({
 
   function reset() {
     generation += 1;
+    localRevision += 1;
     activeDrainToken += 1;
     activeDrainPromise = null;
     clearTimers();
@@ -452,6 +483,7 @@ export function createExploreSession({
     paused = false;
     pauseReason = null;
     forceDrainRequested = false;
+    handledResultActionIds = new Set();
     actionNonce = createSessionNonce();
   }
 
@@ -465,6 +497,10 @@ export function createExploreSession({
     pendingCount,
     snapshot: () => log.map(entry => cloneValue(entry)),
     isPaused,
+    getPauseReason,
+    getLocalRevision,
+    consumeResultOnce,
+    pause: enterPause,
   };
 }
 
