@@ -1,7 +1,7 @@
 # Explore Online/Offline Sync Reliability Repair
 
 **Date:** 2026-07-09
-**Status:** Approved
+**Status:** Approved (amended 2026-07-10 after code-verification audit)
 **Feature:** Restore correctness and automatic recovery across standard Explore mode's online/offline boundary
 **Base:** `origin/dev` at `67edd31e`
 
@@ -12,17 +12,17 @@ The July Explore reliability work added the right large-scale pieces—prepared 
 The audit confirmed these independent defects:
 
 1. Session combat plays and commits a predicted turn before checking whether `recordRoomAction()` accepted the corresponding log entry. A paused or capped session can therefore advance HP, seeds, and `stateVersion` without any replayable action.
-2. A runway pause entered while `navigator.onLine === false` and with an empty log never resumes. The `online` listener drains the empty log, which is a no-op, and never refreshes the runway.
+2. A runway pause entered while `navigator.onLine === false` and with an empty log never resumes automatically. The `online` listener drains the empty log, which is a no-op, and never refreshes the runway; today recovery requires another user tap to re-surface the soft pause.
 3. A timed-out sync may commit on the server and later return its ledgered result with `replayed: true`. The client treats `replayed` as “already handled by this browser,” skips terminal combat or befriend handling, and can remain frozen on a pending-combat shell.
 4. `GET /state` error bodies are truthy and can be normalized into `phase: "no_save"`, erasing the live client run. A state request that began before a new local action can also return after that action and overwrite newer optimistic state.
 5. Initial skill choice receives a rebuilt runway but does not adopt it before room 0 may automatically start combat.
-6. The action-effect contract omits real party mutations. Room entry heals and clears effects, party-skill choices affect combat, and word-discovery/whack completion award XP. The client and server can therefore start the same prepared fight from different ally state.
+6. The action-effect contract omits real party mutations. Room entry heals and clears effects (undeclared on `proceed`), party-skill choices affect combat (`partySkills` does not intersect combat's `partyStats` dependency, so no fence trips), and word-discovery/whack completion award XP (whack declares only its credits). Shrine and friendly-NPC choices already declare `partyStats` and are correctly fenced — they are the model, not part of the defect. The client and server can therefore start the same prepared fight from different ally state; the divergence surfaces as a transcript-mismatch correction rather than silent corruption.
 7. Whack-a-mole completion/skip both mark the room complete and implicitly proceed inside one action, bypassing the session's explicit cursor and dependency checks.
 8. The client-side empty NPC reward escape clears only its draft. The current server correctly blocks proceeding while the canonical reward is pending, so accounts with no eligible reward are stuck.
-9. Server sync accepts non-contiguous entry sequences and does not verify that an entry kind is canonically advertised for the current room. A forged `proceed` can bypass the intended session contract, including at a boss room.
+9. Server sync accepts non-contiguous entry sequences and does not verify that an entry kind is canonically advertised for the current room. Most kinds are type-checked inside their individual performers; `proceed` is the concrete hole — `proceedToNextRoom()` has no boss-completion or active-combat guard, so a forged `proceed` can skip an unfinished boss and set area/game victory.
 10. A transcript mismatch that committed server state is ledgered as corrected, but a lost-response retry replays that ledger result as an ordinary success and may continue later entries.
 11. Building correction response context snapshots the shared `GameManager`, awaits runway work, then restores the snapshot. That can erase a concurrent mutation and breaks object aliases such as `combat.allies === run.creatureParty.active`.
-12. Rebuilding the runway during an active combat can prepare a second combat roll for the still-current room because the original prepared roll was consumed at combat start.
+12. Rebuilding the runway during an active combat can prepare a second combat roll for the still-current room because the original prepared roll was consumed at combat start. Every sync response rebuilds the runway (`ok` and `corrected`, plus `GET /state?adoptSession=1`), so an ordinary mid-combat sync already ships the phantom roll.
 
 Recent dev bug reports—blank move selection after an NPC battle began and an NPC victory with no delivered reward—match these state-transition failures. The existing smoke harness does not falsify them because it aborts requests while `navigator.onLine` remains true, reloads after setup, avoids support choices during offline windows, and weakly checks final reconciliation.
 
@@ -52,7 +52,7 @@ Rejected alternatives:
 
 ### Commit combat turns safely
 
-`runSessionCreatureCombatTurn()` will build the deterministic prediction, then append `combat.cycle`. Only an accepted append may start playback and commit `localStateAfterSessionPveTurn()`. A rejected append clears the attack-pending flag, leaves the current state and seed chain untouched, and lets the session's existing soft-pause UI own recovery.
+`runSessionCreatureCombatTurn()` will build the deterministic prediction, then append `combat.cycle`. Only an accepted append may start playback and commit `localStateAfterSessionPveTurn()`. A rejected append clears the attack-pending flag, leaves the current state and seed chain untouched, and lets the session's existing soft-pause UI own recovery. Rejects that do not enter a session pause (`actionNotAccepted`, `noPreparedRoom`) must surface the same soft-pause/recovery path — every rejected turn has a recovery owner, not only the pausing reasons.
 
 An entry that reaches the hard cap is still accepted and may be played; the loop must not offer another move while `session.isPaused()` is true. If the remaining seed runway is unsafe, the client must await a session drain before invoking the legacy per-turn verifier. It may not fire `/explore/sync` and `/creature-combat-cycle` concurrently.
 
@@ -82,7 +82,7 @@ State loading will classify responses before mutation:
 - valid fresh-account state: preserve the existing explicit no-save flow.
 - valid game state: adopt only when the session has no pending suffix and its local revision is unchanged since request start.
 
-All in-session callers continue using `adoptSession=1`. Initial skill choice adopts `result.state.run.exploreRunway` before `updateUI()` can enter room 0. The post-combat-shop path must not assign a raw error body after `loadGameState()` rejects it.
+All in-session callers continue using `adoptSession=1`. A regression test enforces the discipline: no in-session code path may issue a bare `GET /state`, which rotates the session epoch by design and strands any offline log. Initial skill choice adopts `result.state.run.exploreRunway` before `updateUI()` can enter room 0. The post-combat-shop path must not assign a raw error body after `loadGameState()` rejects it.
 
 ### Mirror deterministic party mutations
 
@@ -93,6 +93,8 @@ Extract browser-safe room-entry party recovery into one shared function used by 
 - reset `statStages` and `activeEffects` on active/reserve creatures.
 
 Skill Master and NPC reward selection will optimistically call the existing browser-safe `applyPartySkillChoice()` and `syncPartySkillHpBonuses()` while marking the room complete. At prepared combat start, enemies and seed-chain data come from `combatStart`, but allies come from the current run party so deterministic support mutations made after the runway was first prepared are preserved. Server-only support mutations such as shrine items/levels remain dependency-fenced until checkpointed.
+
+The server already binds combat allies to the live canonical party at combat start, so the ally-sourcing rule above is bilateral rather than a client-only change. It also makes checkpoint party adoption load-bearing: with allies no longer read from the runway snapshot, a dependency-fenced pause for a server-only effect may lift only after the client's run party has adopted the checkpoint's authoritative party state. Concretely, an `ok` checkpoint that empties the log adopts the response's authoritative party (the sync response already carries full state) before the pause resumes. Skipping this adoption would re-create the exact whack/word-discovery→combat transcript fork this repair removes, because the boosted allies used to arrive via `combatStart.allies` and no longer do.
 
 ### Make room advancement explicit
 
@@ -121,6 +123,8 @@ When replay commits an authoritative combat turn but its transcript mismatches, 
 Replay/rollback is synchronous and bounded to the mutation phase. After a result has committed, runway/state response construction may fall back to the current canonical runway if decoration fails, but may not restore a pre-request snapshot.
 
 Stale-epoch corrections do not rebuild the runway by mutating the live manager and restoring it. They serialize existing canonical state/runway or build on a detached clone. Internal aliases remain intact, and an awaited vocabulary/audio lookup cannot erase a concurrent committed mutation.
+
+The same snapshot/restore-across-await pattern exists in the shared legacy optimistic-action error runner used by compatibility endpoints. Its full replacement is out of scope here; this repair only requires its restore path to re-establish canonical aliases after a rollback (as the manager registry already does after deserialization), with invariant 10's fencing keeping live session work from racing it. The remaining exposure on non-Explore endpoints is accepted and documented, not repaired.
 
 ### Keep active combat canonical
 
@@ -157,7 +161,9 @@ Every production change follows red-green TDD. Required deterministic regression
 - initial skill response adopts its runway before room-0 combat dispatch;
 - shared room-entry recovery and skill choice produce byte-equivalent party state on client and server;
 - whack completion/skip records a separate proceed and does not move the session cursor implicitly;
-- legacy fallback never runs with pending or newly appended session work.
+- legacy fallback never runs with pending or newly appended session work;
+- a server-only XP effect (whack/word-discovery) ahead of a combat room pauses the proceed, the draining checkpoint adopts authoritative party state, and the resumed fight starts hash-converged on both sides;
+- no in-session code path issues a bare `GET /state` (epoch-rotation discipline).
 
 ### Server unit/integration tests
 
@@ -165,7 +171,7 @@ Every production change follows red-green TDD. Required deterministic regression
 - an unadvertised boss `proceed` is rejected and cannot set area/game victory;
 - corrected ledger replay returns correction and ignores trailing entries;
 - stale-epoch response construction neither erases a concurrent mutation nor breaks party/combat aliases;
-- active-combat runway refresh preserves combat ID/enemies/seeds and creates no `preparedCombat` replacement;
+- active-combat runway refresh preserves combat ID/enemies/seeds and creates no `preparedCombat` replacement, including on an ordinary mid-combat `ok` sync (not only adoptSession/correction paths);
 - empty NPC offers resolve canonically and are idempotent across a lost response;
 - whack/word-discovery effect declarations match actual XP/credit mutations;
 - support choice + proceed + combat batches either mirror deterministic state exactly or pause before a server-only dependency;
@@ -185,7 +191,7 @@ Every production change follows red-green TDD. Required deterministic regression
 - No persistent offline queue or reload-proof unsynced progress.
 - No offline AI befriend conversation.
 - No dictionary edits, Japanese copy changes, content generation, combat balance changes, or new rewards.
-- No broad storage-engine rewrite. Server changes are limited to Explore replay validation, response safety, canonical runway state, and the NPC reward transition.
+- No broad storage-engine rewrite. Server changes are limited to Explore replay validation, response safety, canonical runway state, the NPC reward transition, the shared-contract effect redeclarations, and extracting browser-safe room-entry party recovery out of `ExplorationService`. The legacy optimistic-action runner keeps its snapshot/rollback error path (gaining only alias re-establishment after restore); its full replacement is deferred.
 - Existing compatibility endpoints remain until this repair is verified; they are fenced from live session work rather than removed.
 
 ## Success Criteria
