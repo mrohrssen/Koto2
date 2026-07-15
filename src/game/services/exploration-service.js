@@ -21,13 +21,12 @@ import { hydrateCards } from '../bootstrap/word-knowledge.js';
 import {
   applyPartySkillChoice,
   canonicalPartySkillTreeId,
-  getPostCombatRecoveryMultiplier,
   normalizePartySkills,
   rollSkillMasterOffers,
   getPartySkillOfferDisplay,
   syncPartySkillHpBonuses
 } from '../party-skills.js';
-import { applyHeal } from '../combat/effects.js';
+import { applyRoomEntryPartyRecovery } from '../room-entry-party.js';
 import { loadNpcs } from './npc-service.js';
 import { applyCrestBonuses } from './crest-service.js';
 import { shouldOverrideSkillOffers, advanceTutorial, shouldFixRoomSequence } from './tutorial-service.js';
@@ -45,7 +44,6 @@ import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
 import { applyItem } from './item-service.js';
 import { entityToToken } from '../token-format.js';
 
-const ROOM_HEAL_PERCENT = 0.05; // 5% maxHp on each room entry, skipping KO'd creatures
 const STARTING_MEADOW_AREA_ID = 'hajimari-no-hiroba';
 const STARTING_MEADOW_TUTORIAL_INGREDIENT_DROPS = Object.freeze([
   'mizu',
@@ -132,50 +130,6 @@ export class ExplorationService {
 
   async buildExploreRunway(opts = {}) {
     return buildExploreRunway(this.gm, opts);
-  }
-
-  /**
-   * Heal living creatures when entering a new room.
-   * KO'd creatures (hp <= 0) must remain KO'd unless a revive happens elsewhere.
-   */
-  _healAllLivingCreaturesForRoomEntry() {
-    const party = this.gm.run?.creatureParty;
-    if (!party) return;
-    syncPartySkillHpBonuses(party, this.gm.run?.partySkills || []);
-    const recoveryMultiplier = getPostCombatRecoveryMultiplier(this.gm.run?.partySkills || []);
-
-    const active = Array.isArray(party.active) ? party.active : [];
-    const reserves = Array.isArray(party.reserves) ? party.reserves : [];
-    const allCreatures = [...active, ...reserves].filter(Boolean);
-
-    for (const creature of allCreatures) {
-      if (!creature || typeof creature.hp !== 'number' || creature.hp <= 0) continue; // never revive here
-      if (typeof creature.maxHp !== 'number') continue;
-
-      const healAmount = Math.floor(creature.maxHp * ROOM_HEAL_PERCENT * recoveryMultiplier);
-      if (healAmount <= 0) continue;
-      applyHeal(creature, healAmount);
-    }
-  }
-
-  /**
-   * Clear combat-scoped buffs/debuffs (stat stages + activeEffects) on every
-   * room entry. Mirrors the user's rule: "All buffs and debuffs should clear
-   * on room transitions." Previously cleared at combat-end, which made pills
-   * vanish mid-playback; deferring to room entry keeps them visible through
-   * the victory modal / friendlyNpc reward screen until the user moves on.
-   */
-  _clearCombatBuffsForRoomEntry() {
-    const party = this.gm.run?.creatureParty;
-    if (!party) return;
-
-    const active = Array.isArray(party.active) ? party.active : [];
-    const reserves = Array.isArray(party.reserves) ? party.reserves : [];
-    for (const creature of [...active, ...reserves]) {
-      if (!creature) continue;
-      creature.statStages = { atk: 0, def: 0, dex: 0 };
-      creature.activeEffects = [];
-    }
   }
 
   _assignFriendlyNpcIfNeeded(room) {
@@ -357,11 +311,8 @@ export class ExplorationService {
       // Count the first room immediately when entering an area.
       this.gm.run.totalEncounters = (this.gm.run.totalEncounters || 0) + 1;
 
-      // Per-room regen: heal all living creatures on first room entry too.
-      this._healAllLivingCreaturesForRoomEntry();
-      // Clear combat-scoped buffs/debuffs so stat pills don't leak across
-      // areas (e.g. def+1 from the prior area's final combat).
-      this._clearCombatBuffsForRoomEntry();
+      // Apply room-entry recovery and clear combat-scoped effects on first entry too.
+      applyRoomEntryPartyRecovery(this.gm.run);
     }
 
     ensureRoomActionSeq(this.gm.run);
@@ -507,13 +458,12 @@ export class ExplorationService {
     // Increment global room counter for enemy scaling (all room types).
     this.gm.run.totalEncounters = (this.gm.run.totalEncounters || 0) + 1;
 
-    // Per-room regen: heal all living creatures between rooms.
-    this._healAllLivingCreaturesForRoomEntry();
-    // Clear combat-scoped buffs/debuffs on every room transition. Kept here
+    // Recover living creatures and clear combat-scoped buffs/debuffs on every
+    // room transition. Kept here
     // (not at combat-end) so stat pills stay visible through the victory
     // modal / friendlyNpc reward screen and clear only when the user
     // physically moves on. See the note in resolution.js:finalizeCombatVictory.
-    this._clearCombatBuffsForRoomEntry();
+    applyRoomEntryPartyRecovery(this.gm.run);
     const ingredientDrops = this._rollRoomIngredientDrops();
 
     // Vary background per room — sub-area-specific if available

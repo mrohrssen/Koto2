@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { checkAllDefeated, processKOSwaps, collectElementDrops, getElementDropList, finalizeCombatVictory, resolveDefeat } from '../../../src/game/combat/resolution.js';
+import { applyRoomEntryPartyRecovery } from '../../../src/game/room-entry-party.js';
 
 describe('checkAllDefeated', () => {
   it('returns true for empty array', () => {
@@ -230,13 +231,12 @@ describe('finalizeCombatVictory', () => {
   });
 });
 
-describe('exploration-service: room-entry clears combat buffs', () => {
+describe('room-entry party recovery clears combat buffs', () => {
   // These tests verify the new home of stat-stage cleanup. Moving the
   // clear out of finalizeCombatVictory and into proceedToNextRoom /
   // enterArea matches the user's rule from 2026-04-18: "All buffs and
   // debuffs should clear on room transitions." See resolution.js note.
-  it('_clearCombatBuffsForRoomEntry zeros active creatures stat stages', async () => {
-    const { ExplorationService } = await import('../../../src/game/services/exploration-service.js');
+  it('zeros active creatures stat stages', () => {
     const gm = {
       run: {
         creatureParty: {
@@ -245,20 +245,16 @@ describe('exploration-service: room-entry clears combat buffs', () => {
         }
       }
     };
-    const svc = new ExplorationService(gm);
-    svc._clearCombatBuffsForRoomEntry();
+    applyRoomEntryPartyRecovery(gm.run);
     assert.deepEqual(gm.run.creatureParty.active[0].statStages, { atk: 0, def: 0, dex: 0 });
     assert.deepEqual(gm.run.creatureParty.active[0].activeEffects, []);
     assert.deepEqual(gm.run.creatureParty.reserves[0].statStages, { atk: 0, def: 0, dex: 0 });
   });
 
-  it('_clearCombatBuffsForRoomEntry is a no-op without creatureParty', async () => {
-    const { ExplorationService } = await import('../../../src/game/services/exploration-service.js');
-    const svc = new ExplorationService({ run: null });
+  it('is a no-op without creatureParty', () => {
     // Should not throw
-    svc._clearCombatBuffsForRoomEntry();
-    const svc2 = new ExplorationService({ run: { creatureParty: null } });
-    svc2._clearCombatBuffsForRoomEntry();
+    assert.equal(applyRoomEntryPartyRecovery(null), null);
+    assert.equal(applyRoomEntryPartyRecovery({ creatureParty: null }), null);
   });
 });
 

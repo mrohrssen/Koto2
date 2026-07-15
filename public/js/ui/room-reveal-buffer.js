@@ -1,4 +1,5 @@
 import { derivePhase } from '../../../src/game/phase-machine.js';
+import { applyRoomEntryPartyRecovery } from '../../../src/game/room-entry-party.js';
 
 function cloneValue(value) {
   if (value === undefined) return undefined;
@@ -38,6 +39,7 @@ export function advanceStateToBufferedNextRoom(draft) {
 
   draft.run.currentRoom = currentRoom + 1;
   draft.room = cloneValue(nextRoom);
+  applyRoomEntryPartyRecovery(draft.run);
   draft.phase = derivePhase(draft);
   return true;
 }

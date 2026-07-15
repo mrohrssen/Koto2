@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { createRoom } from '../../../src/game/rooms.js';
 import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
+import { applyRoomEntryPartyRecovery } from '../../../src/game/room-entry-party.js';
 
 function makeGmWithSkillMasterRoom({ partySkills = [] } = {}) {
   const room = createRoom('skillMaster', 'okunomori', 1, 1);
@@ -91,7 +92,7 @@ describe('Skill Master service', () => {
     });
     svc.gm.run.creatureParty = { active: [creature], reserves: [] };
 
-    svc._healAllLivingCreaturesForRoomEntry();
+    applyRoomEntryPartyRecovery(svc.gm.run);
     assert.equal(creature.hp, 60);
   });
 
