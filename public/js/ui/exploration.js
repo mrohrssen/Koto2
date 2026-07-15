@@ -316,6 +316,9 @@ export function triggerExploreSessionRecovery(reason) {
         updateUI?.();
       } else if (outcome.retryable) {
         scheduleExploreSessionRecovery();
+      } else {
+        if (runwayRecoveryTimer) clearTimeout(runwayRecoveryTimer);
+        runwayRecoveryTimer = null;
       }
       return outcome;
     })

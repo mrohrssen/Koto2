@@ -964,7 +964,14 @@ describe('explore session online stall recovery', () => {
     resetExploreSession();
   });
 
-  function initRecoveryHarness({ refreshRunwayState } = {}) {
+  function initRecoveryHarness({
+    refreshRunwayState,
+    apiSyncExploreSession = async () => ({
+      status: 'ok',
+      confirmedThroughSeq: 0,
+      results: [],
+    }),
+  } = {}) {
     let currentState = makeState({ currentRoom: 0, exploreRunway: null });
     init({
       getGameState: () => currentState,
@@ -975,7 +982,7 @@ describe('explore session online stall recovery', () => {
       finishCombatLoop: () => {},
       resumeSessionCombatBefriendQuiz: () => {},
       apiProceed: async () => null,
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
+      apiSyncExploreSession,
       refreshRunwayState,
     });
   }
@@ -1106,6 +1113,92 @@ describe('explore session online stall recovery', () => {
       assert.equal(getExploreSession().pendingCount(), 0);
       await Promise.resolve();
       await Promise.resolve();
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+      globalThis.clearTimeout = originalClearTimeout;
+    }
+  });
+
+  it('cancels an armed retry when an explicit recovery is permanently rejected', async () => {
+    const originalSetTimeout = globalThis.setTimeout;
+    const originalClearTimeout = globalThis.clearTimeout;
+    const timers = [];
+    globalThis.setTimeout = (fn, delay) => {
+      const timer = { fn, delay, cancelled: false };
+      timers.push(timer);
+      return timer;
+    };
+    globalThis.clearTimeout = timer => {
+      if (timer) timer.cancelled = true;
+    };
+
+    try {
+      const stalled = pausingRunway();
+      const actionRunway = makeRunway({
+        sessionEpoch: stalled.sessionEpoch,
+        preparedRooms: [preparedRoom(0, {
+          acceptedActions: ['friendlyNpc.choose'],
+          actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+        })],
+      });
+      let refreshCalls = 0;
+      let syncCalls = 0;
+      let allowSync = false;
+      initRecoveryHarness({
+        refreshRunwayState: async () => {
+          refreshCalls += 1;
+          throw new Error('temporary outage');
+        },
+        apiSyncExploreSession: async payload => {
+          syncCalls += 1;
+          if (!allowSync) {
+            return { error: 'forbidden', httpStatus: 403, transient: false };
+          }
+          return {
+            status: 'ok',
+            confirmedThroughSeq: payload.entries.at(-1).seq,
+            results: [],
+          };
+        },
+      });
+      getExploreSession().adoptRunway(stalled);
+      assert.equal(
+        getExploreSession().recordRoomAction('proceed').reason,
+        'nextRoomNotReady',
+      );
+
+      const transientOutcome = await triggerExploreSessionRecovery();
+      assert.deepEqual(transientOutcome, { recovered: false, retryable: true });
+      const recoveryTimer = timers.find(timer => timer.delay === 500);
+      assert.ok(recoveryTimer, 'the transient failure should arm the first recovery retry');
+      assert.equal(refreshCalls, 1);
+
+      getExploreSession().adoptRunway(actionRunway);
+      assert.equal(
+        getExploreSession().recordRoomAction('friendlyNpc.choose', {
+          itemId: 'field-tonic',
+        }).accepted,
+        true,
+      );
+      const permanentOutcome = await triggerExploreSessionRecovery();
+      assert.deepEqual(permanentOutcome, { recovered: false, retryable: false });
+      assert.equal(syncCalls, 1);
+      assert.equal(getExploreSession().pendingCount(), 1);
+
+      if (!recoveryTimer.cancelled) {
+        recoveryTimer.fn();
+        await triggerExploreSessionRecovery();
+      }
+      assert.equal(recoveryTimer.cancelled, true);
+      assert.equal(syncCalls, 1, 'the stale retry must not issue another sync');
+      assert.equal(refreshCalls, 1, 'the stale retry must not issue another refresh');
+
+      allowSync = true;
+      const laterExplicitOutcome = await triggerExploreSessionRecovery();
+      assert.deepEqual(laterExplicitOutcome, { recovered: true, retryable: false });
+      assert.equal(syncCalls, 2, 'a later explicit recovery signal may retry once');
+      assert.equal(getExploreSession().pendingCount(), 0);
+      assert.equal(getExploreSession().isPaused(), false);
     } finally {
       globalThis.setTimeout = originalSetTimeout;
       globalThis.clearTimeout = originalClearTimeout;
