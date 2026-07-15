@@ -21,6 +21,7 @@ import {
 } from '../../game/debug-super-attack-access.js';
 import { buildAiDialogueConfig, canUseAiDialogue } from '../../ai-dialogue/config.js';
 import { buildBefriendDisplayRounds } from '../../game/services/befriend-dialogue-display-service.js';
+import { armNpcBattleReward } from '../../game/npc-battle-reward.js';
 
 function shouldLogCombatRouteTiming() {
   return true;
@@ -711,10 +712,10 @@ export default function createCombatRoutes({
       { tokens: [], raw: '', words: [] };
 
     // Do NOT set gameManager.run.npcDialogue — that traps phase machine in NPC_DIALOGUE.
-    // Set skillSelectionPending directly for immediate phase transition.
+    // Arm the reward explicitly for immediate phase transition.
     const currentRoom = gameManager.getCurrentRoom();
-    if (currentRoom?.npcBattle) {
-      currentRoom.npcBattle.skillSelectionPending = true;
+    if (currentRoom?.type === 'npcBattle') {
+      armNpcBattleReward(currentRoom);
       currentRoom.npcBattle.npcId = npc.id;
       currentRoom.npcBattle.npc = {
         id: npc.id,

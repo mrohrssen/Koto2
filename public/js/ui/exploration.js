@@ -2678,6 +2678,11 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   if (!npcBattleSkillState.fetched) {
     npcBattleSkillState.fetched = true;
     const fetchRoomId = roomId;
+    const fetchCursor = {
+      currentRoom: gameState.run?.currentRoom,
+      roomActionSeq: gameState.run?.roomActionSeq,
+      sessionEpoch: gameState.run?.exploreRunway?.sessionEpoch,
+    };
     let resp;
     try {
       // The npcBattle prepared payload is the combat-start payload (enemies /
@@ -2702,8 +2707,18 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       return;
     }
 
-    // Stale async guard: room changed while awaiting
-    if (npcBattleSkillState.roomId !== fetchRoomId) return;
+    // Stale async guard: canonical state can advance before the next render has
+    // reset this module cache, so verify both the cache and the live run cursor.
+    const latestState = getGameState();
+    const latestRoom = getActiveRoomFromRun(latestState?.run) || latestState?.room;
+    const latestRoomId = latestRoom?.id || latestRoom?.type || 'unknown-npcbattle';
+    if (
+      npcBattleSkillState.roomId !== fetchRoomId
+      || latestRoomId !== fetchRoomId
+      || latestState?.run?.currentRoom !== fetchCursor.currentRoom
+      || latestState?.run?.roomActionSeq !== fetchCursor.roomActionSeq
+      || latestState?.run?.exploreRunway?.sessionEpoch !== fetchCursor.sessionEpoch
+    ) return;
 
     // If fetch returned null (dedup or network), show retry instead of using stale
     // room fallback. room.npcBattle.offered contains raw IDs, not display objects.
@@ -2724,26 +2739,32 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       return;
     }
 
-    let offered = resp?.offered || resp?.offers || resp?.skills;
-    if (!Array.isArray(offered) || offered.length === 0) {
-      // No skills to offer (e.g. every party skill tree is maxed). There is
-      // nothing to choose, so the room would otherwise dead-end with no way to
-      // advance — a soft lock for both the player and the subway harness.
-      // Mark the reward resolved and auto-proceed, mirroring the
-      // "already completed -> auto-proceed" path. proceedToNextRoom does not gate
-      // npcBattle rooms, so the legacy proceed advances the server cursor.
+    if (resp.state) {
+      updateGameState(resp.state);
+      getExploreSession()?.adoptRunway(resp.state.run?.exploreRunway || null);
+    }
+    if (resp.rewardResolved === true) {
+      if (!resp.state) {
+        npcBattleSkillState.fetched = false;
+        npcBattleSkillState.offered = null;
+        showExploreSoftPause({ reason: 'missingPayload' });
+        return;
+      }
       npcBattleSkillState.choosing = true;
-      updateSupportRoomDraft(room => {
-        room.npcBattle ||= {};
-        room.npcBattle.skillSelectionPending = false;
-        room.interacted = true;
-      });
       try {
         await proceedWithRevealBuffer();
       } catch {
-        // Fall through to updateUI — server state may already have advanced.
+        // Fall through to updateUI — canonical state may already have advanced.
       }
       updateUI();
+      return;
+    }
+
+    let offered = resp?.offered || resp?.offers || resp?.skills;
+    if (!Array.isArray(offered) || offered.length === 0) {
+      npcBattleSkillState.fetched = false;
+      npcBattleSkillState.offered = null;
+      showExploreSoftPause({ reason: 'missingPayload' });
       return;
     }
 

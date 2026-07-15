@@ -61,4 +61,118 @@ describe('ExplorationService proceedToNextRoom guard (NPC Battle reward)', () =>
     assert.doesNotThrow(() => svc.proceedToNextRoom());
     assert.strictEqual(gm.run.currentRoom, 1);
   });
+
+  it('allows a canonically resolved reward despite a stale pending marker', () => {
+    const npcRoom = createRoom('npcBattle', 'okunomori', 1, 2);
+    npcRoom.interacted = true;
+    npcRoom.npcBattle = {
+      rewardResolved: true,
+      skillSelectionPending: true,
+      offered: [{ id: 'hpMaster', level: 1 }],
+    };
+    const nextRoom = createRoom('encounter', 'okunomori', 2, 2);
+    const gm = makeGmWithRooms([npcRoom, nextRoom]);
+    const svc = new ExplorationService(gm);
+
+    assert.doesNotThrow(() => svc.proceedToNextRoom());
+    assert.strictEqual(gm.run.currentRoom, 1);
+  });
+
+  it('blocks an explicitly unresolved reward despite a stale cleared pending marker', () => {
+    const npcRoom = createRoom('npcBattle', 'okunomori', 1, 2);
+    npcRoom.interacted = true;
+    npcRoom.npcBattle = {
+      rewardResolved: false,
+      skillSelectionPending: false,
+    };
+    const nextRoom = createRoom('encounter', 'okunomori', 2, 2);
+    const gm = makeGmWithRooms([npcRoom, nextRoom]);
+    const svc = new ExplorationService(gm);
+
+    assert.throws(
+      () => svc.proceedToNextRoom(),
+      /Must claim NPC battle reward before proceeding/,
+    );
+    assert.strictEqual(gm.run.currentRoom, 0);
+  });
+
+  it('rejects a second choice when canonical resolution conflicts with stale pending', () => {
+    const npcRoom = createRoom('npcBattle', 'okunomori', 1, 1);
+    npcRoom.interacted = true;
+    npcRoom.npcBattle = {
+      rewardResolved: true,
+      skillSelectionPending: true,
+      offered: [{ id: 'hpMaster', level: 1 }],
+    };
+    const gm = makeGmWithRooms([npcRoom]);
+    gm.run.partySkills = [];
+    const svc = new ExplorationService(gm);
+
+    assert.throws(
+      () => svc.applyNpcBattleSkillChoose({ skillId: 'hpMaster' }),
+      /already resolved/,
+    );
+    assert.deepEqual(gm.run.partySkills, []);
+  });
+
+  it('canonicalizes an inferred resolved reward with stale pending and offers', () => {
+    const npcRoom = createRoom('npcBattle', 'okunomori', 1, 1);
+    npcRoom.interacted = true;
+    npcRoom.npcBattle = {
+      rewardResolved: true,
+      skillSelectionPending: true,
+      offered: [{ id: 'hpMaster', level: 1 }],
+    };
+    const gm = makeGmWithRooms([npcRoom]);
+    gm.run.partySkills = [];
+    const svc = new ExplorationService(gm);
+
+    assert.deepEqual(
+      svc.ensureNpcBattleSkillOffers(npcRoom),
+      { offered: [], rewardResolved: true },
+    );
+    assert.equal(npcRoom.npcBattle.skillSelectionPending, false);
+    assert.equal(npcRoom.npcBattle.rewardResolved, true);
+    assert.equal(npcRoom.interacted, true);
+  });
+
+  it('canonically resolves stale NPC reward offers that no longer display', () => {
+    const npcRoom = createRoom('npcBattle', 'okunomori', 1, 2);
+    npcRoom.interacted = true;
+    npcRoom.npcBattle = {
+      skillSelectionPending: true,
+      rewardResolved: false,
+      offered: [{ id: 'retiredPartySkill', level: 1 }],
+    };
+    const gm = makeGmWithRooms([npcRoom]);
+    gm.run.partySkills = [];
+    const svc = new ExplorationService(gm);
+
+    const result = svc.ensureNpcBattleSkillOffers(npcRoom);
+
+    assert.deepEqual(result, { offered: [], rewardResolved: true });
+    assert.equal(npcRoom.interacted, true);
+    assert.equal(npcRoom.npcBattle.skillSelectionPending, false);
+    assert.equal(npcRoom.npcBattle.rewardResolved, true);
+  });
+
+  it('canonically resolves a persisted offer that is now maxed', () => {
+    const npcRoom = createRoom('npcBattle', 'okunomori', 1, 1);
+    npcRoom.interacted = true;
+    npcRoom.npcBattle = {
+      skillSelectionPending: true,
+      rewardResolved: false,
+      offered: [{ id: 'hpMaster', level: 1 }],
+    };
+    const gm = makeGmWithRooms([npcRoom]);
+    gm.run.partySkills = [{ id: 'hpMaster', level: 5 }];
+    const svc = new ExplorationService(gm);
+
+    assert.deepEqual(
+      svc.ensureNpcBattleSkillOffers(npcRoom),
+      { offered: [], rewardResolved: true },
+    );
+    assert.equal(npcRoom.npcBattle.skillSelectionPending, false);
+    assert.equal(npcRoom.npcBattle.rewardResolved, true);
+  });
 });

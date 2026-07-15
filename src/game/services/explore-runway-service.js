@@ -42,6 +42,7 @@ import {
 } from './cooking-service.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
 import { shouldShowStartingMeadowHinonekoIntro } from './tutorial-service.js';
+import { isNpcBattleRewardResolved } from '../npc-battle-reward.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIALOGUE_FRAMES_PATH = join(__dirname, '../../../data/dialogue/frames.json');
@@ -129,6 +130,13 @@ function acceptedActionsForRoom(room) {
     case ROOM_TYPES.encounter:
       return ['encounter.start', 'combat.cycle'];
     case ROOM_TYPES.npcBattle:
+      if (room.interacted === true) {
+        if (isNpcBattleRewardResolved(room)) return ['proceed'];
+        if (room.npcBattle?.skillSelectionPending === true) {
+          return ['npcBattleSkill.choose'];
+        }
+        return [];
+      }
       // 'npcBattleSkill.choose' lets the explore session accept the post-victory
       // skill reward selection; without it the session rejects the choice
       // ('actionNotAccepted') and soft-pauses the player on the reward screen.
@@ -573,6 +581,9 @@ async function buildInteractionPayload(gm, room, opts) {
 
 function missingPayloadReasonsFor(room, interactionPayload) {
   const missing = [];
+  if (room?.type === ROOM_TYPES.npcBattle && room.interacted === true) {
+    return missing;
+  }
   // Combat rooms are offline-ready only when a prepared start with a non-empty
   // seed chain is attached (offlineReady === preparedCombat present).
   if (combatKindForRoom(room)) {
@@ -641,11 +652,27 @@ export async function buildExploreRunway(gm, opts = {}) {
     const room = prepareRoom(gm, index);
     if (!room) continue;
 
+    if (
+      room.type === ROOM_TYPES.npcBattle
+      && room.interacted === true
+      && room.npcBattle?.skillSelectionPending === true
+    ) {
+      gm.explorationService?.ensureNpcBattleSkillOffers?.(room);
+    }
+    const npcPostVictory = room.type === ROOM_TYPES.npcBattle
+      && room.interacted === true;
+    if (npcPostVictory) delete room.preparedCombat;
+
     // Pre-roll combat rooms so they can be entered and fought offline. Idempotent
     // per room (persisted on room.preparedCombat) — a responseContext rebuild
     // after replay reuses the existing roll rather than re-rolling. Guarded on the
     // service being present (some rebuild paths carry a lean gm).
-    if (combatKindForRoom(room) && !room.preparedCombat && gm?.combatCycleService?.prepareCombatStart) {
+    if (
+      combatKindForRoom(room)
+      && !npcPostVictory
+      && !room.preparedCombat
+      && gm?.combatCycleService?.prepareCombatStart
+    ) {
       gm.combatCycleService.prepareCombatStart(room);
     }
 

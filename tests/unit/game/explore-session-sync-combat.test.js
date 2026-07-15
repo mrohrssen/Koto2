@@ -189,7 +189,7 @@ describe('ExploreSessionSyncService — combat replay', () => {
     assert.equal(gm.combat.active, false);
   });
 
-  it('replays encounter.start, victory cycle, then proceed for the same room in one batch', async () => {
+  it('commits an NPC victory cycle but rejects trailing proceed until its reward resolves', async () => {
     // NPC battle: befriend never triggers (npcId set), so a single lethal cycle
     // ends in a clean victory that marks the room interacted and unblocks proceed.
     const gm = makeCombatGm({ roomType: ROOM_TYPES.npcBattle, enemyHp: 10 });
@@ -209,11 +209,16 @@ describe('ExploreSessionSyncService — combat replay', () => {
     };
     const result = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: [cycle, proceed] });
 
-    assert.equal(result.status, 'ok');
-    assert.equal(result.confirmedThroughSeq, 3);
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'Must claim NPC battle reward before proceeding');
+    assert.equal(result.confirmedThroughSeq, 2);
+    assert.equal(result.rejectedSeq, 3);
+    assert.equal(result.results.length, 1);
     assert.equal(result.results[0].victory, true);
-    assert.equal(gm.run.currentRoom, 1, 'proceed advanced past the cleared combat room');
-    assert.equal(gm.run.roomActionSeq, 1);
+    assert.equal(gm.run.currentRoom, 0, 'cursor remains on the reward-owning NPC room');
+    assert.equal(gm.run.roomActionSeq, 0);
+    assert.ok(gm.meta.actionLedger.entries['run_es_00000102'], 'victory cycle is committed');
+    assert.equal(gm.meta.actionLedger.entries['run_es_00000103'], undefined, 'rejected proceed is not committed');
   });
 
   it('replays a duplicate combat.cycle actionId from the ledger without re-committing', async () => {

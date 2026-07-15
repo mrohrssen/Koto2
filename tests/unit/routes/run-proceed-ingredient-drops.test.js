@@ -6,6 +6,7 @@ import { clearManagersForTest, getManager } from '../../../src/game/manager-regi
 import { createNewPlayer, createNewRun } from '../../../src/game/state.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { hasCookableRecipe } from '../../../src/game/services/cooking-service.js';
+import { markNpcBattleRewardResolved } from '../../../src/game/npc-battle-reward.js';
 
 function setupRun() {
   const gm = getManager('test-user');
@@ -82,7 +83,12 @@ describe('run proceed ingredient drops', () => {
         .send({})
         .expect(200);
       dropIds.push(...response.body.ingredientDrops.map(drop => drop.id));
-      gm.run.rooms[gm.run.currentRoom].interacted = true;
+      const room = gm.run.rooms[gm.run.currentRoom];
+      if (room.type === ROOM_TYPES.npcBattle) {
+        markNpcBattleRewardResolved(room);
+      } else {
+        room.interacted = true;
+      }
     }
 
     assert.deepEqual(dropIds, ['mizu', 'gyuunyuu', 'toriniku', 'jagaimo']);

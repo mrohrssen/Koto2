@@ -43,6 +43,10 @@ import { cloneExploreValue } from './explore-session-contract.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
 import { applyItem } from './item-service.js';
 import { entityToToken } from '../token-format.js';
+import {
+  isNpcBattleRewardResolved,
+  markNpcBattleRewardResolved,
+} from '../npc-battle-reward.js';
 
 const STARTING_MEADOW_AREA_ID = 'hajimari-no-hiroba';
 const STARTING_MEADOW_TUTORIAL_INGREDIENT_DROPS = Object.freeze([
@@ -371,7 +375,11 @@ export class ExplorationService {
     // player claims via the npc_skill_selection phase. That phase is only derivable
     // while currentRoom still points at the npcBattle room, so advancing now would
     // strand the reward — the player would "beat the NPC but get no reward."
-    if (currentRoom.type === 'npcBattle' && currentRoom.npcBattle?.skillSelectionPending) {
+    if (
+      currentRoom.type === 'npcBattle'
+      && currentRoom.interacted === true
+      && !isNpcBattleRewardResolved(currentRoom)
+    ) {
       throw new Error('Must claim NPC battle reward before proceeding');
     }
 
@@ -1050,12 +1058,52 @@ export class ExplorationService {
     return this.chooseSkillMasterOffer(skillId);
   }
 
+  ensureNpcBattleSkillOffers(room = this.getCurrentRoom()) {
+    if (!room || room.type !== ROOM_TYPES.npcBattle) {
+      throw new Error('Not in an NPC battle room');
+    }
+    if (isNpcBattleRewardResolved(room)) {
+      markNpcBattleRewardResolved(room, {
+        chosenSkillId: room.npcBattle?.chosenSkillId,
+      });
+      return { offered: [], rewardResolved: true };
+    }
+
+    room.npcBattle ||= {};
+    this.gm.run.partySkills = normalizePartySkills(
+      this.gm.run?.partySkills || [],
+    );
+    if (!Array.isArray(room.npcBattle.offered)) {
+      room.npcBattle.offered = rollSkillMasterOffers({
+        ownedSkillIds: this.gm.run.partySkills,
+        count: 3,
+      }).map(({ id, level }) => ({ id, level }));
+    }
+
+    const offered = room.npcBattle.offered
+      .map(canonicalPartySkillTreeId)
+      .filter(Boolean)
+      .map(skillId => getPartySkillOfferDisplay(
+        skillId,
+        this.gm.run.partySkills,
+      ))
+      .filter(Boolean);
+    if (offered.length === 0) {
+      markNpcBattleRewardResolved(room);
+      return { offered: [], rewardResolved: true };
+    }
+    return { offered, rewardResolved: false };
+  }
+
   applyNpcBattleSkillChoose({ skillId } = {}) {
     if (!skillId) throw new Error('skill_id_required');
 
     const room = this.getCurrentRoom();
     if (!room || room.type !== ROOM_TYPES.npcBattle) {
       throw new Error('Not in an NPC battle room');
+    }
+    if (isNpcBattleRewardResolved(room)) {
+      throw new Error('NPC battle reward already resolved');
     }
     if (!room.npcBattle?.skillSelectionPending) {
       throw new Error('NPC battle skill selection not pending');
@@ -1084,9 +1132,7 @@ export class ExplorationService {
     this.gm.run.partySkills = applyPartySkillChoice(this.gm.run.partySkills || [], canonicalSkillId);
     syncPartySkillHpBonuses(this.gm.run.creatureParty, this.gm.run.partySkills);
 
-    room.npcBattle.chosenSkillId = canonicalSkillId;
-    room.npcBattle.skillSelectionPending = false;
-    room.interacted = true;
+    markNpcBattleRewardResolved(room, { chosenSkillId: canonicalSkillId });
 
     this.gm.emitState();
     return { chosenId: canonicalSkillId, partySkills: this.gm.run.partySkills };

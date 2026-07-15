@@ -7,6 +7,8 @@ import createEconomyRoutes from '../../../src/routes/game/economy.js';
 import createRunRoutes from '../../../src/routes/game/run.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
+import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
+import { loadDialoguePools } from '../../../src/game/dialogue-loader.js';
 
 const actionId = suffix => `run_test_${suffix}`;
 
@@ -29,7 +31,7 @@ function makeRes() {
   };
 }
 
-function createRunRouter() {
+function createRunRouter(overrides = {}) {
   return createRunRoutes({
     cancelPendingPrefetches: () => {},
     clearPrefetchCache: () => {},
@@ -38,6 +40,7 @@ function createRunRouter() {
     queueMissingNpcDialoguesFn: () => {},
     checkSentenceViolations: () => ({ violations: [] }),
     getDialogueCardAudio: async () => null,
+    ...overrides,
   });
 }
 
@@ -672,6 +675,97 @@ describe('optimistic deterministic run routes', () => {
     assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { runSummary: { itemsCollected: 1 } } });
   });
 
+  it('canonically resolves zero eligible NPC rewards across a lost response even when prompt audio fails', async () => {
+    loadDialoguePools('data');
+    let audioCalls = 0;
+    const offersHandler = getHandler(
+      createRunRouter({
+        getDialogueCardAudio: async () => {
+          audioCalls += 1;
+          throw new Error('tts unavailable');
+        },
+      }),
+      'post',
+      '/npc-battle-skill-offers',
+    );
+    const room = {
+      id: 'npc-maxed',
+      type: 'npcBattle',
+      interacted: true,
+      npcBattle: {
+        skillSelectionPending: true,
+        rewardResolved: false,
+        offered: [{ id: 'hpMaster', level: 1 }],
+      },
+    };
+    const run = {
+      active: true,
+      mode: 'standard',
+      currentRoom: 0,
+      roomActionSeq: 4,
+      partySkills: PARTY_SKILL_TREE_IDS.map(id => ({ id, level: 5 })),
+    };
+    const gm = attachExplorationService({ run }, room);
+    const lifecycle = [];
+    gm.explorationService.buildExploreRunway = async () => {
+      lifecycle.push('rebuild');
+      const runway = {
+        sessionEpoch: 'ese_6666666666666666',
+        currentRoom: 0,
+        roomActionSeq: 4,
+        preparedRooms: [],
+      };
+      run.exploreRunway = runway;
+      return runway;
+    };
+    let saveCalls = 0;
+    const req = {
+      body: {},
+      user: { id: 'test-user' },
+      gameManager: gm,
+      saveGame: async () => {
+        saveCalls += 1;
+        lifecycle.push('save');
+      },
+      getEnrichedGameState: () => {
+        lifecycle.push('serialize');
+        return {
+          phase: room.npcBattle.skillSelectionPending
+            ? 'npc_skill_selection'
+            : 'room',
+          room: structuredClone(room),
+          run: {
+            currentRoom: run.currentRoom,
+            partySkills: structuredClone(run.partySkills),
+            exploreRunway: structuredClone(run.exploreRunway),
+          },
+        };
+      },
+    };
+
+    const first = makeRes();
+    await offersHandler(req, first);
+    const retry = makeRes();
+    await offersHandler(req, retry);
+
+    for (const response of [first, retry]) {
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(response.body.offered, []);
+      assert.equal(response.body.rewardResolved, true);
+      assert.equal(response.body.state.room.npcBattle.rewardResolved, true);
+      assert.equal(response.body.state.room.npcBattle.skillSelectionPending, false);
+      assert.equal(response.body.state.run.exploreRunway.sessionEpoch, 'ese_6666666666666666');
+    }
+    assert.equal(room.npcBattle.skillSelectionPending, false);
+    assert.equal(room.npcBattle.rewardResolved, true);
+    assert.equal(audioCalls, 2, 'optional prompt audio was attempted on both idempotent requests');
+    assert.equal(saveCalls, 2, 'each idempotent request persists through one awaited save');
+    assert.deepEqual(lifecycle, [
+      'rebuild', 'save', 'serialize',
+      'rebuild', 'save', 'serialize',
+    ]);
+  });
+
   it('wraps NPC battle skill choices with accepted optimistic status when actionId is present', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
     const room = {
@@ -787,6 +881,7 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(run.creatureParty.active[0].maxHp, 125);
     assert.equal(room.npcBattle.chosenSkillId, 'hpMaster');
     assert.equal(room.npcBattle.skillSelectionPending, false);
+    assert.equal(room.npcBattle.rewardResolved, true);
     assert.deepEqual(duplicateRes.body.state, {
       phase: 'room',
       run: {

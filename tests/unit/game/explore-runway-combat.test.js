@@ -6,6 +6,8 @@ import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { buildExploreRunway } from '../../../src/game/services/explore-runway-service.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { PVE_TURN_SEED_CHAIN_TARGET } from '../../../src/game/services/combat-seed-chain.js';
+import { ExplorationService } from '../../../src/game/services/exploration-service.js';
+import { markNpcBattleRewardResolved } from '../../../src/game/npc-battle-reward.js';
 
 // Mirrors the fixture in explore-runway-service.test.js, plus the combat wiring
 // (combatCycleService, narrate, emitState, userId) that prepared combat needs.
@@ -224,4 +226,98 @@ test('combat rooms do NOT grant proceed (they use <kind>.start)', async () => {
     const entry = runway.preparedRooms.find(r => r.room.type === type);
     assert.equal(entry.acceptedActions.includes('proceed'), false, `${type} does not accept proceed`);
   }
+});
+
+test('pending post-victory NPC rewards are offline-ready with only choose accepted', async () => {
+  const gm = makeGm([ROOM_TYPES.npcBattle, ROOM_TYPES.friendlyNpc], {
+    currentRoom: 0,
+  });
+  gm.explorationService = new ExplorationService(gm);
+  const room = gm.run.rooms[0];
+  room.interacted = true;
+  room.npcBattle ||= {};
+  room.npcBattle.skillSelectionPending = true;
+  room.npcBattle.rewardResolved = false;
+  room.npcBattle.offered = [{ id: 'hpMaster', level: 1 }];
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-combat-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+  const entry = runway.preparedRooms.find(item => item.index === 0);
+
+  assert.deepEqual(entry.acceptedActions, ['npcBattleSkill.choose']);
+  assert.equal(entry.offlineReady, true);
+  assert.deepEqual(entry.missingPayloadReasons, []);
+  assert.equal(room.preparedCombat, undefined);
+});
+
+test('resolved post-victory NPC rewards are offline-ready with only proceed accepted', async () => {
+  const gm = makeGm([ROOM_TYPES.npcBattle, ROOM_TYPES.friendlyNpc], {
+    currentRoom: 0,
+  });
+  gm.explorationService = new ExplorationService(gm);
+  const room = gm.run.rooms[0];
+  room.preparedCombat = { stale: true };
+  markNpcBattleRewardResolved(room);
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-combat-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+  const entry = runway.preparedRooms.find(item => item.index === 0);
+
+  assert.deepEqual(entry.acceptedActions, ['proceed']);
+  assert.equal(entry.offlineReady, true);
+  assert.deepEqual(entry.missingPayloadReasons, []);
+  assert.equal(room.preparedCombat, undefined);
+});
+
+test('resolved post-victory NPC rewards take precedence over stale pending', async () => {
+  const gm = makeGm([ROOM_TYPES.npcBattle, ROOM_TYPES.friendlyNpc], {
+    currentRoom: 0,
+  });
+  const room = gm.run.rooms[0];
+  room.interacted = true;
+  room.npcBattle = {
+    rewardResolved: true,
+    skillSelectionPending: true,
+    offered: [{ id: 'hpMaster', level: 1 }],
+  };
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-combat-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+  const entry = runway.preparedRooms.find(item => item.index === 0);
+
+  assert.deepEqual(entry.acceptedActions, ['proceed']);
+  assert.equal(entry.offlineReady, true);
+  assert.deepEqual(entry.missingPayloadReasons, []);
+  assert.equal(room.preparedCombat, undefined);
+});
+
+test('explicitly unresolved post-victory NPC rewards are offline-ready with no actions', async () => {
+  const gm = makeGm([ROOM_TYPES.npcBattle, ROOM_TYPES.friendlyNpc], {
+    currentRoom: 0,
+  });
+  gm.explorationService = new ExplorationService(gm);
+  const room = gm.run.rooms[0];
+  room.interacted = true;
+  room.npcBattle = { rewardResolved: false };
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-combat-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+  const entry = runway.preparedRooms.find(item => item.index === 0);
+
+  assert.deepEqual(entry.acceptedActions, []);
+  assert.equal(entry.offlineReady, true);
+  assert.deepEqual(entry.missingPayloadReasons, []);
+  assert.equal(room.preparedCombat, undefined);
 });

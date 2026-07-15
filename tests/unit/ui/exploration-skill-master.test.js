@@ -39,6 +39,74 @@ function createElementStub() {
   };
 }
 
+function makeNpcRewardState({ currentRoom, rewardResolved }) {
+  const room = {
+    id: `npc-room-${currentRoom}`,
+    type: 'npcBattle',
+    interacted: true,
+    npcBattle: {
+      skillSelectionPending: !rewardResolved,
+      rewardResolved,
+    },
+  };
+  const next = {
+    id: `room-${currentRoom + 1}`,
+    type: 'friendlyNpc',
+    interacted: false,
+  };
+  const rooms = [];
+  rooms[currentRoom] = room;
+  rooms[currentRoom + 1] = next;
+  const runway = {
+    sessionEpoch: 'ese_7777777777777777',
+    currentRoom,
+    roomActionSeq: 10,
+    preparedRooms: [
+      {
+        index: currentRoom,
+        roomId: room.id,
+        actionSeq: 10,
+        room: structuredClone(room),
+        acceptedActions: rewardResolved
+          ? ['proceed']
+          : ['npcBattleSkill.choose'],
+        actionEffects: rewardResolved
+          ? { proceed: ['ingredients', 'areaProgress'] }
+          : { 'npcBattleSkill.choose': ['partySkills'] },
+        dependencies: ['partyStats'],
+        offlineReady: true,
+      },
+      {
+        index: currentRoom + 1,
+        roomId: next.id,
+        actionSeq: 11,
+        room: structuredClone(next),
+        acceptedActions: ['friendlyNpc.choose', 'proceed'],
+        actionEffects: {
+          'friendlyNpc.choose': ['partyStats'],
+          proceed: ['ingredients', 'areaProgress'],
+        },
+        dependencies: [],
+        offlineReady: true,
+      },
+    ],
+  };
+  return {
+    phase: rewardResolved ? 'room' : 'npc_skill_selection',
+    room,
+    run: {
+      active: true,
+      mode: 'standard',
+      currentRoom,
+      roomActionSeq: 10,
+      rooms,
+      creatureParty: { active: [], reserves: [] },
+      partySkills: [],
+      exploreRunway: runway,
+    },
+  };
+}
+
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
 });
@@ -626,12 +694,10 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     assert.match(actionArea.innerHTML, /30% damage/);
   });
 
-  // Regression (explore subway rooms tier): an NPC battle reward with no skills
-  // to offer (e.g. every party skill tree maxed) previously dead-ended on
-  // "No skills available." with no control to advance — a soft lock for the
-  // player and the subway harness (loops to MAX_INTERACTIONS). It must
-  // auto-proceed instead.
-  it('auto-proceeds when the NPC battle reward has no skills to offer', async () => {
+  // Regression (explore subway rooms tier): zero eligible skills must resolve on
+  // the server. The client adopts that exact state/runway before proceeding and
+  // never clears the still-server-owned reward guard in a local-only draft.
+  it('adopts canonical zero-offer resolution before auto-proceeding', async () => {
     const originalDocument = globalThis.document;
     const actionArea = createElementStub();
     globalThis.document = {
@@ -639,40 +705,189 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       createElement: () => createElementStub(),
     };
 
-    let proceedCalls = 0;
+    const canonicalResolvedState = makeNpcRewardState({
+      currentRoom: 5,
+      rewardResolved: true,
+    });
+    const events = [];
+    let canonicalStateAdopted = false;
+    let currentState = makeNpcRewardState({
+      currentRoom: 5,
+      rewardResolved: false,
+    });
+    const session = configureExploreSession({
+      syncRequest: async () => ({ status: 'ok', results: [] }),
+    });
+    const originalAdopt = session.adoptRunway;
+    session.adoptRunway = runway => {
+      if (runway === canonicalResolvedState.run.exploreRunway) {
+        events.push('adopt-canonical-runway');
+      }
+      return originalAdopt(runway);
+    };
+
     init({
-      getGameState: () => ({
-        phase: 'npc_skill_selection',
-        run: {
-          stats: { startTime: 777 },
-          currentRoom: 5,
-          revealedRooms: [],
-          creatureParty: { active: [] },
-          exploreRunway: null,
-        },
-        room: {
-          id: 'npc-battle-no-skills',
-          type: 'npcBattle',
-          npcBattle: { skillSelectionPending: true, npc: { id: 'nagi', name: 'ナギ', nameEn: 'Nagi' } },
-        },
-      }),
-      updateGameState: () => {},
+      getGameState: () => currentState,
+      updateGameState: next => {
+        if (next === canonicalResolvedState) {
+          canonicalStateAdopted = true;
+          events.push('update-canonical-state');
+        } else if (
+          !canonicalStateAdopted
+          && next?.room?.npcBattle?.skillSelectionPending === false
+        ) {
+          events.push('local-clear-before-canonical');
+        }
+        if (next?.run?.currentRoom === 6) events.push('proceed');
+        currentState = next;
+      },
       updateUI: () => {},
-      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      actions: {
+        setContent: html => { actionArea.innerHTML = html; },
+        clear: () => { actionArea.innerHTML = ''; },
+      },
       scene: { showNarration: () => {} },
-      apiProceed: async () => { proceedCalls += 1; return null; },
     });
 
     try {
       await renderNpcBattleSkillSelection({
-        fetchOffers: async () => ({ offered: [], skillSelectPrompt: null }),
-        onSkillChosen: async () => {},
+        fetchOffers: async () => ({
+          offered: [],
+          rewardResolved: true,
+          state: canonicalResolvedState,
+        }),
       });
     } finally {
       globalThis.document = originalDocument;
+      resetExploreSession();
     }
 
-    assert.equal(proceedCalls, 1, 'empty NPC battle reward must auto-proceed, not dead-end');
+    const updateIndex = events.indexOf('update-canonical-state');
+    const adoptIndex = events.indexOf('adopt-canonical-runway');
+    const proceedIndex = events.indexOf('proceed');
+    assert.ok(updateIndex >= 0, 'the exact canonical response state is adopted');
+    assert.ok(adoptIndex > updateIndex, 'the canonical runway follows canonical state adoption');
+    assert.ok(proceedIndex > adoptIndex, 'proceed follows canonical state and runway adoption');
+    assert.equal(events.includes('local-clear-before-canonical'), false);
+    assert.equal(currentState.run.currentRoom, 6);
+  });
+
+  it('adopts canonical NPC offer state while the reward remains unresolved', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    const initialState = makeNpcRewardState({ currentRoom: 8, rewardResolved: false });
+    const canonicalPendingState = makeNpcRewardState({ currentRoom: 8, rewardResolved: false });
+    let currentState = initialState;
+    let adoptedCanonicalRunway = false;
+    const session = configureExploreSession({
+      syncRequest: async () => ({ status: 'ok', results: [] }),
+    });
+    const originalAdopt = session.adoptRunway;
+    session.adoptRunway = runway => {
+      if (runway === canonicalPendingState.run.exploreRunway) {
+        adoptedCanonicalRunway = true;
+      }
+      return originalAdopt(runway);
+    };
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: {
+        setContent: html => { actionArea.innerHTML = html; },
+        clear: () => { actionArea.innerHTML = ''; },
+      },
+      scene: { showNarration: () => {} },
+    });
+
+    try {
+      await renderNpcBattleSkillSelection({
+        fetchOffers: async () => ({
+          offered: [{ id: 'hpMaster', level: 1, title: 'HP Master' }],
+          rewardResolved: false,
+          state: canonicalPendingState,
+        }),
+      });
+    } finally {
+      globalThis.document = originalDocument;
+      resetExploreSession();
+    }
+
+    assert.equal(currentState, canonicalPendingState);
+    assert.equal(adoptedCanonicalRunway, true);
+    assert.equal(renderedChoices?.heading, 'Choose a skill');
+  });
+
+  it('ignores a stale NPC reward response after canonical room advancement', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    const initialState = makeNpcRewardState({ currentRoom: 11, rewardResolved: false });
+    const staleResolvedState = makeNpcRewardState({ currentRoom: 11, rewardResolved: true });
+    const advancedState = makeNpcRewardState({ currentRoom: 12, rewardResolved: false });
+    let currentState = initialState;
+    let resolveOffers;
+    let adoptedStaleState = false;
+    let adoptedStaleRunway = false;
+    const session = configureExploreSession({
+      syncRequest: async () => ({ status: 'ok', results: [] }),
+    });
+    const originalAdopt = session.adoptRunway;
+    session.adoptRunway = runway => {
+      if (runway === staleResolvedState.run.exploreRunway) {
+        adoptedStaleRunway = true;
+      }
+      return originalAdopt(runway);
+    };
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => {
+        if (next === staleResolvedState) adoptedStaleState = true;
+        currentState = next;
+      },
+      updateUI: () => {},
+      actions: {
+        setContent: html => { actionArea.innerHTML = html; },
+        clear: () => { actionArea.innerHTML = ''; },
+      },
+      scene: { showNarration: () => {} },
+    });
+
+    try {
+      const renderPromise = renderNpcBattleSkillSelection({
+        fetchOffers: () => new Promise(resolve => { resolveOffers = resolve; }),
+      });
+      await Promise.resolve();
+      assert.equal(typeof resolveOffers, 'function');
+
+      // A sync response advances the canonical state before the older offer
+      // request settles, but no rerender has reset the per-room module cache yet.
+      currentState = advancedState;
+      resolveOffers({
+        offered: [],
+        rewardResolved: true,
+        state: staleResolvedState,
+      });
+      await renderPromise;
+    } finally {
+      globalThis.document = originalDocument;
+      resetExploreSession();
+    }
+
+    assert.equal(adoptedStaleState, false);
+    assert.equal(adoptedStaleRunway, false);
+    assert.equal(currentState, advancedState);
   });
 
   // Regression (2026-07-04 dev bug reports): the run-entry initial skill pick

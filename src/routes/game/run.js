@@ -28,11 +28,6 @@ import {
   selectBestFrame,
 } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
-import {
-  normalizePartySkills,
-  rollSkillMasterOffers,
-  getPartySkillOfferDisplay
-} from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 import { SPRITE_VERSION } from '../../shared/asset-versions.js';
 import {
@@ -484,31 +479,33 @@ export default function createRunRoutes({
       if (!room || room.type !== 'npcBattle') {
         return res.status(400).json({ error: 'Not in an NPC battle room' });
       }
-      if (!room.npcBattle?.skillSelectionPending) {
-        return res.status(400).json({ error: 'NPC battle skill selection not pending' });
-      }
+      const { offered, rewardResolved } =
+        gm.explorationService.ensureNpcBattleSkillOffers(room);
 
-      // Generate offers if not already generated (idempotent)
-      if (!Array.isArray(room.npcBattle.offered)) {
-        gm.run.partySkills = normalizePartySkills(gm.run?.partySkills || []);
-        room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 })
-          .map(({ id, level }) => ({ id, level }));
-        req.saveGame();
-      }
-
-      const offered = (room.npcBattle.offered || [])
-        .map(offer => getPartySkillOfferDisplay(offer, gm.run?.partySkills || []))
-        .filter(Boolean);
+      await refreshExploreRunwayAfterProceed(req);
+      await req.saveGame();
+      const state = req.getEnrichedGameState();
 
       const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
       const npcKey = room.npcBattle?.npcId || room.npcBattle?.npc?.id || room.npc?.id || 'game-master';
-      const skillSelectPrompt = await attachAudio(
-        getEligibleFrameTokens(getSkillSelectFrame(), knownSet, { dict: getWordDict() }),
-        req,
-        npcKey,
-        room.npcBattle?.npc?.speakerId || room.npc?.speakerId
+      const prompt = getEligibleFrameTokens(
+        getSkillSelectFrame(),
+        knownSet,
+        { dict: getWordDict() },
       );
-      res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
+      let skillSelectPrompt = prompt;
+      try {
+        skillSelectPrompt = await attachAudio(
+          prompt,
+          req,
+          npcKey,
+          room.npcBattle?.npc?.speakerId || room.npc?.speakerId,
+        );
+      } catch {
+        // Reward ownership and persistence are authoritative; optional prompt
+        // audio must never turn a durable resolution into an HTTP failure.
+      }
+      res.json({ offered, rewardResolved, skillSelectPrompt, state });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
