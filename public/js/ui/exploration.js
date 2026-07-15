@@ -2280,6 +2280,7 @@ async function chooseInitialSkillMasterSkill(skillId) {
   const nextState = result?.authoritativeState || result?.state;
   if (nextState) {
     updateGameState(nextState);
+    getExploreSession()?.adoptRunway(nextState.run?.exploreRunway || null);
     if (nextState.phase !== 'skillMaster') {
       await resetSceneForInitialRoomEntry(nextState);
     }

@@ -85,19 +85,31 @@ test('apiGetGameStateAfterExploreDrain skips the epoch-rotating /state fetch whi
 
   const pendingGuardIndex = drainFetchSource.indexOf('pendingCount');
   const returnNullIndex = drainFetchSource.indexOf('return null');
-  const fetchIndex = drainFetchSource.indexOf('return apiGetGameState(');
+  const captureTokenIndex = drainFetchSource.indexOf('captureGameStateFetchToken(session)');
+  const fetchIndex = drainFetchSource.indexOf('await apiGetGameState(');
+  const currentGuardIndex = drainFetchSource.indexOf('isGameStateFetchCurrent(');
+  const returnDataIndex = drainFetchSource.indexOf('return data');
 
   assert.ok(
     pendingGuardIndex >= 0,
     'apiGetGameStateAfterExploreDrain MUST check the explore session pendingCount before fetching /state',
   );
   assert.ok(returnNullIndex >= 0, 'it must return null (skip the fetch) when entries remain pending');
+  assert.ok(captureTokenIndex >= 0, 'it must capture the live session before fetching /state');
   assert.ok(fetchIndex >= 0, 'it still fetches /state when the log is clear');
+  assert.ok(currentGuardIndex >= 0, 'it must reject a stale response before adoption');
+  assert.ok(returnDataIndex >= 0, 'it returns only a response that passed the stale-response guard');
   assert.ok(
-    pendingGuardIndex < fetchIndex && returnNullIndex < fetchIndex,
+    pendingGuardIndex < captureTokenIndex && returnNullIndex < captureTokenIndex,
     'the pending-entries guard + null return must come BEFORE the /state fetch — otherwise /state '
     + 'rotates the epoch out from under the queued entries and their next drain fails as '
     + 'session_epoch_mismatch',
+  );
+  assert.ok(
+    captureTokenIndex < fetchIndex
+      && fetchIndex < currentGuardIndex
+      && currentGuardIndex < returnDataIndex,
+    'the wrapper must capture the token, fetch, reject stale responses, then return in that order',
   );
 
   // loadGameState must treat the skipped fetch (null) as "keep current state", not a failure.
@@ -186,12 +198,62 @@ test('in-session state fetches pass the adoptSession signal; boot stays bare', (
     shopRecoverySource.indexOf('loadGameState({ adoptSession: true })') >= 0,
     'the post-combat-shop recovery refresh must pass adoptSession: true',
   );
+  assert.doesNotMatch(
+    shopRecoverySource,
+    /updateGameState\(state\)/,
+    'loadGameState already validates and adopts the post-combat-shop response',
+  );
+  assert.match(
+    shopRecoverySource,
+    /if \(state\) updateUI\(\)/,
+    'post-combat-shop recovery should render only after loadGameState returns a usable state',
+  );
+
+  // Empty-log runway recovery still belongs to the active Explore run.
+  const recoveryInitSource = sourceBetween(
+    gameSrc,
+    'refreshRunwayState:',
+    'apiGetAreaOptions,',
+  );
+  assert.match(
+    recoveryInitSource,
+    /loadGameState\(\{\s*adoptSession:\s*true\s*\}\)/,
+    'empty-log runway recovery is in-session and must preserve the epoch',
+  );
 
   // Boot-time initial load stays BARE — a reload is exactly where rotation is
   // correct (losing the pre-reload offline log is by design).
   assert.ok(
     gameSrc.indexOf('const loadedState = await loadGameState();') >= 0,
     'the boot-time initial loadGameState call must stay bare (no adoptSession) so a reload rotates the epoch',
+  );
+
+  const returnToHubSource = sourceBetween(
+    gameSrc,
+    'async function returnToHub()',
+    '// ============ COMBAT ============',
+  );
+  assert.match(
+    returnToHubSource,
+    /await apiForfeitRun\(\)[\s\S]*await loadGameState\(\)/,
+    'return-to-hub after forfeit is an intentional reload boundary',
+  );
+
+  const adventureReportSource = sourceBetween(
+    gameSrc,
+    'async function showAdventureReport(',
+    'function showGameOverModal(',
+  );
+  assert.match(
+    adventureReportSource,
+    /apiForfeitRun\(isVictory\)[\s\S]*await loadGameState\(\)/,
+    'adventure-report return after forfeit is an intentional reload boundary',
+  );
+
+  assert.equal(
+    (gameSrc.match(/\bloadGameState\(\)/g) || []).length,
+    3,
+    'only boot and the two post-forfeit reload boundaries may issue a bare loadGameState call',
   );
 
   // combat-loop's null-POST recovery fetch is in-session (active combat).
@@ -204,5 +266,49 @@ test('in-session state fetches pass the adoptSession signal; boot stays bare', (
   assert.ok(
     recoverySource.indexOf('apiGetGameState({ adoptSession: true })') >= 0,
     'recoverFromNullCombatPost must fetch state with adoptSession: true (in-session recovery fetch)',
+  );
+  assert.doesNotMatch(
+    combatLoopSrc,
+    /apiGetGameState\(\s*\)/,
+    'combat recovery must never issue a bare state GET',
+  );
+});
+
+test('loadGameState preserves the current run for HTTP error envelopes', () => {
+  const loadGameStateSource = sourceBetween(
+    gameSrc,
+    'async function loadGameState(',
+    'async function claimDailyCrystalBonus',
+  );
+  const errorGuardIndex = loadGameStateSource.indexOf(
+    'isGameStateErrorResponse(data)',
+  );
+  const playerBranchIndex = loadGameStateSource.indexOf('if (data.player)');
+  const noSaveIndex = loadGameStateSource.indexOf(
+    "phase: data.phase || 'no_save'",
+  );
+
+  assert.ok(errorGuardIndex >= 0, 'loadGameState must reject error envelopes');
+  assert.ok(playerBranchIndex >= 0 && noSaveIndex >= 0, 'state adoption branches exist');
+  assert.ok(
+    errorGuardIndex < playerBranchIndex && errorGuardIndex < noSaveIndex,
+    'the HTTP error guard must return before player/no-save state adoption',
+  );
+});
+
+test('creature-selection cancellation rejects error envelopes before state adoption', () => {
+  const cancellationSource = sourceBetween(
+    gameSrc,
+    'async function triggerCreatureSelect()',
+    'async function startKanjiKombatSetup()',
+  );
+  const errorGuardIndex = cancellationSource.indexOf('!isGameStateErrorResponse(state)');
+  const updateIndex = cancellationSource.indexOf('updateGameState(state)');
+
+  assert.ok(errorGuardIndex >= 0, 'creature-selection cancellation must reject error envelopes');
+  assert.ok(updateIndex >= 0, 'creature-selection cancellation still adopts usable state');
+  assert.ok(
+    errorGuardIndex < updateIndex,
+    'the cancellation error guard must run before state adoption',
   );
 });

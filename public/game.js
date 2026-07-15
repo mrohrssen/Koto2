@@ -82,6 +82,11 @@ import * as tts from './js/tts.js';
 import * as settings from './js/settings.js';
 import * as explorationUI from './js/ui/exploration.js';
 import { getExploreSession } from './js/ui/explore-session.js';
+import {
+  captureGameStateFetchToken,
+  isGameStateErrorResponse,
+  isGameStateFetchCurrent,
+} from './js/ui/game-state-adoption.js';
 import { buildLocalCombatFromStart } from '../src/shared/combat/local-combat-start.js';
 import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
@@ -755,10 +760,7 @@ function updateGameContent() {
           // In-session refresh (the shop flow just completed inside a live run):
           // adoptSession keeps the explore epoch — rotation is reload-only.
           loadGameState({ adoptSession: true }).then(state => {
-            if (state) {
-              updateGameState(state);
-              updateUI();
-            }
+            if (state) updateUI();
           });
         });
       }
@@ -870,7 +872,11 @@ async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSe
   // already null-guard).
   const session = getExploreSession?.();
   if (session && (session.pendingCount?.() ?? 0) > 0) return null;
-  return apiGetGameState({ adoptSession });
+
+  const token = captureGameStateFetchToken(session);
+  const data = await apiGetGameState({ adoptSession });
+  if (!isGameStateFetchCurrent(token, getExploreSession?.())) return null;
+  return data;
 }
 
 async function loadGameState({ adoptSession = false } = {}) {
@@ -879,7 +885,7 @@ async function loadGameState({ adoptSession = false } = {}) {
   // keep the current optimistic client state; the drain will reconcile it under
   // the unrotated epoch. Not a failure — do not toast.
   if (data === null) return gameState;
-  if (isTransientGameStateFailure(data)) {
+  if (isTransientGameStateFailure(data) || isGameStateErrorResponse(data)) {
     scene.showToast?.('Connection is slow. Retrying...', 3000);
     return null;
   }
@@ -1148,7 +1154,7 @@ async function triggerCreatureSelect() {
     // Player cancelled — forfeit the bare run and return to hub
     await apiForfeitRun();
     const state = await apiGetGameStateAfterExploreDrain('creatureSelectCancel');
-    if (state) {
+    if (state && !isGameStateErrorResponse(state)) {
       updateGameState(state);
       updateUI();
     }

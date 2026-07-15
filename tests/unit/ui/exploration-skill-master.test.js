@@ -129,6 +129,7 @@ const {
 
 const {
   configureExploreSession,
+  getExploreSession,
   resetExploreSession,
 } = await import('../../../public/js/ui/explore-session.js');
 
@@ -454,6 +455,30 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     const originalDocument = globalThis.document;
     const actionArea = createElementStub();
     const events = [];
+    const oldRunway = {
+      sessionEpoch: 'ese_5555555555555555',
+      currentRoom: 0,
+      roomActionSeq: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: 'old-room',
+        actionSeq: 0,
+        room: { id: 'old-room', type: 'friendlyNpc' },
+        acceptedActions: ['friendlyNpc.choose'],
+        offlineReady: true,
+      }],
+    };
+    const responseRunway = {
+      ...oldRunway,
+      preparedRooms: [{
+        index: 0,
+        roomId: 'room-from-skill-choice-response',
+        actionSeq: 0,
+        room: { id: 'room-from-skill-choice-response', type: 'encounter' },
+        acceptedActions: ['encounter.start', 'combat.cycle'],
+        offlineReady: true,
+      }],
+    };
     let state = {
       phase: 'skillMaster',
       meta: { tutorialStep: 1 },
@@ -462,6 +487,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
         stats: { startTime: 777 },
         initialSkillPick: { chosenId: null },
         creatureParty: { active: [{ uid: 'ally-1', id: 'nekorin' }] },
+        exploreRunway: oldRunway,
       },
       room: { id: 'first-friendly', type: 'friendlyNpc' },
     };
@@ -479,11 +505,18 @@ describe('renderSkillMaster tutorial Cid narration', () => {
         events.push(['resetForRoom', opts]);
       },
     };
+    const session = configureExploreSession({
+      syncRequest: async () => ({ status: 'ok', results: [] }),
+    });
+    session.adoptRunway(oldRunway);
 
     init({
       getGameState: () => state,
       updateGameState: nextState => { state = nextState; },
-      updateUI: () => { events.push(['updateUI']); },
+      updateUI: () => events.push([
+        'updateUI',
+        getExploreSession().currentPreparedRoom()?.roomId,
+      ]),
       actions: { setContent: html => { actionArea.innerHTML = html; } },
       scene: { showNarration: () => {} },
       apiSkillMasterOffers: async () => ({
@@ -503,6 +536,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
             ...state.run,
             pendingSkillChoice: undefined,
             initialSkillPick: { chosenId: skillId },
+            exploreRunway: responseRunway,
           },
         },
       }),
@@ -516,6 +550,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     } finally {
       globalThis.document = originalDocument;
       sceneManagerState.currentScene = null;
+      resetExploreSession();
     }
 
     assert.deepEqual(events, [
@@ -523,7 +558,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
         roomId: 0,
         allies: [{ uid: 'ally-1', id: 'nekorin' }],
       }],
-      ['updateUI'],
+      ['updateUI', 'room-from-skill-choice-response'],
     ]);
   });
 
