@@ -534,24 +534,47 @@ function buildOptimisticCreatureCombatRequest(actionType, moveChoices = []) {
   return buildOptimisticCombatTurn({ state: getGameState(), actionType, moveChoices });
 }
 
-/**
- * Whether this creature-combat turn should flow through the explore-session log
- * instead of a per-turn verify round-trip. True when an explore session is
- * active, its current prepared room accepts `combat.cycle`, and the combat still
- * has a pre-committed seed chain to draw the next turn's seed from
- * (turnSeeds.length > 1: the head is this turn's seed, and at least one more must
- * remain for the chain to advance). When any of these is false we fall back to
- * the online per-turn path (which this task does not delete).
- */
-function isExploreSessionCombatTurn() {
+function getActiveStandardExploreSession() {
   const session = getExploreSession?.();
-  if (!session) return false;
-  const preparedRoom = session.currentPreparedRoom?.();
-  const acceptsCombatCycle = Array.isArray(preparedRoom?.acceptedActions)
-    && preparedRoom.acceptedActions.includes('combat.cycle');
-  if (!acceptsCombatCycle) return false;
+  const state = getGameState?.();
+  return session
+    && state?.run?.active === true
+    && state.run.mode !== 'kanjiKombat'
+    && state?.combat
+    ? session
+    : null;
+}
+
+function getExploreSessionCombatOwner(session = getActiveStandardExploreSession()) {
+  const accepted = session?.currentPreparedRoom?.()?.acceptedActions;
+  return Array.isArray(accepted) && accepted.includes('combat.cycle')
+    ? session
+    : null;
+}
+
+function hasSafeExploreSessionSeedRunway() {
   const turnSeeds = getGameState()?.combat?.optimistic?.turnSeeds;
   return Array.isArray(turnSeeds) && turnSeeds.length > 1;
+}
+
+function clearCombatPendingFlag(pendingFlag) {
+  if (pendingFlag === 'enemy') enemyAttackPending = false;
+  else playerAttackPending = false;
+}
+
+async function fenceExploreSessionBeforeLegacyCombat(session) {
+  const revision = session?.getLocalRevision?.() ?? 0;
+  try {
+    await session?.syncNow?.({ reason: 'combatSeedFallback' });
+  } catch {}
+  const unchanged = (session?.getLocalRevision?.() ?? revision) === revision;
+  const empty = (session?.pendingCount?.() ?? 0) === 0;
+  const online = globalThis.navigator?.onLine !== false;
+  const ready = online && empty && unchanged && session?.isPaused?.() !== true;
+  if (!ready) {
+    session?.pause?.(empty && !online ? 'runwayExhausted' : 'syncPending');
+  }
+  return ready;
 }
 
 /**
@@ -721,13 +744,13 @@ function localStateAfterSessionPveTurn(optimistic) {
 }
 
 /**
- * Session-mode creature-combat turn: play the predicted transcript, commit the
- * local next state, and append a `combat.cycle` entry to the explore session log
- * — NO per-turn verify round-trip (the session drain carries it). On a locally
+ * Session-mode creature-combat turn: append a `combat.cycle` entry to the
+ * explore session log, then play the predicted transcript and commit the local
+ * next state — NO per-turn verify round-trip (the session drain carries it). On a locally
  * predicted combat end the pendingCombatEnd shell is already in the transcript
  * (playback shows it); the checkpoint handler hands the server-confirmed
  * combatEnded result to finishCombatLoop. Returns true when handled, false when
- * the turn is unsafe to predict offline (caller falls back / soft-pauses).
+ * the turn is unsafe to predict offline (caller fences any compatibility fallback).
  */
 async function runSessionCreatureCombatTurn({
   actionType,
@@ -738,10 +761,20 @@ async function runSessionCreatureCombatTurn({
 } = {}) {
   const optimistic = buildSessionCreatureCombatTurn(actionType, moveChoices);
   if (!optimistic) {
-    // Genuinely non-simulatable turn (e.g. befriendQuizTriggered): drain what we
-    // have, then let the caller decide (online legacy path, or offline soft pause).
-    void getExploreSession()?.syncNow();
+    // Genuinely non-simulatable turn (e.g. befriendQuizTriggered): the caller
+    // serializes any compatibility fallback behind a stable session drain.
     return false;
+  }
+
+  const session = getExploreSession();
+  const recorded = session?.recordRoomAction('combat.cycle', {
+    actionType,
+    moveChoices,
+    predictedHash: optimistic.envelope.predictedHash,
+  });
+  if (recorded?.accepted !== true) {
+    clearCombatPendingFlag(pendingFlag);
+    return true;
   }
 
   const hasPendingCombatEnd = !!optimistic.localTranscript?.pendingCombatEnd;
@@ -750,19 +783,7 @@ async function runSessionCreatureCombatTurn({
   await playback(optimistic.localTranscript);
 
   updateGameState(localStateAfterSessionPveTurn(optimistic));
-
-  const session = getExploreSession();
-  session?.recordRoomAction('combat.cycle', {
-    actionType,
-    moveChoices,
-    predictedHash: optimistic.envelope.predictedHash,
-  });
-
-  if (pendingFlag === 'enemy') {
-    enemyAttackPending = false;
-  } else {
-    playerAttackPending = false;
-  }
+  clearCombatPendingFlag(pendingFlag);
 
   if (hasPendingCombatEnd) {
     // Combat resolved locally — the pendingCombatEnd shell is showing. Leave
@@ -790,29 +811,40 @@ async function runOptimisticCreatureCombatTurn({
   stopCombatLoop: finishCombatLoop = stopCombatLoop,
   getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
 } = {}) {
-  // Explore-session cutover: when the turn flows through the session log, commit
-  // it locally and append a combat.cycle entry — no per-turn verify. A false
-  // return means "unsafe to predict offline"; fall through to the online path.
-  if (isExploreSessionCombatTurn()) {
-    const sessionHandled = await runSessionCreatureCombatTurn({
-      actionType, moveChoices, turnTiming, playback, pendingFlag,
-    });
-    if (sessionHandled) {
-      const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
-      if (combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
-        await waitBeforeMoveSelection(nextSelectionDelayMs);
-        restartMoveSelection();
-      }
+  const standardSession = getActiveStandardExploreSession();
+  if (standardSession) {
+    const owner = getExploreSessionCombatOwner(standardSession);
+    if (!owner) {
+      standardSession.pause?.('missingPayload');
+      clearCombatPendingFlag(pendingFlag);
       return true;
     }
-    // Unsafe turn (session build returned null; syncNow already fired): when
-    // offline there is no online verify path to fall through to. Leave the loop
-    // paused with no move selection and no garbage entry — the session's
-    // reconnect drain delivers the authoritative state. When online, fall
-    // through to the legacy per-turn verify path below.
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      playerAttackPending = false;
-      enemyAttackPending = false;
+
+    if (hasSafeExploreSessionSeedRunway()) {
+      const handled = await runSessionCreatureCombatTurn({
+        actionType,
+        moveChoices,
+        turnTiming,
+        playback,
+        pendingFlag,
+      });
+      if (handled) {
+        if (
+          combatActive
+          && isRecoveredCombatActive(getGameState())
+          && standardSession.isPaused?.() !== true
+          && !isEnemyDialogueActive?.()
+        ) {
+          await waitBeforeMoveSelection(nextSelectionDelayMs);
+          restartMoveSelection();
+        }
+        return true;
+      }
+    }
+
+    const legacyReady = await fenceExploreSessionBeforeLegacyCombat(owner);
+    if (!legacyReady) {
+      clearCombatPendingFlag(pendingFlag);
       return true;
     }
   }
@@ -835,11 +867,7 @@ async function runOptimisticCreatureCombatTurn({
     throw new Error('Combat sync failed');
   }
 
-  if (pendingFlag === 'enemy') {
-    enemyAttackPending = false;
-  } else {
-    playerAttackPending = false;
-  }
+  clearCombatPendingFlag(pendingFlag);
   combatActive = isRecoveredCombatActive(getGameState());
 
   if (result?.status === 'accepted' && result?.combatEnded === true) {
@@ -1074,6 +1102,13 @@ export const __combatNetworkTest = {
     playerAttackPending = false;
     enemyAttackPending = false;
     _lastLocallyPlayedKanjiKombatWave = 0;
+  },
+  setPendingFlags({ player = false, enemy = false } = {}) {
+    playerAttackPending = player;
+    enemyAttackPending = enemy;
+  },
+  getPendingFlags() {
+    return { player: playerAttackPending, enemy: enemyAttackPending };
   },
   setSyncIndicatorDelayMs(ms) {
     combatSyncIndicatorDelayMs = ms;

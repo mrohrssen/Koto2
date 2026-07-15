@@ -34,6 +34,10 @@ function makeFakeSession({ acceptsCombatCycle = true } = {}) {
       recorded.push({ kind, payload });
       return { accepted: true, pendingCount: recorded.length };
     },
+    pendingCount: () => recorded.length,
+    isPaused: () => false,
+    getLocalRevision: () => recorded.length,
+    pause: () => {},
     syncNow: () => { syncNowCalls += 1; return Promise.resolve(); },
   };
 }
@@ -89,6 +93,7 @@ function sessionCombatState({ enemyHp = 100, turnSeeds = ['seed-a', 'seed-b', 's
       optimistic: { combatId: 'cmb_sess', stateVersion: 0, nextTurnSeed: 'seed-a', turnSeeds },
     },
     run: {
+      active: true,
       mode: 'standard',
       partySkills: [],
       itemBuffs: { xpMultiplier: 1, xpBalanceStacks: 0 },
@@ -143,11 +148,16 @@ describe('explore-session local combat turns', () => {
     combatLoop.__combatNetworkTest.resetPendingFlags();
   });
 
-  async function runTurn(harness, playback) {
+  async function runTurn(
+    harness,
+    playback,
+    { pendingFlag = 'player' } = {},
+  ) {
     return combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
       actionType: 'attack',
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
       turnTiming: { actionType: 'attack', startedAt: 0, animationStartedAt: null, requestMs: null, logged: false },
+      pendingFlag,
       playback: playback || (async (transcript) => { playbackCalls.push(transcript); }),
       startMoveSelection: () => {},
       stopCombatLoop: () => {},
@@ -180,6 +190,122 @@ describe('explore-session local combat turns', () => {
     assert.deepEqual(opt.turnSeeds, ['seed-b', 'seed-c']);
     // Enemy took the 30-power hit: hp dropped from the resolved next combat.
     assert.ok(harness.state.combat.enemies[0].hp < 100, 'enemy HP reflects the resolved turn');
+  });
+
+  it('does not play, mutate, or leave attack pending when append is rejected', async () => {
+    fakeSession.recordRoomAction = () => ({
+      accepted: false,
+      reason: 'hardCap',
+      pendingCount: 50,
+    });
+    fakeSession.isPaused = () => true;
+    const harness = initHarness(sessionCombatState());
+    const before = structuredClone(harness.state);
+    let plays = 0;
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+
+    const handled = await runTurn(harness, async () => { plays += 1; });
+
+    assert.equal(handled, true);
+    assert.equal(plays, 0);
+    assert.deepEqual(harness.state, before);
+    assert.equal(verifyCalls.length, 0);
+    assert.deepEqual(
+      combatLoop.__combatNetworkTest.getPendingFlags(),
+      { player: false, enemy: false },
+    );
+  });
+
+  it('plays a cap-reaching accepted turn once without reopening move selection', async () => {
+    let restarts = 0;
+    fakeSession.isPaused = () => true;
+    const harness = initHarness(sessionCombatState());
+
+    await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      turnTiming: { actionType: 'attack', startedAt: 0, animationStartedAt: null, requestMs: null, logged: false },
+      playback: async transcript => { playbackCalls.push(transcript); },
+      startMoveSelection: () => { restarts += 1; },
+      stopCombatLoop: () => {},
+    });
+
+    assert.equal(fakeSession.recorded.length, 1);
+    assert.equal(playbackCalls.length, 1);
+    assert.equal(harness.state.combat.optimistic.stateVersion, 1);
+    assert.equal(restarts, 0);
+  });
+
+  it('drains the session before using the legacy verifier at seed exhaustion', async () => {
+    const events = [];
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    fakeSession.pendingCount = () => 1;
+    fakeSession.getLocalRevision = () => 1;
+    fakeSession.isPaused = () => false;
+    fakeSession.syncNow = async () => {
+      events.push('sync:start');
+      await gate;
+      events.push('sync:end');
+      fakeSession.pendingCount = () => 0;
+    };
+    const harness = initHarness(sessionCombatState({ turnSeeds: ['seed-a'] }));
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => {
+      events.push('verify');
+      return { status: 'accepted', stateVersion: 1, nextSeed: 'seed-b' };
+    });
+
+    const turn = runTurn(harness);
+    await Promise.resolve();
+    assert.deepEqual(events, ['sync:start']);
+    release();
+    await turn;
+    assert.deepEqual(events.slice(0, 3), ['sync:start', 'sync:end', 'verify']);
+  });
+
+  it('does not verify when the session fence cannot clear its log', async () => {
+    const pauses = [];
+    fakeSession.pendingCount = () => 1;
+    fakeSession.getLocalRevision = () => 7;
+    fakeSession.isPaused = () => false;
+    fakeSession.syncNow = async () => {};
+    fakeSession.pause = reason => { pauses.push(reason); };
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+    const harness = initHarness(sessionCombatState({ turnSeeds: ['seed-a'] }));
+
+    const handled = await runTurn(harness, async () => {
+      throw new Error('playback must not run');
+    });
+
+    assert.equal(handled, true);
+    assert.equal(verifyCalls.length, 0);
+    assert.deepEqual(pauses, ['syncPending']);
+    assert.deepEqual(
+      combatLoop.__combatNetworkTest.getPendingFlags(),
+      { player: false, enemy: false },
+    );
+  });
+
+  it('pauses instead of calling legacy verify when combat capability is missing', async () => {
+    const pauses = [];
+    fakeSession.currentPreparedRoom = () => ({ acceptedActions: [] });
+    fakeSession.pause = reason => { pauses.push(reason); };
+    combatLoop.__combatNetworkTest.setPendingFlags({ enemy: true });
+    const harness = initHarness(sessionCombatState({
+      turnSeeds: ['seed-a', 'seed-b'],
+    }));
+
+    const handled = await runTurn(harness, async () => {
+      throw new Error('playback must not run');
+    }, { pendingFlag: 'enemy' });
+
+    assert.equal(handled, true);
+    assert.equal(verifyCalls.length, 0);
+    assert.deepEqual(pauses, ['missingPayload']);
+    assert.deepEqual(
+      combatLoop.__combatNetworkTest.getPendingFlags(),
+      { player: false, enemy: false },
+    );
   });
 
   it('null optimistic build (unsafe turn) in session mode fires syncNow and records no entry', async () => {
