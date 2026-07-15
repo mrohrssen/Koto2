@@ -7,7 +7,6 @@ import { showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup } from
 import { animateLevelUpForScene } from '../pixi/formation.js';
 import { spritePos } from './combat-vfx.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
-import { playRoomTransition } from './room-transition.js';
 import {
   actionIconUrlFromSlug,
   creatureStaticUrl,
@@ -437,19 +436,13 @@ export class WhackAMoleGame {
 
     // Advance to the next room via the standard exploration path.
     try {
-      const advanced = await this.apiProceed();
+      await this.apiProceed();
       if (this.cancelled) return;
-      if (advanced?.state) {
-        this.updateGameState(advanced.state);
-        await playRoomTransition(advanced.state, {
-          ingredientDrops: advanced.ingredientDrops || advanced.room?.ingredientDrops || [],
-        });
-        if (this.cancelled) return;
-      }
     } catch (err) {
-      // Fall through to updateUI - the next-room state may already be applied server-side.
+      // The high-level proceed owner normally refreshes. If it throws before it
+      // can do so, render a fallback state instead of leaving the minigame shell.
+      this.updateUI();
     }
-    this.updateUI();
   }
 
   _scheduleFlip() {

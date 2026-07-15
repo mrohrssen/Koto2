@@ -327,9 +327,11 @@ describe('WhackAMoleGame cancellation', () => {
     assert.equal(proceedCalls, 1);
   });
 
-  it('passes ingredient drops into the room transition after completion', async () => {
+  it('delegates successful room advancement entirely to the high-level proceed owner', async () => {
     roomTransitionCalls.length = 0;
-    let updateCalls = 0;
+    let proceedCalls = 0;
+    let stateUpdateCalls = 0;
+    let renderCalls = 0;
 
     const ingredientDrops = [{ ingredient: { nameEn: 'Water' }, quantity: 1 }];
     const advancedState = {
@@ -358,21 +360,24 @@ describe('WhackAMoleGame cancellation', () => {
         xpGrants: [],
         levelUps: [],
       }),
-      apiProceed: async () => ({
-        state: advancedState,
-        ingredientDrops,
-      }),
-      updateGameState: () => {},
-      updateUI: () => { updateCalls += 1; },
+      apiProceed: async () => {
+        proceedCalls += 1;
+        return {
+          state: advancedState,
+          ingredientDrops,
+        };
+      },
+      updateGameState: () => { stateUpdateCalls += 1; },
+      updateUI: () => { renderCalls += 1; },
       playSFX: () => {},
     });
 
     await game._endGame();
 
-    assert.equal(roomTransitionCalls.length, 1);
-    assert.equal(roomTransitionCalls[0].state, advancedState);
-    assert.deepEqual(roomTransitionCalls[0].opts, { ingredientDrops });
-    assert.equal(updateCalls, 1);
+    assert.equal(proceedCalls, 1);
+    assert.equal(stateUpdateCalls, 0);
+    assert.equal(roomTransitionCalls.length, 0);
+    assert.equal(renderCalls, 0);
   });
 
   it('shows the Game Master success message with the standard dialogue card', async () => {

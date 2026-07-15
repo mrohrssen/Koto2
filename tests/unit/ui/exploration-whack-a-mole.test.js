@@ -699,7 +699,6 @@ describe('renderWhackAMole decline flow', () => {
     assert.ok(whackAMoleDeps);
     await whackAMoleDeps.apiCompleteWhackAMole(4);
     const advanced = await whackAMoleDeps.apiProceed();
-    whackAMoleDeps.updateUI();
 
     const entries = getExploreSession().snapshot();
     assert.equal(roomTransitionCalls.length, 1);
@@ -712,7 +711,7 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(proceedCalls.length, 0);
     assert.equal(currentState.run.currentRoom, 1);
     assert.equal(currentState.room.id, 'after-wam');
-    assert.equal(updateUiCalls, 2);
+    assert.equal(updateUiCalls, 1);
     assert.deepEqual(advanced, {
       status: 'queued',
       actionId: entries[1].actionId,
