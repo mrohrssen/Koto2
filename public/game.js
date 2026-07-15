@@ -1657,7 +1657,7 @@ async function startCreatureEncounterFromSession(session) {
 
   const draft = structuredClone(gameState);
   draft.combat = buildLocalCombatFromStart(combatStart, payload.seedChain, {
-    fallbackAllies: gameState.run?.creatureParty?.active || [],
+    allies: draft.run?.creatureParty?.active || []
   });
   draft.phase = 'combat';
   updateGameState(draft);

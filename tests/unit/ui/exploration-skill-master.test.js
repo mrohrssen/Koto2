@@ -714,4 +714,160 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     assert.match(actionArea.innerHTML, /Arc Strike - Lvl\. 1/);
     assert.doesNotMatch(actionArea.innerHTML, /tokei/);
   });
+
+  it('optimistically applies one HP Master level before marking Skill Master complete', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    const room = {
+      id: 'skill-parity-room',
+      type: 'skillMaster',
+      interacted: false,
+      skillMaster: { completed: false, chosenId: null },
+    };
+    let state = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 1 },
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        stats: { startTime: 901 },
+        currentRoom: 0,
+        roomActionSeq: 0,
+        initialSkillPick: { chosenId: 'arcStrike' },
+        partySkills: [],
+        creatureParty: {
+          active: [{ id: 'hi', hp: 80, maxHp: 100 }],
+          reserves: [],
+        },
+        rooms: [structuredClone(room)],
+        exploreRunway: {
+          sessionEpoch: 'ese_skillparity111',
+          currentRoom: 0,
+          roomActionSeq: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            actionSeq: 0,
+            room: structuredClone(room),
+            acceptedActions: ['skillMaster.choose', 'proceed'],
+            actionEffects: {
+              'skillMaster.choose': ['partySkills'],
+              proceed: ['areaProgress'],
+            },
+            dependencies: ['partySkills'],
+            offlineReady: true,
+            interactionPayload: {
+              offered: [{ id: 'hpMaster', level: 1, title: 'HP Master' }],
+            },
+          }],
+        },
+      },
+    };
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    configureExploreSession({
+      syncRequest: async () => ({ status: 'ok', results: [] }),
+    });
+    init({
+      getGameState: () => state,
+      updateGameState: next => { state = next; },
+      updateUI: () => {},
+      actions: {
+        setContent: html => { actionArea.innerHTML = html; },
+        clear: () => { actionArea.innerHTML = ''; },
+      },
+      scene: { showNarration: () => {} },
+    });
+
+    try {
+      await renderSkillMaster();
+      await renderedChoices.onSelect(0);
+    } finally {
+      globalThis.document = originalDocument;
+      resetExploreSession();
+    }
+
+    assert.deepEqual(state.run.partySkills, [{ id: 'hpMaster', level: 1 }]);
+    assert.equal(state.run.creatureParty.active[0].maxHp, 125);
+    assert.equal(state.run.creatureParty.active[0].hp, 100);
+  });
+
+  it('optimistically applies one HP Master level for an NPC battle reward', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    const room = {
+      id: 'npc-skill-parity-room',
+      type: 'npcBattle',
+      interacted: true,
+      npcBattle: { skillSelectionPending: true },
+    };
+    let state = {
+      phase: 'npc_skill_selection',
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        stats: { startTime: 902 },
+        currentRoom: 0,
+        roomActionSeq: 0,
+        partySkills: [],
+        creatureParty: {
+          active: [{ id: 'hi', hp: 80, maxHp: 100 }],
+          reserves: [],
+        },
+        rooms: [structuredClone(room)],
+        exploreRunway: {
+          sessionEpoch: 'ese_npcskillpar11',
+          currentRoom: 0,
+          roomActionSeq: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            actionSeq: 0,
+            room: structuredClone(room),
+            acceptedActions: ['npcBattleSkill.choose'],
+            actionEffects: { 'npcBattleSkill.choose': ['partySkills'] },
+            dependencies: ['partySkills'],
+            offlineReady: true,
+          }],
+        },
+      },
+    };
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    configureExploreSession({
+      syncRequest: async () => ({ status: 'ok', results: [] }),
+    });
+    init({
+      getGameState: () => state,
+      updateGameState: next => { state = next; },
+      updateUI: () => {},
+      actions: {
+        setContent: html => { actionArea.innerHTML = html; },
+        clear: () => { actionArea.innerHTML = ''; },
+      },
+      scene: { showNarration: () => {} },
+    });
+
+    try {
+      await renderNpcBattleSkillSelection({
+        fetchOffers: async () => ({
+          offered: [{ id: 'hpMaster', level: 1, title: 'HP Master' }],
+        }),
+      });
+      await renderedChoices.onSelect(0);
+    } finally {
+      globalThis.document = originalDocument;
+      resetExploreSession();
+    }
+
+    assert.deepEqual(state.run.partySkills, [{ id: 'hpMaster', level: 1 }]);
+    assert.equal(state.run.creatureParty.active[0].maxHp, 125);
+    assert.equal(state.run.creatureParty.active[0].hp, 100);
+  });
 });

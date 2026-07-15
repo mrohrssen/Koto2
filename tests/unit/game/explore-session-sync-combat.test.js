@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it, test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { instantiateCreature } from '../../../src/game/creatures.js';
@@ -533,4 +533,17 @@ describe('local combat start — statStages hash parity with server', () => {
       'first-turn transcript hashes must match across the client-build / server-build boundary',
     );
   });
+});
+
+test('local combat prefers explicitly supplied current allies over stale payload allies', () => {
+  const stale = [{ id: 'hi', hp: 10, maxHp: 100 }];
+  const current = [{ id: 'hi', hp: 75, maxHp: 125 }];
+  const combat = buildLocalCombatFromStart({
+    enemies: [{ id: 'mizu', hp: 100, maxHp: 100 }],
+    allies: stale,
+    optimistic: { combatId: 'combat-current-party', stateVersion: 0, nextTurnSeed: 'seed-1' },
+  }, ['seed-1'], { allies: current });
+
+  assert.strictEqual(combat.allies, current);
+  assert.equal(combat.allies[0].hp, 75);
 });

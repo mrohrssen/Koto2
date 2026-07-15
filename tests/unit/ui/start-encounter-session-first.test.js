@@ -60,3 +60,15 @@ test('startEncounter attempts the session-first combat start before the drain/so
     + 'is shown, otherwise offline combat is blocked at the door',
   );
 });
+
+test('session-first local combat sources allies from the current draft run', () => {
+  const sessionStartSource = sourceBetween(
+    gameSrc,
+    'async function startCreatureEncounterFromSession(session)',
+    'let encounterStarting = false',
+  );
+  assert.match(
+    sessionStartSource,
+    /buildLocalCombatFromStart\([\s\S]*\{\s*allies:\s*draft\.run\?\.creatureParty\?\.active\s*\|\|\s*\[\]\s*\}/,
+  );
+});

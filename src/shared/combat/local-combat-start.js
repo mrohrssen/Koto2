@@ -10,13 +10,19 @@ import { resetStatStages } from '../../game/combat/effects.js';
 //
 // Shared (node-importable, no DOM) so both public/game.js and the hash-parity
 // regression test consume ONE source of truth.
-export function buildLocalCombatFromStart(combatStart, seedChain, { fallbackAllies = [] } = {}) {
+export function buildLocalCombatFromStart(
+  combatStart,
+  seedChain,
+  { allies = null, fallbackAllies = [] } = {},
+) {
   const enemies = combatStart.enemies || (combatStart.enemy ? [combatStart.enemy] : []);
-  const allies = combatStart.allies || fallbackAllies;
+  const resolvedAllies = Array.isArray(allies)
+    ? allies
+    : (combatStart.allies || fallbackAllies);
   const combat = createCombatState(enemies[0] || null);
-  combat.allies = allies;
+  combat.allies = resolvedAllies;
   combat.enemies = enemies;
-  combat.actionCursor = createPveOpeningCursor({ allies, enemies });
+  combat.actionCursor = createPveOpeningCursor({ allies: resolvedAllies, enemies });
   combat.actionCount = 0;
   combat.cycleCount = 0;
   combat.openingResolved = false;

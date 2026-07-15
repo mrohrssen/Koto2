@@ -35,6 +35,10 @@ import {
   getNextRoom,
 } from './room-reveal-buffer.js';
 import { configureExploreSession, getExploreSession } from './explore-session.js';
+import {
+  applyPartySkillChoice,
+  syncPartySkillHpBonuses,
+} from '../../../src/game/party-skills.js';
 
 /**
  * Resolve any active scene that owns an `npcs` layer. Every gameplay scene
@@ -378,11 +382,15 @@ function activeRoomDrafts(draft) {
   ]);
 }
 
-function updateSupportRoomDraft(mutator, { phase = 'room', advance = false } = {}) {
+function updateSupportRoomDraft(
+  mutateRoom,
+  { phase = 'room', advance = false, mutateDraft = null } = {},
+) {
   const currentState = getGameState?.();
   if (!currentState) return null;
   const draft = cloneStateForExploreSession(currentState);
-  activeRoomDrafts(draft).forEach(room => mutator(room, draft));
+  if (typeof mutateDraft === 'function') mutateDraft(draft);
+  activeRoomDrafts(draft).forEach(room => mutateRoom(room, draft));
   if (advance) {
     advanceStateToBufferedNextRoom(draft);
     alignExploreRunwayCursor(draft);
@@ -391,6 +399,11 @@ function updateSupportRoomDraft(mutator, { phase = 'room', advance = false } = {
   }
   updateGameState(draft);
   return draft;
+}
+
+function applyPartySkillChoiceToDraft(draft, skillId) {
+  draft.run.partySkills = applyPartySkillChoice(draft.run.partySkills || [], skillId);
+  syncPartySkillHpBonuses(draft.run.creatureParty, draft.run.partySkills);
 }
 
 async function completeWordDiscoveryOptimistically({ learnedWords = [] } = {}) {
@@ -2244,6 +2257,8 @@ async function chooseSkillMasterSkill(skillId) {
       room.skillMaster.completed = true;
       room.interacted = true;
     }
+  }, {
+    mutateDraft: draft => applyPartySkillChoiceToDraft(draft, skillId),
   });
   skillMasterState.chosenId = skillId;
   actions.clear();
@@ -2786,6 +2801,8 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
         room.npcBattle.chosenSkillId = skillId;
         room.npcBattle.skillSelectionPending = false;
         room.interacted = true;
+      }, {
+        mutateDraft: draft => applyPartySkillChoiceToDraft(draft, skillId),
       });
       npcBattleSkillState.choosing = false;
       actions.clear();
