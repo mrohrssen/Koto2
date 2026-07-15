@@ -81,22 +81,20 @@ let exploreSessionOnlineDrainTarget = null;
 let exploreSessionVisibilityDrainTarget = null;
 // Injected in init(): pulls a rebuilt runway server-side (loadGameState with
 // adoptSession → /state?adoptSession=1, epoch preserved) to recover an online
-// stall. Guard state keeps repeated soft-pauses from stacking fetches.
+// stall.
 let refreshRunwayState = null;
-let runwayRecoveryInFlight = false;
-let runwayRecoveryLastAt = 0;
-// Soft-pause reasons whose session has an EMPTY log and therefore CANNOT self-heal
-// via the reconnect drain (drain no-ops on an empty log). These are the online
-// dead-ends the one-shot runway refresh recovers. Drain-recoverable reasons
-// ('dependency', 'hardCap', transport failures) are deliberately excluded.
 const RUNWAY_RECOVERY_REASONS = new Set([
   'noPreparedRoom',
   'currentRoomNotReady',
   'nextRoomNotReady',
   'runwayExhausted',
   'missingPayload',
+  'actionNotAccepted',
 ]);
-const RUNWAY_RECOVERY_COOLDOWN_MS = 3000;
+const RUNWAY_RECOVERY_RETRY_MS = [500, 1000, 2000, 4000, 8000, 15000];
+let runwayRecoveryPromise = null;
+let runwayRecoveryTimer = null;
+let runwayRecoveryAttempt = 0;
 
 function isInitialSkillPickState(state = getGameState?.()) {
   const room = state?.room || getActiveRoomFromRun(state?.run);
@@ -235,6 +233,10 @@ function onExploreSessionCorrection(response) {
 }
 
 function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
+  const session = getExploreSession?.();
+  if (session?.isPaused?.() !== true) {
+    session?.pause?.(reason || 'missingPayload');
+  }
   const missingDetails = Array.isArray(missingPayloadReasons)
     ? missingPayloadReasons.filter(Boolean)
     : [];
@@ -245,33 +247,80 @@ function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
     `${EXPLORE_SPOTTY_COPY}${detail}`,
     { autoDismiss: 1800 }
   );
-  maybeRecoverRunwayStall(reason);
+  void triggerExploreSessionRecovery(reason);
 }
 
-// One-shot online recovery for an empty-log soft-pause. When the session dead-ends
-// on a reason it cannot drain out of, has no pending entries, and we are online,
-// pull a rebuilt runway server-side. Without this the run is stuck on a perfect
-// connection: no drain fires (empty log), no 'online' event fires (already online).
-// In-flight + cooldown guards keep repeated taps from stacking fetches.
-function maybeRecoverRunwayStall(reason) {
-  if (typeof refreshRunwayState !== 'function') return;
-  if (!RUNWAY_RECOVERY_REASONS.has(reason)) return;
-  if (globalThis.navigator?.onLine === false) return;
-  const pending = getExploreSession()?.pendingCount?.() ?? 0;
-  if (pending !== 0) return;
-  if (runwayRecoveryInFlight) return;
-  const now = Date.now();
-  if (now - runwayRecoveryLastAt < RUNWAY_RECOVERY_COOLDOWN_MS) return;
+async function runExploreSessionRecovery(reason) {
+  const session = getExploreSession?.();
+  if (
+    !session
+    || globalThis.navigator?.onLine === false
+  ) {
+    return { recovered: false, retryable: false };
+  }
 
-  runwayRecoveryInFlight = true;
-  runwayRecoveryLastAt = now;
-  Promise.resolve()
-    .then(() => refreshRunwayState())
-    .catch(error => console.warn('[ExploreSession] runway stall recovery failed', error))
-    .finally(() => {
-      runwayRecoveryInFlight = false;
-      updateUI?.();
-    });
+  if ((session.pendingCount?.() ?? 0) > 0) {
+    await session.syncNow({ reason: 'onlineRecovery' });
+  }
+  if (session.getPauseReason?.() === 'syncRejected') {
+    return { recovered: false, retryable: false };
+  }
+  if ((session.pendingCount?.() ?? 0) > 0) {
+    session.pause?.('syncPending');
+    return { recovered: false, retryable: true };
+  }
+
+  const pausedFor = reason || session.getPauseReason?.();
+  if (!RUNWAY_RECOVERY_REASONS.has(pausedFor)) {
+    return {
+      recovered: session.isPaused?.() !== true,
+      retryable: false,
+    };
+  }
+  if (typeof refreshRunwayState !== 'function') {
+    return { recovered: false, retryable: false };
+  }
+
+  const revision = session.getLocalRevision?.() ?? 0;
+  await refreshRunwayState();
+  const recovered = (session.getLocalRevision?.() ?? revision) === revision
+    && (session.pendingCount?.() ?? 0) === 0
+    && session.isPaused?.() !== true;
+  return { recovered, retryable: !recovered };
+}
+
+function scheduleExploreSessionRecovery() {
+  if (runwayRecoveryTimer) return;
+  const index = Math.min(
+    runwayRecoveryAttempt,
+    RUNWAY_RECOVERY_RETRY_MS.length - 1,
+  );
+  const delay = RUNWAY_RECOVERY_RETRY_MS[index];
+  runwayRecoveryAttempt += 1;
+  runwayRecoveryTimer = setTimeout(() => {
+    runwayRecoveryTimer = null;
+    void triggerExploreSessionRecovery();
+  }, delay);
+}
+
+export function triggerExploreSessionRecovery(reason) {
+  if (runwayRecoveryPromise) return runwayRecoveryPromise;
+  runwayRecoveryPromise = Promise.resolve()
+    .then(() => runExploreSessionRecovery(reason))
+    .catch(() => ({ recovered: false, retryable: true }))
+    .then(outcome => {
+      if (outcome.recovered) {
+        runwayRecoveryAttempt = 0;
+        if (runwayRecoveryTimer) clearTimeout(runwayRecoveryTimer);
+        runwayRecoveryTimer = null;
+        updateUI?.();
+      } else if (outcome.retryable) {
+        scheduleExploreSessionRecovery();
+      }
+      return outcome;
+    })
+    .finally(() => { runwayRecoveryPromise = null; });
+  return runwayRecoveryPromise;
 }
 
 function hideExploreSoftPause() {
@@ -289,7 +338,7 @@ export function wireExploreSessionRecoveryDrains({
   ) {
     exploreSessionOnlineDrainTarget = windowTarget;
     windowTarget.addEventListener('online', () => {
-      void getExploreSession()?.syncNow();
+      void triggerExploreSessionRecovery();
     });
   }
 
@@ -301,7 +350,7 @@ export function wireExploreSessionRecoveryDrains({
     exploreSessionVisibilityDrainTarget = documentTarget;
     documentTarget.addEventListener('visibilitychange', () => {
       if (documentTarget.visibilityState !== 'hidden') {
-        void getExploreSession()?.syncNow();
+        void triggerExploreSessionRecovery();
       }
     });
   }
@@ -1097,24 +1146,23 @@ export function applyExploreSessionProceedResult(result) {
 }
 
 /**
- * Before a LEGACY /api/game/proceed, flush any pending explore-session actions
- * so support-room choices (shrine.choose, friendlyNpc.choose, …) commit
- * server-side FIRST. Support rooms are not `proceed`-capable in the runway, so
- * their completion is queued in the session while the room auto-advances via the
- * legacy endpoint. Without this drain the legacy proceed races ahead of the
- * choose, moving the server cursor past the room — the choose then syncs into a
- * `room_index_mismatch` correction (losing the reward and tripping the subway
- * harness's no-corrected-syncs invariant). Draining is a best-effort await:
- * offline it simply fails and the legacy proceed below fails too, surfacing the
- * sanctioned soft pause.
+ * Before a LEGACY /api/game/proceed, require a stable, fully drained session.
+ * This prevents the legacy cursor from racing ahead of pending support-room
+ * choices or actions appended while their drain is in flight.
  */
 async function flushPendingSessionBeforeLegacyProceed(session) {
-  if (!session || session.pendingCount?.() === 0) return;
+  if (!session) return true;
+  const revision = session.getLocalRevision?.() ?? 0;
   try {
-    await session.syncNow();
+    if ((session.pendingCount?.() ?? 0) > 0) {
+      await session.syncNow({ reason: 'legacyProceed' });
+    }
   } catch {
-    // Offline / transient: the legacy proceed will fail next and show the pause.
+    return false;
   }
+  return (session.pendingCount?.() ?? 0) === 0
+    && session.isPaused?.() !== true
+    && (session.getLocalRevision?.() ?? revision) === revision;
 }
 
 export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
@@ -1143,7 +1191,12 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
     }
 
     try {
-      await flushPendingSessionBeforeLegacyProceed(session);
+      if (!await flushPendingSessionBeforeLegacyProceed(session)) {
+        showExploreSoftPause({
+          reason: session?.getPauseReason?.() || 'syncPending',
+        });
+        return null;
+      }
       const result = await apiProceed();
       if (!result?.state) return result || null;
       updateGameState(result.state);
@@ -1168,7 +1221,12 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
     }
   }
 
-  await flushPendingSessionBeforeLegacyProceed(session);
+  if (!await flushPendingSessionBeforeLegacyProceed(session)) {
+    showExploreSoftPause({
+      reason: session?.getPauseReason?.() || 'syncPending',
+    });
+    return null;
+  }
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);

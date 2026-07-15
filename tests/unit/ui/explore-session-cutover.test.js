@@ -89,6 +89,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 const {
   init,
   proceedWithRevealBuffer,
+  triggerExploreSessionRecovery,
   wireExploreSessionRecoveryDrains,
 } = await import('../../../public/js/ui/exploration.js');
 const { getExploreSession, resetExploreSession } = await import('../../../public/js/ui/explore-session.js');
@@ -135,6 +136,19 @@ function makeRunway(overrides = {}) {
     currentRoom: 0,
     preparedRooms: Array.from({ length: roomCount }, (_, index) => preparedRoom(index, { actionSeq: 100 + index })),
     ...overrides,
+  };
+}
+
+function legacyOnlySupportRunway() {
+  return {
+    sessionEpoch: 'ese_legacyfence11',
+    currentRoom: 0,
+    roomActionSeq: 100,
+    preparedRooms: [preparedRoom(0, {
+      room: room(0, { type: 'shrine' }),
+      acceptedActions: ['shrine.choose'],
+      actionEffects: { 'shrine.choose': ['partyStats'] },
+    })],
   };
 }
 
@@ -390,9 +404,21 @@ describe('explore session proceed cutover', () => {
   });
 
   it('wires recovery drains once per target and skips hidden visibility drains', async () => {
-    initCutoverHarness({ initialState: makeState({ currentRoom: 0, exploreRunway: null }) });
+    const runway = makeRunway();
     let syncCalls = 0;
-    getExploreSession().syncNow = () => { syncCalls += 1; };
+    initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: runway }),
+      apiSyncExploreSession: async payload => {
+        syncCalls += 1;
+        return {
+          status: 'ok',
+          confirmedThroughSeq: payload.entries.at(-1).seq,
+          results: [],
+        };
+      },
+    });
+    getExploreSession().adoptRunway(runway);
+    getExploreSession().recordRoomAction('proceed');
     const windowTarget = makeEventTarget();
     const documentTarget = makeEventTarget();
     documentTarget.visibilityState = 'hidden';
@@ -405,10 +431,14 @@ describe('explore session proceed cutover', () => {
 
     windowTarget.dispatch('online');
     documentTarget.dispatch('visibilitychange');
+    await waitFor(() => syncCalls === 1 && getExploreSession().pendingCount() === 0);
+    await triggerExploreSessionRecovery();
     assert.equal(syncCalls, 1);
 
+    getExploreSession().recordRoomAction('proceed');
     documentTarget.visibilityState = 'visible';
     documentTarget.dispatch('visibilitychange');
+    await waitFor(() => syncCalls === 2 && getExploreSession().pendingCount() === 0);
     assert.equal(syncCalls, 2);
   });
 
@@ -439,7 +469,9 @@ describe('explore session proceed cutover', () => {
       initialState: makeState({ currentRoom: 0, exploreRunway: supportRunway }),
       apiProceed: async () => { events.push('proceed'); return null; },
       apiSyncExploreSession: async () => {
-        events.push('sync');
+        events.push('sync:start');
+        await Promise.resolve();
+        events.push('sync:end');
         return { status: 'ok', confirmedThroughSeq: 1, results: [] };
       },
     });
@@ -453,13 +485,82 @@ describe('explore session proceed cutover', () => {
     await proceedWithRevealBuffer();
 
     // The drain (sync) must happen, and it must precede the legacy proceed.
-    assert.ok(events.includes('sync'), 'pending session must be drained before legacy proceed');
-    assert.ok(events.includes('proceed'), 'legacy proceed should still run for the support room');
-    assert.ok(
-      events.indexOf('sync') < events.indexOf('proceed'),
-      `sync must precede proceed, got order: ${JSON.stringify(events)}`
-    );
+    assert.deepEqual(events, ['sync:start', 'sync:end', 'proceed']);
     assert.equal(getExploreSession().pendingCount(), 0, 'session should be flushed after the drain');
+  });
+
+  it('does not legacy-proceed when the session drain fails', async () => {
+    const runway = legacyOnlySupportRunway();
+    let proceedCalls = 0;
+    initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: runway }),
+      apiProceed: async () => { proceedCalls += 1; return null; },
+      apiSyncExploreSession: async () => { throw new Error('offline'); },
+    });
+    getExploreSession().adoptRunway(runway);
+    getExploreSession().recordRoomAction('shrine.choose', {
+      rewardType: 'heal_all',
+    });
+
+    await proceedWithRevealBuffer();
+
+    assert.equal(proceedCalls, 0);
+    assert.equal(getExploreSession().pendingCount(), 1);
+  });
+
+  it('does not legacy-proceed when local revision changes during drain', async () => {
+    const runway = legacyOnlySupportRunway();
+    const requests = [];
+    let proceedCalls = 0;
+    initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: runway }),
+      apiProceed: async () => { proceedCalls += 1; return null; },
+      apiSyncExploreSession: payload => new Promise(resolve => {
+        requests.push({ payload, resolve });
+      }),
+    });
+    getExploreSession().adoptRunway(runway);
+    getExploreSession().recordRoomAction('shrine.choose', {
+      rewardType: 'heal_all',
+    });
+
+    const proceeding = proceedWithRevealBuffer();
+    await waitFor(() => requests.length === 1);
+    getExploreSession().recordRoomAction('shrine.choose', {
+      rewardType: 'credits',
+    });
+    requests[0].resolve({
+      status: 'ok',
+      confirmedThroughSeq: 2,
+      results: [],
+      exploreRunway: runway,
+    });
+    await proceeding;
+
+    assert.equal(proceedCalls, 0);
+    assert.equal(getExploreSession().pendingCount(), 0);
+  });
+
+  it('does not legacy-proceed from an empty paused session', async () => {
+    const emptyRunway = {
+      sessionEpoch: 'ese_emptypause111',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [],
+    };
+    let proceedCalls = 0;
+    initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: emptyRunway }),
+      apiProceed: async () => { proceedCalls += 1; return null; },
+    });
+    getExploreSession().adoptRunway(emptyRunway);
+    getExploreSession().pause('missingPayload');
+
+    await proceedWithRevealBuffer();
+
+    assert.equal(proceedCalls, 0);
+    assert.equal(getExploreSession().pendingCount(), 0);
+    assert.equal(getExploreSession().isPaused(), true);
   });
 
   // BLOCKER 1 (explore subway combat tier): a completed SUPPORT room advances OUT
@@ -852,9 +953,8 @@ describe('explore session proceed cutover', () => {
 // fires with an empty-log dead-end reason (noPreparedRoom / *NotReady /
 // runwayExhausted / missingPayload) while ONLINE and with no pending entries, the
 // pause can never self-heal via the drain (empty log → no drain). exploration.js
-// must fire a ONE-SHOT runway refresh (refreshRunwayState → loadGameState) to pull
-// a rebuilt runway server-side. An in-flight + cooldown guard keeps repeated taps
-// from stacking fetches.
+// must fire a serialized runway refresh (refreshRunwayState → loadGameState) to
+// pull a rebuilt runway server-side. Failed refreshes retry on bounded delays.
 describe('explore session online stall recovery', () => {
   beforeEach(() => {
     actionArea = { innerHTML: '' };
@@ -896,24 +996,119 @@ describe('explore session online stall recovery', () => {
     };
   }
 
-  it('fires refreshRunwayState exactly once (cooldown) when an empty-log soft-pause fires online', async () => {
+  it('fires one serialized runway refresh when an empty-log soft-pause fires online', async () => {
     let refreshCalls = 0;
-    initRecoveryHarness({ refreshRunwayState: () => { refreshCalls += 1; } });
+    const stalled = pausingRunway();
+    const ready = makeRunway({
+      sessionEpoch: stalled.sessionEpoch,
+      preparedRooms: [preparedRoom(0), preparedRoom(1)],
+    });
+    initRecoveryHarness({
+      refreshRunwayState: () => {
+        refreshCalls += 1;
+        getExploreSession().adoptRunway(ready);
+      },
+    });
 
-    getExploreSession().adoptRunway(pausingRunway());
+    getExploreSession().adoptRunway(stalled);
 
     // First proceed pauses (nextRoomNotReady, empty log) → recovery fires once.
     const first = getExploreSession().recordRoomAction('proceed');
     assert.equal(first.accepted, false);
     assert.equal(first.reason, 'nextRoomNotReady');
-    await Promise.resolve();
+    await waitFor(() => refreshCalls === 1 && !getExploreSession().isPaused());
     assert.equal(refreshCalls, 1, 'the first empty-log online soft-pause triggers a runway refresh');
 
-    // A second attempt inside the cooldown window must NOT stack another fetch.
-    // (Already paused → reject('paused') short-circuits before onPause; the guard
-    // also blocks it. Either way, no second refresh.)
-    getExploreSession().recordRoomAction('proceed');
-    await Promise.resolve();
-    assert.equal(refreshCalls, 1, 'a repeat within the cooldown does not stack a second refresh');
+    assert.equal(getExploreSession().recordRoomAction('proceed').accepted, true);
+    assert.equal(refreshCalls, 1);
+  });
+
+  it('refreshes and resumes an offline empty-log pause on the online event', async () => {
+    const originalNavigator = globalThis.navigator;
+    const windowTarget = makeEventTarget();
+    let online = false;
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { get onLine() { return online; } },
+      configurable: true,
+    });
+
+    try {
+      let refreshCalls = 0;
+      const stalled = pausingRunway();
+      const ready = makeRunway({
+        sessionEpoch: stalled.sessionEpoch,
+        preparedRooms: [preparedRoom(0), preparedRoom(1)],
+      });
+      initRecoveryHarness({
+        refreshRunwayState: async () => {
+          refreshCalls += 1;
+          getExploreSession().adoptRunway(ready);
+        },
+      });
+      wireExploreSessionRecoveryDrains({ windowTarget, documentTarget: null });
+      getExploreSession().adoptRunway(stalled);
+      assert.equal(getExploreSession().recordRoomAction('proceed').reason, 'nextRoomNotReady');
+      assert.equal(refreshCalls, 0);
+
+      online = true;
+      windowTarget.dispatch('online');
+      await waitFor(() => refreshCalls === 1 && !getExploreSession().isPaused());
+
+      assert.equal(getExploreSession().pendingCount(), 0);
+      await Promise.resolve();
+      await Promise.resolve();
+    } finally {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: originalNavigator,
+        configurable: true,
+      });
+    }
+  });
+
+  it('retries a failed runway refresh once at the first bounded delay', async () => {
+    const originalSetTimeout = globalThis.setTimeout;
+    const originalClearTimeout = globalThis.clearTimeout;
+    const timers = [];
+    globalThis.setTimeout = (fn, delay) => {
+      const timer = { fn, delay, cancelled: false };
+      timers.push(timer);
+      return timer;
+    };
+    globalThis.clearTimeout = timer => {
+      if (timer) timer.cancelled = true;
+    };
+
+    try {
+      const stalled = pausingRunway();
+      const ready = makeRunway({
+        sessionEpoch: stalled.sessionEpoch,
+        preparedRooms: [preparedRoom(0), preparedRoom(1)],
+      });
+      let refreshCalls = 0;
+      initRecoveryHarness({
+        refreshRunwayState: async () => {
+          refreshCalls += 1;
+          if (refreshCalls === 1) throw new Error('temporary outage');
+          getExploreSession().adoptRunway(ready);
+        },
+      });
+      getExploreSession().adoptRunway(stalled);
+      assert.equal(
+        getExploreSession().recordRoomAction('proceed').reason,
+        'nextRoomNotReady',
+      );
+      await waitFor(() => refreshCalls === 1 && timers.length === 1);
+
+      assert.equal(timers[0].delay, 500);
+      await timers[0].fn();
+      await waitFor(() => refreshCalls === 2 && !getExploreSession().isPaused());
+
+      assert.equal(getExploreSession().pendingCount(), 0);
+      await Promise.resolve();
+      await Promise.resolve();
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+      globalThis.clearTimeout = originalClearTimeout;
+    }
   });
 });

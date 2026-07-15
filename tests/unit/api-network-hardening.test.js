@@ -117,6 +117,68 @@ describe('api network hardening', () => {
     assert.equal(globalThis.fetch.mock.callCount(), 1);
   });
 
+  it('classifies Explore sync HTTP responses without flattening correction bodies', async () => {
+    const api = await import('../../public/js/api.js');
+    for (const [status, transient] of [[403, false], [429, true], [500, true]]) {
+      globalThis.fetch = mock.fn(async () => jsonResponse({ error: `e${status}` }, status));
+      const result = await api.__networkTest.apiCall(
+        '/explore/sync',
+        'POST',
+        { entries: [{}] },
+        null,
+        {
+          returnErrorBody: true,
+          classifyHttpErrors: true,
+          requireObjectResponse: true,
+          maxAttempts: 1,
+        },
+      );
+      assert.deepEqual(result, {
+        error: `e${status}`,
+        httpStatus: status,
+        transient,
+      });
+    }
+
+    globalThis.fetch = mock.fn(async () => jsonResponse({
+      status: 'corrected',
+      reason: 'server_correction',
+      confirmedThroughSeq: null,
+      rejectedSeq: 1,
+      results: [],
+    }, 409));
+    const correction = await api.syncExploreSession({
+      sessionEpoch: 'ese_1111111111111111',
+      entries: [{}],
+    });
+    assert.equal(correction.status, 'corrected');
+    assert.equal(correction.httpStatus, 409);
+    assert.equal(correction.transient, false);
+  });
+
+  it('returns permanent auth and malformed-2xx Explore sync responses', async () => {
+    const api = await import('../../public/js/api.js');
+    globalThis.fetch = mock.fn(async () => jsonResponse({ error: 'expired' }, 401));
+    const auth = await api.syncExploreSession({
+      sessionEpoch: 'ese_1111111111111111',
+      entries: [{}],
+    });
+    assert.equal(auth.httpStatus, 401);
+    assert.equal(auth.transient, false);
+    assert.equal(globalThis.window.location.href, '/');
+
+    globalThis.fetch = mock.fn(async () => jsonResponse(null, 200));
+    const malformed = await api.syncExploreSession({
+      sessionEpoch: 'ese_1111111111111111',
+      entries: [{}],
+    });
+    assert.deepEqual(malformed, {
+      error: 'invalid_response',
+      httpStatus: 200,
+      transient: false,
+    });
+  });
+
   it('does not retry creature combat cycle when the POST fails', async () => {
     const api = await import('../../public/js/api.js');
     globalThis.fetch = mock.fn(async () => {

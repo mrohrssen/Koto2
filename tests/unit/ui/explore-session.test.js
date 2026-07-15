@@ -646,6 +646,50 @@ test('network failure retries with backoff and keeps the log', async () => {
   assert.equal(scheduler.delays()[0], EXPLORE_SYNC_RETRY_DELAYS_MS[1]);
 });
 
+test('permanent and malformed sync responses pause without retry while corrections still apply', async () => {
+  for (const response of [
+    { error: 'forbidden', httpStatus: 403, transient: false },
+    { unexpected: 'malformed 2xx body' },
+  ]) {
+    const scheduler = makeManualScheduler();
+    const session = createExploreSession({
+      syncRequest: async () => response,
+      schedule: scheduler.schedule,
+      cancel: scheduler.cancel,
+    });
+    session.adoptRunway(makeRunway());
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+
+    await session.syncNow();
+
+    assert.equal(session.pendingCount(), 1);
+    assert.equal(session.getPauseReason(), 'syncRejected');
+    assert.equal(scheduler.delays().includes(500), false);
+  }
+
+  let correctionCalls = 0;
+  const correctedSession = createExploreSession({
+    syncRequest: async () => ({
+      status: 'corrected',
+      error: 'HTTP 409',
+      httpStatus: 409,
+      transient: false,
+      confirmedThroughSeq: null,
+      rejectedSeq: 1,
+      reason: 'server_correction',
+      results: [],
+      exploreRunway: makeRunway(),
+    }),
+    onCorrection: () => { correctionCalls += 1; },
+  });
+  correctedSession.adoptRunway(makeRunway());
+  correctedSession.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  await correctedSession.syncNow();
+  assert.equal(correctionCalls, 1);
+  assert.equal(correctedSession.pendingCount(), 0);
+  assert.notEqual(correctedSession.getPauseReason(), 'syncRejected');
+});
+
 test('corrected response clears the log, notifies, and adopts response runway', async () => {
   const scheduler = makeManualScheduler();
   const corrections = [];

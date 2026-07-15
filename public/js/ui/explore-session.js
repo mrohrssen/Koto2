@@ -420,15 +420,10 @@ export function createExploreSession({
     try {
       const response = await syncRequest({ sessionEpoch, entries });
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
-      if (!response || (response.status !== 'ok' && response.status !== 'corrected')) {
-        throw new Error(response?.error || 'explore session sync failed');
-      }
 
-      attempts = 0;
-      let appendedAfterSnapshot = false;
-
-      if (response.status === 'corrected') {
+      if (response?.status === 'corrected') {
         log = [];
+        attempts = 0;
         if (Object.hasOwn(response, 'exploreRunway')) {
           adoptRunwayInternal(response.exploreRunway, {
             fromSync: true,
@@ -436,12 +431,17 @@ export function createExploreSession({
           });
         }
         notify(onCorrection, response);
-      } else {
+        maybeResumeAfterDrain();
+        return { ok: true, appendedAfterSnapshot: false };
+      } else if (response?.status === 'ok') {
+        attempts = 0;
         const confirmed = Number.isInteger(response.confirmedThroughSeq)
           ? response.confirmedThroughSeq
           : -1;
         log = log.filter(entry => entry.seq > confirmed);
-        appendedAfterSnapshot = log.some(entry => entry.seq > snapshotMaxSeq);
+        const appendedAfterSnapshot = log.some(
+          entry => entry.seq > snapshotMaxSeq,
+        );
         if (Object.hasOwn(response, 'exploreRunway')) {
           adoptRunwayInternal(response.exploreRunway, {
             fromSync: true,
@@ -449,10 +449,17 @@ export function createExploreSession({
           });
         }
         notify(onCheckpoint, response, { logEmpty: log.length === 0 });
+        maybeResumeAfterDrain();
+        return { ok: true, appendedAfterSnapshot };
+      } else if (
+        response?.transient === false
+        || (response && typeof response === 'object' && !response?.error)
+      ) {
+        enterPause('syncRejected');
+        return { ok: false, permanent: true };
+      } else {
+        throw new Error(response?.error || 'explore session sync failed');
       }
-
-      maybeResumeAfterDrain();
-      return { ok: true, appendedAfterSnapshot };
     } catch {
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
       scheduleRetry();

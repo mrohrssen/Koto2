@@ -76,13 +76,13 @@ test('proceedWithRevealBuffer queues buffered proceed through explore session be
 test('exploration wires explore session recovery drains', () => {
   assert.match(
     explorationSrc,
-    /addEventListener\('online'[\s\S]*syncNow\(\)/,
-    'online recovery should drain the explore session'
+    /addEventListener\('online'[\s\S]*triggerExploreSessionRecovery\(\)/,
+    'online recovery should trigger serialized explore-session recovery'
   );
   assert.match(
     explorationSrc,
-    /visibilitychange[\s\S]*syncNow\(\)/,
-    'visibility restore should drain the explore session'
+    /visibilitychange[\s\S]*triggerExploreSessionRecovery\(\)/,
+    'visibility restore should trigger serialized explore-session recovery'
   );
 });
 

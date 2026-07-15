@@ -247,6 +247,14 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
             window.location.href = '/';
           }
           onApiSuccess(); // Server responded — connection is fine
+          if (opts.returnErrorBody && opts.classifyHttpErrors) {
+            return {
+              ...(data && typeof data === 'object' ? data : {}),
+              error: data?.error || 'Session expired',
+              httpStatus: 401,
+              transient: false,
+            };
+          }
           throw new Error('Session expired');
         }
 
@@ -255,9 +263,29 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
 
         if (!response.ok) {
           if (opts.returnErrorBody) {
-            return { ...data, error: data.error || `HTTP ${response.status}` };
+            if (!opts.classifyHttpErrors) {
+              return { ...data, error: data.error || `HTTP ${response.status}` };
+            }
+            const httpStatus = response.status;
+            return {
+              ...(data && typeof data === 'object' ? data : {}),
+              error: data?.error || `HTTP ${httpStatus}`,
+              httpStatus,
+              transient: httpStatus === 429 || httpStatus >= 500,
+            };
           }
           throw new Error(data.error || 'API call failed');
+        }
+
+        if (
+          opts.requireObjectResponse
+          && (!data || typeof data !== 'object' || Array.isArray(data))
+        ) {
+          return {
+            error: 'invalid_response',
+            httpStatus: response.status,
+            transient: false,
+          };
         }
 
         const elapsedMs = Math.round(performance.now() - startedAt);
@@ -888,10 +916,19 @@ async function syncKanjiKombatSession({ sessionEpoch, entries }) {
 }
 
 async function syncExploreSession({ sessionEpoch, entries }) {
-  return apiCall('/explore/sync', 'POST', { sessionEpoch, entries }, null, {
-    bypassLoadingGate: true,
-    returnErrorBody: true,
-  });
+  const response = await apiCall(
+    '/explore/sync',
+    'POST',
+    { sessionEpoch, entries },
+    null,
+    {
+      bypassLoadingGate: true,
+      returnErrorBody: true,
+      classifyHttpErrors: true,
+      requireObjectResponse: true,
+    },
+  );
+  return response || { error: 'network_unavailable', transient: true };
 }
 
 async function getKanjiKombatLeaderboard(period = '24h') {
