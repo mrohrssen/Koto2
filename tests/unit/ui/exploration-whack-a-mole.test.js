@@ -18,7 +18,7 @@ globalThis.__wamTest = {
 
 function makeWhackAMoleState(room, {
   nextRoom = null,
-  acceptedActions = ['whackAMole.complete', 'whackAMole.skip'],
+  acceptedActions = ['whackAMole.complete', 'whackAMole.skip', 'proceed'],
   interactionPayload = null,
 } = {}) {
   const revealedRooms = [{ index: 0, room }];
@@ -29,6 +29,11 @@ function makeWhackAMoleState(room, {
     actionSeq: 1,
     offlineReady: true,
     acceptedActions,
+    actionEffects: {
+      'whackAMole.complete': ['credits', 'partyStats'],
+      'whackAMole.skip': [],
+      proceed: ['ingredients', 'areaProgress'],
+    },
     interactionPayload: interactionPayload || { kind: 'whackAMole' },
   }];
   if (nextRoom) {
@@ -40,6 +45,7 @@ function makeWhackAMoleState(room, {
       actionSeq: 2,
       offlineReady: true,
       acceptedActions: ['proceed'],
+      actionEffects: { proceed: ['ingredients', 'areaProgress'] },
       interactionPayload: { kind: nextRoom.type || 'room' },
     });
   }
@@ -327,17 +333,10 @@ describe('renderWhackAMole decline flow', () => {
     await renderWhackAMole();
     await renderedButtons[1].onClick();
 
-    assert.deepEqual(getExploreSession().snapshot().map(entry => ({
-      kind: entry.kind,
-      payload: entry.payload,
-      roomIndex: entry.roomIndex,
-      roomId: entry.roomId,
-    })), [{
-      kind: 'whackAMole.skip',
-      payload: {},
-      roomIndex: 0,
-      roomId: 'wam-skip-accepted',
-    }]);
+    assert.deepEqual(
+      getExploreSession().snapshot().map(entry => entry.kind),
+      ['whackAMole.skip', 'proceed'],
+    );
     assert.equal(currentState.phase, 'no_save');
     assert.equal(currentState.run.currentRoom, 1);
     assert.equal(currentState.room.id, 'after-wam-skip');
@@ -647,7 +646,12 @@ describe('renderWhackAMole decline flow', () => {
               actionSeq: 7,
               room: { id: 'wam-start', type: 'whackAMole', interacted: false },
               offlineReady: true,
-              acceptedActions: ['whackAMole.complete', 'whackAMole.skip'],
+              acceptedActions: ['whackAMole.complete', 'whackAMole.skip', 'proceed'],
+              actionEffects: {
+                'whackAMole.complete': ['credits', 'partyStats'],
+                'whackAMole.skip': [],
+                proceed: ['ingredients', 'areaProgress'],
+              },
               interactionPayload: { kind: 'whackAMole' },
             },
             {
@@ -657,6 +661,7 @@ describe('renderWhackAMole decline flow', () => {
               room: nextRoom,
               offlineReady: true,
               acceptedActions: ['proceed'],
+              actionEffects: { proceed: ['ingredients', 'areaProgress'] },
               interactionPayload: { kind: 'empty' },
             },
           ],
@@ -696,11 +701,21 @@ describe('renderWhackAMole decline flow', () => {
     const advanced = await whackAMoleDeps.apiProceed();
     whackAMoleDeps.updateUI();
 
+    const entries = getExploreSession().snapshot();
+    assert.equal(roomTransitionCalls.length, 1);
+    assert.equal(roomTransitionCalls[0].state, currentState);
+    assert.deepEqual(roomTransitionCalls[0].opts, { ingredientDrops: [] });
+    assert.deepEqual(
+      entries.map(entry => entry.kind),
+      ['whackAMole.complete', 'proceed'],
+    );
     assert.equal(proceedCalls.length, 0);
-    assert.equal(roomTransitionCalls.length, 0);
     assert.equal(currentState.run.currentRoom, 1);
     assert.equal(currentState.room.id, 'after-wam');
-    assert.equal(updateUiCalls, 1);
-    assert.equal(advanced, null);
+    assert.equal(updateUiCalls, 2);
+    assert.deepEqual(advanced, {
+      status: 'queued',
+      actionId: entries[1].actionId,
+    });
   });
 });

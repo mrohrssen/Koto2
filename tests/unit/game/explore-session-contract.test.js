@@ -105,7 +105,7 @@ test('maps predicted effects for every plan action kind', () => {
     ['shrine.choose', ['partyStats']],
     ['skillMaster.choose', ['partySkills']],
     ['npcBattleSkill.choose', ['partySkills']],
-    ['whackAMole.complete', ['credits']],
+    ['whackAMole.complete', ['credits', 'partyStats']],
     ['whackAMole.skip', []],
     ['campfire.cook', ['ingredients']],
     ['campfire.feed', ['partyStats', 'ingredients']],
@@ -113,7 +113,7 @@ test('maps predicted effects for every plan action kind', () => {
     ['speedReview.commit', ['srs', 'partyStats']],
     ['speedReview.complete', ['srs', 'partyStats']],
     ['wordDiscovery.review', ['srs']],
-    ['wordDiscovery.complete', []],
+    ['wordDiscovery.complete', ['credits', 'partyStats']],
     ['dealer.sell', ['credits']],
     ['dealer.buy', ['credits', 'partyStats']],
     ['dealer.leave', []],
@@ -126,6 +126,27 @@ test('maps predicted effects for every plan action kind', () => {
   for (const [kind, expectedEffects] of actionEffects) {
     assert.deepEqual(predictedEffectsForAction(kind), expectedEffects, kind);
   }
+
+  assert.equal(
+    predictedEffectsForAction('proceed').includes(EXPLORE_EFFECTS.PARTY_STATS),
+    false,
+  );
+});
+
+test('declares XP-room effects without attributing party stats to proceed', () => {
+  assert.deepEqual(predictedEffectsForAction('whackAMole.complete'), [
+    EXPLORE_EFFECTS.CREDITS,
+    EXPLORE_EFFECTS.PARTY_STATS,
+  ]);
+  assert.deepEqual(predictedEffectsForAction('wordDiscovery.complete'), [
+    EXPLORE_EFFECTS.CREDITS,
+    EXPLORE_EFFECTS.PARTY_STATS,
+  ]);
+  assert.deepEqual(predictedEffectsForAction('whackAMole.skip'), []);
+  assert.equal(
+    predictedEffectsForAction('proceed').includes(EXPLORE_EFFECTS.PARTY_STATS),
+    false,
+  );
 });
 
 test('maps room dependencies for every plan room type', () => {

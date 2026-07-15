@@ -1143,13 +1143,6 @@ function alignExploreRunwayCursor(draft) {
   }
 }
 
-function canAdvanceFromCurrentPreparedRoom(state = getGameState?.()) {
-  return Boolean(nextPreparedRoomAfterRunwayCursor(
-    state?.run?.exploreRunway,
-    state?.run?.currentRoom
-  ));
-}
-
 export function applyExploreSessionProceedResult(result) {
   if (!result?.accepted) return null;
   const currentState = getGameState?.();
@@ -1884,28 +1877,34 @@ function markWhackAMoleRoomComplete(room, { score = null, skipped = false } = {}
 }
 
 async function completeWhackAMoleOptimistically(score) {
-  const queued = getExploreSession()?.recordRoomAction('whackAMole.complete', { score });
+  const session = getExploreSession();
+  const queued = session?.recordRoomAction('whackAMole.complete', { score });
   if (!queued?.accepted) {
-    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+    if (session?.isPaused?.() !== true) {
+      showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+    }
     return null;
   }
 
   updateSupportRoomDraft(room => {
     markWhackAMoleRoomComplete(room, { score });
-  }, { advance: canAdvanceFromCurrentPreparedRoom(), phase: 'room' });
+  }, { advance: false, phase: 'room' });
   return queued;
 }
 
 async function skipWhackAMoleOptimistically() {
-  const queued = getExploreSession()?.recordRoomAction('whackAMole.skip', {});
+  const session = getExploreSession();
+  const queued = session?.recordRoomAction('whackAMole.skip', {});
   if (!queued?.accepted) {
-    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+    if (session?.isPaused?.() !== true) {
+      showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+    }
     return null;
   }
 
   updateSupportRoomDraft(room => {
     markWhackAMoleRoomComplete(room, { skipped: true });
-  }, { advance: true });
+  }, { advance: false });
   return queued;
 }
 
@@ -2023,7 +2022,7 @@ export async function renderWhackAMole() {
         }
         const result = await skipWhackAMoleOptimistically();
         if (result) {
-          updateUI();
+          await proceedWithRevealBuffer();
         }
       }
     }
@@ -2602,7 +2601,7 @@ function startWhackAMoleGame(pool) {
   activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
     apiCompleteWhackAMole: completeWhackAMoleOptimistically,
-    apiProceed: async () => null,
+    apiProceed: proceedWithRevealBuffer,
     updateGameState,
     updateUI,
     playSFX,

@@ -883,10 +883,7 @@ export class ExplorationService {
   }
 
   applyWhackAMoleComplete({ score } = {}) {
-    const result = this.completeWhackAMole(score);
-    if (result?.alreadyComplete) return result;
-    const proceedResult = this.proceedToNextRoom();
-    return { ...result, ...proceedResult };
+    return this.completeWhackAMole(score);
   }
 
   skipWhackAMole() {
@@ -904,8 +901,7 @@ export class ExplorationService {
     room.whackAMole.skipped = true;
     room.interacted = true;
 
-    const proceedResult = this.proceedToNextRoom();
-    return { type: 'whack_a_mole_skipped', ...proceedResult };
+    return { type: 'whack_a_mole_skipped' };
   }
 
   applyWhackAMoleSkip() {

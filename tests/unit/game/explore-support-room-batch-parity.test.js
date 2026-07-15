@@ -9,6 +9,7 @@ import { ExploreSessionSyncService } from '../../../src/game/services/explore-se
 import { resolvePveCursorTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
 import { hashTranscript } from '../../../src/shared/action-protocol.js';
 import { buildLocalCombatFromStart } from '../../../src/shared/combat/local-combat-start.js';
+import { applyRoomEntryPartyRecovery } from '../../../src/game/room-entry-party.js';
 import {
   roomDependenciesForType,
   predictedEffectsForAction,
@@ -51,9 +52,12 @@ const WEAK_MOVE = Object.freeze({
   statusEffect: null, statusChance: 0, statusDuration: 0,
 });
 
-// A GM whose room 0 is a shrine and room 1 is a combat room, so a single batch
-// is [shrine.choose, proceed, encounter.start, combat.cycle].
-function makeGm({ allyLevel = 3, enemyHp = 200 } = {}) {
+// A GM whose room 0 is a support room and room 1 is a combat room.
+function makeGm({
+  allyLevel = 3,
+  enemyHp = 200,
+  supportRoomType = ROOM_TYPES.shrine,
+} = {}) {
   const ally = instantiateCreature('hi');
   ally.level = allyLevel;
   ally.moves = [BIG_MOVE];
@@ -78,13 +82,27 @@ function makeGm({ allyLevel = 3, enemyHp = 200 } = {}) {
     runSummary: { itemsCollected: 0, creaturesBefriended: 0 },
     stats: { damageDealt: 0 },
     rooms: [
-      createRoom(ROOM_TYPES.shrine, AREA_ID, 1, 3),
+      createRoom(supportRoomType, AREA_ID, 1, 3),
       createRoom(ROOM_TYPES.encounter, AREA_ID, 2, 3),
     ],
     bossesDefeated: [],
     currentAreaEncounters: 0,
   };
-  run.rooms[0].shrine = { offered: true, used: false, completed: false, chosenReward: null, greeting: null };
+  if (supportRoomType === ROOM_TYPES.shrine) {
+    run.rooms[0].shrine = {
+      offered: true,
+      used: false,
+      completed: false,
+      chosenReward: null,
+      greeting: null,
+    };
+  }
+  if (supportRoomType === ROOM_TYPES.wordDiscovery) {
+    run.rooms[0].wordDiscovery = { completed: false };
+  }
+  if (supportRoomType === ROOM_TYPES.whackAMole) {
+    run.rooms[0].whackAMole = { completed: false, score: 0 };
+  }
 
   const gm = {
     player: { name: 'BatchParity', credits: 0 },
@@ -97,15 +115,16 @@ function makeGm({ allyLevel = 3, enemyHp = 200 } = {}) {
     narrate(text) { this.narrations.push(text); },
     emitState() {},
     getState() {
-      return {
+      return structuredClone({
         phase: this.combat?.active ? 'combat' : 'room',
-        run: { currentRoom: run.currentRoom, roomActionSeq: run.roomActionSeq, exploreRunway: run.exploreRunway || null },
-        combat: this.combat ? { active: this.combat.active } : null,
-        room: run.rooms[run.currentRoom] || null,
-      };
+        run: this.run,
+        combat: this.combat,
+        room: this.run.rooms[this.run.currentRoom] || null,
+      });
     },
     _onRunDefeat() {},
   };
+  run.player = gm.player;
 
   gm.explorationService = new ExplorationService(gm);
   gm.combatCycleService = new CombatCycleService(gm);
@@ -209,5 +228,116 @@ describe('support-room + combat shared-batch: the root cause it prevents', () =>
       clientHash, serverHash,
       'the un-boosted offline fight diverges — exactly the transcript_mismatch the dependency pause prevents',
     );
+  });
+});
+
+describe('XP support-room checkpoint + first combat turn parity', () => {
+  it('hash-converges word discovery and whack-a-mole checkpoint parties', async () => {
+    for (const testCase of [
+      {
+        roomType: ROOM_TYPES.wordDiscovery,
+        kind: 'wordDiscovery.complete',
+        payload: {},
+        actionId: 'run_es_xp_word_done',
+        proceedActionId: 'run_es_xp_word_go',
+        startActionId: 'run_es_xp_word_start',
+      },
+      {
+        roomType: ROOM_TYPES.whackAMole,
+        kind: 'whackAMole.complete',
+        payload: { score: 4 },
+        actionId: 'run_es_xp_whack_done',
+        proceedActionId: 'run_es_xp_whack_go',
+        startActionId: 'run_es_xp_whack_start',
+      },
+    ]) {
+      const gm = makeGm({ supportRoomType: testCase.roomType, allyLevel: 3 });
+      const service = new ExploreSessionSyncService(gm);
+      const supportRoom = gm.run.rooms[0];
+      const combatRoom = gm.run.rooms[1];
+      const prepared = gm.combatCycleService.prepareCombatStart(combatRoom);
+      const staleCombatStart = {
+        enemy: structuredClone(prepared.enemies[0]),
+        enemies: structuredClone(prepared.enemies),
+        allies: structuredClone(gm.run.creatureParty.active),
+        optimistic: {
+          combatId: prepared.combatId,
+          stateVersion: 0,
+          nextTurnSeed: prepared.turnSeeds[0],
+        },
+      };
+      const xpBefore = gm.run.creatureParty.active[0].xp;
+
+      const checkpoint = await service.applySessionSync({
+        sessionEpoch: LIVE_EPOCH,
+        entries: [{
+          seq: 1,
+          actionId: testCase.actionId,
+          kind: testCase.kind,
+          roomIndex: 0,
+          roomId: supportRoom.id,
+          actionSeq: 0,
+          payload: testCase.payload,
+        }],
+      });
+
+      assert.ok(checkpoint.state.run.creatureParty.active[0].xp > xpBefore);
+      assert.equal(gm.run.currentRoom, 0);
+      const clientState = structuredClone(checkpoint.state);
+      applyRoomEntryPartyRecovery(clientState.run);
+
+      await service.applySessionSync({
+        sessionEpoch: LIVE_EPOCH,
+        entries: [{
+          seq: 2,
+          actionId: testCase.proceedActionId,
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: supportRoom.id,
+          actionSeq: 0,
+          payload: {},
+        }],
+      });
+      await service.applySessionSync({
+        sessionEpoch: LIVE_EPOCH,
+        entries: [{
+          seq: 3,
+          actionId: testCase.startActionId,
+          kind: 'encounter.start',
+          roomIndex: 1,
+          roomId: combatRoom.id,
+          actionSeq: 1,
+          payload: {},
+        }],
+      });
+
+      const clientCombat = buildLocalCombatFromStart(
+        staleCombatStart,
+        prepared.turnSeeds,
+        { allies: clientState.run.creatureParty.active },
+      );
+      const seed = gm.combat.optimistic.nextTurnSeed;
+      const moveChoices = [{
+        creatureIndex: 0,
+        moveId: BIG_MOVE.id,
+        targetIndex: 0,
+      }];
+      const clientTurn = resolvePveCursorTurn({
+        combat: clientCombat,
+        run: clientState.run,
+        moveChoices,
+      }, { actionType: 'attack', seed });
+      const serverTurn = resolvePveCursorTurn({
+        combat: gm.combat,
+        run: gm.run,
+        moveChoices,
+      }, { actionType: 'attack', seed });
+
+      assert.equal(
+        hashTranscript(clientTurn.transcript),
+        hashTranscript(serverTurn.transcript),
+        `${testCase.kind} checkpoint party must hash-converge`,
+      );
+    }
   });
 });

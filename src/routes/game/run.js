@@ -943,7 +943,12 @@ export default function createRunRoutes({
       legacyErrorStatusCode: 400,
       perform: () => {
         const result = req.gameManager.skipWhackAMole();
-        return { ...result, state: req.getEnrichedGameState() };
+        const proceedResult = req.gameManager.explorationService.proceedToNextRoom();
+        return {
+          ...result,
+          ...proceedResult,
+          state: req.getEnrichedGameState(),
+        };
       },
     });
   });

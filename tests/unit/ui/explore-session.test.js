@@ -71,6 +71,49 @@ function makeRunway(overrides = {}) {
   };
 }
 
+function whackThenCombatRunway({ completed = false } = {}) {
+  return makeRunway({
+    sessionEpoch: 'ese_4444444444444444',
+    currentRoom: 0,
+    roomActionSeq: 5,
+    preparedRooms: [
+      preparedRoom(0, {
+        actionSeq: 5,
+        type: 'whackAMole',
+        room: {
+          id: 'room-0',
+          type: 'whackAMole',
+          interacted: completed,
+          whackAMole: { completed },
+        },
+        acceptedActions: completed
+          ? ['proceed']
+          : ['whackAMole.complete', 'whackAMole.skip', 'proceed'],
+        actionEffects: {
+          'whackAMole.complete': ['credits', 'partyStats'],
+          'whackAMole.skip': [],
+          proceed: ['ingredients', 'areaProgress'],
+        },
+      }),
+      preparedRoom(1, {
+        actionSeq: 6,
+        type: 'encounter',
+        dependencies: ['partyStats'],
+        acceptedActions: ['encounter.start', 'combat.cycle'],
+        actionEffects: {
+          'encounter.start': [],
+          'combat.cycle': ['partyStats'],
+        },
+        interactionPayload: {
+          combatStart: { optimistic: { nextTurnSeed: 'seed-a' } },
+          seedChain: ['seed-a', 'seed-b'],
+        },
+        offlineReady: true,
+      }),
+    ],
+  });
+}
+
 function okResponse(confirmedThroughSeq, overrides = {}) {
   return { status: 'ok', confirmedThroughSeq, results: [], ...overrides };
 }
@@ -884,6 +927,34 @@ test('inactive runway adoption invalidates in-flight responses from a live epoch
   const fresh = session.recordRoomAction('friendlyNpc.choose', { itemId: 'after-inactive' });
   assert.equal(fresh.accepted, true);
   assert.equal(session.pendingCount(), 1);
+});
+
+test('XP completion checkpoints before proceed into combat', async () => {
+  const scheduler = makeManualScheduler();
+  const session = createExploreSession({
+    syncRequest: async ({ entries }) => okResponse(entries.at(-1).seq, {
+      exploreRunway: whackThenCombatRunway({ completed: true }),
+    }),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(whackThenCombatRunway());
+
+  const complete = session.recordRoomAction('whackAMole.complete', { score: 4 });
+  const blockedProceed = session.recordRoomAction('proceed');
+
+  assert.equal(complete.accepted, true);
+  assert.deepEqual(blockedProceed, {
+    accepted: false,
+    reason: 'dependency',
+    pendingCount: 1,
+  });
+  assert.equal(session.isPaused(), true);
+
+  await scheduler.fire();
+
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.isPaused(), false);
 });
 
 test('singleton lifecycle: configure / get / reset', () => {

@@ -1412,7 +1412,10 @@ describe('optimistic deterministic run routes', () => {
       body: { actionId: actionId('wamskip') },
       gameManager: {
         meta: { actionLedger: { entries: {}, order: [] } },
-        skipWhackAMole: () => ({ type: 'whack_a_mole_skipped', room: { type: 'empty' } }),
+        skipWhackAMole: () => ({ type: 'whack_a_mole_skipped' }),
+        explorationService: {
+          proceedToNextRoom: () => ({ room: { type: 'empty' } }),
+        },
       },
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'room', run: { currentRoom: 1 } }),
@@ -1428,6 +1431,7 @@ describe('optimistic deterministic run routes', () => {
   it('duplicate whack-a-mole skip actionId does not skip twice', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-skip');
     let skipCount = 0;
+    let proceedCount = 0;
     const req = {
       body: { actionId: actionId('wamskipdupe') },
       gameManager: {
@@ -1435,6 +1439,12 @@ describe('optimistic deterministic run routes', () => {
         skipWhackAMole: () => {
           skipCount += 1;
           return { type: 'whack_a_mole_skipped', skipCount };
+        },
+        explorationService: {
+          proceedToNextRoom: () => {
+            proceedCount += 1;
+            return { proceedCount };
+          },
         },
       },
       saveGame: () => {},
@@ -1448,6 +1458,7 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(duplicateRes.body.status, 'accepted');
     assert.equal(duplicateRes.body.actionType, 'whackAMole.skip');
     assert.equal(skipCount, 1);
+    assert.equal(proceedCount, 1);
     assert.equal(duplicateRes.body.skipCount, 1);
     assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { skipCount: 1 } });
   });
@@ -1455,11 +1466,18 @@ describe('optimistic deterministic run routes', () => {
   it('keeps legacy whack-a-mole skip response unchanged when actionId is absent', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-skip');
     const res = makeRes();
+    let proceedCount = 0;
 
     await handler({
       body: {},
       gameManager: {
-        skipWhackAMole: () => ({ type: 'whack_a_mole_skipped', room: { type: 'empty' } }),
+        skipWhackAMole: () => ({ type: 'whack_a_mole_skipped' }),
+        explorationService: {
+          proceedToNextRoom: () => {
+            proceedCount += 1;
+            return { room: { type: 'empty' } };
+          },
+        },
       },
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'room' }),
@@ -1469,6 +1487,8 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.body.actionId, undefined);
     assert.equal(res.body.actionType, undefined);
     assert.equal(res.body.type, 'whack_a_mole_skipped');
+    assert.equal(proceedCount, 1);
+    assert.deepEqual(res.body.room, { type: 'empty' });
     assert.deepEqual(res.body.state, { phase: 'room' });
   });
 

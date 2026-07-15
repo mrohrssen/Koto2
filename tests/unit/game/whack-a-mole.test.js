@@ -400,7 +400,7 @@ describe('Whack-a-Mole Completion', () => {
 // ============ SKIP (DECLINE) ============
 
 describe('Whack-a-Mole Skip', () => {
-  it('should mark room interacted and advance to next room', () => {
+  it('should mark room interacted without advancing to the next room', () => {
     const gm = new GameManager('test-wam-skip');
     gm.createPlayer('TestPlayer');
     gm.startRun({ areaId: 'okunomori' });
@@ -430,7 +430,7 @@ describe('Whack-a-Mole Skip', () => {
     assert.strictEqual(run.rooms[roomIdx].interacted, true);
     assert.strictEqual(run.rooms[roomIdx].whackAMole.completed, true);
     assert.strictEqual(run.rooms[roomIdx].whackAMole.skipped, true);
-    assert.strictEqual(run.currentRoom, roomIdx + 1);
+    assert.strictEqual(run.currentRoom, roomIdx);
   });
 
   it('should reject skip for non-whackAMole rooms', () => {
