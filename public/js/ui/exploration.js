@@ -141,14 +141,28 @@ function applyExploreSessionRunway(response) {
   state.run.exploreRunway = runway;
 }
 
+function findLastUnconsumedSessionResult(results, predicate) {
+  const session = getExploreSession?.();
+  for (let index = results.length - 1; index >= 0; index -= 1) {
+    const result = results[index];
+    if (!predicate(result)) continue;
+    if (
+      !result?.actionId
+      || !session?.consumeResultOnce
+      || session.consumeResultOnce(result.actionId)
+    ) {
+      return result;
+    }
+  }
+  return null;
+}
+
 // Scan a checkpoint's committed results for a combat.cycle turn that ended the
 // fight, and hand it to the combat-loop finish path (the same one a live victory/
 // defeat uses). The replayed combat.cycle result IS the committed
 // creatureCombatCycle result (combatEnded/victory/rewards ride along) plus seq/
-// actionId, so finishCombatLoop consumes it directly. Skips ledger-replayed
-// results (replayed === true) — those were already resolved on the original POST.
+// actionId, so finishCombatLoop consumes it directly.
 function finishSessionCombatFromResults(response) {
-  if (typeof finishCombatLoop !== 'function') return false;
   const results = Array.isArray(response?.results) ? response.results : [];
 
   // The client optimistically predicts a plain terminal victory (pendingCombatEnd
@@ -157,15 +171,22 @@ function finishSessionCombatFromResults(response) {
   // combatEnded, so it would never match the finish scan below — the client would
   // freeze on the victory shell. Reconcile it first: resume combat into the
   // Fight/Talk befriend quiz from the authoritative state.
-  const befriendResult = results.findLast?.(r => r?.befriendQuizTriggered && !r.replayed)
-    || results.slice().reverse().find(r => r?.befriendQuizTriggered && !r.replayed);
-  if (befriendResult && typeof resumeSessionCombatBefriendQuiz === 'function') {
-    void resumeSessionCombatBefriendQuiz({ ...befriendResult, state: response.state });
-    return true;
+  if (typeof resumeSessionCombatBefriendQuiz === 'function') {
+    const befriendResult = findLastUnconsumedSessionResult(
+      results,
+      result => result?.befriendQuizTriggered,
+    );
+    if (befriendResult) {
+      void resumeSessionCombatBefriendQuiz({ ...befriendResult, state: response.state });
+      return true;
+    }
   }
 
-  const finalResult = results.findLast?.(r => r?.combatEnded === true && !r.replayed)
-    || results.slice().reverse().find(r => r?.combatEnded === true && !r.replayed);
+  if (typeof finishCombatLoop !== 'function') return false;
+  const finalResult = findLastUnconsumedSessionResult(
+    results,
+    result => result?.combatEnded === true,
+  );
   if (!finalResult) return false;
   finishCombatLoop({ ...finalResult, state: response.state });
   return true;

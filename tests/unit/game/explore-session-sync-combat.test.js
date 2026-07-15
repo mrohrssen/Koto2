@@ -241,6 +241,94 @@ describe('ExploreSessionSyncService — combat replay', () => {
     assert.equal(gm.combat.optimistic.stateVersion, versionAfterFirst);
   });
 
+  it('replays a landed terminal victory without duplicating rewards', async () => {
+    const gm = makeCombatGm({ roomType: ROOM_TYPES.npcBattle, enemyHp: 10 });
+    const service = new ExploreSessionSyncService(gm);
+    await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [startEntry(gm, {
+        seq: 1,
+        actionId: 'run_es_terminal_start',
+        kind: 'npcBattle.start',
+      })],
+    });
+    const cycle = matchingCycleEntry(gm, {
+      seq: 2,
+      actionId: 'run_es_terminal_cycle',
+      moveId: BIG_MOVE.id,
+    });
+
+    const first = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [cycle],
+    });
+    const afterFirst = structuredClone({
+      party: gm.run.creatureParty,
+      room: gm.run.rooms[0],
+      combat: gm.combat,
+      stats: gm.run.stats,
+      summary: gm.run.runSummary,
+    });
+    const replay = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [cycle],
+    });
+
+    assert.equal(first.results[0].combatEnded, true);
+    assert.equal(replay.results[0].combatEnded, true);
+    assert.equal(replay.results[0].replayed, true);
+    assert.deepEqual({
+      party: gm.run.creatureParty,
+      room: gm.run.rooms[0],
+      combat: gm.combat,
+      stats: gm.run.stats,
+      summary: gm.run.runSummary,
+    }, afterFirst);
+  });
+
+  it('replays a landed befriend trigger without rerolling or granting twice', async () => {
+    const gm = makeCombatGm({ roomType: ROOM_TYPES.encounter, enemyHp: 10 });
+    const service = new ExploreSessionSyncService(gm);
+    await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [startEntry(gm, {
+        seq: 1,
+        actionId: 'run_es_befriend_start',
+        kind: 'encounter.start',
+      })],
+    });
+    const cycle = matchingCycleEntry(gm, {
+      seq: 2,
+      actionId: 'run_es_befriend_cycle',
+      moveId: BIG_MOVE.id,
+    });
+
+    const first = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [cycle],
+    });
+    const afterFirst = structuredClone({
+      party: gm.run.creatureParty,
+      enemies: gm.combat.enemies,
+      quiz: gm.combat.befriendQuiz,
+      pendingCaptures: gm.run.creatureParty.pendingCaptures,
+    });
+    const replay = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [cycle],
+    });
+
+    assert.equal(first.results[0].befriendQuizTriggered, true);
+    assert.equal(replay.results[0].befriendQuizTriggered, true);
+    assert.equal(replay.results[0].replayed, true);
+    assert.deepEqual({
+      party: gm.run.creatureParty,
+      enemies: gm.combat.enemies,
+      quiz: gm.combat.befriendQuiz,
+      pendingCaptures: gm.run.creatureParty.pendingCaptures,
+    }, afterFirst);
+  });
+
   it('commits the grade and returns a correction on a tampered predictedHash', async () => {
     const gm = makeCombatGm({ roomType: ROOM_TYPES.boss, enemyHp: 10 });
     const service = new ExploreSessionSyncService(gm);

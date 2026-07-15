@@ -751,9 +751,7 @@ describe('explore session proceed cutover', () => {
     assert.ok(harness.befriendResumeCalls[0].state, 'authoritative state rides along to the resume');
   });
 
-  // A ledger-replayed combat-end result (replayed === true) was already resolved
-  // on the original POST; the checkpoint must NOT re-finish combat for it.
-  it('does not re-finish combat for a replayed combat-end checkpoint result', async () => {
+  it('finishes an unseen replayed terminal result once', async () => {
     const combatRunway = {
       sessionEpoch: 'ese_replay111111',
       currentRoom: 0,
@@ -761,27 +759,92 @@ describe('explore session proceed cutover', () => {
       preparedRooms: [
         preparedRoom(0, {
           room: room(0, { type: 'encounter' }),
-          acceptedActions: ['encounter.start', 'combat.cycle'],
-          actionEffects: { 'encounter.start': [], 'combat.cycle': ['partyStats'] },
+          acceptedActions: ['combat.cycle'],
+          actionEffects: { 'combat.cycle': ['partyStats'] },
         }),
         preparedRoom(1),
       ],
     };
+    let syncCalls = 0;
+    const terminal = {
+      seq: 1,
+      actionId: 'run_es_replayed_terminal',
+      combatEnded: true,
+      victory: true,
+      replayed: true,
+    };
     const harness = initCutoverHarness({
       initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
-      apiSyncExploreSession: async () => ({
-        status: 'ok',
-        confirmedThroughSeq: 1,
-        results: [{ seq: 1, actionId: 'run_es_replay_01', combatEnded: true, victory: true, replayed: true }],
-        state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
-      }),
+      apiSyncExploreSession: async () => {
+        syncCalls += 1;
+        return {
+          status: 'ok',
+          confirmedThroughSeq: syncCalls,
+          results: [terminal],
+          state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+          exploreRunway: combatRunway,
+        };
+      },
     });
-
     getExploreSession().adoptRunway(combatRunway);
-    getExploreSession().recordRoomAction('combat.cycle', { actionType: 'attack', moveChoices: [], predictedHash: 'x' });
+
+    getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'one' });
+    await getExploreSession().syncNow();
+    getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'two' });
     await getExploreSession().syncNow();
 
-    assert.equal(harness.finishCombatCalls.length, 0, 'replayed combat-end result must not re-finish combat');
+    assert.equal(harness.finishCombatCalls.length, 1);
+  });
+
+  it('resumes an unseen replayed befriend result once', async () => {
+    const combatRunway = {
+      sessionEpoch: 'ese_befriend1111',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [
+        preparedRoom(0, {
+          room: room(0, { type: 'encounter' }),
+          acceptedActions: ['combat.cycle'],
+          actionEffects: { 'combat.cycle': ['partyStats'] },
+        }),
+        preparedRoom(1),
+      ],
+    };
+    let syncCalls = 0;
+    const befriend = {
+      seq: 1,
+      actionId: 'run_es_replayed_befriend',
+      befriendQuizTriggered: true,
+      combatEnded: false,
+      replayed: true,
+      befriendQuiz: {
+        targetIndex: 0,
+        creatureId: 'mizu',
+        options: [],
+      },
+    };
+    const harness = initCutoverHarness({
+      initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      apiSyncExploreSession: async () => {
+        syncCalls += 1;
+        return {
+          status: 'ok',
+          confirmedThroughSeq: syncCalls,
+          results: [befriend],
+          state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+          exploreRunway: combatRunway,
+        };
+      },
+    });
+    getExploreSession().adoptRunway(combatRunway);
+
+    getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'one' });
+    await getExploreSession().syncNow();
+    getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'two' });
+    await getExploreSession().syncNow();
+
+    assert.equal(harness.befriendResumeCalls.length, 1);
+    assert.equal(harness.finishCombatCalls.length, 0);
   });
 });
 
