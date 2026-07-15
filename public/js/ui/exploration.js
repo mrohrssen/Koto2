@@ -1937,9 +1937,10 @@ export async function renderWhackAMole() {
     try {
       await proceedWithRevealBuffer();
     } catch (err) {
-      // Fall through to updateUI — server state may already have advanced.
+      // The proceed owner normally refreshes. If it throws before it can do so,
+      // render a fallback state instead of leaving the completed room visible.
+      updateUI();
     }
-    updateUI();
     return;
   }
 

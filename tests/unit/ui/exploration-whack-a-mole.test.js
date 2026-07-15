@@ -622,6 +622,46 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(updateUiCalls, 1);
   });
 
+  it('gives an already-interacted Whack room one transition and render after recovery', async () => {
+    const whackRoom = {
+      id: 'wam-recovered',
+      type: 'whackAMole',
+      interacted: true,
+      whackAMole: { completed: true, score: 4 },
+    };
+    const nextRoom = { id: 'after-wam-recovered', type: 'empty' };
+    let currentState = makeWhackAMoleState(whackRoom, {
+      nextRoom,
+      acceptedActions: ['proceed'],
+    });
+    let updateUiCalls = 0;
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => { updateUiCalls += 1; },
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: { showNarration: async () => {} },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
+    });
+
+    await renderWhackAMole();
+
+    assert.deepEqual(
+      getExploreSession().snapshot().map(entry => entry.kind),
+      ['proceed'],
+    );
+    assert.equal(currentState.run.currentRoom, 1);
+    assert.equal(currentState.room.id, 'after-wam-recovered');
+    assert.equal(roomTransitionCalls.length, 1);
+    assert.equal(roomTransitionCalls[0].state, currentState);
+    assert.deepEqual(roomTransitionCalls[0].opts, { ingredientDrops: [] });
+    assert.equal(updateUiCalls, 1);
+  });
+
   it('advances locally from the prepared runway after Whack-a-Mole completion', async () => {
     const nextRoom = { id: 'after-wam', type: 'empty' };
     let currentState = {

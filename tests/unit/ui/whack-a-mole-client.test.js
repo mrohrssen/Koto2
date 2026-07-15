@@ -212,6 +212,47 @@ describe('WhackAMoleGame cancellation', () => {
     assert.equal(updateCalls, 0);
   });
 
+  it('does not render stale UI when cancellation happens before proceed rejects', async () => {
+    let rejectProceed;
+    let signalProceedStarted;
+    const proceedStarted = new Promise(resolve => { signalProceedStarted = resolve; });
+    let updateCalls = 0;
+
+    const game = new WhackAMoleGame([
+      { id: 'a', reading: 'あ', sprite: '/a.webp' },
+      { id: 'b', reading: 'い', sprite: '/b.webp' },
+      { id: 'c', reading: 'う', sprite: '/c.webp' },
+      { id: 'd', reading: 'え', sprite: '/d.webp' },
+      { id: 'e', reading: 'お', sprite: '/e.webp' },
+      { id: 'f', reading: 'か', sprite: '/f.webp' },
+      { id: 'g', reading: 'き', sprite: '/g.webp' },
+      { id: 'h', reading: 'く', sprite: '/h.webp' },
+      { id: 'i', reading: 'け', sprite: '/i.webp' },
+    ], {
+      actions: { setContent: () => {} },
+      apiCompleteWhackAMole: async () => ({
+        finishDialogue: null,
+        xpGrants: [],
+        levelUps: [],
+      }),
+      apiProceed: () => new Promise((_, reject) => {
+        rejectProceed = reject;
+        signalProceedStarted();
+      }),
+      updateGameState: () => {},
+      updateUI: () => { updateCalls += 1; },
+      playSFX: () => {},
+    });
+
+    const ending = game._endGame();
+    await proceedStarted;
+    game.cancel();
+    rejectProceed(new Error('proceed failed after cancellation'));
+    await ending;
+
+    assert.equal(updateCalls, 0);
+  });
+
   it('does not proceed when completion save returns null after correction', async () => {
     let rendered = 'game visible';
     let proceedCalls = 0;

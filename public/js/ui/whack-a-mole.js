@@ -441,7 +441,7 @@ export class WhackAMoleGame {
     } catch (err) {
       // The high-level proceed owner normally refreshes. If it throws before it
       // can do so, render a fallback state instead of leaving the minigame shell.
-      this.updateUI();
+      if (!this.cancelled) this.updateUI();
     }
   }
 
