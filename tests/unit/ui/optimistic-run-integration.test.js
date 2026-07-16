@@ -296,6 +296,20 @@ describe('optimistic run action integration', () => {
     assert.match(shopFlowSource, /postCombatShop\.hide\(\)[\s\S]*await verification/);
   });
 
+  it('preserves sparse active slots through post-combat item targeting', () => {
+    const shopFlowSource = sourceBetween(
+      gameSource,
+      'async function showPostCombatShopFlow()',
+      '// ============ CREATURE EQUIP UI ============'
+    );
+
+    assert.match(shopFlowSource, /const active = gameState\.run\?\.creatureParty\?\.active \|\| \[\]/);
+    assert.doesNotMatch(shopFlowSource, /active\?\.filter\(Boolean\)/);
+    assert.match(shopFlowSource, /const targets = getItemTargetEntries\(active\)/);
+    assert.match(shopFlowSource, /await finalize\(targets\[0\]\?\.targetIndex \?\? 0\)/);
+    assert.match(shopFlowSource, /postCombatShop\.showTargetPicker\(active, finalize\)/);
+  });
+
   it('uses corrected post-combat shop responses as authoritative corrections', () => {
     const shopFlowSource = sourceBetween(
       gameSource,

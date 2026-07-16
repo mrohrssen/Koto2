@@ -513,4 +513,142 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(itemApplied, false);
     assert.equal(renderedChoices?.heading, 'Choose target');
   });
+
+  it('records the original active slot selected from a sparse friendly NPC target list', async () => {
+    const room = {
+      id: 'friendly-npc-sparse-target-room',
+      type: 'friendlyNpc',
+      friendlyNpc: { completed: false },
+    };
+    const active = [
+      { id: 'neko', name: '猫', nameEn: 'Cat', level: 2, hp: 8, maxHp: 10 },
+      null,
+      { id: 'tori', name: '鳥', nameEn: 'Bird', level: 3, hp: 12, maxHp: 12 },
+    ];
+    const gameState = {
+      phase: 'friendlyNpc',
+      room,
+      meta: { tutorialStep: 0 },
+      run: {
+        currentRoom: 0,
+        creatureParty: { active },
+        exploreRunway: {
+          sessionEpoch: 'ese_1234567890abcdef',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            actionSeq: 30,
+            room,
+            acceptedActions: ['friendlyNpc.choose'],
+            actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+            dependencies: ['partyStats'],
+            offlineReady: true,
+          }],
+        },
+      },
+    };
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => ({
+        offered: [{
+          id: 'test-sword',
+          word: '刀',
+          reading: 'かたな',
+          nameToken: { text: '刀' },
+          effect: { field: 'baseAttackBonus', value: 1 },
+        }],
+      }),
+      apiSyncExploreSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1)?.seq ?? null,
+      }),
+    });
+
+    await renderFriendlyNpc();
+    const itemChoices = renderedChoices;
+    await itemChoices.onSelect(0);
+
+    assert.equal(renderedChoices.heading, 'Choose target');
+    assert.equal(renderedChoices.cards.length, 2);
+    await renderedChoices.onSelect(1);
+
+    const recordedAction = getExploreSession().snapshot().at(-1);
+    assert.equal(recordedAction.kind, 'friendlyNpc.choose');
+    assert.deepEqual(recordedAction.payload, {
+      itemId: 'test-sword',
+      targetCreatureIndex: 2,
+    });
+  });
+
+  it('auto-selects the original slot when a sparse party has one friendly NPC target', async () => {
+    const room = {
+      id: 'friendly-npc-one-sparse-target-room',
+      type: 'friendlyNpc',
+      friendlyNpc: { completed: false },
+    };
+    const gameState = {
+      phase: 'friendlyNpc',
+      room,
+      meta: { tutorialStep: 0 },
+      run: {
+        currentRoom: 0,
+        creatureParty: {
+          active: [
+            null,
+            { id: 'tori', name: '鳥', nameEn: 'Bird', level: 3, hp: 12, maxHp: 12 },
+          ],
+        },
+        exploreRunway: {
+          sessionEpoch: 'ese_fedcba0987654321',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            actionSeq: 31,
+            room,
+            acceptedActions: ['friendlyNpc.choose'],
+            actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+            dependencies: ['partyStats'],
+            offlineReady: true,
+          }],
+        },
+      },
+    };
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => ({
+        offered: [{
+          id: 'test-sword',
+          word: '刀',
+          reading: 'かたな',
+          nameToken: { text: '刀' },
+          effect: { field: 'baseAttackBonus', value: 1 },
+        }],
+      }),
+      apiSyncExploreSession: async ({ entries }) => ({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1)?.seq ?? null,
+      }),
+    });
+
+    await renderFriendlyNpc();
+    await renderedChoices.onSelect(0);
+
+    const recordedAction = getExploreSession().snapshot().at(-1);
+    assert.deepEqual(recordedAction.payload, {
+      itemId: 'test-sword',
+      targetCreatureIndex: 1,
+    });
+  });
 });

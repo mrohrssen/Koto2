@@ -99,6 +99,7 @@ import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
 import * as creatureRow from './js/ui/creature-row.js';
 import * as postCombatShop from './js/ui/post-combat-shop.js';
+import { getItemTargetEntries } from './js/ui/item-target-picker.js';
 import * as combatDom from './js/ui/combat-dom.js';
 import * as explorationDom from './js/ui/exploration-dom.js';
 const scene = { ...combatDom, ...explorationDom };
@@ -1862,7 +1863,8 @@ async function showPostCombatShopFlow() {
         itemSelectedCallback: async (itemIdx) => {
           const selectedItem = shopResult.items[itemIdx];
           const isPartyWide = selectedItem?.effect?.healAllPercent || selectedItem?.effect?.mpRestorePercent;
-          const active = gameState.run?.creatureParty?.active?.filter(Boolean) || [];
+          const active = gameState.run?.creatureParty?.active || [];
+          const targets = getItemTargetEntries(active);
 
           const finalize = async (targetIdx) => {
             const pending = createPendingRunAction({
@@ -1912,8 +1914,8 @@ async function showPostCombatShopFlow() {
             resolve();
           };
 
-          if (isPartyWide || active.length <= 1) {
-            await finalize(0);
+          if (isPartyWide || targets.length <= 1) {
+            await finalize(targets[0]?.targetIndex ?? 0);
           } else {
             postCombatShop.showTargetPicker(active, finalize);
           }

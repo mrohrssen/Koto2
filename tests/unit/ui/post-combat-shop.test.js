@@ -49,6 +49,19 @@ describe('post-combat shop target picker', () => {
     assert.equal(renderChoicesArgs?.heading, 'Choose target');
   });
 
+  it('returns the original active slot for a sparse party', () => {
+    let pickedTarget = null;
+    showTargetPicker([
+      { id: 'neko', name: '猫', nameEn: 'Cat', reading: 'ねこ', level: 1, hp: 10, maxHp: 12 },
+      null,
+      { id: 'tori', name: '鳥', nameEn: 'Bird', reading: 'とり', level: 2, hp: 9, maxHp: 11 },
+    ], targetIndex => { pickedTarget = targetIndex; });
+
+    assert.equal(renderChoicesArgs.cards.length, 2);
+    renderChoicesArgs.onSelect(1);
+    assert.equal(pickedTarget, 2);
+  });
+
   it('labels item choices with Choose an item', () => {
     show([
       { id: 'apple', word: 'りんご', name: 'りんご', rarity: 'common', effect: { healAllPercent: 0.1 } },

@@ -11,6 +11,7 @@ import * as chestsUI from './chests.js';
 import * as crestsEquipUI from './crests-equip.js';
 import * as campfireUI from './campfire.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
+import { getItemTargetEntries } from './item-target-picker.js';
 import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
 import { escapeHtml } from './html-utils.js';
@@ -2584,6 +2585,7 @@ export async function renderFriendlyNpc() {
 
       const gameState = getGameState();
       const party = gameState.run?.creatureParty?.active || [];
+      const targets = getItemTargetEntries(party);
       const isPartyWide = item.effect?.healAllPercent || item.effect?.mpRestorePercent;
 
       const applyItem = async (creatureIndex) => {
@@ -2608,17 +2610,20 @@ export async function renderFriendlyNpc() {
         updateUI();
       };
 
-      if (isPartyWide || party.filter(Boolean).length <= 1) {
-        await applyItem(0);
+      if (isPartyWide || targets.length <= 1) {
+        await applyItem(targets[0]?.targetIndex ?? 0);
       } else {
         renderChoices({
           heading: 'Choose target',
-          cards: party.filter(Boolean).map(creature => ({
+          cards: targets.map(({ creature }) => ({
             sprite: `<img src="${creatureStaticPath(creature.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
             title: `${creature.name} (${creature.nameEn})`,
             subtitle: `Lv.${creature.level} · HP: ${creature.hp}/${creature.maxHp}`,
           })),
-          onSelect: (creatureIndex) => applyItem(creatureIndex),
+          onSelect: (index) => {
+            const target = targets[index];
+            if (target) return applyItem(target.targetIndex);
+          },
         });
       }
     },
