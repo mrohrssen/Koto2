@@ -5,6 +5,8 @@ const sceneManagerState = { currentScene: null };
 let renderedButtons = [];
 let domButtons = [];
 let speedReviewStartArgs = null;
+let speedReviewStartCount = 0;
+let speedReviewActive = false;
 
 function createDomButton(textContent) {
   const classes = new Set();
@@ -45,9 +47,11 @@ await mock.module('../../../public/js/ui/speed-review.js', {
   namedExports: {
     start: (words, options) => {
       speedReviewStartArgs = { words, options };
+      speedReviewStartCount += 1;
+      speedReviewActive = true;
       return true;
     },
-    isActive: () => false,
+    isActive: () => speedReviewActive,
   },
 });
 await mock.module('../../../public/js/ui/whack-a-mole.js', {
@@ -119,13 +123,22 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   },
 });
 
-const { init, renderHub, renderSpeedReviewRoom } = await import('../../../public/js/ui/exploration.js');
+const {
+  init,
+  proceedWithRevealBuffer,
+  renderHub,
+  renderSpeedReviewRoom,
+} = await import('../../../public/js/ui/exploration.js');
+const { getExploreSession, resetExploreSession } = await import('../../../public/js/ui/explore-session.js');
 
 describe('renderHub fusion core review narration', () => {
   beforeEach(() => {
+    resetExploreSession();
     renderedButtons = [];
     domButtons = [];
     speedReviewStartArgs = null;
+    speedReviewStartCount = 0;
+    speedReviewActive = false;
     sceneManagerState.currentScene = null;
     globalThis.document = {
       body: {},
@@ -262,7 +275,11 @@ describe('renderHub fusion core review narration', () => {
     assert.equal(speedReviewStartArgs?.options?.showRomaji, true);
   });
 
-  it('enables romaji annotations when launching a speed review room outside kana mode', async () => {
+  it('launches a session-owned speed review from its prepared snapshot without the legacy start API', async () => {
+    const snapshotWords = [
+      { word: '水', reading: 'みず', meanings: ['water'] },
+      { word: '火', reading: 'ひ', meanings: ['fire'] },
+    ];
     let gameState = makeRunRoomState({
       phase: 'speedReviewRoom',
       room: {
@@ -271,24 +288,274 @@ describe('renderHub fusion core review narration', () => {
         speedReviewRoom: { completed: false },
       },
     });
+    gameState.run.active = true;
+    gameState.run.mode = 'standard';
+    gameState.run.totalRooms = 2;
+    gameState.run.exploreRunway = {
+      sessionEpoch: 'ese_speed_review_test',
+      currentRoom: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: 'speed-room-1',
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['speedReview.commit', 'speedReview.complete', 'proceed'],
+        interactionPayload: {
+          kind: 'speedReviewRoom',
+          roomId: 'speed-room-1',
+          snapshotWords,
+          snapshotWordKeys: ['水', '火'],
+          reviewedCards: 1,
+          snapshotInitialized: true,
+        },
+      }, {
+        index: 1,
+        roomId: 'room-after-speed-review',
+        actionSeq: 1,
+        offlineReady: true,
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: [] },
+        dependencies: [],
+        room: { id: 'room-after-speed-review', type: 'room' },
+        interactionPayload: { kind: 'room' },
+      }],
+    };
+    let legacyStartCalls = 0;
+    let legacyProgressCalls = 0;
+    let legacyCompleteCalls = 0;
+    let syncCalls = 0;
+    let autoProceedPromise = null;
 
     init({
       getGameState: () => gameState,
       updateGameState: (nextState) => { gameState = nextState; },
-      updateUI: () => {},
+      updateUI: () => {
+        if (gameState.phase === 'room' && autoProceedPromise === null) {
+          autoProceedPromise = proceedWithRevealBuffer();
+        }
+      },
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: async () => {} },
       startNewRun: () => {},
-      apiStartSpeedReviewRoom: async () => ({
-        snapshotWords: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
-      }),
-      apiProgressSpeedReviewRoom: async () => ({}),
-      apiCompleteSpeedReviewRoom: async () => ({}),
+      apiSyncExploreSession: async () => {
+        syncCalls += 1;
+        throw new Error('offline');
+      },
+      apiStartSpeedReviewRoom: async () => {
+        legacyStartCalls += 1;
+        return { snapshotWords: [{ word: 'legacy', meanings: ['wrong source'] }] };
+      },
+      apiProgressSpeedReviewRoom: async () => {
+        legacyProgressCalls += 1;
+        return {};
+      },
+      apiCompleteSpeedReviewRoom: async () => {
+        legacyCompleteCalls += 1;
+        return {};
+      },
     });
 
     await renderSpeedReviewRoom();
+    await renderSpeedReviewRoom();
 
+    assert.deepEqual(speedReviewStartArgs?.words, snapshotWords.slice(1));
     assert.equal(speedReviewStartArgs?.options?.showRomaji, true);
+    assert.equal(legacyStartCalls, 0);
+    assert.equal(speedReviewStartCount, 1, 'rerender must not duplicate launch ownership');
+
+    const firstCommit = await speedReviewStartArgs.options.onCommittedReview({
+      word: snapshotWords[1],
+      commitIndex: 0,
+    });
+    const duplicateCommit = await speedReviewStartArgs.options.onCommittedReview({
+      word: snapshotWords[1],
+      commitIndex: 0,
+    });
+    const pending = getExploreSession().snapshot();
+    assert.equal(firstCommit.accepted, true);
+    assert.equal(duplicateCommit.accepted, true);
+    assert.equal(pending.length, 1, 'the same card commit must append once');
+    assert.deepEqual(pending[0].payload, {
+      roomId: 'speed-room-1',
+      word: '火',
+      commitIndex: 1,
+    });
+    assert.equal(pending[0].kind, 'speedReview.commit');
+    assert.equal(legacyProgressCalls, 0);
+    assert.equal(syncCalls, 0, 'offline commit should remain pending without blocking playback');
+
+    await speedReviewStartArgs.options.onComplete();
+    await autoProceedPromise;
+    const completedKinds = getExploreSession().snapshot().map(entry => entry.kind);
+    resetExploreSession();
+    assert.deepEqual(
+      completedKinds,
+      ['speedReview.commit', 'speedReview.complete', 'proceed'],
+      'completion should stay canonical and hand room advance to session ownership',
+    );
+    assert.equal(gameState.run.currentRoom, 1);
+    assert.equal(legacyCompleteCalls, 0);
+  });
+
+  it('canonically auto-completes an initialized zero-card session snapshot', async () => {
+    const room = {
+      id: 'speed-room-zero',
+      type: 'speedReviewRoom',
+      speedReviewRoom: { completed: false, reviewedCards: 0 },
+    };
+    let gameState = makeRunRoomState({ phase: 'speedReviewRoom', room });
+    gameState.run.active = true;
+    gameState.run.mode = 'standard';
+    gameState.run.exploreRunway = {
+      sessionEpoch: 'ese_speed_review_zero',
+      currentRoom: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: room.id,
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['speedReview.commit', 'speedReview.complete', 'proceed'],
+        interactionPayload: {
+          kind: 'speedReviewRoom',
+          roomId: room.id,
+          snapshotWords: [],
+          snapshotWordKeys: [],
+          reviewedCards: 0,
+          snapshotInitialized: true,
+        },
+      }],
+    };
+    let legacyStartCalls = 0;
+    let legacyCompleteCalls = 0;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiSyncExploreSession: async () => { throw new Error('offline'); },
+      apiStartSpeedReviewRoom: async () => { legacyStartCalls += 1; return null; },
+      apiCompleteSpeedReviewRoom: async () => { legacyCompleteCalls += 1; return {}; },
+    });
+
+    await renderSpeedReviewRoom();
+    const entries = getExploreSession().snapshot();
+    resetExploreSession();
+
+    assert.equal(speedReviewStartCount, 0);
+    assert.deepEqual(entries.map(entry => entry.kind), ['speedReview.complete']);
+    assert.equal(gameState.phase, 'room');
+    assert.equal(gameState.room.interacted, true);
+    assert.equal(legacyStartCalls, 0);
+    assert.equal(legacyCompleteCalls, 0);
+  });
+
+  it('soft-pauses an invalid session payload without blanking and can launch after refresh', async () => {
+    const room = {
+      id: 'speed-room-refresh',
+      type: 'speedReviewRoom',
+      speedReviewRoom: { completed: false },
+    };
+    let gameState = makeRunRoomState({ phase: 'speedReviewRoom', room });
+    gameState.run.active = true;
+    gameState.run.mode = 'standard';
+    const prepared = {
+      index: 0,
+      roomId: room.id,
+      actionSeq: 0,
+      offlineReady: false,
+      missingPayloadReasons: ['speedReviewRoom.snapshotWords'],
+      acceptedActions: ['speedReview.commit', 'speedReview.complete', 'proceed'],
+      interactionPayload: {
+        kind: 'speedReviewRoom',
+        roomId: room.id,
+        snapshotInitialized: false,
+      },
+    };
+    gameState.run.exploreRunway = {
+      sessionEpoch: 'ese_speed_review_refresh',
+      currentRoom: 0,
+      preparedRooms: [prepared],
+    };
+    let blankCalls = 0;
+    let narrationCalls = 0;
+    let legacyStartCalls = 0;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => { blankCalls += 1; }, clear: () => {} },
+      scene: { showNarration: async () => { narrationCalls += 1; } },
+      apiSyncExploreSession: async () => { throw new Error('offline'); },
+      apiStartSpeedReviewRoom: async () => { legacyStartCalls += 1; return null; },
+    });
+
+    await renderSpeedReviewRoom();
+    assert.equal(speedReviewStartCount, 0);
+    assert.equal(blankCalls, 0, 'invalid payload must preserve the visible soft-pause surface');
+    assert.equal(narrationCalls, 1);
+    assert.equal(getExploreSession().isPaused(), true);
+    assert.equal(legacyStartCalls, 0);
+
+    prepared.offlineReady = true;
+    prepared.missingPayloadReasons = [];
+    prepared.interactionPayload = {
+      kind: 'speedReviewRoom',
+      roomId: room.id,
+      snapshotWords: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
+      snapshotWordKeys: ['火'],
+      reviewedCards: 0,
+      snapshotInitialized: true,
+    };
+    await renderSpeedReviewRoom();
+    resetExploreSession();
+
+    assert.equal(speedReviewStartCount, 1, 'a refreshed payload should clear the dead-end and launch');
+    assert.equal(legacyStartCalls, 0);
+  });
+
+  it('keeps legacy speed review APIs fenced to runs without an active standard session', async () => {
+    const room = {
+      id: 'speed-room-legacy',
+      type: 'speedReviewRoom',
+      speedReviewRoom: { completed: false },
+    };
+    let gameState = makeRunRoomState({ phase: 'speedReviewRoom', room });
+    const words = [{ word: '火', reading: 'ひ', meanings: ['fire'] }];
+    const calls = [];
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiStartSpeedReviewRoom: async roomId => {
+        calls.push(['start', roomId]);
+        return { snapshotWords: words, reviewedCards: 0 };
+      },
+      apiProgressSpeedReviewRoom: async (roomId, word, commitIndex) => {
+        calls.push(['progress', roomId, word, commitIndex]);
+        return {};
+      },
+      apiCompleteSpeedReviewRoom: async roomId => {
+        calls.push(['complete', roomId]);
+        return {};
+      },
+    });
+
+    await renderSpeedReviewRoom();
+    await speedReviewStartArgs.options.onCommittedReview({ word: words[0], commitIndex: 0 });
+    await speedReviewStartArgs.options.onComplete();
+
+    assert.deepEqual(calls, [
+      ['start', room.id],
+      ['progress', room.id, '火', 0],
+      ['complete', room.id],
+    ]);
+    assert.equal(getExploreSession(), null);
   });
 
   it('refreshes the hub after awarding the tutorial Fusion Core', async () => {

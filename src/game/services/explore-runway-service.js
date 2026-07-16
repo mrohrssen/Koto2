@@ -623,8 +623,17 @@ function missingPayloadReasonsFor(room, interactionPayload) {
     if (!interactionPayload?.noTokens?.tokens?.length) missing.push('campfire.noTokens');
   }
   if (room?.type === ROOM_TYPES.speedReviewRoom) {
-    if (!Array.isArray(interactionPayload?.snapshotWords) || interactionPayload.snapshotWords.length === 0) {
+    if (
+      interactionPayload?.snapshotInitialized !== true
+      || !Array.isArray(interactionPayload?.snapshotWords)
+    ) {
       missing.push('speedReviewRoom.snapshotWords');
+    }
+    if (
+      !Array.isArray(interactionPayload?.snapshotWordKeys)
+      || interactionPayload.snapshotWordKeys.length !== (interactionPayload?.snapshotWords?.length || 0)
+    ) {
+      missing.push('speedReviewRoom.snapshotWordKeys');
     }
   }
   return missing;

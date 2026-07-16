@@ -507,9 +507,9 @@ let startKanjiKombatSetup = null;
 
 let speedReviewRoomLaunchState = {
   roomId: null,
-  starting: false
+  starting: false,
+  commits: new Map(),
 };
-let speedReviewRoomCommitChain = Promise.resolve();
 // Skill Master API
 let apiSkillMasterOffers = null;
 let apiSkillMasterChoose = null;
@@ -1759,12 +1759,76 @@ function getActiveSpeedReviewRoom(gameState) {
   return null;
 }
 
-async function completeSpeedReviewRoomOptimistically(room, { throwOnFailure = false } = {}) {
-  const queued = getExploreSession()?.recordRoomAction('speedReview.complete', { roomId: room?.id });
-  if (!queued?.accepted) {
-    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
-    if (throwOnFailure) throw new Error(EXPLORE_SPOTTY_COPY);
-    return null;
+function getActiveStandardExploreSession(state = getGameState?.()) {
+  const session = getExploreSession?.();
+  return session
+    && state?.run?.active === true
+    && state.run.mode !== 'kanjiKombat'
+    ? session
+    : null;
+}
+
+function preparedSpeedReviewPayload(session, state, room) {
+  const prepared = session?.currentPreparedRoom?.();
+  const payload = prepared?.interactionPayload;
+  const accepted = prepared?.acceptedActions;
+  const roomId = prepared?.roomId || prepared?.room?.id;
+  const snapshotWords = payload?.snapshotWords;
+  const snapshotWordKeys = payload?.snapshotWordKeys;
+  const reviewedCards = Number(payload?.reviewedCards || 0);
+  const valid = prepared?.index === state?.run?.currentRoom
+    && roomId === room?.id
+    && prepared?.offlineReady === true
+    && Array.isArray(accepted)
+    && accepted.includes('speedReview.commit')
+    && accepted.includes('speedReview.complete')
+    && payload?.kind === 'speedReviewRoom'
+    && payload?.roomId === room?.id
+    && payload?.snapshotInitialized === true
+    && Array.isArray(snapshotWords)
+    && snapshotWords.every(card => typeof card?.word === 'string' && card.word.length > 0)
+    && Array.isArray(snapshotWordKeys)
+    && snapshotWordKeys.length === snapshotWords.length
+    && Number.isInteger(reviewedCards)
+    && reviewedCards >= 0
+    && reviewedCards <= snapshotWords.length;
+
+  return {
+    valid,
+    payload,
+    snapshotWords: valid ? snapshotWords : [],
+    reviewedCards: valid ? reviewedCards : 0,
+    missingPayloadReasons: prepared?.missingPayloadReasons || ['speedReviewRoom.snapshotWords'],
+  };
+}
+
+async function completeSpeedReviewRoomOptimistically(
+  room,
+  {
+    sessionOwned = true,
+    completionTarget = 0,
+    throwOnFailure = false,
+  } = {},
+) {
+  let completionResult;
+  if (sessionOwned) {
+    completionResult = getExploreSession()?.recordRoomAction('speedReview.complete', { roomId: room?.id });
+    if (!completionResult?.accepted) {
+      showExploreSoftPause({ reason: completionResult?.reason || 'missingPayload' });
+      if (throwOnFailure) throw new Error(EXPLORE_SPOTTY_COPY);
+      return null;
+    }
+  } else {
+    try {
+      completionResult = await apiCompleteSpeedReviewRoom?.(room?.id);
+      if (!completionResult || completionResult.error) {
+        throw new Error(completionResult?.error || 'No response from speed review room completion API');
+      }
+      if (completionResult.state) updateGameState(completionResult.state);
+    } catch (error) {
+      if (throwOnFailure) throw error;
+      return null;
+    }
   }
 
   updateSupportRoomDraft(draftRoom => {
@@ -1772,20 +1836,22 @@ async function completeSpeedReviewRoomOptimistically(room, { throwOnFailure = fa
       draftRoom.speedReviewRoom.completed = true;
       draftRoom.speedReviewRoom.reviewedCards = Math.max(
         draftRoom.speedReviewRoom.reviewedCards || 0,
-        draftRoom.speedReviewRoom.targetCards || 0
+        completionTarget
       );
     }
     if (draftRoom) draftRoom.interacted = true;
   }, { phase: 'room' });
 
   speedReviewRoomLaunchState.roomId = null;
+  speedReviewRoomLaunchState.commits = new Map();
   updateUI();
-  return queued;
+  return completionResult;
 }
 
 export async function renderSpeedReviewRoom() {
-  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
+  const session = getActiveStandardExploreSession(gameState);
+  session?.adoptRunway(gameState?.run?.exploreRunway || null);
   const room = getActiveSpeedReviewRoom(gameState);
   if (!room?.id) {
     return;
@@ -1801,11 +1867,28 @@ export async function renderSpeedReviewRoom() {
 
   speedReviewRoomLaunchState.starting = true;
   speedReviewRoomLaunchState.roomId = room.id;
-  speedReviewRoomCommitChain = Promise.resolve();
-  actions.setContent('');
+  speedReviewRoomLaunchState.commits = new Map();
 
   try {
-    const startResult = await apiStartSpeedReviewRoom(room.id);
+    const sessionPayload = session
+      ? preparedSpeedReviewPayload(session, gameState, room)
+      : null;
+    if (session && !sessionPayload.valid) {
+      speedReviewRoomLaunchState.roomId = null;
+      if (session.isPaused?.() !== true) {
+        session.pause?.('missingPayload');
+      } else {
+        showExploreSoftPause({
+          reason: 'missingPayload',
+          missingPayloadReasons: sessionPayload.missingPayloadReasons,
+        });
+      }
+      return;
+    }
+
+    const startResult = session
+      ? sessionPayload.payload
+      : await apiStartSpeedReviewRoom?.(room.id);
     const hasValidSnapshot = Array.isArray(startResult?.snapshotWords);
     const startSucceeded = !!startResult && !startResult.error && hasValidSnapshot;
     if (startResult?.state) {
@@ -1819,22 +1902,56 @@ export async function renderSpeedReviewRoom() {
     }
 
     const snapshotWords = startResult.snapshotWords;
-    if (snapshotWords.length === 0) {
-      await completeSpeedReviewRoomOptimistically(room);
+    const reviewedCards = sessionPayload?.reviewedCards
+      ?? Math.max(0, Number(startResult.reviewedCards) || 0);
+    if (!Number.isInteger(reviewedCards) || reviewedCards > snapshotWords.length) {
+      speedReviewRoomLaunchState.roomId = null;
+      if (session) showExploreSoftPause({ reason: 'missingPayload' });
+      return;
+    }
+    const remainingWords = snapshotWords.slice(reviewedCards);
+    if (remainingWords.length === 0) {
+      await completeSpeedReviewRoomOptimistically(room, {
+        sessionOwned: !!session,
+        completionTarget: snapshotWords.length,
+      });
       return;
     }
 
-    speedReview.start(snapshotWords, {
+    actions.setContent('');
+    speedReview.start(remainingWords, {
       mode: 'room',
       maxCards: 10,
       canCloseEarly: false,
       showRomaji: true,
       onCommittedReview: async ({ word, commitIndex }) => {
-        speedReviewRoomCommitChain = speedReviewRoomCommitChain.then(async () => {
+        const absoluteCommitIndex = reviewedCards + commitIndex;
+        const commitKey = `${absoluteCommitIndex}:${word?.word || ''}`;
+        const existing = speedReviewRoomLaunchState.commits.get(commitKey);
+        if (existing) return existing;
+
+        const commit = (async () => {
+          if (session) {
+            const queued = session.recordRoomAction('speedReview.commit', {
+              roomId: room.id,
+              word: word?.word,
+              commitIndex: absoluteCommitIndex,
+            });
+            if (!queued?.accepted) {
+              showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+              throw new Error(EXPLORE_SPOTTY_COPY);
+            }
+            return queued;
+          }
+
           let lastError = null;
           for (let attempt = 1; attempt <= 3; attempt++) {
             try {
-              const progressResult = await apiProgressSpeedReviewRoom(room.id, word.word, commitIndex);
+              const progressResult = await apiProgressSpeedReviewRoom(
+                room.id,
+                word.word,
+                absoluteCommitIndex,
+              );
               if (!progressResult || progressResult.error) {
                 throw new Error(progressResult?.error || 'No response from speed review room progress API');
               }
@@ -1850,16 +1967,22 @@ export async function renderSpeedReviewRoom() {
             }
           }
           throw lastError || new Error('Failed to commit speed review room progress');
-        });
+        })();
+        speedReviewRoomLaunchState.commits.set(commitKey, commit);
         try {
-          return await speedReviewRoomCommitChain;
+          return await commit;
         } catch (error) {
+          speedReviewRoomLaunchState.commits.delete(commitKey);
           console.error('[SpeedReviewRoom] Commit failed after retries:', error);
           throw error;
         }
       },
       onComplete: async () => {
-        await completeSpeedReviewRoomOptimistically(room, { throwOnFailure: true });
+        await completeSpeedReviewRoomOptimistically(room, {
+          sessionOwned: !!session,
+          completionTarget: snapshotWords.length,
+          throwOnFailure: true,
+        });
       }
     });
   } finally {

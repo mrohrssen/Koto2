@@ -102,6 +102,21 @@ test('marks missing payloads instead of pretending offline readiness', async () 
   assert.ok(friendly.missingPayloadReasons.includes('friendlyNpc.offered'));
 });
 
+test('treats an initialized zero-card speed review snapshot as offline ready', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.speedReviewRoom]);
+  const runway = await buildExploreRunway(gm, {
+    userId: 'runway-user-with-no-due-cards',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+
+  const speedReview = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.speedReviewRoom);
+  assert.deepEqual(speedReview.interactionPayload.snapshotWords, []);
+  assert.equal(speedReview.interactionPayload.snapshotInitialized, true);
+  assert.equal(speedReview.offlineReady, true);
+  assert.deepEqual(speedReview.missingPayloadReasons, []);
+});
+
 test('does not include raw static Japanese entry narration', async () => {
   const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.shrine]);
   const runway = await buildExploreRunway(gm, {
