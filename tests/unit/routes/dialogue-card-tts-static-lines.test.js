@@ -162,6 +162,51 @@ describe('static dialogue route TTS metadata', () => {
     assert.equal(runwaySnapshotSyncs, 1);
   });
 
+  it('migrates an active legacy NPC conversation before returning the current defeat line', async () => {
+    const room = { type: 'npcBattle', interacted: true, npcBattle: {} };
+    let runwaySnapshotSyncs = 0;
+    let saveCalls = 0;
+    const gameManager = {
+      combat: { npcId: 'kodomo' },
+      run: {
+        creatureParty: { active: [] },
+        npcDialogue: {
+          active: true,
+          npcId: 'kodomo',
+          currentRound: 1,
+          totalDelta: 1,
+          rounds: [{}, {}, {}],
+        },
+      },
+      getCurrentRoom: () => room,
+      explorationService: {
+        syncPreparedRoomSnapshot: () => { runwaySnapshotSyncs += 1; },
+      },
+    };
+    const router = createCombatRoutes({
+      getUserVocabulary: () => ({ words: [] }),
+      checkSentenceViolations: () => ({ violations: [] }),
+      getDialogueCardAudio: makeAudioResolver(),
+    });
+    const req = {
+      user: { id: 'legacy-npc-user' },
+      gameManager,
+      saveGame: () => { saveCalls += 1; },
+      getEnrichedGameState: () => ({ phase: 'npc_skill_selection' }),
+    };
+    const res = makeRes();
+
+    await getHandler(router, 'post', '/npc-dialogue-start')(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.mode, 'defeat_line');
+    assert.equal(gameManager.run.npcDialogue, null);
+    assert.equal(room.npcBattle.skillSelectionPending, true);
+    assert.equal(room.npcBattle.rewardResolved, false);
+    assert.equal(runwaySnapshotSyncs, 1);
+    assert.equal(saveCalls, 1);
+  });
+
   it('attaches creature audio to befriend quiz prompt lines', async () => {
     const audioCalls = [];
     const router = createCombatRoutes({

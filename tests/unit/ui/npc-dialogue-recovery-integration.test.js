@@ -29,30 +29,25 @@ test('room and legacy NPC dialogue phases use the same retryable recovery path',
   const proceedIndex = roomCase.indexOf('autoProceed()');
   assert.ok(recoveryIndex >= 0, 'completed NPC battle rooms should be checked for unfinished dialogue');
   assert.ok(proceedIndex > recoveryIndex, 'dialogue recovery must run before normal room auto-proceed');
-  assert.match(roomCase, /runNpcDialogueRecovery\(\)/);
-  assert.match(dialogueCase, /runNpcDialogueRecovery\(\)/);
+  assert.match(roomCase, /npcDialogueRecovery\.run\(\)/);
+  assert.match(dialogueCase, /npcDialogueRecovery\.run\(\)/);
   assert.doesNotMatch(dialogueCase, /\.then\(\(\) => updateUI\(\)\)/);
 });
 
-test('NPC dialogue recovery exposes failure, refreshes success, and shares one in-flight attempt', () => {
+test('game wiring delegates NPC recovery outcomes and ownership to the behavioral coordinator', () => {
   const recoverySource = sourceBetween(
     gameSource,
-    'let npcDialogueRecoveryDone = false;',
-    'function clearClientSessionState()',
+    'function showNpcDialogueRecoveryRetry',
+    'function handleConnectionOnline',
   );
 
-  assert.match(
-    recoverySource,
-    /if \(npcDialogueRecoveryPromise\) return npcDialogueRecoveryPromise/,
-    'manual and online retries should share the same active recovery promise',
-  );
-  assert.match(recoverySource, /await combatLoopUI\.runNpcDialogue\(\)/);
-  assert.match(recoverySource, /if \(!outcome\?\.ok\)/);
-  assert.match(recoverySource, /loadGameState\(\{ adoptSession: true \}\)/);
-  assert.match(recoverySource, /needsNpcDialogueRecovery\(refreshedState\)/);
-  assert.match(recoverySource, /npcDialogueRecoveryDone = false/);
+  assert.match(recoverySource, /createNpcDialogueRecoveryCoordinator\(\{/);
+  assert.match(recoverySource, /runDialogue: \(\) => combatLoopUI\.runNpcDialogue\(\)/);
+  assert.match(recoverySource, /refreshState: \(\) => loadGameState\(\{ adoptSession: true \}\)/);
+  assert.match(recoverySource, /resetDialogueOwnership: \(\) => combatLoopUI\.resetNpcDialogue\?\.\(\)/);
   assert.match(recoverySource, /renderButtons\(\[\{[\s\S]*label: 'Retry Dialogue'/);
-  assert.match(recoverySource, /updateUI\(\)/);
+  assert.match(recoverySource, /onRecovered: \(\) => updateUI\(\)/);
+  assert.match(gameSource, /resetFlags: \(\) => \{[\s\S]*npcDialogueRecovery\.reset\(\)/);
 });
 
 test('connection recovery retries unfinished NPC dialogue without duplicate handlers', () => {
@@ -63,7 +58,7 @@ test('connection recovery retries unfinished NPC dialogue without duplicate hand
   );
   assert.match(onlineSource, /showOnline\(\.\.\.args\)/);
   assert.match(onlineSource, /needsNpcDialogueRecovery\(gameState\)/);
-  assert.match(onlineSource, /runNpcDialogueRecovery\(\)/);
+  assert.match(onlineSource, /npcDialogueRecovery\.run\(\)/);
   assert.match(gameSource, /setConnectionCallbacks\(\{ onOffline: showOffline, onOnline: handleConnectionOnline \}\)/);
   assert.match(gameSource, /window\.addEventListener\('online', handleConnectionOnline\)/);
 });

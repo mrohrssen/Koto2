@@ -711,6 +711,13 @@ export default function createCombatRoutes({
       selectBestFrame(candidates, knownWords, { randomizeTies: true, dict: getWordDict() }) ||
       { tokens: [], raw: '', words: [] };
 
+    // Saves from the retired three-round conversation flow can reload into
+    // NPC_DIALOGUE forever. The current, word-gated defeat line replaces that
+    // flow, so finish the stale conversation before arming today's reward.
+    if (gameManager.run?.npcDialogue?.active) {
+      gameManager.run.npcDialogue = null;
+    }
+
     // Do NOT set gameManager.run.npcDialogue — that traps phase machine in NPC_DIALOGUE.
     // Arm the reward explicitly for immediate phase transition.
     const currentRoom = gameManager.getCurrentRoom();

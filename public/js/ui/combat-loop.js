@@ -1565,6 +1565,7 @@ export function init(callbacks) {
 // Re-export NPC dialogue for barrel compatibility
 export const showNpcGreeting = (...args) => npcDialogueUI.showNpcGreeting(...args);
 export const isNpcDialogueActive = () => npcDialogueUI.isNpcDialogueActive();
+export const resetNpcDialogue = () => npcDialogueUI.resetNpcDialogue();
 export const runNpcDialogue = (...args) => npcDialogueUI.runNpcDialogue(...args);
 
 /**

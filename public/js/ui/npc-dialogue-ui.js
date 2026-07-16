@@ -11,7 +11,8 @@ import { showNpcDialogueCard } from './npc-dialogue-card.js';
 // Coordinator deps (set via init)
 let ctx = null;
 
-let activeNpcDialoguePromise = null;
+let activeNpcDialogueAttempt = null;
+let npcDialogueGeneration = 0;
 
 /**
  * Initialize with coordinator callbacks.
@@ -34,7 +35,12 @@ export async function showNpcGreeting(npcData) {
   if (ctx.updateUI) ctx.updateUI();
 }
 
-export function isNpcDialogueActive() { return activeNpcDialoguePromise !== null; }
+export function isNpcDialogueActive() { return activeNpcDialogueAttempt !== null; }
+
+export function resetNpcDialogue() {
+  npcDialogueGeneration += 1;
+  activeNpcDialogueAttempt = null;
+}
 
 function dialogueSpeakerForNpc(npc = {}) {
   return {
@@ -68,25 +74,40 @@ function tokenDialogueOptions({ speaker, speakerId, line, useKanji, audio }) {
  * Called from combat victory and also from updateScene() on page reload recovery.
  */
 export function runNpcDialogue() {
-  if (activeNpcDialoguePromise) return activeNpcDialoguePromise;
+  if (activeNpcDialogueAttempt) return activeNpcDialogueAttempt.promise;
   if (!ctx?.apiStartNpcDialogue) {
     return Promise.resolve({ ok: false, reason: 'dialogue_unavailable' });
   }
 
-  activeNpcDialoguePromise = runNpcDialogueFlow()
+  const generation = npcDialogueGeneration;
+  const attempt = { generation, promise: null };
+  attempt.promise = runNpcDialogueFlow(generation)
     .catch(error => {
+      if (generation !== npcDialogueGeneration) {
+        return { ok: false, reason: 'dialogue_cancelled' };
+      }
       console.warn('[NpcDialogue] Dialogue request failed:', error?.message || error);
       return { ok: false, reason: 'dialogue_request_failed' };
     })
     .finally(() => {
-      activeNpcDialoguePromise = null;
+      if (activeNpcDialogueAttempt === attempt) activeNpcDialogueAttempt = null;
     });
+  activeNpcDialogueAttempt = attempt;
 
-  return activeNpcDialoguePromise;
+  return attempt.promise;
 }
 
-async function runNpcDialogueFlow() {
+function dialogueWasReset(generation) {
+  return generation !== npcDialogueGeneration;
+}
+
+function cancelledDialogueOutcome() {
+  return { ok: false, reason: 'dialogue_cancelled' };
+}
+
+async function runNpcDialogueFlow(generation) {
   const dialogueData = await ctx.apiStartNpcDialogue();
+  if (dialogueWasReset(generation)) return cancelledDialogueOutcome();
   if (!dialogueData) return { ok: false, reason: 'dialogue_unavailable' };
 
   if (dialogueData.mode === 'defeat_line') {
@@ -101,6 +122,7 @@ async function runNpcDialogueFlow() {
       useKanji: dialogueData.useKanji,
       audio: line?.audio,
     }));
+    if (dialogueWasReset(generation)) return cancelledDialogueOutcome();
   } else {
     const { npc, freed, rounds, userId, freedTts } = dialogueData;
     const npcSpeaker = dialogueSpeakerForNpc(npc);
@@ -112,6 +134,7 @@ async function runNpcDialogueFlow() {
       html: renderEnFirst(freed),
       audio: freedTts && userId ? { userId, key: freedTts } : null,
     }));
+    if (dialogueWasReset(generation)) return cancelledDialogueOutcome();
 
     let totalDelta = 0;
 
@@ -123,6 +146,7 @@ async function runNpcDialogueFlow() {
         html: renderEnFirst(round.npcLine),
         audio: round.npcLineTts && userId ? { userId, key: round.npcLineTts } : null,
       }));
+      if (dialogueWasReset(generation)) return cancelledDialogueOutcome();
 
       const selectedIndex = await renderChoicesAsync({
         heading: 'Choose a response',
@@ -130,12 +154,14 @@ async function runNpcDialogueFlow() {
           title: renderEnFirst(typeof o === 'string' ? o : o.text),
         })),
       });
+      if (dialogueWasReset(generation)) return cancelledDialogueOutcome();
 
       if (round.options[selectedIndex]?.tts && userId) {
         playDialogueAudio(userId, round.options[selectedIndex].tts);
       }
 
       const result = await ctx.apiRespondNpcDialogue(i, selectedIndex);
+      if (dialogueWasReset(generation)) return cancelledDialogueOutcome();
       if (!result) return { ok: false, reason: 'dialogue_unavailable' };
 
       if (result.dialogueComplete) {
@@ -151,6 +177,7 @@ async function runNpcDialogueFlow() {
 
     showBondSummary(npcSpeaker.speaker, totalDelta);
     await ctx.delay(2200);
+    if (dialogueWasReset(generation)) return cancelledDialogueOutcome();
     document.querySelector('.bond-summary')?.remove();
   }
 

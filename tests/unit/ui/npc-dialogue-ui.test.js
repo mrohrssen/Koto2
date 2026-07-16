@@ -56,7 +56,12 @@ await mock.module('../../../public/js/tts.js', {
   },
 });
 
-const { init, runNpcDialogue } = await import('../../../public/js/ui/npc-dialogue-ui.js');
+const {
+  init,
+  isNpcDialogueActive,
+  resetNpcDialogue,
+  runNpcDialogue,
+} = await import('../../../public/js/ui/npc-dialogue-ui.js');
 
 describe('npc dialogue ui', () => {
   beforeEach(() => {
@@ -199,5 +204,43 @@ describe('npc dialogue ui', () => {
     assert.deepEqual(await first, { ok: true });
     assert.deepEqual(await second, { ok: true });
     assert.equal(startCalls, 1);
+  });
+
+  it('invalidates an old session attempt without letting it clear or join the new owner', async () => {
+    let releaseOld;
+    let releaseCurrent;
+    const oldGate = new Promise(resolve => { releaseOld = resolve; });
+    const currentGate = new Promise(resolve => { releaseCurrent = resolve; });
+    let startCalls = 0;
+    init({
+      showNpcSprite: () => {},
+      delay: async () => {},
+      apiStartNpcDialogue: async () => {
+        startCalls += 1;
+        await (startCalls === 1 ? oldGate : currentGate);
+        return {
+          mode: 'defeat_line',
+          useKanji: false,
+          npc: { id: 'mira', nameEn: 'Mira' },
+          line: { tokens: [{ surface: 'すごい', reading: 'すごい' }] },
+        };
+      },
+    });
+
+    const oldAttempt = runNpcDialogue();
+    resetNpcDialogue();
+    const currentAttempt = runNpcDialogue();
+
+    assert.notStrictEqual(currentAttempt, oldAttempt);
+    assert.equal(startCalls, 2);
+
+    releaseOld();
+    assert.deepEqual(await oldAttempt, { ok: false, reason: 'dialogue_cancelled' });
+    assert.equal(isNpcDialogueActive(), true, 'old finalizer must not clear the current owner');
+    assert.strictEqual(runNpcDialogue(), currentAttempt, 'current owner remains single-flight');
+
+    releaseCurrent();
+    assert.deepEqual(await currentAttempt, { ok: true });
+    assert.equal(isNpcDialogueActive(), false);
   });
 });
