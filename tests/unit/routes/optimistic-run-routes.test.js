@@ -766,6 +766,67 @@ describe('optimistic deterministic run routes', () => {
     ]);
   });
 
+  it('rejects unarmed pre-combat NPC offer requests without mutating canonical state', async () => {
+    const offersHandler = getHandler(
+      createRunRouter(),
+      'post',
+      '/npc-battle-skill-offers',
+    );
+    const room = {
+      id: 'npc-unarmed',
+      type: 'npcBattle',
+      interacted: false,
+      npcBattle: {},
+    };
+    const existingRunway = {
+      sessionEpoch: 'ese_8888888888888888',
+      currentRoom: 0,
+      roomActionSeq: 7,
+      preparedRooms: [{ index: 0, roomId: room.id }],
+    };
+    const run = {
+      active: true,
+      mode: 'standard',
+      currentRoom: 0,
+      roomActionSeq: 7,
+      exploreRunway: existingRunway,
+      partySkills: PARTY_SKILL_TREE_IDS.map(id => ({ id, level: 5 })),
+    };
+    const gm = attachExplorationService({ run }, room);
+    let rebuildCalls = 0;
+    gm.explorationService.buildExploreRunway = async () => {
+      rebuildCalls += 1;
+      return { replaced: true };
+    };
+    let saveCalls = 0;
+    let serializeCalls = 0;
+    const req = {
+      body: {},
+      user: { id: 'test-user' },
+      gameManager: gm,
+      saveGame: async () => { saveCalls += 1; },
+      getEnrichedGameState: () => {
+        serializeCalls += 1;
+        return { phase: 'room' };
+      },
+    };
+    const beforeRoom = structuredClone(room);
+
+    const response = makeRes();
+    await offersHandler(req, response);
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(response.body.error, 'NPC battle skill selection not pending');
+    assert.deepEqual(room, beforeRoom);
+    assert.equal(room.interacted, false);
+    assert.equal(room.npcBattle.rewardResolved, undefined);
+    assert.equal(room.npcBattle.skillSelectionPending, undefined);
+    assert.equal(run.exploreRunway, existingRunway);
+    assert.equal(rebuildCalls, 0);
+    assert.equal(saveCalls, 0);
+    assert.equal(serializeCalls, 0);
+  });
+
   it('wraps NPC battle skill choices with accepted optimistic status when actionId is present', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
     const room = {

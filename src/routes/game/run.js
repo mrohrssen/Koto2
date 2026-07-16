@@ -28,6 +28,7 @@ import {
   selectBestFrame,
 } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
+import { isNpcBattleRewardResolved } from '../../game/npc-battle-reward.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 import { SPRITE_VERSION } from '../../shared/asset-versions.js';
 import {
@@ -478,6 +479,14 @@ export default function createRunRoutes({
       const room = gm.getCurrentRoom();
       if (!room || room.type !== 'npcBattle') {
         return res.status(400).json({ error: 'Not in an NPC battle room' });
+      }
+      if (
+        !isNpcBattleRewardResolved(room)
+        && room.npcBattle?.skillSelectionPending !== true
+      ) {
+        return res.status(400).json({
+          error: 'NPC battle skill selection not pending',
+        });
       }
       const { offered, rewardResolved } =
         gm.explorationService.ensureNpcBattleSkillOffers(room);
