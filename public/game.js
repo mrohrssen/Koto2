@@ -737,9 +737,25 @@ function updateGameContent() {
     case 'combat':
       // On page reload, the combat loop isn't running. Re-initialize it
       // so the player sees their current combat state and can pick moves.
-      if (!combatLoopUI.isCombatActive() && !combatRecoveryDone) {
-        combatRecoveryDone = true;
-        combatLoopUI.startCombatLoop({ recovery: true });
+      // An accepted Explore turn whose playback failed also restarts here after
+      // its authoritative checkpoint drains. That owner-checked permit must
+      // bypass combatRecoveryDone because a reload-recovered fight has already
+      // consumed the ordinary one-shot recovery gate.
+      {
+        const combatIsActive = combatLoopUI.isCombatActive();
+        const playbackRecoveryState = !combatIsActive
+          ? combatLoopUI.getExploreCombatPlaybackRecoveryState?.() || 'none'
+          : 'none';
+        const playbackRecovery = playbackRecoveryState === 'ready'
+          && combatLoopUI.consumeExploreCombatPlaybackRecovery?.() === true;
+        const playbackRecoveryHeld = playbackRecoveryState !== 'none';
+        if (
+          !combatIsActive
+          && (playbackRecovery || (!playbackRecoveryHeld && !combatRecoveryDone))
+        ) {
+          combatRecoveryDone = true;
+          combatLoopUI.startCombatLoop({ recovery: true });
+        }
       }
       break;
     case 'npc_dialogue':

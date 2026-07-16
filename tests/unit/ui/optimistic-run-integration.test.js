@@ -358,6 +358,30 @@ describe('optimistic run action integration', () => {
     assert.match(npcSkillCallbackSource, /return result/);
   });
 
+  it('lets an owner-checked playback recovery bypass an already-consumed reload gate', () => {
+    const combatCaseSource = sourceBetween(
+      gameSource,
+      "case 'combat':",
+      "case 'npc_dialogue':"
+    );
+
+    assert.match(
+      combatCaseSource,
+      /getExploreCombatPlaybackRecoveryState\?\.\(\) \|\| 'none'/,
+      'combat resume must distinguish a held permit from no recovery request',
+    );
+    assert.match(
+      combatCaseSource,
+      /consumeExploreCombatPlaybackRecovery\?\.\(\) === true/,
+      'combat resume must consume the owner-checked one-shot permit',
+    );
+    assert.match(
+      combatCaseSource,
+      /playbackRecovery \|\| \(!playbackRecoveryHeld && !combatRecoveryDone\)/,
+      'pending playback recovery must block ordinary restart while ready recovery bypasses the reload gate',
+    );
+  });
+
   it('handles rejected NPC battle skill session actions with soft pause copy', () => {
     const npcBattleStart = explorationSource.indexOf('export async function renderNpcBattleSkillSelection');
     assert.notEqual(npcBattleStart, -1, 'Missing NPC battle skill selection renderer');

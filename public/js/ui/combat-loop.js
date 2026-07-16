@@ -190,6 +190,7 @@ const activeCombatAnimationTokens = new Set();
 const activeExploreCombatPlaybackTokens = new Set();
 const exploreCombatPlaybackIdleWaiters = new Set();
 let exploreCombatPlaybackEpoch = 0;
+let exploreCombatPlaybackRecovery = null;
 
 // Callback references (set during init)
 let getGameState = null;
@@ -561,6 +562,19 @@ function getExploreSessionCombatOwner(session = getActiveStandardExploreSession(
 
 const STALE_EXPLORE_COMBAT_OWNER = Symbol('staleExploreCombatOwner');
 const ADOPTED_EXPLORE_COMBAT_CHECKPOINT = Symbol('adoptedExploreCombatCheckpoint');
+const ACCEPTED_EXPLORE_COMBAT_PLAYBACK_FAILURE = Symbol('acceptedExploreCombatPlaybackFailure');
+
+function tagAcceptedExploreCombatPlaybackFailure(error) {
+  const tagged = error instanceof Error && Object.isExtensible(error)
+    ? error
+    : new Error(error?.message || String(error), { cause: error });
+  tagged[ACCEPTED_EXPLORE_COMBAT_PLAYBACK_FAILURE] = true;
+  return tagged;
+}
+
+function isAcceptedExploreCombatPlaybackFailure(error) {
+  return error?.[ACCEPTED_EXPLORE_COMBAT_PLAYBACK_FAILURE] === true;
+}
 
 function preparedExploreCombatId(session) {
   const payload = session?.currentPreparedRoom?.()?.interactionPayload;
@@ -704,6 +718,32 @@ export function waitForExploreCombatPlaybackIdle() {
   return new Promise(resolve => exploreCombatPlaybackIdleWaiters.add(resolve));
 }
 
+// A playback failure after an accepted session append leaves the local combat
+// deliberately inactive until its queued action is confirmed. The normal game
+// combat-recovery flag is one-shot (and may already be set after a reload), so
+// expose one owner-checked recovery permit for onResume/updateUI to consume.
+export function getExploreCombatPlaybackRecoveryState() {
+  const recovery = exploreCombatPlaybackRecovery;
+  if (!recovery || combatActive) return 'none';
+  if (!ownsCurrentExploreCombat(recovery.session, recovery.owner)) {
+    exploreCombatPlaybackRecovery = null;
+    return 'none';
+  }
+  if (
+    recovery.session?.isPaused?.() === true
+    || (recovery.session?.pendingCount?.() ?? 0) > 0
+  ) {
+    return 'pending';
+  }
+  return 'ready';
+}
+
+export function consumeExploreCombatPlaybackRecovery() {
+  if (getExploreCombatPlaybackRecoveryState() !== 'ready') return false;
+  exploreCombatPlaybackRecovery = null;
+  return true;
+}
+
 function hasSafeExploreSessionSeedRunway() {
   const turnSeeds = getGameState()?.combat?.optimistic?.turnSeeds;
   return Array.isArray(turnSeeds) && turnSeeds.length > 1;
@@ -732,6 +772,9 @@ function handleCreatureTurnFailure({
   clearCombatPendingFlag(pendingFlag);
   if (!turnTiming?.logged) {
     logCombatTurnTiming(turnTiming, null, 'exception', true);
+  }
+  if (isAcceptedExploreCombatPlaybackFailure(error)) {
+    return true;
   }
   if (combatActive) {
     restartMoveSelection();
@@ -990,10 +1033,35 @@ async function runSessionCreatureCombatTurn({
   const canFinalizeState = () => (
     classifyExploreCombatContinuation(session, capturedOwner, capturedProgress) === 'base'
   );
-  await withExploreCombatPlayback(() => playback(
-    optimistic.localTranscript,
-    { isCurrent, canFinalizeState },
-  ));
+  await withExploreCombatPlayback(async () => {
+    try {
+      return await playback(
+        optimistic.localTranscript,
+        { isCurrent, canFinalizeState },
+      );
+    } catch (error) {
+      // The action is already in the ordered log, but its predicted state was
+      // never committed. Tag and hold it while the playback token is still
+      // owned. A ready checkpoint may adopt immediately after token release,
+      // so complete owner-specific cleanup below before that point. A stale
+      // combat must never pause its successor.
+      if (!ownsCurrentExploreCombat(session, capturedOwner)) throw error;
+      const tagged = tagAcceptedExploreCombatPlaybackFailure(error);
+      // A ready drain resumes before the outer catch can run. Release this
+      // turn's input ownership and mark the failed local loop inactive while
+      // the playback token still fences adoption; onResume/updateUI can then
+      // restart the loop from the authoritative checkpoint instead of leaving
+      // a half-played UI active or clearing a successor combat's input lock.
+      clearCombatPendingFlag(pendingFlag);
+      combatActive = false;
+      exploreCombatPlaybackRecovery = {
+        session,
+        owner: { ...capturedOwner },
+      };
+      session?.pause?.('combatPlaybackFailed');
+      throw tagged;
+    }
+  });
 
   if (playbackEpoch !== exploreCombatPlaybackEpoch) {
     return STALE_EXPLORE_COMBAT_OWNER;
@@ -1340,6 +1408,7 @@ export const __combatNetworkTest = {
   resetPendingFlags() {
     playerAttackPending = false;
     enemyAttackPending = false;
+    exploreCombatPlaybackRecovery = null;
     _lastLocallyPlayedKanjiKombatWave = 0;
   },
   setPendingFlags({ player = false, enemy = false } = {}) {
@@ -1799,6 +1868,7 @@ export function cleanupCombat() {
   pendingMove = null;
   pendingMoveOwnerContext = null;
   activeMoveSelectionOwnerContext = null;
+  exploreCombatPlaybackRecovery = null;
   _currentRoundBarks = [];
   animatedEnemyKoKeys = new Set();
   _lastLocallyPlayedKanjiKombatWave = 0;

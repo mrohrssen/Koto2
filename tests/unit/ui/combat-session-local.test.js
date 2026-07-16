@@ -21,12 +21,15 @@ globalThis.cancelAnimationFrame = id => clearImmediate(id);
 // --- Fake explore session, injected via module mock ---
 // A combat prepared room accepts 'combat.cycle'; recordRoomAction/syncNow are spies.
 let fakeSession = null;
+const { createExploreSession } = await import('../../../public/js/ui/explore-session.js');
 function makeFakeSession({ acceptsCombatCycle = true, combatId = 'cmb_sess' } = {}) {
   const recorded = [];
   let syncNowCalls = 0;
   let currentCombatId = combatId;
   let currentRoomIndex = 0;
   let currentRoomId = 'room-0';
+  let paused = false;
+  let pauseReason = null;
   return {
     recorded,
     get syncNowCalls() { return syncNowCalls; },
@@ -45,13 +48,20 @@ function makeFakeSession({ acceptsCombatCycle = true, combatId = 'cmb_sess' } = 
       currentRoomId = roomId;
     },
     recordRoomAction: (kind, payload) => {
+      if (paused) {
+        return { accepted: false, reason: pauseReason, pendingCount: recorded.length };
+      }
       recorded.push({ kind, payload });
       return { accepted: true, pendingCount: recorded.length };
     },
     pendingCount: () => recorded.length,
-    isPaused: () => false,
+    isPaused: () => paused,
+    getPauseReason: () => pauseReason,
     getLocalRevision: () => recorded.length,
-    pause: () => {},
+    pause: reason => {
+      paused = true;
+      pauseReason = reason;
+    },
     syncNow: () => { syncNowCalls += 1; return Promise.resolve(); },
   };
 }
@@ -119,13 +129,13 @@ function sessionCombatState({ enemyHp = 100, turnSeeds = ['seed-a', 'seed-b', 's
   };
 }
 
-function initHarness(initialState, { setCombatAnimationActive } = {}) {
+function initHarness(initialState, { setCombatAnimationActive, updateUI = () => {} } = {}) {
   let state = initialState;
   const updates = [];
   combatLoop.init({
     getGameState: () => state,
     updateGameState: next => { state = next; updates.push(next); },
-    updateUI: () => {},
+    updateUI,
     settings: { getApiKeys: () => ({}) },
     narration: {},
     characterUI: {
@@ -325,6 +335,228 @@ describe('explore-session local combat turns', () => {
       combatLoop.__combatNetworkTest.getPendingFlags(),
       { player: false, enemy: false },
     );
+  });
+
+  it('holds an accepted turn when playback rejects instead of appending the unchanged seed twice', async () => {
+    const harness = initHarness(sessionCombatState());
+    const before = structuredClone(harness.state);
+    let playbackCalls = 0;
+    let selectionRestarts = 0;
+    let pauseIdleProbe = null;
+    const reportedErrors = [];
+    const originalPause = fakeSession.pause;
+    fakeSession.pause = reason => {
+      pauseIdleProbe = Promise.race([
+        combatLoop.waitForExploreCombatPlaybackIdle().then(() => 'idle'),
+        Promise.resolve('playback-held'),
+      ]);
+      originalPause(reason);
+    };
+    const options = {
+      exploreOwnerContext: {
+        combatId: 'cmb_sess',
+        roomIndex: 0,
+        roomId: 'room-0',
+      },
+      playback: async () => {
+        playbackCalls += 1;
+        throw new Error('accepted turn playback failed');
+      },
+      restartMoveSelection: () => { selectionRestarts += 1; },
+      reportError: (...args) => { reportedErrors.push(args); },
+    };
+    const choices = [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }];
+
+    await combatLoop.__combatNetworkTest.executeCreatureMovesTurn(choices, options);
+
+    assert.equal(fakeSession.recorded.length, 1, 'the accepted action remains queued once');
+    assert.deepEqual(harness.state, before, 'failed playback must not commit its local prediction');
+    assert.equal(fakeSession.isPaused(), true, 'the accepted-but-uncommitted session is held');
+    assert.equal(fakeSession.getPauseReason(), 'combatPlaybackFailed');
+    const heldRecoveryState = combatLoop.getExploreCombatPlaybackRecoveryState();
+    const prematureRecovery = heldRecoveryState === 'ready'
+      && combatLoop.consumeExploreCombatPlaybackRecovery() === true;
+    const combatRecoveryDone = false;
+    const wouldRestartWithUnusedReloadGate = prematureRecovery
+      || (heldRecoveryState === 'none' && !combatRecoveryDone);
+    assert.equal(heldRecoveryState, 'pending');
+    assert.equal(wouldRestartWithUnusedReloadGate, false,
+      'a pending permit must suppress ordinary combat recovery before confirmation');
+    assert.equal(combatLoop.consumeExploreCombatPlaybackRecovery(), false,
+      'the recovery permit must stay held until the queued action is confirmed');
+    assert.equal(await pauseIdleProbe, 'playback-held',
+      'the session must pause before the playback token releases checkpoint adoption');
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, false,
+      'the failed input lock must be released safely');
+    assert.equal(selectionRestarts, 0, 'unchanged seed selection must not reopen');
+
+    await combatLoop.__combatNetworkTest.executeCreatureMovesTurn(choices, options);
+
+    assert.equal(fakeSession.recorded.length, 1, 'the held session must reject a second append');
+    assert.equal(playbackCalls, 1, 'a rejected retry must not replay the same prediction');
+    assert.equal(selectionRestarts, 0);
+    assert.equal(reportedErrors.length, 1, 'the accepted playback failure is still reported once');
+    assert.deepEqual(harness.state, before);
+  });
+
+  it('cleans up before a waiting real-session checkpoint and re-arms from authoritative state on resume', async () => {
+    const initialState = sessionCombatState();
+    const authoritativeState = structuredClone(initialState);
+    authoritativeState.combat.optimistic = {
+      combatId: 'cmb_sess',
+      stateVersion: 1,
+      nextTurnSeed: 'seed-b',
+      turnSeeds: ['seed-b', 'seed-c'],
+    };
+    authoritativeState.combat.enemies[0].hp = 71;
+    const runway = {
+      sessionEpoch: 'ese_playback_failure',
+      currentRoom: 0,
+      roomActionSeq: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: 'room-0',
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['combatState', 'partyStats'] },
+        dependencies: ['combatState', 'partyStats'],
+        interactionPayload: {
+          combatId: 'cmb_sess',
+          combatStart: { optimistic: { combatId: 'cmb_sess' } },
+        },
+      }],
+    };
+    const events = [];
+    let harness;
+    let checkpointPending = null;
+    let checkpointCombatActive = null;
+    let recoveryStarts = 0;
+    let combatRecoveryDone = true;
+    let markResponseReady;
+    let markAdoptionWaiting;
+    const responseReady = new Promise(resolve => { markResponseReady = resolve; });
+    const adoptionWaiting = new Promise(resolve => { markAdoptionWaiting = resolve; });
+    fakeSession = createExploreSession({
+      syncRequest: async ({ entries }) => {
+        events.push('sync-ready');
+        markResponseReady();
+        return {
+          status: 'ok',
+          confirmedThroughSeq: entries.at(-1).seq,
+          results: [],
+          state: authoritativeState,
+          exploreRunway: runway,
+        };
+      },
+      beforeResponseAdoption: async () => {
+        events.push('adoption-wait');
+        markAdoptionWaiting();
+        await combatLoop.waitForExploreCombatPlaybackIdle();
+        events.push('adoption-unblocked');
+      },
+      onCheckpoint: response => {
+        checkpointPending = combatLoop.__combatNetworkTest.getPendingFlags().player;
+        checkpointCombatActive = combatLoop.__combatNetworkTest.isCombatActive();
+        events.push('checkpoint');
+        harness.replaceState(response.state);
+      },
+      onPause: ({ reason }) => { events.push(`pause:${reason}`); },
+      onResume: ({ reason }) => {
+        events.push(`resume:${reason}`);
+        // Mirror game.js's combat case with its page-reload recovery gate
+        // already consumed. The owner-checked playback permit must bypass it.
+        const combatIsActive = combatLoop.__combatNetworkTest.isCombatActive();
+        const playbackRecoveryState = !combatIsActive
+          ? combatLoop.getExploreCombatPlaybackRecoveryState()
+          : 'none';
+        const playbackRecovery = playbackRecoveryState === 'ready'
+          && combatLoop.consumeExploreCombatPlaybackRecovery() === true;
+        const playbackRecoveryHeld = playbackRecoveryState !== 'none';
+        if (
+          !combatIsActive
+          && (playbackRecovery || (!playbackRecoveryHeld && !combatRecoveryDone))
+        ) {
+          combatRecoveryDone = true;
+          recoveryStarts += 1;
+          combatLoop.__combatNetworkTest.setCombatActive(true);
+          events.push('rearmed');
+        }
+      },
+      schedule: fn => {
+        queueMicrotask(fn);
+        return fn;
+      },
+      cancel: () => {},
+    });
+    fakeSession.adoptRunway(runway);
+    harness = initHarness(initialState);
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: false, enemy: false });
+    let markPlaybackStarted;
+    let rejectPlayback;
+    const playbackStarted = new Promise(resolve => { markPlaybackStarted = resolve; });
+    const playbackGate = new Promise((resolve, reject) => { rejectPlayback = reject; });
+    let selectionRestarts = 0;
+
+    const turn = combatLoop.__combatNetworkTest.executeCreatureMovesTurn(
+      [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      {
+        playback: async () => {
+          events.push('playback');
+          markPlaybackStarted();
+          await playbackGate;
+        },
+        restartMoveSelection: () => { selectionRestarts += 1; },
+        reportError: () => { events.push('reported'); },
+      },
+    );
+
+    await playbackStarted;
+    await responseReady;
+    await adoptionWaiting;
+    rejectPlayback(new Error('accepted turn playback failed'));
+    await turn;
+
+    assert.equal(checkpointPending, false,
+      'accepted-turn input cleanup must happen before checkpoint adoption');
+    assert.equal(checkpointCombatActive, false,
+      'the failed local loop must be inactive before checkpoint adoption');
+    assert.equal(recoveryStarts, 1,
+      'authoritative checkpoint resume must automatically re-arm combat input');
+    assert.equal(selectionRestarts, 0, 'the unchanged local seed must never restart');
+    assert.equal(fakeSession.pendingCount(), 0);
+    assert.equal(fakeSession.isPaused(), false);
+    assert.equal(harness.state, authoritativeState);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, false);
+    assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), true);
+    assert.ok(events.indexOf('pause:combatPlaybackFailed') < events.indexOf('adoption-unblocked'));
+    assert.ok(events.indexOf('checkpoint') < events.indexOf('resume:combatPlaybackFailed'));
+    assert.ok(events.indexOf('resume:combatPlaybackFailed') < events.indexOf('rearmed'));
+  });
+
+  it('keeps generic pre-append failures on the existing current-owner recovery path', async () => {
+    const harness = initHarness(sessionCombatState());
+    fakeSession.recordRoomAction = () => {
+      throw new Error('append failed before acceptance');
+    };
+    let selectionRestarts = 0;
+    const reportedErrors = [];
+
+    await combatLoop.__combatNetworkTest.executeCreatureMovesTurn(
+      [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      {
+        playback: async () => { throw new Error('playback must not run'); },
+        restartMoveSelection: () => { selectionRestarts += 1; },
+        reportError: (...args) => { reportedErrors.push(args); },
+      },
+    );
+
+    assert.equal(fakeSession.isPaused(), false);
+    assert.equal(fakeSession.recorded.length, 0);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, false);
+    assert.equal(selectionRestarts, 1, 'pre-append failures retain generic recovery');
+    assert.equal(reportedErrors.length, 1);
   });
 
   it('plays a cap-reaching accepted turn once without reopening move selection', async () => {
@@ -936,6 +1168,7 @@ describe('explore-session local combat turns', () => {
       );
       assert.equal(selectionRestarts, 0, 'combat A catch must not restart combat B selection');
       assert.equal(reportedErrors.length, 0, 'combat A catch must suppress its stale error');
+      assert.equal(fakeSession.isPaused(), false, 'stale combat A must not pause combat B session');
       assert.equal(animationStates.at(-1), true, 'combat A finally must leave B animation active');
 
       releaseCombatBAnimation();

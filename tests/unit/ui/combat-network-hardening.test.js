@@ -319,7 +319,7 @@ describe('combat network hardening', () => {
   it('threads Explore combat ownership through attack and defend playback finalization', () => {
     assert.match(
       combatLoopSource,
-      /await withExploreCombatPlayback\(\(\) => playback\([\s\S]*?optimistic\.localTranscript/,
+      /await withExploreCombatPlayback\(async \(\) => \{[\s\S]*?await playback\([\s\S]*?optimistic\.localTranscript/,
       'the production session turn must hold checkpoint adoption across the complete playback helper',
     );
     assert.match(
