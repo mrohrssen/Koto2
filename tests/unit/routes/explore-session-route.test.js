@@ -208,4 +208,97 @@ describe('explore session route', () => {
       req.gameManager.run.creatureParty.active,
     );
   });
+
+  it('binds canonical speed-review grading to the authenticated request user', async () => {
+    let delivered = null;
+    const handler = getHandler(createExploreSessionRoutes({
+      applyKnownWordReview: (req, review) => {
+        delivered = { userId: req.user.id, ...review };
+        return { ok: true };
+      },
+    }), 'post', '/sync');
+    const room = {
+      id: 'route-speed-review',
+      type: 'speedReviewRoom',
+      interacted: false,
+      speedReviewRoom: {
+        targetCards: 1,
+        reviewedCards: 0,
+        completed: false,
+        snapshotInitialized: true,
+        snapshotWordKeys: ['光'],
+        awardedReviewKeys: [],
+        pendingReviewKeys: [],
+        settled: true,
+      },
+    };
+    const run = {
+      active: true,
+      mode: 'standard',
+      exploreSessionEpoch: 'ese_aaaaaaaaaaaaaaaa',
+      exploreRunway: null,
+      currentRoom: 0,
+      roomActionSeq: 0,
+      rooms: [room],
+    };
+    const gameManager = {
+      run,
+      combat: null,
+      meta: { actionLedger: { entries: {}, order: [] } },
+      explorationService: {
+        applySpeedReviewCommit(payload, { applyReview } = {}) {
+          const review = applyReview({ word: payload.word, grade: payload.grade });
+          room.speedReviewRoom.reviewedCards = 1;
+          return { committed: true, review };
+        },
+        async buildExploreRunway() {
+          const runway = {
+            sessionEpoch: run.exploreSessionEpoch,
+            currentRoom: 0,
+            roomActionSeq: 0,
+            preparedRooms: [],
+          };
+          run.exploreRunway = runway;
+          return runway;
+        },
+      },
+      getState() {
+        return {
+          phase: 'speedReviewRoom',
+          run: {
+            currentRoom: run.currentRoom,
+            roomActionSeq: run.roomActionSeq,
+            exploreRunway: run.exploreRunway,
+          },
+          room,
+        };
+      },
+    };
+    const req = {
+      user: { id: 'route-user' },
+      body: {
+        sessionEpoch: run.exploreSessionEpoch,
+        entries: [{
+          seq: 1,
+          actionId: 'run_es_routegrade1',
+          kind: 'speedReview.commit',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+          payload: { roomId: room.id, word: '光', grade: 'good', commitIndex: 0 },
+        }],
+      },
+      gameManager,
+      saveGame: async () => {},
+      getEnrichedGameState: () => gameManager.getState(),
+    };
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, 'ok');
+    assert.deepEqual(delivered, { userId: 'route-user', word: '光', grade: 'good' });
+    assert.equal(room.speedReviewRoom.reviewedCards, 1);
+  });
 });

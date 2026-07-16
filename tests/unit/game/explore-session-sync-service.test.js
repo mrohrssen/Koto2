@@ -106,6 +106,23 @@ function makeEntry(gm, overrides = {}) {
   };
 }
 
+function prepareSpeedReviewRoom(gm, word = '明るい') {
+  const room = gm.run.rooms[0];
+  room.speedReviewRoom = {
+    ...room.speedReviewRoom,
+    targetCards: 1,
+    reviewedCards: 0,
+    completed: false,
+    snapshotInitialized: true,
+    snapshotWords: [{ word, reading: 'あかるい', meanings: ['bright'] }],
+    snapshotWordKeys: [word],
+    awardedReviewKeys: [],
+    pendingReviewKeys: [],
+    settled: true,
+  };
+  return room;
+}
+
 async function expectSupportReplayOnce({ roomType, kind, payload = {}, installPerformer, assertApplied }) {
   const gm = makeGm();
   gm.run.rooms[0] = createRoom(roomType, AREA_ID, 1, 3);
@@ -1116,7 +1133,7 @@ describe('ExploreSessionSyncService', () => {
       {
         roomType: ROOM_TYPES.speedReviewRoom,
         kind: 'speedReview.commit',
-        payload: { roomId: 'hajimari-no-hiroba_room1', word: '明るい', commitIndex: 0 },
+        payload: { roomId: 'hajimari-no-hiroba_room1', word: '明るい', grade: 'good', commitIndex: 0 },
         method: 'applySpeedReviewCommit',
       },
     ];
@@ -1156,6 +1173,101 @@ describe('ExploreSessionSyncService', () => {
       assert.equal(replay.results[0].replayed, true, testCase.kind);
       assert.equal(calls, 1, testCase.kind);
     }
+  });
+
+  it('delivers a speed-review grade once across ledger replay and a different duplicate action', async () => {
+    const gm = makeGm([ROOM_TYPES.speedReviewRoom, ROOM_TYPES.friendlyNpc]);
+    const room = prepareSpeedReviewRoom(gm);
+    const delivered = [];
+    const service = new ExploreSessionSyncService(gm, {
+      applyKnownWordReview: review => {
+        delivered.push(review);
+        return {
+          ok: true,
+          mastered: review.grade === 'good',
+          fusionCoreDrop: review.grade === 'good'
+            ? { awarded: true, message: 'Obtained 1x Fusion Core!' }
+            : null,
+        };
+      },
+    });
+    const entry = makeEntry(gm, {
+      seq: 1,
+      actionId: 'run_es_grade0001',
+      kind: 'speedReview.commit',
+      roomId: room.id,
+      payload: { roomId: room.id, word: '明るい', grade: 'good', commitIndex: 0 },
+    });
+
+    const first = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+    const replay = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+    const duplicate = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [{
+        ...entry,
+        seq: 2,
+        actionId: 'run_es_grade0002',
+        payload: { ...entry.payload, grade: 'again' },
+      }],
+    });
+    const invalidDuplicate = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [{
+        ...entry,
+        seq: 3,
+        actionId: 'run_es_grade0003',
+        payload: { ...entry.payload, grade: 'later' },
+      }],
+    });
+
+    assert.equal(first.status, 'ok');
+    assert.deepEqual(first.results[0].knownWordReview, {
+      mastered: true,
+      word: '明るい',
+      grade: 'good',
+      fusionCoreDrop: { awarded: true, message: 'Obtained 1x Fusion Core!' },
+    });
+    assert.equal(replay.results[0].replayed, true);
+    assert.deepEqual(replay.results[0].knownWordReview, first.results[0].knownWordReview);
+    assert.equal(duplicate.status, 'ok');
+    assert.equal(duplicate.results[0].alreadyCommitted, true);
+    assert.equal(invalidDuplicate.status, 'corrected');
+    assert.match(invalidDuplicate.reason, /grade/);
+    assert.deepEqual(delivered, [{ word: '明るい', grade: 'good' }]);
+    assert.equal(room.speedReviewRoom.reviewedCards, 1);
+  });
+
+  it('rejects an invalid speed-review grade before mutating the room or calling SRS', async () => {
+    const gm = makeGm([ROOM_TYPES.speedReviewRoom, ROOM_TYPES.friendlyNpc]);
+    const room = prepareSpeedReviewRoom(gm);
+    let delivered = 0;
+    const service = new ExploreSessionSyncService(gm, {
+      applyKnownWordReview: () => { delivered += 1; },
+    });
+    const entry = makeEntry(gm, {
+      seq: 1,
+      actionId: 'run_es_badgrade1',
+      kind: 'speedReview.commit',
+      roomId: room.id,
+      payload: { roomId: room.id, word: '明るい', grade: 'later', commitIndex: 0 },
+    });
+
+    const result = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.match(result.reason, /grade/);
+    assert.equal(delivered, 0);
+    assert.equal(room.speedReviewRoom.reviewedCards, 0);
+    assert.deepEqual(room.speedReviewRoom.pendingReviewKeys, []);
   });
 
   // ---- The 12d drain→rotate→adopt race, sequenced at the service level ----

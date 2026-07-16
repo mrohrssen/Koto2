@@ -133,8 +133,8 @@ describe('speed review room flow', () => {
     // With 0 required cards, reviewedCards(0) >= completionTarget(0) -> auto-completed
     assert.equal(startRes.body.completed, true);
     assert.equal(startRes.body.interacted, true);
-    // First initialisation, not a reuse
-    assert.equal(startRes.body.reusedSnapshot, false);
+    // The prepared runway initializes the snapshot before the room is entered.
+    assert.equal(startRes.body.reusedSnapshot, true);
 
     // Complete — succeeds on an already-completed room
     const completeRes = await client.post('/api/game/speed-review-room/complete', {
@@ -168,14 +168,14 @@ describe('speed review room flow', () => {
     assert.ok(progressRes.body.error.includes('outside snapshot bounds'));
   });
 
-  it('start is idempotent — second call returns reusedSnapshot true', async () => {
+  it('start reuses the prepared runway snapshot idempotently', async () => {
     const room = await enterSpeedReviewRoom(client, tmpDir);
 
     const start1 = await client.post('/api/game/speed-review-room/start', {
       roomId: room.id
     });
     assert.equal(start1.status, 200);
-    assert.equal(start1.body.reusedSnapshot, false);
+    assert.equal(start1.body.reusedSnapshot, true);
 
     // Second call — snapshot was already initialised
     const start2 = await client.post('/api/game/speed-review-room/start', {

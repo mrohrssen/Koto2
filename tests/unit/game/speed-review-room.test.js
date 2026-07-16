@@ -184,6 +184,88 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     assert.strictEqual(c3.xp, 0);
   });
 
+  it('validates canonical grades before review delivery and leaves a failed delivery retryable', async () => {
+    const { gm, room } = createHarness();
+    const words = [makeWord(4)];
+    await gm.startSpeedReviewRoom({
+      roomId: room.id,
+      userId: 'canonical-grade-user',
+      dueWordsProvider: async () => ({ words, source: 'test' })
+    });
+
+    assert.throws(
+      () => gm.explorationService.recordSpeedReviewRoomCommit({
+        roomId: room.id,
+        commitIndex: 0,
+        word: words[0].word,
+        grade: 'later'
+      }),
+      /grade/
+    );
+    assert.strictEqual(room.speedReviewRoom.reviewedCards, 0);
+    assert.deepStrictEqual(room.speedReviewRoom.pendingReviewKeys, []);
+
+    assert.throws(
+      () => gm.explorationService.recordSpeedReviewRoomCommit({
+        roomId: room.id,
+        commitIndex: 0,
+        word: words[0].word,
+        grade: 'good'
+      }, {
+        applyReview: () => { throw new Error('SRS unavailable'); }
+      }),
+      /SRS unavailable/
+    );
+    assert.strictEqual(room.speedReviewRoom.reviewedCards, 0,
+      'the room commit must stay untouched when canonical review delivery fails');
+    assert.deepStrictEqual(room.speedReviewRoom.pendingReviewKeys, []);
+    assert.deepStrictEqual(room.speedReviewRoom.awardedReviewKeys, []);
+  });
+
+  it('applies one canonical grade when a different action retries the same review key', async () => {
+    const { gm, room } = createHarness();
+    const words = [makeWord(5)];
+    gm.run.creatureParty.active = [instantiateCreature('hi')];
+    await gm.startSpeedReviewRoom({
+      roomId: room.id,
+      userId: 'deduped-grade-user',
+      dueWordsProvider: async () => ({ words, source: 'test' })
+    });
+    const delivered = [];
+    const applyReview = review => {
+      delivered.push(review);
+      return { ok: true };
+    };
+
+    const first = gm.explorationService.recordSpeedReviewRoomCommit({
+      roomId: room.id,
+      commitIndex: 0,
+      word: words[0].word,
+      grade: 'good'
+    }, { applyReview });
+    const duplicate = gm.explorationService.recordSpeedReviewRoomCommit({
+      roomId: room.id,
+      commitIndex: 0,
+      word: words[0].word,
+      grade: 'again'
+    }, { applyReview });
+    assert.throws(
+      () => gm.explorationService.recordSpeedReviewRoomCommit({
+        roomId: room.id,
+        commitIndex: 0,
+        word: words[0].word,
+        grade: 'later'
+      }, { applyReview }),
+      /grade/,
+      'a different action for an existing review key must not legitimize an invalid grade'
+    );
+
+    assert.strictEqual(first.alreadyCommitted, false);
+    assert.strictEqual(duplicate.alreadyCommitted, true);
+    assert.deepStrictEqual(delivered, [{ word: words[0].word, grade: 'good' }]);
+    assert.strictEqual(room.speedReviewRoom.reviewedCards, 1);
+  });
+
   it('completes when reviewedCards reaches min(targetCards, snapshot size)', async () => {
     const { gm, room } = createHarness();
     const words = [makeWord(10), makeWord(11), makeWord(12)];

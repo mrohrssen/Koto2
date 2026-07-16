@@ -74,6 +74,8 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: {
     renderJpSentence: tokens => tokens.map(token => token.text || token.base || '').join(''),
     getKnownWords: () => new Set(),
+    addKnownWord: () => {},
+    removeKnownWord: () => {},
   },
 });
 await mock.module('../../../public/js/ui/tutorial-copy.js', {

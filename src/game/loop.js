@@ -545,7 +545,10 @@ export class GameManager {
   }
 
   recordSpeedReviewRoomCommit({ roomId, word, commitIndex } = {}) {
-    return this.explorationService.recordSpeedReviewRoomCommit({ roomId, word, commitIndex });
+    return this.explorationService.recordSpeedReviewRoomCommit(
+      { roomId, word, commitIndex },
+      { allowLegacyWithoutGrade: true },
+    );
   }
 
   completeSpeedReviewRoom({ roomId } = {}) {

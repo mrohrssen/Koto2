@@ -32,6 +32,7 @@ function createClassList() {
 function createElement(id) {
   const listeners = new Map();
   const attributes = new Map();
+  let innerHTML = '';
   const flashCard = {
     style: {
       setProperty(name, value) {
@@ -53,7 +54,15 @@ function createElement(id) {
   };
   return {
     id,
-    innerHTML: '',
+    get innerHTML() { return innerHTML; },
+    set innerHTML(value) {
+      innerHTML = value;
+      if (id.startsWith('speed-review-slot-')) {
+        for (const key of [...listeners.keys()]) {
+          if (key.startsWith('card:')) listeners.delete(key);
+        }
+      }
+    },
     textContent: '',
     style: {},
     disabled: false,
@@ -221,5 +230,97 @@ describe('speed review word display', () => {
     const closeButton = elements.get('speed-review-close');
     assert.equal(closeButton.getAttribute('aria-disabled'), 'false');
     assert.equal(closeButton.classList.contains('speed-review-close-ready'), true);
+  });
+
+  it('gives room reviews one canonical delivery owner and waits for its commit before completion', async () => {
+    globalThis.setTimeout = (callback, delay) => {
+      if (delay === 100) callback();
+      return 1;
+    };
+
+    let sendReviewCalls = 0;
+    let releaseCommit;
+    const commitGate = new Promise(resolve => { releaseCommit = resolve; });
+    const committedReviews = [];
+    let markComplete;
+    const completed = new Promise(resolve => { markComplete = resolve; });
+    let completionCalls = 0;
+
+    init({
+      sendReview: async () => { sendReviewCalls += 1; },
+      playTTS: () => {},
+    });
+    start([
+      { word: '食べる', reading: 'たべる', meanings: ['eat'] },
+    ], {
+      mode: 'room',
+      canonicalReviewDelivery: true,
+      canCloseEarly: false,
+      onCommittedReview: async review => {
+        committedReviews.push(review);
+        await commitGate;
+        return { accepted: true };
+      },
+      onComplete: async () => {
+        completionCalls += 1;
+        markComplete();
+      },
+    });
+
+    const card = elements.get('speed-review-slot-0').flashCard;
+    card.dispatchCardEvent('click', {});
+    card.dispatchCardEvent('click', { clientX: 260 });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    assert.equal(sendReviewCalls, 0,
+      'room mode must not POST the global review endpoint beside its canonical commit');
+    assert.deepEqual(committedReviews, [{
+      word: { word: '食べる', reading: 'たべる', meanings: ['eat'] },
+      grade: 4,
+      direction: 'right',
+      commitIndex: 0,
+    }]);
+    assert.equal(completionCalls, 0, 'completion must wait for the ordered commit chain');
+
+    releaseCommit();
+    await completed;
+    assert.equal(completionCalls, 1);
+  });
+
+  it('keeps the global review delivery for legacy room commits', async () => {
+    globalThis.setTimeout = (callback, delay) => {
+      if (delay === 100) callback();
+      return 1;
+    };
+
+    const delivered = [];
+    const legacyCommits = [];
+    let markComplete;
+    const completed = new Promise(resolve => { markComplete = resolve; });
+
+    init({
+      sendReview: async (...args) => { delivered.push(args); },
+      playTTS: () => {},
+    });
+    start([
+      { word: '食べる', reading: 'たべる', meanings: ['eat'] },
+    ], {
+      mode: 'room',
+      canCloseEarly: false,
+      onCommittedReview: async review => {
+        legacyCommits.push(review);
+        return { ok: true };
+      },
+      onComplete: async () => { markComplete(); },
+    });
+
+    const card = elements.get('speed-review-slot-0').flashCard;
+    card.dispatchCardEvent('click', {});
+    card.dispatchCardEvent('click', { clientX: 260 });
+    await completed;
+
+    assert.deepEqual(delivered, [[undefined, undefined, 4, '食べる']]);
+    assert.equal(legacyCommits.length, 1);
   });
 });

@@ -20,7 +20,12 @@ import { preparedPayloadHasSkillOffers } from './combat-ui-utils.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
-import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
+import {
+  addKnownWord,
+  getKnownWords,
+  removeKnownWord,
+  renderJpSentence,
+} from './bootstrap-client.js';
 import {
   getTutorialNarration,
   getFormationNarration,
@@ -162,6 +167,39 @@ function findLastUnconsumedSessionResult(results, predicate) {
   return null;
 }
 
+export function applyExploreSessionSpeedReviewResults(response) {
+  const results = Array.isArray(response?.results) ? response.results : [];
+  const session = getExploreSession?.();
+  let applied = 0;
+
+  for (const result of results) {
+    const review = result?.knownWordReview;
+    if (!review?.word || !['good', 'again'].includes(review.grade)) continue;
+    if (
+      result?.actionId
+      && session?.consumeResultOnce
+      && session.consumeResultOnce(result.actionId) !== true
+    ) {
+      continue;
+    }
+
+    if (review.grade === 'good') addKnownWord(review.word);
+    else removeKnownWord(review.word);
+    applied += 1;
+
+    if (review.fusionCoreDrop?.awarded === true) {
+      const anchor = document.getElementById('speed-review-content')
+        || document.getElementById('speed-review-modal')
+        || document.body;
+      showWordLevelUp(anchor, '', {
+        message: review.fusionCoreDrop.message || 'Obtained 1x Fusion Core!',
+      });
+    }
+  }
+
+  return applied;
+}
+
 // Scan a checkpoint's committed results for a combat.cycle turn that ended the
 // fight, and hand it to the combat-loop finish path (the same one a live victory/
 // defeat uses). The replayed combat.cycle result IS the committed
@@ -200,11 +238,13 @@ function finishSessionCombatFromResults(response) {
 function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
   if (logEmpty === false) {
     applyExploreSessionRunway(response);
+    applyExploreSessionSpeedReviewResults(response);
     finishSessionCombatFromResults(response);
     return;
   }
   if (response?.state) updateGameState(response.state);
   applyExploreSessionRunway(response);
+  applyExploreSessionSpeedReviewResults(response);
   const finished = finishSessionCombatFromResults(response);
   // Re-drive the phase after a fully-drained checkpoint (mirrors the correction
   // path's updateUI and KK's refreshKanjiKombatAction). Without this, a combat
@@ -236,6 +276,7 @@ function onExploreSessionCorrection(response) {
   const authoritativeState = response?.state || response?.authoritativeState;
   if (authoritativeState) updateGameState(authoritativeState);
   applyExploreSessionRunway(response);
+  applyExploreSessionSpeedReviewResults(response);
   updateUI();
 }
 
@@ -1932,9 +1973,10 @@ export async function renderSpeedReviewRoom() {
     speedReview.start(remainingWords, {
       mode: 'room',
       maxCards: 10,
+      canonicalReviewDelivery: !!session,
       canCloseEarly: false,
       showRomaji: true,
-      onCommittedReview: async ({ word, commitIndex }) => {
+      onCommittedReview: async ({ word, grade, commitIndex }) => {
         const absoluteCommitIndex = reviewedCards + commitIndex;
         const commitKey = `${absoluteCommitIndex}:${word?.word || ''}`;
         const existing = speedReviewRoomLaunchState.commits.get(commitKey);
@@ -1945,6 +1987,7 @@ export async function renderSpeedReviewRoom() {
             const queued = session.recordRoomAction('speedReview.commit', {
               roomId: room.id,
               word: word?.word,
+              grade: grade >= 3 ? 'good' : 'again',
               commitIndex: absoluteCommitIndex,
             });
             if (!queued?.accepted) {

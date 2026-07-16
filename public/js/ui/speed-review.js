@@ -22,6 +22,7 @@ let state = {
   session: {
     mode: 'hub',
     maxCards: null,
+    canonicalReviewDelivery: false,
     onCommittedReview: null,
     onComplete: null,
     onExit: null,
@@ -52,6 +53,7 @@ function resolveSessionOptions(options = {}) {
     maxCards: Number.isInteger(options.maxCards) && options.maxCards > 0
       ? options.maxCards
       : (mode === 'room' ? 10 : null),
+    canonicalReviewDelivery: mode === 'room' && options.canonicalReviewDelivery === true,
     onCommittedReview: typeof options.onCommittedReview === 'function' ? options.onCommittedReview : null,
     onComplete: typeof options.onComplete === 'function' ? options.onComplete : null,
     onExit: typeof options.onExit === 'function' ? options.onExit : null,
@@ -135,7 +137,11 @@ function flushPendingReview() {
 
   const tasks = [];
   if (word.word) {
-    tasks.push(Promise.resolve(state.callbacks?.sendReview(undefined, undefined, grade, word.word)));
+    const canonicalRoomDelivery = state.session.canonicalReviewDelivery === true
+      && typeof state.session.onCommittedReview === 'function';
+    if (!canonicalRoomDelivery) {
+      tasks.push(Promise.resolve(state.callbacks?.sendReview(undefined, undefined, grade, word.word)));
+    }
     if (state.session.onCommittedReview) {
       const enqueueCommit = async () => {
         const commitIndex = state.session.committedReviews;

@@ -1553,7 +1553,10 @@ export class ExplorationService {
     return this._buildSpeedReviewRoomResponse(room, { reusedSnapshot: false });
   }
 
-  recordSpeedReviewRoomCommit({ roomId, word, commitIndex } = {}) {
+  recordSpeedReviewRoomCommit(
+    { roomId, word, grade, commitIndex } = {},
+    { applyReview = null, allowLegacyWithoutGrade = false } = {},
+  ) {
     if (!roomId) {
       throw new Error('roomId is required');
     }
@@ -1580,6 +1583,10 @@ export class ExplorationService {
       throw new Error('Commit does not match server snapshot order');
     }
 
+    if (!allowLegacyWithoutGrade && !['good', 'again'].includes(grade)) {
+      throw new Error('invalid_speed_review_grade');
+    }
+
     const reviewKey = `${room.id}:${commitIndex}:${word}`;
     if (roomState.awardedReviewKeys.includes(reviewKey) || roomState.pendingReviewKeys.includes(reviewKey)) {
       this._syncSpeedReviewCompletion(room);
@@ -1588,6 +1595,23 @@ export class ExplorationService {
         alreadyCommitted: true
       });
     }
+
+    const reviewResult = typeof applyReview === 'function'
+      ? applyReview({ word, grade })
+      : null;
+    if (typeof applyReview === 'function' && reviewResult?.ok !== true) {
+      throw new Error('speed_review_grade_not_applied');
+    }
+    const knownWordReview = reviewResult?.ok === true
+      ? {
+          word,
+          grade,
+          mastered: reviewResult.mastered === true,
+          ...(reviewResult.fusionCoreDrop?.awarded === true
+            ? { fusionCoreDrop: cloneExploreValue(reviewResult.fusionCoreDrop) }
+            : {}),
+        }
+      : null;
 
     roomState.reviewedCards = (roomState.reviewedCards || 0) + 1;
     roomState.pendingReviewKeys.push(reviewKey);
@@ -1598,7 +1622,8 @@ export class ExplorationService {
 
     return this._buildSpeedReviewRoomResponse(room, {
       reviewKey,
-      alreadyCommitted: false
+      alreadyCommitted: false,
+      ...(knownWordReview ? { knownWordReview } : {}),
     });
   }
 
@@ -1615,8 +1640,8 @@ export class ExplorationService {
     return this._buildSpeedReviewRoomResponse(room);
   }
 
-  applySpeedReviewCommit(payload = {}) {
-    return this.recordSpeedReviewRoomCommit(payload);
+  applySpeedReviewCommit(payload = {}, options = {}) {
+    return this.recordSpeedReviewRoomCommit(payload, options);
   }
 
   applySpeedReviewComplete(payload = {}) {

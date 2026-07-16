@@ -10,7 +10,7 @@ import createRunRoutes from './run.js';
 import createCombatRoutes from './combat.js';
 import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
-import { createKnownWordsRoutes } from './known-words.js';
+import { createKnownWordsRoutes, performKnownWordReview } from './known-words.js';
 import createCrestRoutes from './crests.js';
 import createFusionRoutes from './fusion.js';
 import createTutorialRoutes from './tutorial.js';
@@ -149,6 +149,11 @@ export default function createGameRoutes(deps) {
   // Mount explore session routes
   router.use('/explore', createExploreSessionRoutes({
     getDialogueCardAudio: deps.getDialogueCardAudio,
+    applyKnownWordReview: (req, { word, grade }) => performKnownWordReview(req, {
+      word,
+      grade,
+      isDiscovery: false,
+    }),
   }));
 
   // Mount PvP routes

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { createTestApp } from '../helpers/test-app.js';
 import { createApiClient } from '../helpers/api-client.js';
 import { startExplorationRun, queueRooms, clearQueuedRooms, setupRunBeforeArea, finishExplorationSetup } from '../helpers/game-flow.js';
+import { clearSrsCache, createCard, getDeckCards } from '../../../src/game/internal-srs.js';
 
 function staleEpochDifferentFrom(currentEpoch) {
   return currentEpoch === 'ese_0000000000000000'
@@ -201,6 +202,84 @@ describe('POST /api/game/explore/sync', () => {
       firstEntry.interactionPayload.seedChain,
     );
     assert.equal(replayRes.body.state.room?.preparedCombat, undefined);
+  });
+
+  it('grades an offline speed-review commit once through the authenticated sync route', async () => {
+    const login = await client.loginAsNewUser('speed-sync-user', 'test-pass-123');
+    const userId = login.body?.user?.id;
+    assert.ok(userId, `login failed: ${JSON.stringify(login.body)}`);
+    const created = await client.createPlayer('SpeedSyncPlayer');
+    assert.equal(created.status, 200);
+    createCard(userId, 'vocab', '明るい', { word: '明るい' });
+
+    await client.post('/api/game/select-starter', { starterId: 'starter-fire' });
+    await client.post('/api/game/select-starter', { starterId: 'starter-water' });
+    await client.post('/api/game/select-starter', { starterId: 'starter-wood' });
+    await client.claimDailyCrystals();
+    const startRun = await client.post('/api/game/start-run', {});
+    assert.equal(startRun.status, 200, `start-run failed: ${JSON.stringify(startRun.body)}`);
+    await client.post('/api/game/debug-mode', { enabled: true });
+    await clearQueuedRooms(client);
+    await queueRooms(client, ['speedReviewRoom']);
+    await finishExplorationSetup(client);
+
+    const skipped = await client.post('/api/game/debug-skip-room', {});
+    assert.equal(skipped.status, 200, `debug skip failed: ${JSON.stringify(skipped.body)}`);
+    const proceeded = await client.post('/api/game/proceed', {});
+    assert.equal(proceeded.status, 200, `proceed failed: ${JSON.stringify(proceeded.body)}`);
+    const state = proceeded.body.state;
+    const runway = state.run?.exploreRunway;
+    const prepared = runway?.preparedRooms?.find(entry => entry.index === state.run.currentRoom);
+    assert.equal(prepared?.room?.type, 'speedReviewRoom');
+    assert.deepEqual(prepared.interactionPayload.snapshotWordKeys, ['明るい']);
+
+    const before = JSON.stringify(getDeckCards(userId, 'vocab').find(card => card.id === '明るい'));
+    const entry = {
+      seq: 1,
+      actionId: 'run_es_speedgrade1',
+      kind: 'speedReview.commit',
+      roomIndex: prepared.index,
+      roomId: prepared.roomId,
+      actionSeq: prepared.actionSeq,
+      payload: {
+        roomId: prepared.roomId,
+        word: '明るい',
+        grade: 'again',
+        commitIndex: 0,
+      },
+    };
+
+    const first = await client.post('/api/game/explore/sync', {
+      sessionEpoch: runway.sessionEpoch,
+      entries: [entry],
+    });
+    assert.equal(first.status, 200, `first sync failed: ${JSON.stringify(first.body)}`);
+    assert.equal(first.body.status, 'ok');
+    assert.equal(first.body.results[0].knownWordReview?.mastered, false);
+    const afterFirst = JSON.stringify(getDeckCards(userId, 'vocab').find(card => card.id === '明るい'));
+    assert.notEqual(afterFirst, before, 'the queued grade must reach the authenticated user SRS');
+
+    const replay = await client.post('/api/game/explore/sync', {
+      sessionEpoch: runway.sessionEpoch,
+      entries: [entry],
+    });
+    const duplicate = await client.post('/api/game/explore/sync', {
+      sessionEpoch: runway.sessionEpoch,
+      entries: [{
+        ...entry,
+        seq: 2,
+        actionId: 'run_es_speedgrade2',
+        payload: { ...entry.payload, grade: 'good' },
+      }],
+    });
+    const afterRetries = JSON.stringify(getDeckCards(userId, 'vocab').find(card => card.id === '明るい'));
+
+    assert.equal(replay.body.results[0].replayed, true);
+    assert.equal(duplicate.body.status, 'ok');
+    assert.equal(duplicate.body.results[0].alreadyCommitted, true);
+    assert.equal(afterRetries, afterFirst,
+      'ledger replay and a different action for the same review key must not grade twice');
+    clearSrsCache(userId);
   });
 
   it('keeps queued room types identical from prepared runway through server transition', async () => {

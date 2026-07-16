@@ -155,6 +155,8 @@ const mockSources = new Map(Object.entries({
   './bootstrap-client.js': `
     export const renderJpSentence = tokens => tokens.map(t => t.text || t.base || '').join('');
     export const getKnownWords = () => new Set();
+    export const addKnownWord = () => {};
+    export const removeKnownWord = () => {};
     export const entityToToken = value => value;
   `,
   './npc-dialogue-card.js': `
@@ -230,6 +232,8 @@ const mockSources = new Map(Object.entries({
   '../../../public/js/ui/bootstrap-client.js': `
     export const renderJpSentence = tokens => tokens.map(t => t.text || t.base || '').join('');
     export const getKnownWords = () => new Set();
+    export const addKnownWord = () => {};
+    export const removeKnownWord = () => {};
     export const entityToToken = value => value;
   `,
   '../../../public/js/ui/npc-dialogue-card.js': `

@@ -26,7 +26,10 @@ function buildRunwayOpts(req, { getDialogueCardAudio } = {}) {
   };
 }
 
-export default function createExploreSessionRoutes({ getDialogueCardAudio } = {}) {
+export default function createExploreSessionRoutes({
+  getDialogueCardAudio,
+  applyKnownWordReview,
+} = {}) {
   const router = Router();
 
   router.post('/sync', async (req, res) => {
@@ -38,6 +41,9 @@ export default function createExploreSessionRoutes({ getDialogueCardAudio } = {}
     try {
       const service = new ExploreSessionSyncService(req.gameManager, {
         runwayOpts: buildRunwayOpts(req, { getDialogueCardAudio }),
+        applyKnownWordReview: typeof applyKnownWordReview === 'function'
+          ? review => applyKnownWordReview(req, review)
+          : null,
       });
       const result = await service.applySessionSync({ sessionEpoch, entries });
       await req.saveGame?.();

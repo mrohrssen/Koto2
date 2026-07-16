@@ -32,9 +32,12 @@ function publicReplayResponse(response = {}) {
 }
 
 export class ExploreSessionSyncService {
-  constructor(gameManager, { runwayOpts = {} } = {}) {
+  constructor(gameManager, { runwayOpts = {}, applyKnownWordReview = null } = {}) {
     this.gm = gameManager;
     this.runwayOpts = runwayOpts && typeof runwayOpts === 'object' ? runwayOpts : {};
+    this.applyKnownWordReview = typeof applyKnownWordReview === 'function'
+      ? applyKnownWordReview
+      : null;
   }
 
   get run() {
@@ -156,7 +159,9 @@ export class ExploreSessionSyncService {
       case 'campfire.feed':
         return this.gm.explorationService.applyCampfireFeed(entry.payload || {});
       case 'speedReview.commit':
-        return this.gm.explorationService.applySpeedReviewCommit(entry.payload || {});
+        return this.gm.explorationService.applySpeedReviewCommit(entry.payload || {}, {
+          applyReview: this.applyKnownWordReview,
+        });
       case 'speedReview.complete':
         return this.gm.explorationService.applySpeedReviewComplete(entry.payload || {});
       case 'wordDiscovery.review':

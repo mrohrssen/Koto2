@@ -7,6 +7,9 @@ let domButtons = [];
 let speedReviewStartArgs = null;
 let speedReviewStartCount = 0;
 let speedReviewActive = false;
+let clientKnownWords = new Set();
+let knownWordMembershipEvents = [];
+let wordLevelUpCalls = [];
 
 function createDomButton(textContent) {
   const classes = new Set();
@@ -98,7 +101,10 @@ await mock.module('../../../public/js/ui/dom-effects.js', {
   namedExports: { pop: () => {}, flashElement: () => {} },
 });
 await mock.module('../../../public/js/ui/word-level-up.js', {
-  namedExports: { showIngredientDropPopups: () => {}, showWordLevelUp: () => {} },
+  namedExports: {
+    showIngredientDropPopups: () => {},
+    showWordLevelUp: (...args) => { wordLevelUpCalls.push(args); },
+  },
 });
 await mock.module('../../../public/js/api.js', {
   namedExports: { savePvpTeam: async () => {}, getPvpTeams: async () => [] },
@@ -106,7 +112,15 @@ await mock.module('../../../public/js/api.js', {
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: {
     renderJpSentence: tokens => tokens.map(t => t.text || t.base || '').join(''),
-    getKnownWords: () => new Set(),
+    getKnownWords: () => clientKnownWords,
+    addKnownWord: word => {
+      clientKnownWords.add(word);
+      knownWordMembershipEvents.push(['add', word]);
+    },
+    removeKnownWord: word => {
+      clientKnownWords.delete(word);
+      knownWordMembershipEvents.push(['remove', word]);
+    },
     entityToToken: value => value,
   },
 });
@@ -125,6 +139,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 
 const {
   init,
+  applyExploreSessionSpeedReviewResults,
   proceedWithRevealBuffer,
   renderHub,
   renderSpeedReviewRoom,
@@ -139,6 +154,9 @@ describe('renderHub fusion core review narration', () => {
     speedReviewStartArgs = null;
     speedReviewStartCount = 0;
     speedReviewActive = false;
+    clientKnownWords = new Set();
+    knownWordMembershipEvents = [];
+    wordLevelUpCalls = [];
     sceneManagerState.currentScene = null;
     globalThis.document = {
       body: {},
@@ -279,6 +297,7 @@ describe('renderHub fusion core review narration', () => {
     const snapshotWords = [
       { word: '水', reading: 'みず', meanings: ['water'] },
       { word: '火', reading: 'ひ', meanings: ['fire'] },
+      { word: '土', reading: 'つち', meanings: ['earth'] },
     ];
     let gameState = makeRunRoomState({
       phase: 'speedReviewRoom',
@@ -304,7 +323,7 @@ describe('renderHub fusion core review narration', () => {
           kind: 'speedReviewRoom',
           roomId: 'speed-room-1',
           snapshotWords,
-          snapshotWordKeys: ['水', '火'],
+          snapshotWordKeys: ['水', '火', '土'],
           reviewedCards: 1,
           snapshotInitialized: true,
         },
@@ -325,6 +344,8 @@ describe('renderHub fusion core review narration', () => {
     let legacyCompleteCalls = 0;
     let syncCalls = 0;
     let autoProceedPromise = null;
+    let online = false;
+    let latestSyncResponse = null;
 
     init({
       getGameState: () => gameState,
@@ -337,9 +358,29 @@ describe('renderHub fusion core review narration', () => {
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: async () => {} },
       startNewRun: () => {},
-      apiSyncExploreSession: async () => {
+      apiSyncExploreSession: async ({ entries }) => {
         syncCalls += 1;
-        throw new Error('offline');
+        if (!online) throw new Error('offline');
+        latestSyncResponse = {
+          status: 'ok',
+          confirmedThroughSeq: entries.at(-1)?.seq ?? null,
+          results: entries
+            .filter(entry => entry.kind === 'speedReview.commit')
+            .map(entry => ({
+              seq: entry.seq,
+              actionId: entry.actionId,
+              knownWordReview: {
+                word: entry.payload.word,
+                grade: entry.payload.grade,
+                mastered: entry.payload.grade === 'good',
+                fusionCoreDrop: entry.payload.grade === 'good'
+                  ? { awarded: true, message: 'Obtained 1x Fusion Core!' }
+                  : null,
+              },
+            })),
+          exploreRunway: gameState.run.exploreRunway,
+        };
+        return latestSyncResponse;
       },
       apiStartSpeedReviewRoom: async () => {
         legacyStartCalls += 1;
@@ -360,25 +401,41 @@ describe('renderHub fusion core review narration', () => {
 
     assert.deepEqual(speedReviewStartArgs?.words, snapshotWords.slice(1));
     assert.equal(speedReviewStartArgs?.options?.showRomaji, true);
+    assert.equal(speedReviewStartArgs?.options?.canonicalReviewDelivery, true);
     assert.equal(legacyStartCalls, 0);
     assert.equal(speedReviewStartCount, 1, 'rerender must not duplicate launch ownership');
 
     const firstCommit = await speedReviewStartArgs.options.onCommittedReview({
       word: snapshotWords[1],
+      grade: 4,
       commitIndex: 0,
     });
     const duplicateCommit = await speedReviewStartArgs.options.onCommittedReview({
       word: snapshotWords[1],
+      grade: 4,
       commitIndex: 0,
+    });
+    const secondCommit = await speedReviewStartArgs.options.onCommittedReview({
+      word: snapshotWords[2],
+      grade: 1,
+      commitIndex: 1,
     });
     const pending = getExploreSession().snapshot();
     assert.equal(firstCommit.accepted, true);
     assert.equal(duplicateCommit.accepted, true);
-    assert.equal(pending.length, 1, 'the same card commit must append once');
+    assert.equal(secondCommit.accepted, true);
+    assert.equal(pending.length, 2, 'the same card commit must append once');
     assert.deepEqual(pending[0].payload, {
       roomId: 'speed-room-1',
       word: '火',
+      grade: 'good',
       commitIndex: 1,
+    });
+    assert.deepEqual(pending[1].payload, {
+      roomId: 'speed-room-1',
+      word: '土',
+      grade: 'again',
+      commitIndex: 2,
     });
     assert.equal(pending[0].kind, 'speedReview.commit');
     assert.equal(legacyProgressCalls, 0);
@@ -387,14 +444,38 @@ describe('renderHub fusion core review narration', () => {
     await speedReviewStartArgs.options.onComplete();
     await autoProceedPromise;
     const completedKinds = getExploreSession().snapshot().map(entry => entry.kind);
-    resetExploreSession();
     assert.deepEqual(
       completedKinds,
-      ['speedReview.commit', 'speedReview.complete', 'proceed'],
+      ['speedReview.commit', 'speedReview.commit', 'speedReview.complete', 'proceed'],
       'completion should stay canonical and hand room advance to session ownership',
     );
     assert.equal(gameState.run.currentRoom, 1);
     assert.equal(legacyCompleteCalls, 0);
+    assert.deepEqual(knownWordMembershipEvents, [],
+      'queued offline reviews must not claim membership before confirmation');
+    assert.equal(wordLevelUpCalls.length, 0,
+      'offline review rewards must wait for their canonical sync result');
+
+    online = true;
+    await getExploreSession().syncNow({ reason: 'testReconnect' });
+    assert.deepEqual(knownWordMembershipEvents, [
+      ['add', '火'],
+      ['remove', '土'],
+    ]);
+    assert.equal(clientKnownWords.has('火'), true);
+    assert.equal(clientKnownWords.has('土'), false);
+    assert.equal(wordLevelUpCalls.length, 1);
+    assert.equal(wordLevelUpCalls[0][2].message, 'Obtained 1x Fusion Core!');
+
+    applyExploreSessionSpeedReviewResults(latestSyncResponse);
+    applyExploreSessionSpeedReviewResults(latestSyncResponse);
+    assert.deepEqual(knownWordMembershipEvents, [
+      ['add', '火'],
+      ['remove', '土'],
+    ], 'replayed results must not update known-word membership twice');
+    assert.equal(wordLevelUpCalls.length, 1,
+      'replayed results must not repeat Fusion Core feedback');
+    resetExploreSession();
   });
 
   it('canonically auto-completes an initialized zero-card session snapshot', async () => {

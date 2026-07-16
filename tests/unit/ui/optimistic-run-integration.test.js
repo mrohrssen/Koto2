@@ -31,7 +31,7 @@ describe('optimistic run action integration', () => {
   it('records deterministic support-room exploration choices on the explore session', () => {
     const whackChoiceSource = sourceBetween(
       explorationSource,
-      'async function completeWhackAMoleOptimistically(score)',
+      'async function completeWhackAMoleOptimistically(score, session = getExploreSession())',
       '/** Whack-a-Mole mini game'
     );
 
@@ -159,7 +159,7 @@ describe('optimistic run action integration', () => {
     );
 
     assert.match(speedReviewRoomSource, /recordRoomAction\('speedReview\.complete', \{ roomId: room\?\.id \}\)/);
-    assert.match(speedReviewRoomSource, /recordRoomAction\('speedReview\.commit', \{\s*roomId: room\.id,\s*word: word\?\.word,\s*commitIndex: absoluteCommitIndex,/);
+    assert.match(speedReviewRoomSource, /recordRoomAction\('speedReview\.commit', \{\s*roomId: room\.id,\s*word: word\?\.word,\s*grade: grade >= 3 \? 'good' : 'again',\s*commitIndex: absoluteCommitIndex,/);
     assert.match(speedReviewRoomSource, /if \(sessionOwned\)[\s\S]*apiCompleteSpeedReviewRoom\?\.\(room\?\.id\)/);
     assert.match(speedReviewRoomSource, /const startResult = session\s*\? sessionPayload\.payload\s*:\s*await apiStartSpeedReviewRoom\?\.\(room\.id\)/);
     assert.doesNotMatch(speedReviewRoomSource, /speedReviewRoomCommitChain/);
@@ -248,12 +248,12 @@ describe('optimistic run action integration', () => {
   it('records Whack-a-Mole choices through the explore session', () => {
     const completeSource = sourceBetween(
       explorationSource,
-      'async function completeWhackAMoleOptimistically(score)',
-      'async function skipWhackAMoleOptimistically()'
+      'async function completeWhackAMoleOptimistically(score, session = getExploreSession())',
+      'async function skipWhackAMoleOptimistically(session = getExploreSession())'
     );
     const skipSource = sourceBetween(
       explorationSource,
-      'async function skipWhackAMoleOptimistically()',
+      'async function skipWhackAMoleOptimistically(session = getExploreSession())',
       '/** Whack-a-Mole mini game'
     );
     const renderSource = sourceBetween(
@@ -263,7 +263,7 @@ describe('optimistic run action integration', () => {
     );
     const gameWiringSource = sourceBetween(
       explorationSource,
-      'function startWhackAMoleGame(pool)',
+      'function startWhackAMoleGame(pool, ownerSession = null)',
       '// ============ NPC BATTLE SKILL REWARD ============'
     );
 
@@ -282,8 +282,8 @@ describe('optimistic run action integration', () => {
     );
     assert.doesNotMatch(completeSource, /recordRoomAction\('proceed'/);
     assert.doesNotMatch(skipSource, /recordRoomAction\('proceed'/);
-    assert.match(gameWiringSource, /apiCompleteWhackAMole: completeWhackAMoleOptimistically,[\s\S]*apiProceed: proceedWithRevealBuffer/);
-    assert.match(renderSource, /const result = await skipWhackAMoleOptimistically\(\);[\s\S]*?if \(result\) \{\s*await proceedWithRevealBuffer\(\)/);
+    assert.match(gameWiringSource, /apiCompleteWhackAMole: ownerSession[\s\S]*completeWhackAMoleOptimistically\(score, ownerSession\)[\s\S]*apiProceed: ownerSession \? proceedWithRevealBuffer : proceedWhackAMoleLegacy/);
+    assert.match(renderSource, /const result = await skipWhackAMoleOptimistically\(activeStandardSession\);[\s\S]*?if \(result\) await proceedWithRevealBuffer\(\)/);
   });
 
   it('sends action ids for post-combat shop choices', () => {
