@@ -264,6 +264,15 @@ export class ExploreSessionSyncService {
           });
         }
 
+        if (existing.response.corrected === true) {
+          return this.correction({
+            reason: existing.response.correctionReason || 'explore_entry_failed',
+            rejectedSeq: entry.seq,
+            confirmedThroughSeq: entry.seq,
+            results,
+          });
+        }
+
         results.push({
           ...publicReplayResponse(existing.response),
           seq: entry.seq,
@@ -290,7 +299,12 @@ export class ExploreSessionSyncService {
             rememberActionLedgerResult(this.ledgerOwner, {
               actionId: entry.actionId,
               actionType: entry.kind,
-              response: { seq: entry.seq, corrected: true, entryFingerprint },
+              response: {
+                seq: entry.seq,
+                corrected: true,
+                correctionReason: error?.message || 'explore_entry_failed',
+                entryFingerprint,
+              },
             });
           }
         }

@@ -6,6 +6,7 @@ import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { ExploreSessionSyncService } from '../../../src/game/services/explore-session-sync-service.js';
+import { getActionLedgerEntry } from '../../../src/game/services/action-ledger-service.js';
 import { resolvePveCursorTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
 import { hashTranscript } from '../../../src/shared/action-protocol.js';
 import { buildLocalCombatFromStart } from '../../../src/shared/combat/local-combat-start.js';
@@ -360,10 +361,28 @@ describe('ExploreSessionSyncService — combat replay', () => {
     assert.equal(room.interacted, true);
     assert.equal(gm.combat.active, false);
 
-    // Re-POST of the tampered entry replays from the corrected ledger entry
-    // (no re-commit, no action_id_conflict).
-    const replay = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: [tampered] });
-    assert.equal(replay.results[0].replayed, true);
+    // Re-POST of the tampered entry replays the correction itself and stops before
+    // the trailing entry, without re-committing or raising action_id_conflict.
+    const replay = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [tampered, {
+        seq: 3,
+        actionId: 'run_es_00000303',
+        kind: 'proceed',
+        roomIndex: 0,
+        roomId: room.id,
+        actionSeq: 0,
+        payload: {},
+      }],
+    });
+
+    assert.equal(replay.status, 'corrected');
+    assert.equal(replay.reason, 'transcript_mismatch');
+    assert.equal(replay.confirmedThroughSeq, 2);
+    assert.equal(replay.rejectedSeq, 2);
+    assert.deepEqual(replay.results, []);
+    assert.equal(gm.run.currentRoom, 0);
+    assert.equal(getActionLedgerEntry(gm.meta, 'run_es_00000303'), null);
   });
 
   it('stops the batch at the first invalid combat entry and confirms prior seqs', async () => {
