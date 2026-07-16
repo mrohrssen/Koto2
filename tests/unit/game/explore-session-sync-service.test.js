@@ -732,6 +732,42 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(result.results[0].applyResult.applied, true);
   });
 
+  it('rejects an invalid sparse friendly NPC target before completing the room', async () => {
+    const gm = makeGm();
+    const survivor = gm.run.creatureParty.active[0];
+    gm.run.creatureParty.active = [null, survivor];
+    const service = new ExploreSessionSyncService(gm);
+    const room = gm.run.rooms[0];
+
+    const result = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [
+        makeEntry(gm, {
+          seq: 4,
+          actionId: 'run_es_00000004',
+          kind: 'friendlyNpc.choose',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+          payload: { itemId: TEST_EQUIPMENT.id, targetCreatureIndex: 0 },
+        }),
+      ],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'Invalid target creature');
+    assert.equal(result.confirmedThroughSeq, null);
+    assert.equal(result.rejectedSeq, 4);
+    assert.deepEqual(result.results, []);
+    assert.equal(room.friendlyNpc.completed, false);
+    assert.equal(room.friendlyNpc.chosenId, null);
+    assert.equal(room.interacted, false);
+    assert.equal(gm.run.runSummary.itemsCollected, 0);
+    assert.deepEqual(gm.meta.itemsDiscovered, []);
+    assert.equal(survivor.itemBuffs, undefined);
+    assert.equal(survivor.equippedItems, undefined);
+  });
+
   it('commits dealer leave idempotently through explore sync', async () => {
     const gm = makeGm();
     gm.run.rooms[0] = createRoom(ROOM_TYPES.dealer, AREA_ID, 1, 3);

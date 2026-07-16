@@ -590,6 +590,9 @@ export class ExplorationService {
     }
 
     const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
+    if (targetIdx === null || !this.gm.run?.creatureParty?.active?.[targetIdx]) {
+      throw new Error('Invalid target creature');
+    }
     const applyResult = applyItem(item, this.gm.run.creatureParty, this.gm.run.itemBuffs, targetIdx);
     if (this.gm.run?.runSummary) {
       this.gm.run.runSummary.itemsCollected++;
