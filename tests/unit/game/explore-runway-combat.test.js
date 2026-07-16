@@ -187,6 +187,122 @@ test('runway reuses prepared combat across rebuilds without re-rolling', async (
   );
 });
 
+test('runway serializes active then resolved combat without replacing the live fight', async () => {
+  const gm = makeGm([ROOM_TYPES.boss, ROOM_TYPES.encounter], { currentRoom: 0 });
+  gm.run.currentArea = {
+    id: 'hajimari-no-hiroba',
+    nameEn: 'Starting Meadow',
+    background: 'areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp',
+    creatures: ['hinoneko'],
+    bossCreatureId: 'hinoneko',
+    stage: 1,
+  };
+  gm.run.areaPath = ['hajimari-no-hiroba'];
+  gm.run.rooms[0].boss = { defeated: false, creatureId: 'hinoneko' };
+  const opts = {
+    userId: 'runway-combat-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  };
+
+  const preparedRunway = await buildExploreRunway(gm, opts);
+  const preparedEntry = preparedRunway.preparedRooms[0];
+  const preparedId = preparedEntry.interactionPayload.combatId;
+  const futureEntry = preparedRunway.preparedRooms[1];
+  const futureId = futureEntry.interactionPayload.combatId;
+  assert.ok(preparedEntry.interactionPayload.combatStart.tutorialBossIntro);
+
+  gm.combatCycleService.startCreatureEncounter();
+  gm.combat.optimistic.stateVersion = 7;
+  const liveId = gm.combat.optimistic.combatId;
+  const liveEnemies = structuredClone(gm.combat.enemies);
+  const liveSeedPrefix = gm.combat.optimistic.turnSeeds.slice(0, 3);
+  gm.combat.optimistic.turnSeeds = [...liveSeedPrefix];
+  const liveVersion = gm.combat.optimistic.stateVersion;
+  const liveNextTurnSeed = gm.combat.optimistic.nextTurnSeed;
+  const currentAllies = structuredClone(gm.run.creatureParty.active);
+  currentAllies[0].hp -= 1;
+  gm.run.creatureParty.active = currentAllies;
+  gm.run.rooms[0].interacted = true;
+
+  const refreshed = await buildExploreRunway(gm, opts);
+  const activeEntry = refreshed.preparedRooms[0];
+  const refreshedFuture = refreshed.preparedRooms[1];
+  const refilledLiveSeeds = [...gm.combat.optimistic.turnSeeds];
+
+  assert.equal(gm.run.rooms[0].preparedCombat, undefined);
+  assert.equal(liveId, preparedId);
+  assert.deepEqual(activeEntry.acceptedActions, ['combat.cycle']);
+  assert.equal(activeEntry.interactionPayload.lifecycle, 'active');
+  assert.equal(activeEntry.interactionPayload.combatId, liveId);
+  assert.equal(activeEntry.interactionPayload.initialStateVersion, liveVersion);
+  assert.equal(
+    activeEntry.interactionPayload.combatStart.optimistic.nextTurnSeed,
+    liveNextTurnSeed,
+  );
+  assert.deepEqual(activeEntry.interactionPayload.combatStart.enemies, liveEnemies);
+  assert.deepEqual(activeEntry.interactionPayload.combatStart.allies, currentAllies);
+  assert.deepEqual(activeEntry.interactionPayload.seedChain, refilledLiveSeeds);
+  assert.deepEqual(
+    activeEntry.interactionPayload.seedChain.slice(0, liveSeedPrefix.length),
+    liveSeedPrefix,
+  );
+  assert.equal(activeEntry.interactionPayload.seedChain.length, PVE_TURN_SEED_CHAIN_TARGET);
+  assert.equal(activeEntry.interactionPayload.combatStart.isBoss, true);
+  assert.equal(activeEntry.interactionPayload.combatStart.isNpcBattle, false);
+  assert.equal(activeEntry.interactionPayload.combatStart.npc, null);
+  assert.equal(activeEntry.interactionPayload.combatStart.tutorialBossIntro, null);
+  assert.equal(activeEntry.offlineReady, true);
+  assert.equal(refreshedFuture.interactionPayload.combatId, futureId);
+  assert.ok(gm.run.rooms[1].preparedCombat, 'future combat remains prepared');
+
+  gm.combat.active = false;
+  gm.run.rooms[0].preparedCombat = { stale: true };
+  const resolved = await buildExploreRunway(gm, opts);
+  const resolvedEntry = resolved.preparedRooms[0];
+
+  assert.equal(gm.run.rooms[0].preparedCombat, undefined);
+  assert.deepEqual(resolvedEntry.acceptedActions, ['proceed']);
+  assert.deepEqual(resolvedEntry.interactionPayload, {
+    kind: 'boss',
+    lifecycle: 'resolved',
+    combatStart: null,
+    seedChain: [],
+    combatId: null,
+    initialStateVersion: 0,
+  });
+  assert.equal(resolvedEntry.offlineReady, true);
+  assert.deepEqual(resolvedEntry.missingPayloadReasons, []);
+  assert.equal(resolved.preparedRooms[1].interactionPayload.combatId, futureId);
+  assert.ok(gm.run.rooms[1].preparedCombat, 'future combat stays prepared after resolution');
+});
+
+test('active NPC combat takes precedence over post-victory reward state', async () => {
+  const gm = makeGm([ROOM_TYPES.npcBattle], { currentRoom: 0 });
+  const opts = {
+    userId: 'runway-combat-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  };
+
+  await buildExploreRunway(gm, opts);
+  gm.combatCycleService.startCreatureEncounter();
+  const liveNpc = structuredClone(gm.combat.npcData);
+  gm.run.rooms[0].interacted = true;
+  gm.run.rooms[0].npcBattle = { rewardResolved: false };
+
+  const runway = await buildExploreRunway(gm, opts);
+  const entry = runway.preparedRooms[0];
+
+  assert.equal(gm.run.rooms[0].preparedCombat, undefined);
+  assert.deepEqual(entry.acceptedActions, ['combat.cycle']);
+  assert.equal(entry.interactionPayload.lifecycle, 'active');
+  assert.deepEqual(entry.interactionPayload.combatStart.npc, liveNpc);
+  assert.equal(entry.interactionPayload.combatStart.isNpcBattle, true);
+  assert.equal(entry.interactionPayload.combatStart.isBoss, false);
+  assert.equal(entry.offlineReady, true);
+});
+
 // ============ RIDER: support rooms proceed via the session log ============
 
 test('support rooms grant proceed in acceptedActions', async () => {
@@ -316,6 +432,14 @@ test('explicitly unresolved post-victory NPC rewards are offline-ready with no a
   const entry = runway.preparedRooms.find(item => item.index === 0);
 
   assert.deepEqual(entry.acceptedActions, []);
+  assert.deepEqual(entry.interactionPayload, {
+    kind: 'npcBattle',
+    lifecycle: 'resolved',
+    combatStart: null,
+    seedChain: [],
+    combatId: null,
+    initialStateVersion: 0,
+  });
   assert.equal(entry.offlineReady, true);
   assert.deepEqual(entry.missingPayloadReasons, []);
   assert.equal(room.preparedCombat, undefined);

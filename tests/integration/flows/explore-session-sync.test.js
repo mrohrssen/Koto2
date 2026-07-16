@@ -152,6 +152,24 @@ describe('POST /api/game/explore/sync', () => {
     assert.equal(startRes.body.results[0].started, true);
     assert.equal(startRes.body.results[0].combatId, combatRoom.interactionPayload?.combatId, 'started the prepared combat');
     assert.equal(startRes.body.state.combat?.active, true, 'combat active on the server after encounter.start');
+    const firstEntry = startRes.body.exploreRunway.preparedRooms.find(
+      entry => entry.index === startRes.body.state.run.currentRoom,
+    );
+    assert.ok(firstEntry, 'start response includes the current runway entry');
+    assert.deepEqual(firstEntry.acceptedActions, ['combat.cycle']);
+    assert.equal(
+      firstEntry.interactionPayload.combatId,
+      startRes.body.state.combat?.optimistic?.combatId,
+    );
+    assert.deepEqual(
+      firstEntry.interactionPayload.combatStart.enemies,
+      startRes.body.state.combat?.enemies,
+    );
+    assert.deepEqual(
+      firstEntry.interactionPayload.seedChain,
+      startRes.body.state.combat?.optimistic?.turnSeeds,
+    );
+    assert.equal(startRes.body.state.room?.preparedCombat, undefined);
 
     // ---- Idempotent re-POST: the same actionId replays from the ledger ----
     const replayRes = await client.post('/api/game/explore/sync', {
@@ -165,5 +183,23 @@ describe('POST /api/game/explore/sync', () => {
     // Still exactly one active combat with the same id — no double-start.
     assert.equal(replayRes.body.state.combat?.active, true);
     assert.equal(replayRes.body.state.combat?.optimistic?.combatId, startRes.body.state.combat?.optimistic?.combatId);
+    const replayEntry = replayRes.body.exploreRunway.preparedRooms.find(
+      entry => entry.index === replayRes.body.state.run.currentRoom,
+    );
+    assert.ok(replayEntry, 'replay response includes the current runway entry');
+    assert.deepEqual(replayEntry.acceptedActions, ['combat.cycle']);
+    assert.equal(
+      replayEntry.interactionPayload.combatId,
+      firstEntry.interactionPayload.combatId,
+    );
+    assert.deepEqual(
+      replayEntry.interactionPayload.combatStart.enemies,
+      firstEntry.interactionPayload.combatStart.enemies,
+    );
+    assert.deepEqual(
+      replayEntry.interactionPayload.seedChain,
+      firstEntry.interactionPayload.seedChain,
+    );
+    assert.equal(replayRes.body.state.room?.preparedCombat, undefined);
   });
 });

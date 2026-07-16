@@ -5,6 +5,7 @@ import { instantiateCreature } from '../../../src/game/creatures.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
+import { buildExploreRunway } from '../../../src/game/services/explore-runway-service.js';
 import { ExploreSessionSyncService } from '../../../src/game/services/explore-session-sync-service.js';
 import { getActionLedgerEntry } from '../../../src/game/services/action-ledger-service.js';
 import { resolvePveCursorTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
@@ -165,6 +166,64 @@ function matchingCycleEntry(gm, { seq, actionId, moveId }) {
 }
 
 describe('ExploreSessionSyncService — combat replay', () => {
+  it('ordinary start responses and exact replay keep the live combat runway canonical', async () => {
+    const gm = makeCombatGm({
+      roomType: ROOM_TYPES.encounter,
+      enemyHp: 500,
+      allyMove: WEAK_MOVE,
+    });
+    gm.run.rooms = [gm.run.rooms[0]];
+    gm.explorationService.buildExploreRunway = opts => buildExploreRunway(gm, opts);
+    const service = new ExploreSessionSyncService(gm);
+    const start = startEntry(gm, {
+      seq: 1,
+      actionId: 'run_es_live_start',
+      kind: 'encounter.start',
+    });
+
+    const first = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [start],
+    });
+    const liveId = gm.combat.optimistic.combatId;
+    const liveEnemies = structuredClone(gm.combat.enemies);
+    const liveSeeds = [...(gm.combat.optimistic.turnSeeds || [])];
+    const liveVersion = gm.combat.optimistic.stateVersion;
+    const liveNextTurnSeed = gm.combat.optimistic.nextTurnSeed;
+    const activeEntry = first.exploreRunway.preparedRooms[0];
+
+    assert.equal(first.status, 'ok');
+    assert.equal(activeEntry.interactionPayload.combatId, liveId);
+    assert.equal(activeEntry.interactionPayload.initialStateVersion, liveVersion);
+    assert.equal(
+      activeEntry.interactionPayload.combatStart.optimistic.nextTurnSeed,
+      liveNextTurnSeed,
+    );
+    assert.deepEqual(activeEntry.interactionPayload.combatStart.enemies, liveEnemies);
+    assert.deepEqual(activeEntry.interactionPayload.seedChain, liveSeeds);
+    assert.deepEqual(activeEntry.acceptedActions, ['combat.cycle']);
+    assert.equal(gm.run.rooms[0].preparedCombat, undefined);
+
+    const replay = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [start],
+    });
+    const replayEntry = replay.exploreRunway.preparedRooms[0];
+
+    assert.equal(replay.status, 'ok');
+    assert.equal(replay.results[0].replayed, true);
+    assert.equal(replayEntry.interactionPayload.combatId, liveId);
+    assert.equal(replayEntry.interactionPayload.initialStateVersion, liveVersion);
+    assert.equal(
+      replayEntry.interactionPayload.combatStart.optimistic.nextTurnSeed,
+      liveNextTurnSeed,
+    );
+    assert.deepEqual(replayEntry.interactionPayload.combatStart.enemies, liveEnemies);
+    assert.deepEqual(replayEntry.interactionPayload.seedChain, liveSeeds);
+    assert.deepEqual(replayEntry.acceptedActions, ['combat.cycle']);
+    assert.equal(gm.run.rooms[0].preparedCombat, undefined);
+  });
+
   it('replays boss.start + a victory combat.cycle in one batch', async () => {
     const gm = makeCombatGm({ roomType: ROOM_TYPES.boss, enemyHp: 10 });
     const service = new ExploreSessionSyncService(gm);

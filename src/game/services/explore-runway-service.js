@@ -35,6 +35,10 @@ import {
   roomDependenciesForType,
 } from './explore-session-contract.js';
 import {
+  ensureTurnSeeds,
+  PVE_TURN_SEED_CHAIN_TARGET,
+} from './combat-seed-chain.js';
+import {
   COOKING_INGREDIENTS,
   COOKING_RECIPES,
   getCookableRecipeHints,
@@ -457,6 +461,12 @@ function combatKindForRoom(room) {
   }
 }
 
+function combatLifecycleForRoom(gm, room, { index, currentRoom }) {
+  if (index === currentRoom && gm?.combat?.active) return 'active';
+  if (room?.interacted) return 'resolved';
+  return 'notStarted';
+}
+
 // Shape a prepared combat room into the runway interaction payload. `combatStart`
 // is the client-facing form of what startCreatureEncounter returns (enemies/npc/
 // flags + the optimistic head), minus server-internal cursor/state. The seed
@@ -466,7 +476,7 @@ function combatKindForRoom(room) {
 // Trade-off (spec-accepted, same class as Kanji Kombat's pre-rolled wave): enemy
 // stat blocks are delivered up to EXPLORE_RUNWAY_AHEAD rooms early. Rewards/XP
 // stay server-owned and are only granted when the combat actually resolves.
-function buildCombatPayload(gm, room) {
+function buildPreparedCombatPayload(gm, room) {
   const kind = combatKindForRoom(room);
   const prepared = room?.preparedCombat || null;
   if (!prepared) {
@@ -511,9 +521,50 @@ function buildCombatPayload(gm, room) {
   };
 }
 
+function buildActiveCombatPayload(gm, room) {
+  const seedChain = ensureTurnSeeds(gm.combat, {
+    target: PVE_TURN_SEED_CHAIN_TARGET,
+  });
+  const optimistic = gm.combat.optimistic;
+
+  return {
+    kind: combatKindForRoom(room),
+    lifecycle: 'active',
+    combatStart: {
+      enemy: cloneExploreValue(gm.combat.enemies?.[0] || null),
+      enemies: cloneExploreValue(gm.combat.enemies || []),
+      allies: cloneExploreValue(gm.run?.creatureParty?.active || []),
+      playerGoesFirst: true,
+      npc: cloneExploreValue(gm.combat.npcData || null),
+      isBoss: gm.combat.isBoss === true,
+      isNpcBattle: Boolean(gm.combat.npcId || gm.combat.npcData),
+      tutorialBossIntro: null,
+      optimistic: {
+        combatId: optimistic.combatId,
+        stateVersion: optimistic.stateVersion,
+        nextTurnSeed: optimistic.nextTurnSeed,
+      },
+    },
+    seedChain: cloneExploreValue(seedChain),
+    combatId: optimistic.combatId,
+    initialStateVersion: optimistic.stateVersion,
+  };
+}
+
+function buildResolvedCombatPayload(room) {
+  return {
+    kind: combatKindForRoom(room),
+    lifecycle: 'resolved',
+    combatStart: null,
+    seedChain: [],
+    combatId: null,
+    initialStateVersion: 0,
+  };
+}
+
 async function buildInteractionPayload(gm, room, opts) {
   if (combatKindForRoom(room)) {
-    return buildCombatPayload(gm, room);
+    return buildPreparedCombatPayload(gm, room);
   }
   switch (room?.type) {
     case ROOM_TYPES.friendlyNpc:
@@ -538,8 +589,8 @@ function missingPayloadReasonsFor(room, interactionPayload) {
   if (room?.type === ROOM_TYPES.npcBattle && room.interacted === true) {
     return missing;
   }
-  // Combat rooms are offline-ready only when a prepared start with a non-empty
-  // seed chain is attached (offlineReady === preparedCombat present).
+  // Not-started and active combat payloads need enemies plus a non-empty seed
+  // chain. Resolved combat shells bypass this validator in buildExploreRunway.
   if (combatKindForRoom(room)) {
     if (!interactionPayload?.combatStart?.enemies?.length) missing.push(`${interactionPayload?.kind || room.type}.combatStart`);
     if (!Array.isArray(interactionPayload?.seedChain) || interactionPayload.seedChain.length < 1) {
@@ -613,17 +664,19 @@ export async function buildExploreRunway(gm, opts = {}) {
     ) {
       gm.explorationService?.ensureNpcBattleSkillOffers?.(room);
     }
-    const npcPostVictory = room.type === ROOM_TYPES.npcBattle
-      && room.interacted === true;
-    if (npcPostVictory) delete room.preparedCombat;
+    const lifecycle = combatKindForRoom(room)
+      ? combatLifecycleForRoom(gm, room, { index, currentRoom })
+      : null;
+    if (lifecycle === 'active' || lifecycle === 'resolved') {
+      delete room.preparedCombat;
+    }
 
     // Pre-roll combat rooms so they can be entered and fought offline. Idempotent
     // per room (persisted on room.preparedCombat) — a responseContext rebuild
     // after replay reuses the existing roll rather than re-rolling. Guarded on the
     // service being present (some rebuild paths carry a lean gm).
     if (
-      combatKindForRoom(room)
-      && !npcPostVictory
+      lifecycle === 'notStarted'
       && !room.preparedCombat
       && gm?.combatCycleService?.prepareCombatStart
     ) {
@@ -632,13 +685,19 @@ export async function buildExploreRunway(gm, opts = {}) {
 
     prepareEntryIngredientDrops(gm, index, currentRoom);
     const entryPayload = buildEntryPayload(gm, room);
-    const interactionPayload = await buildInteractionPayload(gm, room, payloadOpts);
+    const interactionPayload = lifecycle === 'active'
+      ? buildActiveCombatPayload(gm, room)
+      : lifecycle === 'resolved'
+        ? buildResolvedCombatPayload(room)
+        : await buildInteractionPayload(gm, room, payloadOpts);
     const acceptedActions = acceptedExploreActionsForRoom(room, {
       combat: gm?.combat,
       isCurrentRoom: index === currentRoom,
       includeProjectedCombatCycle: true,
     });
-    const missingPayloadReasons = missingPayloadReasonsFor(room, interactionPayload);
+    const missingPayloadReasons = lifecycle === 'resolved'
+      ? []
+      : missingPayloadReasonsFor(room, interactionPayload);
 
     preparedRooms.push({
       index,
