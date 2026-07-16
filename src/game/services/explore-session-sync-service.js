@@ -3,9 +3,11 @@ import {
   rememberActionLedgerResult,
 } from './action-ledger-service.js';
 import {
+  acceptedExploreActionsForRoom,
   isExploreSessionActionId,
   makeExploreCorrection,
   makeExploreOk,
+  validateExploreSessionBatch,
 } from './explore-session-contract.js';
 import { ensureRoomActionSeq } from '../room-reveal-buffer.js';
 import { hashTranscript } from '../../shared/action-protocol.js';
@@ -118,6 +120,20 @@ export class ExploreSessionSyncService {
     if (entry?.actionSeq !== ensureRoomActionSeq(run)) {
       throw new Error('action_seq_mismatch');
     }
+
+    return currentRoom;
+  }
+
+  validateEntryAction(entry) {
+    const currentRoom = this.validateEntryPosition(entry);
+    const accepted = acceptedExploreActionsForRoom(currentRoom, {
+      combat: this.gm?.combat,
+      isCurrentRoom: true,
+    });
+    if (!accepted.includes(entry?.kind)) {
+      throw new Error(`explore_action_not_accepted:${entry?.kind}`);
+    }
+    return currentRoom;
   }
 
   applyExploreEntry(entry) {
@@ -204,29 +220,30 @@ export class ExploreSessionSyncService {
 
   async applySessionSync({ sessionEpoch, entries = [] } = {}) {
     const run = this.run;
-    const replayEntries = Array.isArray(entries) ? entries : [];
 
     if (!sessionEpoch || sessionEpoch !== run?.exploreSessionEpoch) {
       return this.correction({
         reason: 'session_epoch_mismatch',
-        rejectedSeq: replayEntries[0]?.seq ?? null,
+        rejectedSeq: entries?.[0]?.seq ?? null,
         mutateContext: false,
       });
     }
+
+    const batch = validateExploreSessionBatch(entries);
+    if (!batch.ok) {
+      return this.correction({
+        reason: batch.reason,
+        rejectedSeq: batch.rejectedSeq,
+        mutateContext: false,
+      });
+    }
+    const replayEntries = entries;
 
     const results = [];
     let confirmedThroughSeq = null;
 
     for (const entry of replayEntries) {
       const validActionId = isExploreSessionActionId(entry?.actionId);
-      if (!validActionId) {
-        return this.correction({
-          reason: 'invalid_explore_action_id',
-          rejectedSeq: entry?.seq ?? null,
-          confirmedThroughSeq,
-          results,
-        });
-      }
 
       const entryFingerprint = fingerprintExploreEntry(entry);
       const existing = validActionId
@@ -259,6 +276,7 @@ export class ExploreSessionSyncService {
 
       let committed;
       try {
+        this.validateEntryAction(entry);
         committed = this.applyExploreEntry(entry);
       } catch (error) {
         // transcript_mismatch from a combat.cycle replay: the grade was still

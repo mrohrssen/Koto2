@@ -27,6 +27,7 @@ import {
   rollSkillMasterOffers,
 } from '../party-skills.js';
 import {
+  acceptedExploreActionsForRoom,
   cloneExploreValue,
   ensureExploreSessionEpoch,
   EXPLORE_RUNWAY_AHEAD,
@@ -42,7 +43,6 @@ import {
 } from './cooking-service.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
 import { shouldShowStartingMeadowHinonekoIntro } from './tutorial-service.js';
-import { isNpcBattleRewardResolved } from '../npc-battle-reward.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIALOGUE_FRAMES_PATH = join(__dirname, '../../../data/dialogue/frames.json');
@@ -100,52 +100,6 @@ function buildEntryPayload(gm, room) {
       : [],
     narrationFrame: null,
   };
-}
-
-// Combat rooms accept their prepared start plus the per-turn cycle action. Every
-// SUPPORT room also accepts 'proceed' so a completed support room can advance
-// through the session log offline instead of pausing at the legacy proceed route
-// (Task 5 finding: 'proceed' was previously granted only to the default type, so
-// offline chains stalled at every support-room exit). Server-side proceed
-// validation is unchanged — applyExploreProceed → proceedToNextRoom still gates
-// encounter (interacted) and skillMaster (completed) before advancing.
-function acceptedActionsForRoom(room) {
-  switch (room?.type) {
-    case ROOM_TYPES.friendlyNpc:
-      return ['friendlyNpc.choose', 'proceed'];
-    case ROOM_TYPES.shrine:
-      return ['shrine.choose', 'proceed'];
-    case ROOM_TYPES.skillMaster:
-      return ['skillMaster.choose', 'proceed'];
-    case ROOM_TYPES.whackAMole:
-      return ['whackAMole.complete', 'whackAMole.skip', 'proceed'];
-    case ROOM_TYPES.campfire:
-      return ['campfire.cook', 'campfire.feed', 'campfire.skip', 'proceed'];
-    case ROOM_TYPES.speedReviewRoom:
-      return ['speedReview.commit', 'speedReview.complete', 'proceed'];
-    case ROOM_TYPES.wordDiscovery:
-      return ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'];
-    case ROOM_TYPES.dealer:
-      return ['dealer.sell', 'dealer.buy', 'dealer.leave', 'proceed'];
-    case ROOM_TYPES.encounter:
-      return ['encounter.start', 'combat.cycle'];
-    case ROOM_TYPES.npcBattle:
-      if (room.interacted === true) {
-        if (isNpcBattleRewardResolved(room)) return ['proceed'];
-        if (room.npcBattle?.skillSelectionPending === true) {
-          return ['npcBattleSkill.choose'];
-        }
-        return [];
-      }
-      // 'npcBattleSkill.choose' lets the explore session accept the post-victory
-      // skill reward selection; without it the session rejects the choice
-      // ('actionNotAccepted') and soft-pauses the player on the reward screen.
-      return ['npcBattle.start', 'combat.cycle', 'npcBattleSkill.choose'];
-    case ROOM_TYPES.boss:
-      return ['boss.start', 'combat.cycle'];
-    default:
-      return ['proceed'];
-  }
 }
 
 function actionEffectsForActions(actions) {
@@ -679,7 +633,11 @@ export async function buildExploreRunway(gm, opts = {}) {
     prepareEntryIngredientDrops(gm, index, currentRoom);
     const entryPayload = buildEntryPayload(gm, room);
     const interactionPayload = await buildInteractionPayload(gm, room, payloadOpts);
-    const acceptedActions = acceptedActionsForRoom(room);
+    const acceptedActions = acceptedExploreActionsForRoom(room, {
+      combat: gm?.combat,
+      isCurrentRoom: index === currentRoom,
+      includeProjectedCombatCycle: true,
+    });
     const missingPayloadReasons = missingPayloadReasonsFor(room, interactionPayload);
 
     preparedRooms.push({

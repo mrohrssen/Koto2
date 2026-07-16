@@ -362,9 +362,13 @@ export class ExplorationService {
       throw new Error('No current room');
     }
 
-    // Can't proceed if encounter not completed
-    if (currentRoom.type === 'encounter' && !currentRoom.interacted) {
-      throw new Error('Must complete encounter before proceeding');
+    const combatRoom = [
+      ROOM_TYPES.encounter,
+      ROOM_TYPES.npcBattle,
+      ROOM_TYPES.boss,
+    ].includes(currentRoom.type);
+    if (combatRoom && (this.gm.combat?.active || !currentRoom.interacted)) {
+      throw new Error(`Must complete ${currentRoom.type} before proceeding`);
     }
 
     if (currentRoom.type === 'skillMaster' && currentRoom.skillMaster?.completed !== true) {
@@ -375,12 +379,11 @@ export class ExplorationService {
     // player claims via the npc_skill_selection phase. That phase is only derivable
     // while currentRoom still points at the npcBattle room, so advancing now would
     // strand the reward — the player would "beat the NPC but get no reward."
-    if (
-      currentRoom.type === 'npcBattle'
-      && currentRoom.interacted === true
-      && !isNpcBattleRewardResolved(currentRoom)
-    ) {
-      throw new Error('Must claim NPC battle reward before proceeding');
+    if (currentRoom.type === 'npcBattle' && !isNpcBattleRewardResolved(currentRoom)) {
+      if (currentRoom.npcBattle?.skillSelectionPending === true) {
+        throw new Error('Must claim NPC battle reward before proceeding');
+      }
+      throw new Error('Must resolve NPC battle reward before proceeding');
     }
 
     // Move to next room

@@ -91,7 +91,7 @@ describe('ExplorationService proceedToNextRoom guard (NPC Battle reward)', () =>
 
     assert.throws(
       () => svc.proceedToNextRoom(),
-      /Must claim NPC battle reward before proceeding/,
+      /Must resolve NPC battle reward before proceeding/,
     );
     assert.strictEqual(gm.run.currentRoom, 0);
   });

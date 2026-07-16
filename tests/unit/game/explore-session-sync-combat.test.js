@@ -210,7 +210,7 @@ describe('ExploreSessionSyncService — combat replay', () => {
     const result = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: [cycle, proceed] });
 
     assert.equal(result.status, 'corrected');
-    assert.equal(result.reason, 'Must claim NPC battle reward before proceeding');
+    assert.equal(result.reason, 'explore_action_not_accepted:proceed');
     assert.equal(result.confirmedThroughSeq, 2);
     assert.equal(result.rejectedSeq, 3);
     assert.equal(result.results.length, 1);
@@ -376,8 +376,8 @@ describe('ExploreSessionSyncService — combat replay', () => {
     });
 
     const goodCycle = matchingCycleEntry(gm, { seq: 2, actionId: 'run_es_00000402', moveId: WEAK_MOVE.id });
-    // Second entry re-starts combat with a different actionId over the live fight —
-    // startCreatureEncounter throws 'Combat already active' (a correction case).
+    // Second entry re-starts combat with a different actionId over the live fight.
+    // Canonical authorization rejects it before the combat performer can run.
     const badStart = startEntry(gm, { seq: 3, actionId: 'run_es_00000403', kind: 'boss.start' });
 
     const result = await service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: [goodCycle, badStart] });
@@ -385,7 +385,7 @@ describe('ExploreSessionSyncService — combat replay', () => {
     assert.equal(result.confirmedThroughSeq, 2);
     assert.equal(result.rejectedSeq, 3);
     assert.equal(result.results.length, 1);
-    assert.match(result.reason, /Combat already active/);
+    assert.equal(result.reason, 'explore_action_not_accepted:boss.start');
   });
 
   it('a mid-batch defeat stops further same-room combat entries with a clean rejection', async () => {
@@ -467,7 +467,7 @@ describe('ExploreSessionSyncService — combat replay', () => {
       entries: [startEntry(gm, { seq: 1, actionId: 'run_es_00000601', kind: 'encounter.start' })],
     });
     assert.equal(result.status, 'corrected');
-    assert.match(result.reason, /combat_start_room_mismatch/);
+    assert.equal(result.reason, 'explore_action_not_accepted:encounter.start');
     assert.equal(gm.combat, null, 'no combat started on a mismatch');
   });
 });

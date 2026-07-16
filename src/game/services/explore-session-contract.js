@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 
 import { isActionId } from '../../shared/action-protocol.js';
+import { isNpcBattleRewardResolved } from '../npc-battle-reward.js';
 
 export const EXPLORE_RUNWAY_AHEAD = 5;
 export const EXPLORE_LEGACY_REVEAL_AHEAD = 1;
@@ -40,6 +41,23 @@ const ACTION_EFFECTS = Object.freeze({
   'dealer.sell': [EXPLORE_EFFECTS.CREDITS],
   'dealer.buy': [EXPLORE_EFFECTS.CREDITS, EXPLORE_EFFECTS.PARTY_STATS],
   'dealer.leave': [],
+});
+
+const SUPPORT_ACTIONS = Object.freeze({
+  friendlyNpc: ['friendlyNpc.choose', 'proceed'],
+  shrine: ['shrine.choose', 'proceed'],
+  skillMaster: ['skillMaster.choose', 'proceed'],
+  whackAMole: ['whackAMole.complete', 'whackAMole.skip', 'proceed'],
+  campfire: ['campfire.cook', 'campfire.feed', 'campfire.skip', 'proceed'],
+  speedReviewRoom: ['speedReview.commit', 'speedReview.complete', 'proceed'],
+  wordDiscovery: ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'],
+  dealer: ['dealer.sell', 'dealer.buy', 'dealer.leave', 'proceed'],
+});
+
+const COMBAT_START_ACTION = Object.freeze({
+  encounter: 'encounter.start',
+  npcBattle: 'npcBattle.start',
+  boss: 'boss.start',
 });
 
 const ROOM_DEPENDENCIES = Object.freeze({
@@ -131,6 +149,64 @@ export function isExploreSessionActionId(actionId) {
   return typeof actionId === 'string'
     && actionId.startsWith('run_es_')
     && isActionId(actionId);
+}
+
+export function validateExploreSessionBatch(entries) {
+  if (!Array.isArray(entries)) {
+    return { ok: false, reason: 'invalid_explore_batch', rejectedSeq: null };
+  }
+  if (entries.length === 0) {
+    return { ok: false, reason: 'empty_explore_batch', rejectedSeq: null };
+  }
+
+  const actionIds = new Set();
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
+    if (!Number.isInteger(entry?.seq) || entry.seq <= 0) {
+      return { ok: false, reason: 'invalid_explore_seq', rejectedSeq: entry?.seq ?? null };
+    }
+    if (index > 0 && entry.seq !== entries[index - 1].seq + 1) {
+      return { ok: false, reason: 'non_contiguous_explore_seq', rejectedSeq: entry.seq };
+    }
+    if (!isExploreSessionActionId(entry?.actionId)) {
+      return { ok: false, reason: 'invalid_explore_action_id', rejectedSeq: entry.seq };
+    }
+    if (actionIds.has(entry.actionId)) {
+      return { ok: false, reason: 'duplicate_explore_action_id', rejectedSeq: entry.seq };
+    }
+    actionIds.add(entry.actionId);
+  }
+
+  return { ok: true };
+}
+
+export function acceptedExploreActionsForRoom(
+  room,
+  {
+    combat = null,
+    isCurrentRoom = false,
+    includeProjectedCombatCycle = false,
+  } = {},
+) {
+  const support = SUPPORT_ACTIONS[room?.type];
+  if (support) return [...support];
+
+  const startAction = COMBAT_START_ACTION[room?.type];
+  if (!startAction) return ['proceed'];
+  if (isCurrentRoom && combat?.active) return ['combat.cycle'];
+
+  if (room?.interacted) {
+    if (room.type !== 'npcBattle') return ['proceed'];
+    if (isNpcBattleRewardResolved(room)) return ['proceed'];
+    if (room.npcBattle?.skillSelectionPending === true) {
+      return ['npcBattleSkill.choose'];
+    }
+    return [];
+  }
+
+  return includeProjectedCombatCycle
+    ? [startAction, 'combat.cycle']
+    : [startAction];
 }
 
 export function predictedEffectsForAction(kind) {

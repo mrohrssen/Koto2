@@ -393,7 +393,7 @@ test('marks skill master without offers as missing payload', async () => {
   assert.ok(skillMaster.missingPayloadReasons.includes('skillMaster.offered'));
 });
 
-test('npcBattle prepared room accepts the post-victory skill-choose action', async () => {
+test('unstarted npcBattle prepared room accepts only start and projected combat cycles', async () => {
   const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.npcBattle]);
   const runway = await buildExploreRunway(gm, {
     userId: 'runway-user',
@@ -402,10 +402,7 @@ test('npcBattle prepared room accepts the post-victory skill-choose action', asy
   });
   const npcBattle = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.npcBattle);
   assert.ok(npcBattle, 'npcBattle room should be in the prepared window');
-  // Without this the explore session rejects the reward selection ('actionNotAccepted'),
-  // soft-pausing the player on the skill-choose screen after they win the NPC battle.
-  assert.ok(
-    npcBattle.acceptedActions.includes('npcBattleSkill.choose'),
-    `expected npcBattleSkill.choose in acceptedActions, got ${JSON.stringify(npcBattle.acceptedActions)}`
-  );
+  // Reward choice is added only after victory arms the post-combat runway state.
+  // Advertising it here would let a forged pre-combat choice bypass the fight.
+  assert.deepEqual(npcBattle.acceptedActions, ['npcBattle.start', 'combat.cycle']);
 });

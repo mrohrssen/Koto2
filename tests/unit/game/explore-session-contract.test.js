@@ -9,6 +9,7 @@ import {
   EXPLORE_SESSION_RESUME_AT,
   EXPLORE_SYNC_DEBOUNCE_MS,
   EXPLORE_SYNC_RETRY_DELAYS_MS,
+  acceptedExploreActionsForRoom,
   cloneExploreValue,
   createExploreSessionEpoch,
   ensureExploreSessionEpoch,
@@ -19,6 +20,7 @@ import {
   predictedEffectsForAction,
   roomDependenciesForType,
   rotateExploreSessionEpoch,
+  validateExploreSessionBatch,
 } from '../../../src/game/services/explore-session-contract.js';
 
 test('exports runway and client log limits', () => {
@@ -86,6 +88,87 @@ test('validates session action ids', () => {
   assert.equal(isExploreSessionActionId('run_es_00000001'), true);
   assert.equal(isExploreSessionActionId('bad'), false);
   assert.equal(isExploreSessionActionId('__proto__'), false);
+});
+
+test('validates the whole explore session batch shape before replay', () => {
+  const valid = (seq, actionId) => ({ seq, actionId });
+
+  assert.deepEqual(validateExploreSessionBatch(null), {
+    ok: false,
+    reason: 'invalid_explore_batch',
+    rejectedSeq: null,
+  });
+  assert.deepEqual(validateExploreSessionBatch([]), {
+    ok: false,
+    reason: 'empty_explore_batch',
+    rejectedSeq: null,
+  });
+  assert.deepEqual(validateExploreSessionBatch([
+    valid(1, 'run_es_batch0001'),
+    valid(2, 'run_es_batch0002'),
+  ]), { ok: true });
+  assert.deepEqual(validateExploreSessionBatch([
+    valid(17, 'run_es_batch0017'),
+    valid(18, 'run_es_batch0018'),
+  ]), { ok: true });
+
+  for (const [entries, reason, rejectedSeq] of [
+    [[valid(2, 'run_es_batch0011'), valid(1, 'run_es_batch0012')], 'non_contiguous_explore_seq', 1],
+    [[valid(1, 'run_es_batch0021'), valid(1, 'run_es_batch0022')], 'non_contiguous_explore_seq', 1],
+    [[valid(1, 'run_es_batch0031'), valid(3, 'run_es_batch0032')], 'non_contiguous_explore_seq', 3],
+    [[valid(0, 'run_es_batch0041')], 'invalid_explore_seq', 0],
+    [[valid(1, 'bad')], 'invalid_explore_action_id', 1],
+    [[valid(1, 'run_es_batch0051'), valid(2, 'run_es_batch0051')], 'duplicate_explore_action_id', 2],
+  ]) {
+    assert.deepEqual(
+      validateExploreSessionBatch(entries),
+      { ok: false, reason, rejectedSeq },
+    );
+  }
+});
+
+test('derives canonical accepted actions from the live room lifecycle', () => {
+  const boss = { id: 'boss-1', type: 'boss', interacted: false };
+  assert.deepEqual(acceptedExploreActionsForRoom(boss, {
+    isCurrentRoom: true,
+    includeProjectedCombatCycle: true,
+  }), ['boss.start', 'combat.cycle']);
+  assert.deepEqual(acceptedExploreActionsForRoom(boss, {
+    isCurrentRoom: true,
+  }), ['boss.start']);
+  assert.deepEqual(acceptedExploreActionsForRoom(boss, {
+    combat: { active: true },
+    isCurrentRoom: true,
+  }), ['combat.cycle']);
+  boss.interacted = true;
+  assert.deepEqual(acceptedExploreActionsForRoom(boss, {
+    isCurrentRoom: true,
+  }), ['proceed']);
+
+  for (const type of ['encounter', 'npcBattle']) {
+    assert.deepEqual(acceptedExploreActionsForRoom({ type, interacted: false }), [
+      `${type}.start`,
+    ]);
+  }
+
+  const npc = {
+    id: 'npc-1',
+    type: 'npcBattle',
+    interacted: true,
+    npcBattle: { skillSelectionPending: true },
+  };
+  assert.deepEqual(acceptedExploreActionsForRoom(npc), ['npcBattleSkill.choose']);
+  npc.npcBattle.skillSelectionPending = false;
+  assert.deepEqual(acceptedExploreActionsForRoom(npc), ['proceed']);
+  npc.npcBattle = { chosenSkillId: 'hpMaster' };
+  assert.deepEqual(acceptedExploreActionsForRoom(npc), ['proceed']);
+  npc.npcBattle = { rewardResolved: false };
+  assert.deepEqual(acceptedExploreActionsForRoom(npc), []);
+
+  assert.deepEqual(acceptedExploreActionsForRoom({
+    type: 'friendlyNpc',
+    interacted: false,
+  }), ['friendlyNpc.choose', 'proceed']);
 });
 
 test('computes expected action seq', () => {

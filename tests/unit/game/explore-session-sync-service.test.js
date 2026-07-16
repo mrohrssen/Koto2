@@ -39,6 +39,8 @@ function makeGm(roomTypes = [ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc]) {
   run.stats = { ...(run.stats || {}), roomsExplored: 0 };
   run.roomsExplored = 0;
   run.totalEncounters = 0;
+  run.areaCleared = false;
+  run.gameVictoryPending = false;
   run.rooms = roomTypes.map((type, index) => createRoom(type, AREA_ID, index + 1, roomTypes.length));
 
   for (const room of run.rooms) {
@@ -147,6 +149,45 @@ describe('ExploreSessionSyncService', () => {
     assert.deepEqual(result.results, []);
     assert.equal(result.state.run.currentRoom, 0);
     assert.equal(result.exploreRunway.sessionEpoch, LIVE_EPOCH);
+  });
+
+  it('gives session epoch mismatch priority over malformed batch shape', async () => {
+    const gm = makeGm();
+    const service = new ExploreSessionSyncService(gm);
+
+    const result = await service.applySessionSync({
+      sessionEpoch: 'ese_2222222222222222',
+      entries: null,
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'session_epoch_mismatch');
+    assert.equal(result.rejectedSeq, null);
+    assert.equal(result.confirmedThroughSeq, null);
+    assert.deepEqual(result.results, []);
+    assert.equal(gm.run.currentRoom, 0);
+    assert.deepEqual(gm.meta.actionLedger.order, []);
+  });
+
+  it('rejects omitted, empty, and non-array live-epoch batches without mutation', async () => {
+    for (const [name, invoke, reason] of [
+      ['omitted', service => service.applySessionSync({ sessionEpoch: LIVE_EPOCH }), 'empty_explore_batch'],
+      ['empty', service => service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: [] }), 'empty_explore_batch'],
+      ['null', service => service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: null }), 'invalid_explore_batch'],
+    ]) {
+      const gm = makeGm();
+      const service = new ExploreSessionSyncService(gm);
+      const result = await invoke(service);
+
+      assert.equal(result.status, 'corrected', name);
+      assert.equal(result.reason, reason, name);
+      assert.equal(result.rejectedSeq, null, name);
+      assert.equal(result.confirmedThroughSeq, null, name);
+      assert.deepEqual(result.results, [], name);
+      assert.equal(gm.run.currentRoom, 0, name);
+      assert.equal(gm.run.roomActionSeq, 0, name);
+      assert.deepEqual(gm.meta.actionLedger.order, [], name);
+    }
   });
 
   it('commits ordered entries and only proceed increments run.roomActionSeq', async () => {
@@ -531,40 +572,121 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(gm.run.rooms[0].friendlyNpc.greeting, undefined);
   });
 
-  it('rejects an invalid explore actionId after prior commits without mutating that entry', async () => {
-    const gm = makeGm([ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc]);
+  it('preflights malformed batches without committing an earlier valid entry', async () => {
+    for (const testCase of [
+      { name: 'reordered', seqs: [2, 1], ids: ['run_es_shape0001', 'run_es_shape0002'] },
+      { name: 'duplicate seq', seqs: [1, 1], ids: ['run_es_shape0011', 'run_es_shape0012'] },
+      { name: 'gapped', seqs: [1, 3], ids: ['run_es_shape0021', 'run_es_shape0022'] },
+      { name: 'invalid second id', seqs: [1, 2], ids: ['run_es_shape0031', 'bad'] },
+      { name: 'duplicate id', seqs: [1, 2], ids: ['run_es_shape0041', 'run_es_shape0041'] },
+    ]) {
+      const gm = makeGm([ROOM_TYPES.friendlyNpc, ROOM_TYPES.friendlyNpc]);
+      const room = gm.run.rooms[0];
+      const service = new ExploreSessionSyncService(gm);
+      const entries = [
+        makeEntry(gm, {
+          seq: testCase.seqs[0],
+          actionId: testCase.ids[0],
+          kind: 'friendlyNpc.choose',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+          payload: {
+            itemId: TEST_EQUIPMENT.id,
+            targetCreatureIndex: 0,
+          },
+        }),
+        makeEntry(gm, {
+          seq: testCase.seqs[1],
+          actionId: testCase.ids[1],
+          kind: 'proceed',
+          roomIndex: 0,
+          roomId: room.id,
+          actionSeq: 0,
+          payload: {},
+        }),
+      ];
+
+      const result = await service.applySessionSync({
+        sessionEpoch: LIVE_EPOCH,
+        entries,
+      });
+
+      assert.equal(result.status, 'corrected', testCase.name);
+      assert.equal(result.confirmedThroughSeq, null, testCase.name);
+      assert.deepEqual(result.results, [], testCase.name);
+      assert.equal(gm.run.currentRoom, 0, testCase.name);
+      assert.equal(gm.run.roomActionSeq, 0, testCase.name);
+      assert.equal(room.interacted, false, testCase.name);
+      assert.equal(gm.run.runSummary.itemsCollected, 0, testCase.name);
+      assert.deepEqual(gm.meta.actionLedger.order, [], testCase.name);
+    }
+  });
+
+  it('preflights an exact ledger replay batch before returning replay results', async () => {
+    const gm = makeGm();
     const service = new ExploreSessionSyncService(gm);
-    const firstRoom = gm.run.rooms[0];
-    const secondRoom = gm.run.rooms[1];
+    const room = gm.run.rooms[0];
+    const entry = makeEntry(gm, {
+      seq: 50,
+      actionId: 'run_es_shape_replay',
+      kind: 'friendlyNpc.choose',
+      roomIndex: 0,
+      roomId: room.id,
+      actionSeq: 0,
+      payload: { itemId: TEST_EQUIPMENT.id, targetCreatureIndex: 0 },
+    });
+    const first = await service.applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [entry],
+    });
+    assert.equal(first.status, 'ok');
+    const before = structuredClone(gm.run);
+    const ledgerBefore = structuredClone(gm.meta.actionLedger);
 
     const result = await service.applySessionSync({
       sessionEpoch: LIVE_EPOCH,
       entries: [
+        entry,
         makeEntry(gm, {
-          seq: 20,
-          actionId: 'run_es_00000020',
+          seq: 52,
+          actionId: 'bad',
+          kind: 'proceed',
           roomIndex: 0,
-          roomId: firstRoom.id,
+          roomId: room.id,
           actionSeq: 0,
-        }),
-        makeEntry(gm, {
-          seq: 21,
-          actionId: 'not_run_es_00000021',
-          roomIndex: 1,
-          roomId: secondRoom.id,
-          actionSeq: 1,
         }),
       ],
     });
 
     assert.equal(result.status, 'corrected');
-    assert.equal(result.reason, 'invalid_explore_action_id');
-    assert.equal(result.confirmedThroughSeq, 20);
-    assert.equal(result.rejectedSeq, 21);
-    assert.equal(result.results.length, 1);
-    assert.equal(result.results[0].seq, 20);
-    assert.equal(gm.run.currentRoom, 1);
-    assert.equal(gm.run.roomActionSeq, 1);
+    assert.equal(result.reason, 'non_contiguous_explore_seq');
+    assert.equal(result.confirmedThroughSeq, null);
+    assert.deepEqual(result.results, []);
+    assert.deepEqual(gm.run, before);
+    assert.deepEqual(gm.meta.actionLedger, ledgerBefore);
+  });
+
+  it('rejects a forged proceed that tries to skip an unfinished boss', async () => {
+    const gm = makeGm([ROOM_TYPES.boss, ROOM_TYPES.friendlyNpc]);
+    gm.run.rooms[0].boss = { creatureId: 'mizu', defeated: false };
+    const result = await new ExploreSessionSyncService(gm).applySessionSync({
+      sessionEpoch: LIVE_EPOCH,
+      entries: [makeEntry(gm, {
+        seq: 1,
+        actionId: 'run_es_boss_skip',
+        kind: 'proceed',
+        roomIndex: 0,
+        roomId: gm.run.rooms[0].id,
+        actionSeq: 0,
+      })],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'explore_action_not_accepted:proceed');
+    assert.equal(gm.run.currentRoom, 0);
+    assert.equal(gm.run.areaCleared, false);
+    assert.equal(gm.run.gameVictoryPending, false);
   });
 
   it('friendlyNpc.choose applies equipment through ExplorationService.applyFriendlyNpcChoose', async () => {
@@ -917,8 +1039,10 @@ describe('ExploreSessionSyncService', () => {
         payload: { skillId: 'counterMaster' },
         method: 'applyNpcBattleSkillChoose',
         prepare: gm => {
+          gm.run.rooms[0].interacted = true;
           gm.run.rooms[0].npcBattle = {
             skillSelectionPending: true,
+            rewardResolved: false,
             offered: [{ id: 'counterMaster', level: 1 }],
           };
         },

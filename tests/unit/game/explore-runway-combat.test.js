@@ -158,10 +158,9 @@ test('runway combat rooms carry a PARTY_STATS dependency (pre-roll pins enemies,
     const entry = runway.preparedRooms.find(r => r.room.type === type);
     assert.ok(entry, `${type} present`);
     assert.deepEqual(entry.dependencies, ['partyStats'], `${type} depends on partyStats`);
-    // npcBattle additionally accepts the post-victory skill reward selection.
-    const expectedActions = type === ROOM_TYPES.npcBattle
-      ? ['npcBattle.start', 'combat.cycle', 'npcBattleSkill.choose']
-      : [`${type}.start`, 'combat.cycle'];
+    // Reward selection is authorized only after an NPC victory arms it. Before
+    // combat, every combat room advertises only its start plus projected cycles.
+    const expectedActions = [`${type}.start`, 'combat.cycle'];
     assert.deepEqual(entry.acceptedActions, expectedActions);
   }
 });
