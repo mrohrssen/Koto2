@@ -81,6 +81,7 @@ let returnToHub = null;
 let showAdventureReport = null;
 let finishCombatLoop = null;
 let resumeSessionCombatBefriendQuiz = null;
+let waitForCombatPlaybackIdle = async () => {};
 let exploreSessionOnlineDrainTarget = null;
 let exploreSessionVisibilityDrainTarget = null;
 // Injected in init(): pulls a rebuilt runway server-side (loadGameState with
@@ -553,6 +554,7 @@ export function init(callbacks) {
   returnToHub = callbacks.returnToHub;
   finishCombatLoop = callbacks.finishCombatLoop;
   resumeSessionCombatBefriendQuiz = callbacks.resumeSessionCombatBefriendQuiz;
+  waitForCombatPlaybackIdle = callbacks.waitForCombatPlaybackIdle || (async () => {});
   refreshRunwayState = callbacks.refreshRunwayState;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;
   apiSelectArea = callbacks.apiSelectArea;
@@ -600,6 +602,7 @@ export function init(callbacks) {
   if (typeof callbacks.apiSyncExploreSession === 'function') {
     configureExploreSession({
       syncRequest: callbacks.apiSyncExploreSession,
+      beforeResponseAdoption: () => waitForCombatPlaybackIdle(),
       onCheckpoint: onExploreSessionCheckpoint,
       onCorrection: onExploreSessionCorrection,
       onPause: showExploreSoftPause,
@@ -1110,6 +1113,25 @@ function nextPreparedRoomAfterRunwayCursor(runway, currentRoom) {
   return preparedRooms.find(preparedRoom => preparedRoom?.index === currentRoom + 1) || null;
 }
 
+function isCanonicalFinalExploreRoom(state) {
+  const run = state?.run;
+  const currentRoom = run?.currentRoom;
+  const room = state?.room || getActiveRoomFromRun(run);
+  const totalRooms = Number.isInteger(run?.totalRooms)
+    ? run.totalRooms
+    : room?.totalRooms;
+  if (!Number.isInteger(currentRoom)
+    || !Number.isInteger(totalRooms)
+    || totalRooms <= 0
+    || currentRoom !== totalRooms - 1) {
+    return false;
+  }
+  // Room metadata is present in canonical browser state. If supplied, require it
+  // to agree with the 0-based run cursor so a truncated mid-area runway cannot be
+  // mistaken for the terminal room.
+  return !Number.isInteger(room?.roomNumber) || room.roomNumber === totalRooms;
+}
+
 function isExploreRunwaySessionCapable(runway, run) {
   if (!runway?.sessionEpoch) return false;
   const currentRoom = run?.currentRoom;
@@ -1179,7 +1201,13 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   const nextRoom = getNextRoom(state);
   const session = getExploreSession();
   const runway = state.run?.exploreRunway || null;
-  const canUseExploreSession = isExploreRunwaySessionCapable(runway, state.run);
+  // A resolved final room still advertises `proceed`, but there can be no next
+  // prepared runway entry. Recording that action in the session yields an
+  // empty-log `runwayExhausted` pause forever. The authoritative legacy proceed
+  // is the endpoint that performs area completion, so use it only when the run's
+  // canonical cursor and total prove this is truly the last room.
+  const canUseExploreSession = !isCanonicalFinalExploreRoom(state)
+    && isExploreRunwaySessionCapable(runway, state.run);
   if (nextRoom || canUseExploreSession) {
     if (canUseExploreSession) session?.adoptRunway(runway);
     const sessionResult = canUseExploreSession

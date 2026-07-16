@@ -156,6 +156,7 @@ function initCutoverHarness({
   initialState,
   apiProceed = async () => null,
   apiSyncExploreSession = async () => ({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
+  waitForCombatPlaybackIdle = async () => {},
 } = {}) {
   let currentState = initialState;
   let updateUiCalls = 0;
@@ -173,6 +174,7 @@ function initCutoverHarness({
     scene: { showNarration: () => {} },
     finishCombatLoop: result => { finishCombatCalls.push(result); },
     resumeSessionCombatBefriendQuiz: result => { befriendResumeCalls.push(result); },
+    waitForCombatPlaybackIdle,
     apiProceed,
     apiSyncExploreSession,
   });
@@ -247,6 +249,52 @@ describe('explore session proceed cutover', () => {
     assert.equal(result.state, advancedState);
   });
 
+  it('holds response state and runway adoption behind the production playback-idle hook', async () => {
+    let releasePlayback;
+    const playbackIdle = new Promise(resolve => { releasePlayback = resolve; });
+    const initialRunway = makeRunway({
+      preparedRooms: [preparedRoom(0, {
+        room: room(0, { type: 'shrine' }),
+        acceptedActions: ['shrine.choose'],
+        actionEffects: { 'shrine.choose': ['partyStats'] },
+      })],
+    });
+    const initialState = makeState({ currentRoom: 0, exploreRunway: initialRunway });
+    const nextRunway = makeRunway({
+      currentRoom: 1,
+      roomActionSeq: 101,
+      preparedRooms: [preparedRoom(1, { actionSeq: 101 })],
+    });
+    const nextState = makeState({ currentRoom: 1, exploreRunway: nextRunway });
+    const harness = initCutoverHarness({
+      initialState,
+      waitForCombatPlaybackIdle: () => playbackIdle,
+      apiSyncExploreSession: async () => ({
+        status: 'ok',
+        confirmedThroughSeq: 1,
+        results: [],
+        state: nextState,
+        exploreRunway: nextRunway,
+      }),
+    });
+    const session = getExploreSession();
+    session.adoptRunway(initialRunway);
+    assert.equal(session.recordRoomAction('shrine.choose', { rewardType: 'level_up' }).accepted, true);
+
+    const drain = session.syncNow();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    assert.equal(harness.currentState, initialState);
+    assert.equal(session.currentPreparedRoom().index, 0);
+
+    releasePlayback();
+    await drain;
+
+    assert.equal(harness.currentState, nextState);
+    assert.equal(session.currentPreparedRoom().index, 1);
+  });
+
   it('falls back to legacy apiProceed when the current prepared room cannot proceed', async () => {
     const advancedState = makeState({ currentRoom: 1, exploreRunway: null });
     const proceedCalls = [];
@@ -272,6 +320,93 @@ describe('explore session proceed cutover', () => {
     assert.equal(proceedCalls[0], undefined);
     assert.equal(result.state, advancedState);
     assert.equal(transitionCalls.length, 1);
+  });
+
+  it('uses drained legacy proceed to complete a canonical final room', async () => {
+    const finalRoom = room(9, {
+      type: 'boss',
+      interacted: true,
+      roomNumber: 10,
+      totalRooms: 10,
+    });
+    const finalRunway = {
+      sessionEpoch: 'ese_finalroom1111',
+      currentRoom: 9,
+      roomActionSeq: 109,
+      preparedRooms: [preparedRoom(9, {
+        room: finalRoom,
+        acceptedActions: ['proceed'],
+      })],
+    };
+    const initialState = makeState({
+      currentRoom: 9,
+      roomCount: 10,
+      exploreRunway: finalRunway,
+    });
+    initialState.room = finalRoom;
+    initialState.run.rooms[9] = finalRoom;
+    const completedState = {
+      ...initialState,
+      phase: 'area_complete',
+      room: null,
+      run: {
+        ...initialState.run,
+        areaCleared: true,
+        exploreRunway: null,
+      },
+    };
+    let proceedCalls = 0;
+    const harness = initCutoverHarness({
+      initialState,
+      apiProceed: async () => {
+        proceedCalls += 1;
+        return { state: completedState };
+      },
+    });
+
+    const result = await proceedWithRevealBuffer();
+
+    assert.equal(proceedCalls, 1, 'the final room must reach the server area-completion path');
+    assert.equal(result.state, completedState);
+    assert.equal(harness.currentState.phase, 'area_complete');
+    assert.equal(getExploreSession().isPaused(), false);
+    assert.equal(getExploreSession().pendingCount(), 0);
+  });
+
+  it('keeps a truncated non-final runway fail-closed instead of legacy proceeding', async () => {
+    const currentRoom = room(0, {
+      type: 'shrine',
+      interacted: true,
+      roomNumber: 1,
+      totalRooms: 3,
+    });
+    const truncatedRunway = {
+      sessionEpoch: 'ese_truncated1111',
+      currentRoom: 0,
+      roomActionSeq: 100,
+      preparedRooms: [preparedRoom(0, {
+        room: currentRoom,
+        acceptedActions: ['proceed'],
+      })],
+    };
+    const initialState = makeState({ currentRoom: 0, roomCount: 3, exploreRunway: truncatedRunway });
+    initialState.room = currentRoom;
+    initialState.run.rooms[0] = currentRoom;
+    let proceedCalls = 0;
+    initCutoverHarness({
+      initialState,
+      apiProceed: async () => {
+        proceedCalls += 1;
+        return null;
+      },
+    });
+
+    const result = await proceedWithRevealBuffer();
+
+    assert.equal(result, null);
+    assert.equal(proceedCalls, 0, 'a missing mid-area buffer must refresh, never race legacy proceed');
+    assert.equal(getExploreSession().isPaused(), true);
+    assert.equal(getExploreSession().getPauseReason(), 'runwayExhausted');
   });
 
   it('queues consecutive offline proceeds for the advanced room instead of duplicating the stale runway room', async () => {

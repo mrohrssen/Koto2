@@ -785,8 +785,12 @@ function updateGameContent() {
 
 // ============ AUTO-PROCEED ============
 let autoProceedInFlight = false;
+let autoProceedReplayRequested = false;
 async function autoProceed() {
-  if (autoProceedInFlight) return;
+  if (autoProceedInFlight) {
+    autoProceedReplayRequested = true;
+    return;
+  }
   autoProceedInFlight = true;
   try {
     await explorationUI.proceedWithRevealBuffer();
@@ -794,6 +798,10 @@ async function autoProceed() {
     console.warn('[autoProceed] Failed to proceed:', error);
   } finally {
     autoProceedInFlight = false;
+    if (autoProceedReplayRequested) {
+      autoProceedReplayRequested = false;
+      if (gameState.phase === 'room') void autoProceed();
+    }
   }
 }
 
@@ -2357,6 +2365,7 @@ async function initGame() {
     // Resume into the befriend quiz when the checkpoint reports the server rolled
     // befriend on a terminal turn the client optimistically predicted as victory.
     resumeSessionCombatBefriendQuiz: result => combatLoopUI.resumeSessionCombatBefriendQuiz(result),
+    waitForCombatPlaybackIdle: () => combatLoopUI.waitForExploreCombatPlaybackIdle(),
     // Recover an online explore-session stall (empty-log soft-pause that no drain
     // can clear) by pulling a rebuilt runway. adoptSession → /state?adoptSession=1
     // rebuilds the runway server-side WITHOUT rotating the epoch, then adopts it

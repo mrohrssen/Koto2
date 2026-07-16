@@ -155,6 +155,41 @@ test('records actions with room identity and predicted effects', () => {
   assert.equal(typeof entry.createdAt, 'number');
 });
 
+test('serializes checkpoint adoption until active combat playback is idle', async () => {
+  let releasePlayback;
+  const playbackIdle = new Promise(resolve => { releasePlayback = resolve; });
+  const checkpoints = [];
+  const nextRunway = makeRunway({
+    currentRoom: 1,
+    roomActionSeq: 8,
+    preparedRooms: [preparedRoom(1, { actionSeq: 8 })],
+  });
+  const session = createExploreSession({
+    syncRequest: async () => okResponse(1, { exploreRunway: nextRunway }),
+    beforeResponseAdoption: () => playbackIdle,
+    onCheckpoint: response => checkpoints.push(response),
+  });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'berry' }).accepted, true);
+
+  const drain = session.syncNow();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(
+    session.currentPreparedRoom().index,
+    0,
+    'a response must not replace combat A runway while its playback is still active',
+  );
+  assert.equal(checkpoints.length, 0, 'checkpoint callbacks must wait with runway adoption');
+
+  releasePlayback();
+  await drain;
+
+  assert.equal(session.currentPreparedRoom().index, 1);
+  assert.equal(checkpoints.length, 1);
+});
+
 test('action ids include a session nonce and rotate when seq resets', () => {
   const session = createExploreSession({ syncRequest: async () => okResponse(1) });
   session.adoptRunway(makeRunway());

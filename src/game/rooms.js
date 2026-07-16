@@ -509,10 +509,23 @@ export function resolveSupportRoom(room, run, rng = Math.random) {
   return room;
 }
 
-export function finalizeRandomRoom(room, run, rng = Math.random) {
+export function finalizeRandomRoom(
+  room,
+  run,
+  rng = Math.random,
+  { consumeQueuedType = true } = {},
+) {
   if (!room || room.type !== ROOM_TYPES.randomRoom) return room;
 
-  const resolvedType = room.randomRoom?.resolvedType || pickRandomRoomType(run, room, rng);
+  // Koto2 leaves ordinary slots unresolved until the reveal runway prepares
+  // them. Consume the debug queue at that same canonical finalization point so
+  // the client's prepared snapshot and the later server transition see one
+  // identical room type. Fixed NPC/boss rooms never enter this function and do
+  // not shift the queue.
+  const queuedType = consumeQueuedType ? popTestRoomType() : null;
+  const resolvedType = (queuedType && ROOM_TYPES[queuedType])
+    || room.randomRoom?.resolvedType
+    || pickRandomRoomType(run, room, rng);
   const resolved = createRoom(resolvedType, room.areaId, room.roomNumber, room.totalRooms);
   resolved.id = room.id;
   resolved.explored = room.explored;

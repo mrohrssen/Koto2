@@ -41,6 +41,7 @@ const {
   insertAttackCard,
   insertNpcAttackCard,
   createAttackCardContinueControl,
+  cancelAttackCardContinueControls,
 } = await import('../../../public/js/ui/attack-card.js');
 
 describe('attack-card helpers — formatResultValue', () => {
@@ -262,6 +263,24 @@ function createFakeDocumentForInsertedCard() {
 }
 
 describe('createAttackCardContinueControl', () => {
+  it('cancels every blocked continue wait during combat cleanup', async () => {
+    const first = createFakeAttackCard();
+    const second = createFakeAttackCard();
+    const firstWait = createAttackCardContinueControl(first.card).wait();
+    const secondWait = createAttackCardContinueControl(second.card).wait();
+    let settled = false;
+    Promise.all([firstWait, secondWait]).then(() => { settled = true; });
+
+    await waitForTimeoutTick();
+    assert.equal(settled, false);
+
+    cancelAttackCardContinueControls();
+    await Promise.all([firstWait, secondWait]);
+
+    assert.equal(first.actionArea.listenerCount('click'), 0);
+    assert.equal(second.actionArea.listenerCount('click'), 0);
+  });
+
   it('records an early tap before wait and resolves wait without a second tap', async () => {
     const originalSetTimeout = globalThis.setTimeout;
     globalThis.setTimeout = (fn) => {

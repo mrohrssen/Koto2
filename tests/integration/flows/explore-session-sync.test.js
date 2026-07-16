@@ -202,4 +202,51 @@ describe('POST /api/game/explore/sync', () => {
     );
     assert.equal(replayRes.body.state.room?.preparedCombat, undefined);
   });
+
+  it('keeps queued room types identical from prepared runway through server transition', async () => {
+    await setupRunBeforeArea(client);
+    const tutorialRes = await client.post('/api/game/tutorial-fusion-complete', {});
+    assert.equal(tutorialRes.status, 200, `tutorial completion failed: ${JSON.stringify(tutorialRes.body)}`);
+    await client.post('/api/game/debug-mode', { enabled: true });
+    await clearQueuedRooms(client);
+    const expectedTypes = ['shrine', 'encounter', 'friendlyNpc', 'encounter'];
+    await queueRooms(client, expectedTypes);
+    let state = await finishExplorationSetup(client);
+
+    const offersRes = await client.post('/api/game/skill-master-offers', {});
+    if (offersRes.status === 200 && offersRes.body.offered?.length > 0) {
+      const chooseRes = await client.post('/api/game/skill-master-choose', {
+        skillId: offersRes.body.offered[0].id,
+      });
+      assert.equal(chooseRes.status, 200);
+      state = chooseRes.body.state || state;
+    }
+
+    for (let offset = 0; offset < expectedTypes.length; offset += 1) {
+      const nextIndex = offset + 1;
+      const prepared = state.run?.exploreRunway?.preparedRooms?.find(
+        room => room.index === nextIndex,
+      );
+      assert.ok(prepared, `runway should prepare queued room index ${nextIndex}`);
+      assert.equal(prepared.room?.type, expectedTypes[offset]);
+
+      const skipped = await client.post('/api/game/debug-skip-room', {});
+      assert.equal(skipped.status, 200, `debug skip failed: ${JSON.stringify(skipped.body)}`);
+      const proceeded = await client.post('/api/game/proceed', {});
+      assert.equal(proceeded.status, 200, `proceed failed: ${JSON.stringify(proceeded.body)}`);
+      state = proceeded.body.state;
+      assert.equal(state.run.currentRoom, nextIndex);
+      assert.equal(state.room?.type, expectedTypes[offset]);
+      assert.equal(state.room?.id, prepared.roomId);
+      const transitioned = state.run.exploreRunway.preparedRooms.find(
+        room => room.index === nextIndex,
+      );
+      assert.equal(transitioned?.room?.type, expectedTypes[offset]);
+      assert.equal(transitioned?.roomId, prepared.roomId);
+    }
+
+    const fixedNpc = state.run.exploreRunway.preparedRooms.find(room => room.index === 5);
+    assert.equal(fixedNpc?.room?.type, 'npcBattle');
+    assert.equal(fixedNpc?.roomId, 'hajimari-no-hiroba_room6');
+  });
 });

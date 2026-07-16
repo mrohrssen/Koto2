@@ -88,6 +88,16 @@ export const ELEMENT_THEME = {
   wood:   { border: 'rgba(76,175,80,0.35)',   bg: '#e8f5e9',  accent: '#388E3C' }
 };
 
+// Every combat attack card uses this shared control factory, including the
+// enemy/NPC helpers in combat-vfx. Keep active waits centrally cancellable so
+// forfeiting or otherwise tearing down combat cannot leave a detached card
+// holding Explore checkpoint adoption forever.
+const activeContinueControlCancels = new Set();
+
+export function cancelAttackCardContinueControls() {
+  for (const cancel of [...activeContinueControlCancels]) cancel();
+}
+
 /** Map an English skill/base name to the action icon sprite path. */
 function actionIconPath(nameEn) {
   if (nameEn === 'Kanji Kombat Strike') return actionIconUrl('Strike');
@@ -272,6 +282,7 @@ export function createAttackCardContinueControl(card) {
   let requested = false;
   let resolved = false;
   let waitingResolve = null;
+  let fadeTimer = null;
 
   const getContinueLabel = () => card?.querySelector?.('.sac-continue') || null;
 
@@ -283,6 +294,24 @@ export function createAttackCardContinueControl(card) {
   const cleanup = () => {
     if (eventTarget) eventTarget.removeEventListener('click', onTap);
   };
+
+  const settle = () => {
+    if (resolved) return;
+    resolved = true;
+    if (fadeTimer != null) {
+      clearTimeout(fadeTimer);
+      fadeTimer = null;
+    }
+    cleanup();
+    activeContinueControlCancels.delete(cancel);
+    const resolve = waitingResolve;
+    waitingResolve = null;
+    if (resolve) resolve();
+  };
+
+  function cancel() {
+    settle();
+  }
 
   const isActiveCardTarget = (event) => {
     if (!card || card.classList?.contains?.('sac-fading-out')) return false;
@@ -296,16 +325,13 @@ export function createAttackCardContinueControl(card) {
 
   const finish = () => {
     if (resolved) return;
-    resolved = true;
     cleanup();
     if (!card || card.isConnected === false) {
-      if (waitingResolve) waitingResolve();
+      settle();
       return;
     }
     card.classList?.add?.('sac-fading-out');
-    setTimeout(() => {
-      if (waitingResolve) waitingResolve();
-    }, ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+    fadeTimer = setTimeout(settle, ATTACK_CARD_TIMING.FADE_OUT_DURATION);
   };
 
   function requestContinue() {
@@ -324,11 +350,13 @@ export function createAttackCardContinueControl(card) {
   if (eventTarget) {
     eventTarget.addEventListener('click', onTap);
   }
+  activeContinueControlCancels.add(cancel);
 
   return {
     wait() {
+      if (resolved) return Promise.resolve();
       if (!card || card.isConnected === false) {
-        cleanup();
+        settle();
         return Promise.resolve();
       }
       card.classList?.add?.('sac-continue-ready');
@@ -343,6 +371,7 @@ export function createAttackCardContinueControl(card) {
       return requested;
     },
     cleanup,
+    cancel,
   };
 }
 

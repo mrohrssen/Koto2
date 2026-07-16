@@ -21,15 +21,29 @@ globalThis.cancelAnimationFrame = id => clearImmediate(id);
 // --- Fake explore session, injected via module mock ---
 // A combat prepared room accepts 'combat.cycle'; recordRoomAction/syncNow are spies.
 let fakeSession = null;
-function makeFakeSession({ acceptsCombatCycle = true } = {}) {
+function makeFakeSession({ acceptsCombatCycle = true, combatId = 'cmb_sess' } = {}) {
   const recorded = [];
   let syncNowCalls = 0;
+  let currentCombatId = combatId;
+  let currentRoomIndex = 0;
+  let currentRoomId = 'room-0';
   return {
     recorded,
     get syncNowCalls() { return syncNowCalls; },
     currentPreparedRoom: () => ({
+      index: currentRoomIndex,
+      roomId: currentRoomId,
       acceptedActions: acceptsCombatCycle ? ['encounter.start', 'combat.cycle'] : ['proceed'],
+      interactionPayload: {
+        combatId: currentCombatId,
+        combatStart: { optimistic: { combatId: currentCombatId } },
+      },
     }),
+    setCombatId: nextCombatId => { currentCombatId = nextCombatId; },
+    setRoom: (index, roomId) => {
+      currentRoomIndex = index;
+      currentRoomId = roomId;
+    },
     recordRoomAction: (kind, payload) => {
       recorded.push({ kind, payload });
       return { accepted: true, pendingCount: recorded.length };
@@ -66,7 +80,7 @@ await mock.module('../../../public/js/ui/optimistic-combat-turn.js', {
 });
 
 const combatLoop = await import('../../../public/js/ui/combat-loop.js');
-const { clearSceneManager } = await import('../../../public/js/scenes/scene-manager.js');
+const { clearSceneManager, setSceneManager } = await import('../../../public/js/scenes/scene-manager.js');
 
 function combatant(overrides = {}) {
   return {
@@ -95,6 +109,8 @@ function sessionCombatState({ enemyHp = 100, turnSeeds = ['seed-a', 'seed-b', 's
     run: {
       active: true,
       mode: 'standard',
+      currentRoom: 0,
+      rooms: [{ id: 'room-0', type: 'encounter' }],
       partySkills: [],
       itemBuffs: { xpMultiplier: 1, xpBalanceStacks: 0 },
       crestMults: {},
@@ -103,7 +119,7 @@ function sessionCombatState({ enemyHp = 100, turnSeeds = ['seed-a', 'seed-b', 's
   };
 }
 
-function initHarness(initialState) {
+function initHarness(initialState, { setCombatAnimationActive } = {}) {
   let state = initialState;
   const updates = [];
   combatLoop.init({
@@ -112,16 +128,24 @@ function initHarness(initialState) {
     updateUI: () => {},
     settings: { getApiKeys: () => ({}) },
     narration: {},
-    characterUI: {},
+    characterUI: {
+      updateEnemyHPAtIndex: () => {},
+      updateEnemyHPBar: () => {},
+    },
     getEnemyDialogueActive: () => false,
     delay: () => Promise.resolve(),
+    setCombatAnimationActive,
   });
   // Route state accessors used by the network-test surface too.
   combatLoop.__combatNetworkTest.setStateAccessors({
     get: () => state,
     update: next => { state = next; updates.push(next); },
   });
-  return { get state() { return state; }, updates };
+  return {
+    get state() { return state; },
+    replaceState(next) { state = next; },
+    updates,
+  };
 }
 
 describe('explore-session local combat turns', () => {
@@ -348,4 +372,488 @@ describe('explore-session local combat turns', () => {
     assert.equal(played.combatEnded, false, 'shell suppresses the real combatEnded flag');
     assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), false, 'loop marked inactive pending server confirm');
   });
+
+  it('does not let combat A terminal playback overwrite or restart combat B', async () => {
+    const combatA = sessionCombatState({ enemyHp: 1 });
+    combatA.run.currentRoom = 4;
+    combatA.run.rooms = Array.from({ length: 5 }, (_, index) => ({
+      id: index === 4 ? 'room-a' : `room-${index}`,
+      type: 'encounter',
+    }));
+    fakeSession.setRoom(4, 'room-a');
+    const harness = initHarness(combatA);
+    let releasePlayback;
+    let markPlaybackStarted;
+    const playbackStarted = new Promise(resolve => { markPlaybackStarted = resolve; });
+    const playbackGate = new Promise(resolve => { releasePlayback = resolve; });
+    let selectionRestarts = 0;
+
+    const turn = combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      turnTiming: { actionType: 'attack', startedAt: 0, animationStartedAt: null, requestMs: null, logged: false },
+      playback: async (transcript, { isCurrent } = {}) => {
+        assert.deepEqual(transcript.pendingCombatEnd, { victory: true, defeat: false });
+        markPlaybackStarted();
+        await playbackGate;
+        combatLoop.__combatNetworkTest.syncFinalState(transcript, { isCurrent });
+      },
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    });
+
+    await playbackStarted;
+
+    const combatB = sessionCombatState({ enemyHp: 100 });
+    combatB.run.currentRoom = 5;
+    combatB.run.rooms = Array.from({ length: 6 }, (_, index) => ({
+      id: index === 5 ? 'room-b' : `room-${index}`,
+      type: 'encounter',
+    }));
+    combatB.combat.optimistic = {
+      combatId: 'cmb_next',
+      stateVersion: 0,
+      nextTurnSeed: 'seed-next-a',
+      turnSeeds: ['seed-next-a', 'seed-next-b'],
+    };
+    harness.replaceState(combatB);
+    fakeSession.setCombatId('cmb_next');
+    fakeSession.setRoom(5, 'room-b');
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+
+    releasePlayback();
+    await turn;
+
+    assert.equal(harness.updates.length, 0, 'combat A continuation must not publish over combat B');
+    assert.equal(harness.state, combatB, 'the live combat-B state object must remain current');
+    assert.equal(selectionRestarts, 0, 'combat A continuation must not render combat-B selection');
+    assert.equal(fakeSession.recorded.length, 1, 'combat A continuation must not submit another move');
+    assert.equal(fakeSession.recorded[0].kind, 'combat.cycle');
+    assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), true, 'combat B must stay active');
+    assert.equal(
+      combatLoop.__combatNetworkTest.getPendingFlags().player,
+      true,
+      'combat A continuation must not clear combat B pending input lock',
+    );
+  });
+
+  it('does not submit a stale combat-A move after the prepared owner advances to combat B', async () => {
+    const staleCombatA = sessionCombatState({ enemyHp: 100 });
+    staleCombatA.run.currentRoom = 5;
+    const harness = initHarness(staleCombatA);
+    fakeSession.setCombatId('cmb_next');
+    let playbackCount = 0;
+    let selectionRestarts = 0;
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      turnTiming: { actionType: 'attack', startedAt: 0, animationStartedAt: null, requestMs: null, logged: false },
+      playback: async () => { playbackCount += 1; },
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    });
+
+    assert.equal(handled, true, 'the stale click is consumed without falling through to legacy combat');
+    assert.equal(fakeSession.recorded.length, 0, 'the stale move must not enter combat B session history');
+    assert.equal(playbackCount, 0, 'the stale move must not render a predicted transcript');
+    assert.equal(harness.updates.length, 0, 'the stale move must not mutate live state');
+    assert.equal(selectionRestarts, 0, 'the stale move must not restart selection');
+  });
+
+  it('allows a live combat turn when the legacy prepared-room shell has no combat id', async () => {
+    const harness = initHarness(sessionCombatState({ enemyHp: 100 }));
+    fakeSession.setCombatId(null);
+
+    const handled = await runTurn(harness);
+
+    assert.equal(handled, true);
+    assert.equal(fakeSession.recorded.length, 1, 'unknown prepared owner must not look like a mismatch');
+    assert.equal(playbackCalls.length, 1, 'the valid live combat turn should still play');
+    assert.equal(harness.updates.length, 1, 'the valid live combat turn should still commit');
+  });
+
+  it('accepts the serialized current-room identity when run.rooms is omitted', async () => {
+    const serializedState = sessionCombatState({ enemyHp: 100 });
+    serializedState.room = { id: 'room-0', type: 'encounter' };
+    delete serializedState.run.rooms;
+    const harness = initHarness(serializedState);
+
+    const handled = await runTurn(harness);
+
+    assert.equal(handled, true);
+    assert.equal(fakeSession.recorded.length, 1, 'live serialized room identity must own the action');
+    assert.equal(playbackCalls.length, 1, 'valid first-room combat should render playback');
+    assert.equal(harness.updates.length, 1, 'valid first-room combat should commit locally');
+  });
+
+  it('rejects a stale room-A control in room B when the prepared shell has no combat id', async () => {
+    const hybridState = sessionCombatState({ enemyHp: 100 });
+    hybridState.run.currentRoom = 5;
+    hybridState.run.rooms = Array.from({ length: 6 }, (_, index) => ({
+      id: index === 5 ? 'room-b' : `room-${index}`,
+      type: 'encounter',
+    }));
+    const harness = initHarness(hybridState);
+    fakeSession.setCombatId(null);
+    fakeSession.setRoom(5, 'room-b');
+    let playbackCount = 0;
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      turnTiming: { actionType: 'attack', startedAt: 0, animationStartedAt: null, requestMs: null, logged: false },
+      playback: async () => { playbackCount += 1; },
+      startMoveSelection: () => {},
+      stopCombatLoop: () => {},
+      exploreOwnerContext: {
+        combatId: 'cmb_sess',
+        roomIndex: 4,
+        roomId: 'room-a',
+      },
+    });
+
+    assert.equal(handled, true);
+    assert.equal(fakeSession.recorded.length, 0, 'room A action must not append to room B');
+    assert.equal(playbackCount, 0, 'room A action must not render in room B');
+    assert.equal(harness.updates.length, 0, 'room A action must not mutate room B');
+  });
+
+  it('preserves an adopted same-combat checkpoint that lands during playback', async () => {
+    const harness = initHarness(sessionCombatState({ enemyHp: 100 }));
+    let releasePlayback;
+    let markPlaybackStarted;
+    const playbackStarted = new Promise(resolve => { markPlaybackStarted = resolve; });
+    const playbackGate = new Promise(resolve => { releasePlayback = resolve; });
+    let selectionRestarts = 0;
+
+    const turn = combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      turnTiming: { actionType: 'attack', startedAt: 0, animationStartedAt: null, requestMs: null, logged: false },
+      playback: async (transcript, { isCurrent, canFinalizeState } = {}) => {
+        markPlaybackStarted();
+        await playbackGate;
+        combatLoop.__combatNetworkTest.syncFinalState(transcript, {
+          isCurrent: () => isCurrent?.() !== false && canFinalizeState?.() !== false,
+        });
+      },
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    });
+
+    await playbackStarted;
+    const checkpoint = structuredClone(harness.state);
+    checkpoint.combat.optimistic = {
+      ...checkpoint.combat.optimistic,
+      stateVersion: 1,
+      nextTurnSeed: 'seed-b',
+      turnSeeds: ['seed-b', 'seed-c'],
+    };
+    checkpoint.run.creatureParty.active[0].xp = 777;
+    checkpoint.meta = { serverOnlyReward: 'preserve-me' };
+    harness.replaceState(checkpoint);
+
+    releasePlayback();
+    await turn;
+
+    assert.equal(harness.updates.length, 0, 'predicted turn must not reapply over an adopted checkpoint');
+    assert.equal(harness.state, checkpoint, 'the adopted checkpoint object must remain current');
+    assert.equal(harness.state.run.creatureParty.active[0].xp, 777, 'server XP must be preserved');
+    assert.equal(harness.state.meta.serverOnlyReward, 'preserve-me');
+    assert.equal(selectionRestarts, 1, 'same-combat checkpoint should continue the valid UI flow');
+  });
+
+  for (const {
+    actionName,
+    pendingFlag,
+  } of [
+    { actionName: 'attack', pendingFlag: 'player' },
+    { actionName: 'defend', pendingFlag: 'enemy' },
+  ]) {
+    it(`does not let stale combat-A ${actionName} rejection recover into combat B`, () => {
+      const harness = initHarness(sessionCombatState({ enemyHp: 100 }));
+      const operation = combatLoop.__combatNetworkTest.captureExploreCombatOperation({
+        combatId: 'cmb_sess',
+        roomIndex: 0,
+        roomId: 'room-0',
+      });
+
+      const combatB = sessionCombatState({ enemyHp: 100 });
+      combatB.run.currentRoom = 1;
+      combatB.run.rooms = [
+        { id: 'room-0', type: 'encounter' },
+        { id: 'room-b', type: 'encounter' },
+      ];
+      combatB.combat.optimistic = {
+        combatId: 'cmb_next',
+        stateVersion: 0,
+        nextTurnSeed: 'seed-next-a',
+        turnSeeds: ['seed-next-a', 'seed-next-b'],
+      };
+      harness.replaceState(combatB);
+      fakeSession.setCombatId('cmb_next');
+      fakeSession.setRoom(1, 'room-b');
+      combatLoop.__combatNetworkTest.setCombatActive(true);
+      combatLoop.__combatNetworkTest.setPendingFlags({
+        player: pendingFlag === 'player',
+        enemy: pendingFlag === 'enemy',
+      });
+
+      const timing = {
+        actionType: actionName,
+        startedAt: 0,
+        animationStartedAt: null,
+        requestMs: null,
+        logged: false,
+      };
+      let selectionRestarts = 0;
+      const reportedErrors = [];
+      const recovered = combatLoop.__combatNetworkTest.handleCreatureTurnFailure({
+        label: actionName === 'defend' ? 'Creature defend error:' : 'Move turn error:',
+        error: new Error('combat A playback rejected'),
+        pendingFlag,
+        turnTiming: timing,
+        exploreOperation: operation,
+        restartMoveSelection: () => { selectionRestarts += 1; },
+        reportError: (...args) => { reportedErrors.push(args); },
+      });
+
+      assert.equal(recovered, false, 'stale rejection must be consumed without recovery side effects');
+      assert.equal(
+        combatLoop.__combatNetworkTest.getPendingFlags()[pendingFlag],
+        true,
+        'combat B pending input ownership must remain locked',
+      );
+      assert.equal(selectionRestarts, 0, 'combat A must not redraw combat B selection');
+      assert.equal(reportedErrors.length, 0, 'combat A must not surface its stale error into combat B');
+      assert.equal(timing.logged, false, 'combat A must not append stale timing diagnostics into combat B');
+    });
+
+    it(`keeps current-owner ${actionName} rejection recovery`, () => {
+      initHarness(sessionCombatState({ enemyHp: 100 }));
+      const operation = combatLoop.__combatNetworkTest.captureExploreCombatOperation({
+        combatId: 'cmb_sess',
+        roomIndex: 0,
+        roomId: 'room-0',
+      });
+      combatLoop.__combatNetworkTest.setPendingFlags({
+        player: pendingFlag === 'player',
+        enemy: pendingFlag === 'enemy',
+      });
+
+      const timing = {
+        actionType: actionName,
+        startedAt: performance.now(),
+        animationStartedAt: null,
+        requestMs: null,
+        logged: false,
+      };
+      let selectionRestarts = 0;
+      const reportedErrors = [];
+      const recovered = combatLoop.__combatNetworkTest.handleCreatureTurnFailure({
+        label: actionName === 'defend' ? 'Creature defend error:' : 'Move turn error:',
+        error: new Error('current playback rejected'),
+        pendingFlag,
+        turnTiming: timing,
+        exploreOperation: operation,
+        restartMoveSelection: () => { selectionRestarts += 1; },
+        reportError: (...args) => { reportedErrors.push(args); },
+      });
+
+      assert.equal(recovered, true);
+      assert.equal(combatLoop.__combatNetworkTest.getPendingFlags()[pendingFlag], false);
+      assert.equal(selectionRestarts, 1);
+      assert.equal(reportedErrors.length, 1);
+      assert.equal(timing.logged, true);
+    });
+  }
+
+  it('keeps the newer combat animation active when an older animation rejects', async () => {
+    const animationStates = [];
+    initHarness(sessionCombatState({ enemyHp: 100 }), {
+      setCombatAnimationActive: active => { animationStates.push(active); },
+    });
+    let releaseA;
+    let releaseB;
+    const gateA = new Promise(resolve => { releaseA = resolve; });
+    const gateB = new Promise(resolve => { releaseB = resolve; });
+
+    const animationA = combatLoop.__combatNetworkTest.withAnimationActive(async () => {
+      await gateA;
+      throw new Error('combat A animation rejected');
+    });
+    const animationB = combatLoop.__combatNetworkTest.withAnimationActive(async () => {
+      await gateB;
+    });
+
+    releaseA();
+    await assert.rejects(animationA, /combat A animation rejected/);
+    assert.equal(
+      animationStates.at(-1),
+      true,
+      'combat A finalizer must not clear combat B animation ownership',
+    );
+
+    releaseB();
+    await animationB;
+    assert.equal(animationStates.at(-1), false, 'animation flag clears when the final owner settles');
+  });
+
+  it('does not let combat A victory cleanup resume into combat B after an await', async () => {
+    const harness = initHarness(sessionCombatState({ enemyHp: 0 }));
+    let releaseDialogue;
+    const dialogueGate = new Promise(resolve => { releaseDialogue = resolve; });
+    const downstream = [];
+
+    combatLoop.init({
+      getGameState: () => harness.state,
+      updateGameState: next => { harness.replaceState(next); },
+      updateUI: () => { downstream.push('updateUI'); },
+      settings: { getApiKeys: () => ({}) },
+      narration: {},
+      characterUI: {},
+      getEnemyDialogueActive: () => false,
+      getDialogueDismissPromise: () => dialogueGate,
+      delay: () => Promise.resolve(),
+      animateEnemyDefeat: () => { downstream.push('animateEnemyDefeat'); },
+      showVictoryModal: async () => { downstream.push('showVictoryModal'); },
+      showGameOverModal: async () => { downstream.push('showGameOverModal'); },
+      showPostCombatShop: async () => { downstream.push('showPostCombatShop'); },
+    });
+    setSceneManager({
+      currentScene: null,
+      transitioning: false,
+      transition: async () => { downstream.push('transition'); },
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const cleanupA = combatLoop.stopCombatLoop({
+      combatEnded: true,
+      victory: true,
+      turnCount: 2,
+    });
+    await Promise.resolve();
+
+    const combatB = sessionCombatState({ enemyHp: 100 });
+    combatB.run.currentRoom = 1;
+    combatB.run.rooms = [
+      { id: 'room-0', type: 'encounter' },
+      { id: 'room-b', type: 'npcBattle' },
+    ];
+    combatB.combat.optimistic = {
+      combatId: 'cmb_next',
+      stateVersion: 0,
+      nextTurnSeed: 'seed-next-a',
+      turnSeeds: ['seed-next-a', 'seed-next-b'],
+    };
+    harness.replaceState(combatB);
+    fakeSession.setCombatId('cmb_next');
+    fakeSession.setRoom(1, 'room-b');
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    releaseDialogue();
+    await cleanupA;
+
+    assert.deepEqual(
+      downstream,
+      [],
+      'combat A must not animate, show rewards/modals, update, or transition after combat B owns the screen',
+    );
+    assert.equal(harness.state.combat.optimistic.combatId, 'cmb_next');
+    assert.equal(combatLoop.isCombatActive(), true, 'combat A cleanup must not deactivate combat B');
+  });
+
+  for (const {
+    actionName,
+    pendingFlag,
+  } of [
+    { actionName: 'attack', pendingFlag: 'player' },
+    { actionName: 'defend', pendingFlag: 'enemy' },
+  ]) {
+    it(`contains a deferred stale ${actionName} rejection in the real outer wrapper`, async () => {
+      const animationStates = [];
+      const harness = initHarness(sessionCombatState({ enemyHp: 100 }), {
+        setCombatAnimationActive: active => { animationStates.push(active); },
+      });
+      const owner = {
+        combatId: 'cmb_sess',
+        roomIndex: 0,
+        roomId: 'room-0',
+      };
+      let markPlaybackStarted;
+      let rejectPlayback;
+      const playbackStarted = new Promise(resolve => { markPlaybackStarted = resolve; });
+      const playbackGate = new Promise((resolve, reject) => { rejectPlayback = reject; });
+      let selectionRestarts = 0;
+      const reportedErrors = [];
+      const playback = async () => {
+        markPlaybackStarted();
+        await playbackGate;
+      };
+
+      const combatATurn = actionName === 'attack'
+        ? combatLoop.__combatNetworkTest.executeCreatureMovesTurn(
+            [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+            {
+              exploreOwnerContext: owner,
+              playback,
+              restartMoveSelection: () => { selectionRestarts += 1; },
+              reportError: (...args) => { reportedErrors.push(args); },
+            },
+          )
+        : combatLoop.__combatNetworkTest.executeCreatureDefendThenPause({
+            exploreOwnerContext: owner,
+            playback,
+            restartMoveSelection: () => { selectionRestarts += 1; },
+            reportError: (...args) => { reportedErrors.push(args); },
+          });
+
+      await playbackStarted;
+
+      const combatB = sessionCombatState({ enemyHp: 100 });
+      combatB.run.currentRoom = 1;
+      combatB.run.rooms = [
+        { id: 'room-0', type: 'encounter' },
+        { id: 'room-b', type: 'encounter' },
+      ];
+      combatB.combat.optimistic = {
+        combatId: 'cmb_next',
+        stateVersion: 0,
+        nextTurnSeed: 'seed-next-a',
+        turnSeeds: ['seed-next-a', 'seed-next-b'],
+      };
+      harness.replaceState(combatB);
+      fakeSession.setCombatId('cmb_next');
+      fakeSession.setRoom(1, 'room-b');
+      combatLoop.__combatNetworkTest.setCombatActive(true);
+      combatLoop.__combatNetworkTest.setPendingFlags({
+        player: pendingFlag === 'player',
+        enemy: pendingFlag === 'enemy',
+      });
+
+      let releaseCombatBAnimation;
+      const combatBAnimationGate = new Promise(resolve => { releaseCombatBAnimation = resolve; });
+      const combatBAnimation = combatLoop.__combatNetworkTest.withAnimationActive(
+        () => combatBAnimationGate,
+      );
+
+      rejectPlayback(new Error('combat A playback rejected after combat B started'));
+      await combatATurn;
+
+      assert.equal(
+        combatLoop.__combatNetworkTest.getPendingFlags()[pendingFlag],
+        true,
+        'combat A catch must leave combat B input pending',
+      );
+      assert.equal(selectionRestarts, 0, 'combat A catch must not restart combat B selection');
+      assert.equal(reportedErrors.length, 0, 'combat A catch must suppress its stale error');
+      assert.equal(animationStates.at(-1), true, 'combat A finally must leave B animation active');
+
+      releaseCombatBAnimation();
+      await combatBAnimation;
+      assert.equal(animationStates.at(-1), false);
+    });
+  }
 });

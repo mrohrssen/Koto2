@@ -23,6 +23,12 @@ const autoProceedSrc = sourceBetween(
   '// ============ ENEMY DIALOGUE ============'
 );
 
+const autoProceedExecutableSrc = sourceBetween(
+  gameSrc,
+  'let autoProceedInFlight = false;',
+  '// ============ ENEMY DIALOGUE ============'
+);
+
 const proceedWithRevealBufferSrc = sourceBetween(
   explorationSrc,
   'export async function proceedWithRevealBuffer',
@@ -36,7 +42,8 @@ const startEncounterSrc = sourceBetween(
 );
 
 test('autoProceed delegates room travel to session-aware exploration proceed', () => {
-  const guardIndex = autoProceedSrc.indexOf('if (autoProceedInFlight) return');
+  const guardIndex = autoProceedSrc.indexOf('if (autoProceedInFlight)');
+  const replayIndex = autoProceedSrc.indexOf('autoProceedReplayRequested = true', guardIndex);
   const setIndex = autoProceedSrc.indexOf('autoProceedInFlight = true');
   const delegateIndex = autoProceedSrc.indexOf('await explorationUI.proceedWithRevealBuffer()');
   const catchIndex = autoProceedSrc.indexOf('catch (error)');
@@ -44,6 +51,7 @@ test('autoProceed delegates room travel to session-aware exploration proceed', (
   const clearIndex = autoProceedSrc.indexOf('autoProceedInFlight = false', finallyIndex);
 
   assert.ok(guardIndex >= 0, 'autoProceed should keep the in-flight guard');
+  assert.ok(replayIndex > guardIndex, 'the guard should remember a missed room advance');
   assert.ok(setIndex > guardIndex, 'autoProceed should set the in-flight guard before proceeding');
   assert.ok(delegateIndex > setIndex, 'autoProceed should delegate to the session-aware proceed helper');
   assert.ok(finallyIndex > delegateIndex, 'autoProceed should clear the guard in finally');
@@ -57,6 +65,40 @@ test('autoProceed delegates room travel to session-aware exploration proceed', (
   assert.doesNotMatch(autoProceedSrc, /apiProceed\(\{\s*actionId/, 'autoProceed should not call legacy verified proceed');
   assert.doesNotMatch(autoProceedSrc, /createPendingRunAction/, 'autoProceed should not duplicate optimistic proceed logic');
   assert.doesNotMatch(autoProceedSrc, /playRoomTransition\(/, 'autoProceed should let exploration handle room transition');
+});
+
+test('autoProceed replays a room advance requested during an in-flight transition', async () => {
+  let finishFirstProceed;
+  const firstProceed = new Promise(resolve => { finishFirstProceed = resolve; });
+  let proceedCalls = 0;
+  const explorationUI = {
+    proceedWithRevealBuffer: () => {
+      proceedCalls += 1;
+      return proceedCalls === 1 ? firstProceed : Promise.resolve();
+    },
+  };
+  const gameState = { phase: 'room' };
+  const loadAutoProceed = new Function(
+    'explorationUI',
+    'gameState',
+    `${autoProceedExecutableSrc}\nreturn { autoProceed };`,
+  );
+  const { autoProceed } = loadAutoProceed(explorationUI, gameState);
+
+  const firstRun = autoProceed();
+  await Promise.resolve();
+  await autoProceed();
+  assert.equal(proceedCalls, 1, 'the in-flight guard should serialize concurrent room advances');
+
+  finishFirstProceed();
+  await firstRun;
+  await Promise.resolve();
+
+  assert.equal(
+    proceedCalls,
+    2,
+    'the room update dropped by the in-flight guard should run after the prior transition settles',
+  );
 });
 
 test('proceedWithRevealBuffer queues buffered proceed through explore session before legacy fallback', () => {

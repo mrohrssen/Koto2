@@ -316,6 +316,47 @@ describe('combat network hardening', () => {
     assert.match(combatLoopSource, /playCreatureDefendResult\(localTranscript, turnTiming,/);
   });
 
+  it('threads Explore combat ownership through attack and defend playback finalization', () => {
+    assert.match(
+      combatLoopSource,
+      /await withExploreCombatPlayback\(\(\) => playback\([\s\S]*?optimistic\.localTranscript/,
+      'the production session turn must hold checkpoint adoption across the complete playback helper',
+    );
+    assert.match(
+      combatLoopSource,
+      /playback: typeof options\.playback === 'function'[\s\S]*?: \(localTranscript, \{ isCurrent, canFinalizeState \} = \{\}\) => playCreatureCombatResult[\s\S]*?isPlaybackCurrent: isCurrent,[\s\S]*?canFinalizePlaybackState: canFinalizeState/,
+      'attack playback must receive the captured Explore combat owner guard',
+    );
+    assert.match(
+      combatLoopSource,
+      /playback: typeof playback === 'function'[\s\S]*?: \(localTranscript, \{ isCurrent, canFinalizeState \} = \{\}\) => playCreatureDefendResult[\s\S]*?isPlaybackCurrent: isCurrent,[\s\S]*?canFinalizePlaybackState: canFinalizeState/,
+      'defend playback must receive the captured Explore combat owner guard',
+    );
+    assert.match(
+      combatLoopSource,
+      /async function playCreatureCombatResult[\s\S]*?syncFinalState\(result, \{\s*isCurrent: \(\) => isPlaybackCurrent\(\) && canFinalizePlaybackState\(\),\s*\}\)/,
+      'attack playback finalization must fail closed after combat ownership changes',
+    );
+    assert.match(
+      combatLoopSource,
+      /async function playCreatureDefendResult[\s\S]*?syncFinalState\(result, \{\s*isCurrent: \(\) => isPlaybackCurrent\(\) && canFinalizePlaybackState\(\),\s*\}\)/,
+      'defend playback finalization must fail closed after combat ownership changes',
+    );
+  });
+
+  it('scopes attack and defend rejection cleanup to the captured Explore owner', () => {
+    assert.match(
+      combatLoopSource,
+      /async function executeCreatureMovesTurn[\s\S]*?captureExploreCombatOperation[\s\S]*?catch \(error\) \{[\s\S]*?handleCreatureTurnFailure\([\s\S]*?exploreOperation/,
+      'attack wrapper must route rejection cleanup through captured Explore ownership',
+    );
+    assert.match(
+      combatLoopSource,
+      /async function executeCreatureDefendThenPause[\s\S]*?captureExploreCombatOperation[\s\S]*?catch \(error\) \{[\s\S]*?handleCreatureTurnFailure\([\s\S]*?exploreOperation/,
+      'defend wrapper must route rejection cleanup through captured Explore ownership',
+    );
+  });
+
   it('does not hard-code optimistic creature return-to-selection padding', () => {
     assert.doesNotMatch(
       combatLoopSource,

@@ -291,6 +291,10 @@ describe('renderWhackAMole decline flow', () => {
         yesTokens: null,
         noTokens: null,
       }),
+      // This one-room fixture is canonically final. Production always wires the
+      // legacy proceed endpoint that performs area completion; return no state
+      // here because this assertion only covers immediate prompt clearing.
+      apiProceed: async () => null,
       apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
     });
 

@@ -35,7 +35,15 @@ npm run test:coverage # View coverage report
 
 ### Explore Subway Runway Smoke (full-session harness)
 
-Full-area explore run through scripted 60–120s offline windows. Two tiers, both env-gated (skipped by default):
+Full-area Explore run through two real browser offline windows. The merge-gate wrapper seeds `devtester`, queues deterministic room indices 1–4 (`shrine`, `encounter`, `friendlyNpc`, `encounter`), and leaves the fixed later NPC battle and boss slots intact:
+
+```bash
+npm run test:subway:explore
+```
+
+The harness uses Playwright's browser-context offline mode, so `navigator.onLine` changes to `false`/`true` and the page receives exactly two `offline` and two `online` events. The same document enters the run through the UI and stays loaded across both outages; there is no setup reload. It requires support actions, offline combat, the fixed NPC reward choice, terminal completion, a fully drained/unpaused Explore session, zero corrected syncs, and exact client/server party convergence.
+
+The lower-level tiers remain env-gated (skipped by default):
 
 ```bash
 # Rooms tier — Stage 1 gate: travel + support rooms survive outages; fights wait for online windows
@@ -46,4 +54,4 @@ EXPLORE_SUBWAY_SMOKE=1 npx playwright test tests/smoke/explore-subway-runway.tes
 EXPLORE_SUBWAY_SMOKE=1 EXPLORE_SUBWAY_COMBAT=1 npx playwright test tests/smoke/explore-subway-runway.test.js --config tests/smoke/playwright.subway.config.js
 ```
 
-The subway config owns its own dev server on isolated ports (Vite 5199 / API 3099) — do not point it at a running 5173 server. Asserts: tap acknowledgment < 250ms, no forbidden copy, no blank action area, prepared rooms render offline, post-reconnect server state matches actions played, zero corrected syncs. Layouts are random; to force room types use the `debug-mode` + `debug-queue-rooms` endpoints (see the harness's `forceSpeedReviewLayout`). This harness is the explore-mode merge gate for the subway-stability arc (see `docs/superpowers/specs/2026-07-03-explore-subway-stability-design.md`).
+The subway config owns its own dev server on isolated ports (Vite 5199 / API 3099) — do not point it at a running 5173 server. Asserts: dispatch-to-ack < 250ms, no forbidden copy, no blank action area, prepared rooms render offline, both true offline windows complete, and post-reconnect client/server state converges. Set `EXPLORE_SUBWAY_LAYOUT=1` to queue the deterministic first four room types; add `EXPLORE_SUBWAY_FORCE_SPEED_REVIEW=1` to substitute `speedReviewRoom` for the second queued encounter. This harness is the Explore-mode merge gate for the subway-stability arc (see `docs/superpowers/specs/2026-07-03-explore-subway-stability-design.md`).

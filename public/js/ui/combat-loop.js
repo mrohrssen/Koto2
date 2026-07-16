@@ -99,6 +99,7 @@ import * as kanjiKombatUI from './kanji-kombat.js';
 import {
   insertAttackCard, insertNpcAttackCard, waitForCardTap,
   createAttackCardContinueControl,
+  cancelAttackCardContinueControls,
   showAttackCardAndWait, ATTACK_CARD_TIMING, ELEMENT_THEME,
 } from './attack-card.js';
 
@@ -183,6 +184,12 @@ let kanjiKombatOpeningRevealActive = false;
 // Move-based combat state
 let currentCreatureIndex = 0;
 let pendingMove = null;
+let pendingMoveOwnerContext = null;
+let activeMoveSelectionOwnerContext = null;
+const activeCombatAnimationTokens = new Set();
+const activeExploreCombatPlaybackTokens = new Set();
+const exploreCombatPlaybackIdleWaiters = new Set();
+let exploreCombatPlaybackEpoch = 0;
 
 // Callback references (set during init)
 let getGameState = null;
@@ -552,6 +559,151 @@ function getExploreSessionCombatOwner(session = getActiveStandardExploreSession(
     : null;
 }
 
+const STALE_EXPLORE_COMBAT_OWNER = Symbol('staleExploreCombatOwner');
+const ADOPTED_EXPLORE_COMBAT_CHECKPOINT = Symbol('adoptedExploreCombatCheckpoint');
+
+function preparedExploreCombatId(session) {
+  const payload = session?.currentPreparedRoom?.()?.interactionPayload;
+  return payload?.combatId ?? payload?.combatStart?.optimistic?.combatId ?? null;
+}
+
+function liveExploreRoomContext(state = getGameState()) {
+  const roomIndex = Number.isInteger(state?.run?.currentRoom)
+    ? state.run.currentRoom
+    : null;
+  // Browser state serializes only the active room at `state.room`; the complete
+  // `run.rooms` array is server-internal and may be absent. Prefer that canonical
+  // current-room shell, retaining run.rooms as a unit/legacy fallback.
+  const room = state?.room
+    ?? (roomIndex == null ? null : state?.run?.rooms?.[roomIndex]);
+  return {
+    roomIndex,
+    roomId: room?.id ?? null,
+  };
+}
+
+function capturedCombatCleanupOwner(state = getGameState()) {
+  const room = liveExploreRoomContext(state);
+  return {
+    combatId: state?.combat?.optimistic?.combatId ?? null,
+    roomIndex: room.roomIndex,
+    roomId: room.roomId,
+  };
+}
+
+function ownsCombatCleanupContinuation(owner, state = getGameState()) {
+  const live = capturedCombatCleanupOwner(state);
+  return sameKnownValue(owner?.combatId, live.combatId)
+    && sameKnownValue(owner?.roomIndex, live.roomIndex)
+    && sameKnownValue(owner?.roomId, live.roomId);
+}
+
+function preparedExploreRoomContext(session) {
+  const room = session?.currentPreparedRoom?.();
+  return {
+    roomIndex: Number.isInteger(room?.index) ? room.index : null,
+    roomId: room?.roomId ?? room?.room?.id ?? null,
+  };
+}
+
+function capturedExploreCombatOwner(session, combatId, supplied = null) {
+  const liveRoom = liveExploreRoomContext();
+  const preparedRoom = preparedExploreRoomContext(session);
+  return {
+    combatId: supplied?.combatId ?? combatId ?? null,
+    roomIndex: supplied?.roomIndex ?? liveRoom.roomIndex ?? preparedRoom.roomIndex,
+    roomId: supplied?.roomId ?? liveRoom.roomId ?? preparedRoom.roomId,
+  };
+}
+
+function sameKnownValue(expected, live) {
+  return expected == null || expected === live;
+}
+
+// Standard Explore can drain a terminal turn while its animation is still
+// playing, then enter the next prepared fight before that old continuation
+// resumes. Fence both the append and the post-playback commit against the live
+// state AND runway owner so combat A can never write into combat B or append an
+// A move to B's ordered history. PvP and Kanji Kombat have separate coordinators
+// and do not pass through this Explore-session continuation.
+function ownsCurrentExploreCombat(session, capturedOwner) {
+  const capturedCombatId = capturedOwner?.combatId ?? null;
+  if (!capturedCombatId) return false;
+  const liveState = getGameState();
+  const liveCombatId = liveState?.combat?.optimistic?.combatId ?? null;
+  const preparedCombatId = preparedExploreCombatId(session);
+  const liveRoom = liveExploreRoomContext(liveState);
+  const preparedRoom = preparedExploreRoomContext(session);
+  return liveState?.phase === 'combat'
+    && liveCombatId === capturedCombatId
+    && sameKnownValue(capturedOwner.roomIndex, liveRoom.roomIndex)
+    && sameKnownValue(capturedOwner.roomId, liveRoom.roomId)
+    && sameKnownValue(capturedOwner.roomIndex, preparedRoom.roomIndex)
+    && sameKnownValue(capturedOwner.roomId, preparedRoom.roomId)
+    // A null prepared id is the supported legacy/no-prepared-roll shell: the
+    // live combat remains authoritative. A PRESENT different id is a true
+    // cross-combat ownership mismatch and must fail closed.
+    && (preparedCombatId == null || preparedCombatId === capturedCombatId);
+}
+
+function classifyExploreCombatContinuation(session, capturedOwner, capturedProgress) {
+  if (!ownsCurrentExploreCombat(session, capturedOwner)) return 'stale';
+  const current = getGameState()?.combat?.optimistic;
+  const {
+    baseVersion,
+    baseSeed,
+    expectedVersion,
+    expectedSeed,
+  } = capturedProgress;
+
+  if (current?.stateVersion === baseVersion
+    && (baseSeed == null || current?.nextTurnSeed === baseSeed)) {
+    return 'base';
+  }
+  if (current?.stateVersion === expectedVersion
+    && (expectedSeed == null || current?.nextTurnSeed === expectedSeed)) {
+    return 'checkpoint';
+  }
+  return 'stale';
+}
+
+function captureExploreCombatOperation(exploreOwnerContext = null) {
+  const session = getActiveStandardExploreSession();
+  if (!session) return null;
+  return {
+    session,
+    owner: capturedExploreCombatOwner(
+      session,
+      getGameState()?.combat?.optimistic?.combatId ?? null,
+      exploreOwnerContext,
+    ),
+  };
+}
+
+function isCurrentExploreCombatOperation(operation) {
+  return operation == null
+    || ownsCurrentExploreCombat(operation.session, operation.owner);
+}
+
+async function withExploreCombatPlayback(fn) {
+  const token = Symbol('exploreCombatPlayback');
+  activeExploreCombatPlaybackTokens.add(token);
+  try {
+    return await fn();
+  } finally {
+    activeExploreCombatPlaybackTokens.delete(token);
+    if (activeExploreCombatPlaybackTokens.size === 0) {
+      for (const resolve of exploreCombatPlaybackIdleWaiters) resolve();
+      exploreCombatPlaybackIdleWaiters.clear();
+    }
+  }
+}
+
+export function waitForExploreCombatPlaybackIdle() {
+  if (activeExploreCombatPlaybackTokens.size === 0) return Promise.resolve();
+  return new Promise(resolve => exploreCombatPlaybackIdleWaiters.add(resolve));
+}
+
 function hasSafeExploreSessionSeedRunway() {
   const turnSeeds = getGameState()?.combat?.optimistic?.turnSeeds;
   return Array.isArray(turnSeeds) && turnSeeds.length > 1;
@@ -560,6 +712,31 @@ function hasSafeExploreSessionSeedRunway() {
 function clearCombatPendingFlag(pendingFlag) {
   if (pendingFlag === 'enemy') enemyAttackPending = false;
   else playerAttackPending = false;
+}
+
+function handleCreatureTurnFailure({
+  label,
+  error,
+  pendingFlag,
+  turnTiming,
+  exploreOperation = null,
+  restartMoveSelection = startMoveSelection,
+  reportError = (...args) => console.error(...args),
+} = {}) {
+  // An old Explore animation can reject after the session has already entered
+  // the next combat. Its catch belongs to combat A and must not unlock, redraw,
+  // or report into combat B. Non-Explore combat has no captured operation and
+  // retains the existing recovery behavior.
+  if (!isCurrentExploreCombatOperation(exploreOperation)) return false;
+  reportError(label, error);
+  clearCombatPendingFlag(pendingFlag);
+  if (!turnTiming?.logged) {
+    logCombatTurnTiming(turnTiming, null, 'exception', true);
+  }
+  if (combatActive) {
+    restartMoveSelection();
+  }
+  return true;
 }
 
 async function fenceExploreSessionBeforeLegacyCombat(session) {
@@ -758,6 +935,7 @@ async function runSessionCreatureCombatTurn({
   turnTiming,
   playback,
   pendingFlag = 'player',
+  exploreOwnerContext = null,
 } = {}) {
   const optimistic = buildSessionCreatureCombatTurn(actionType, moveChoices);
   if (!optimistic) {
@@ -767,6 +945,27 @@ async function runSessionCreatureCombatTurn({
   }
 
   const session = getExploreSession();
+  const capturedCombatId = optimistic.envelope?.combatId ?? null;
+  const capturedOwner = capturedExploreCombatOwner(
+    session,
+    capturedCombatId,
+    exploreOwnerContext,
+  );
+  if (!ownsCurrentExploreCombat(session, capturedOwner)) {
+    clearCombatPendingFlag(pendingFlag);
+    return STALE_EXPLORE_COMBAT_OWNER;
+  }
+  const baseOptimistic = getGameState()?.combat?.optimistic;
+  const capturedProgress = {
+    baseVersion: optimistic.envelope?.stateVersion,
+    baseSeed: optimistic.envelope?.seed,
+    expectedVersion: Number.isInteger(optimistic.envelope?.stateVersion)
+      ? optimistic.envelope.stateVersion + 1
+      : null,
+    expectedSeed: Array.isArray(baseOptimistic?.turnSeeds)
+      ? (baseOptimistic.turnSeeds[1] ?? null)
+      : null,
+  };
   const recorded = session?.recordRoomAction('combat.cycle', {
     actionType,
     moveChoices,
@@ -780,7 +979,41 @@ async function runSessionCreatureCombatTurn({
   const hasPendingCombatEnd = !!optimistic.localTranscript?.pendingCombatEnd;
   const requestStartedAt = performance.now();
   markCombatAnimationStart(turnTiming, requestStartedAt);
-  await playback(optimistic.localTranscript);
+  const playbackEpoch = exploreCombatPlaybackEpoch;
+  const isCurrent = () => (
+    playbackEpoch === exploreCombatPlaybackEpoch
+    && ownsCurrentExploreCombat(session, capturedOwner)
+  );
+  const canFinalizeState = () => (
+    classifyExploreCombatContinuation(session, capturedOwner, capturedProgress) === 'base'
+  );
+  await withExploreCombatPlayback(() => playback(
+    optimistic.localTranscript,
+    { isCurrent, canFinalizeState },
+  ));
+
+  if (playbackEpoch !== exploreCombatPlaybackEpoch) {
+    return STALE_EXPLORE_COMBAT_OWNER;
+  }
+
+  const continuation = classifyExploreCombatContinuation(
+    session,
+    capturedOwner,
+    capturedProgress,
+  );
+  if (continuation === 'stale') {
+    // Ownership has moved on. The global pending flag may already belong to the
+    // next combat/turn, so this stale continuation must not clear it.
+    return STALE_EXPLORE_COMBAT_OWNER;
+  }
+
+  if (continuation === 'checkpoint') {
+    // This exact turn's same-combat checkpoint landed while playback was in
+    // flight. Preserve its authoritative party/XP/server effects and continue
+    // the current combat UI without applying the local prediction a second time.
+    clearCombatPendingFlag(pendingFlag);
+    return ADOPTED_EXPLORE_COMBAT_CHECKPOINT;
+  }
 
   updateGameState(localStateAfterSessionPveTurn(optimistic));
   clearCombatPendingFlag(pendingFlag);
@@ -810,6 +1043,7 @@ async function runOptimisticCreatureCombatTurn({
   startMoveSelection: restartMoveSelection = startMoveSelection,
   stopCombatLoop: finishCombatLoop = stopCombatLoop,
   getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
+  exploreOwnerContext = null,
 } = {}) {
   const standardSession = getActiveStandardExploreSession();
   if (standardSession) {
@@ -827,10 +1061,12 @@ async function runOptimisticCreatureCombatTurn({
         turnTiming,
         playback,
         pendingFlag,
+        exploreOwnerContext,
       });
       if (handled) {
         if (
-          combatActive
+          handled !== STALE_EXPLORE_COMBAT_OWNER
+          && combatActive
           && isRecoveredCombatActive(getGameState())
           && standardSession.isPaused?.() !== true
           && !isEnemyDialogueActive?.()
@@ -1121,8 +1357,16 @@ export const __combatNetworkTest = {
   recoverFromCombatErrorState,
   recoverFromNullCombatPost,
   handleOptimisticCombatVerification,
+  syncFinalState,
   runOptimisticCreatureCombatTurn,
   runOptimisticKanjiKombatAnswer,
+  captureExploreCombatOperation,
+  handleCreatureTurnFailure,
+  withAnimationActive,
+  executeCreatureMovesTurn,
+  executeCreatureDefendThenPause,
+  playOnePlayerAttackInMoveTurn,
+  withExploreCombatPlayback,
   setCombatActive(value) {
     combatActive = value === true;
   },
@@ -1133,11 +1377,17 @@ export const __combatNetworkTest = {
 
 /** Wrap an async combat animation sequence with the animation-active guard. */
 async function withAnimationActive(fn) {
-  if (setCombatAnimationActive) setCombatAnimationActive(true);
+  const token = Symbol('combatAnimation');
+  const wasIdle = activeCombatAnimationTokens.size === 0;
+  activeCombatAnimationTokens.add(token);
+  if (wasIdle && setCombatAnimationActive) setCombatAnimationActive(true);
   try {
     return await fn();
   } finally {
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
+    activeCombatAnimationTokens.delete(token);
+    if (activeCombatAnimationTokens.size === 0 && setCombatAnimationActive) {
+      setCombatAnimationActive(false);
+    }
   }
 }
 
@@ -1378,6 +1628,14 @@ function promptNextCreature() {
   }
 
   currentCreatureIndex = cursor.index;
+  const standardSession = getActiveStandardExploreSession();
+  const renderedExploreOwnerContext = standardSession
+    ? capturedExploreCombatOwner(
+        standardSession,
+        state.combat?.optimistic?.combatId ?? null,
+      )
+    : null;
+  activeMoveSelectionOwnerContext = renderedExploreOwnerContext;
   const creature = allies[currentCreatureIndex];
   if (!creature || creature.hp <= 0) {
     clearMoveSelect();
@@ -1395,13 +1653,18 @@ function promptNextCreature() {
   }
   showMoves(creature, currentCreatureIndex, {
     ...befriend.getMoveSelectBefriendOpts(currentCreatureIndex),
-    ...getFirstCombatMoveTutorialOpts(state, creature, currentCreatureIndex)
+    ...getFirstCombatMoveTutorialOpts(state, creature, currentCreatureIndex),
+    onMoveSelect: (move, creatureIndex) => handleMoveSelected(
+      move,
+      creatureIndex,
+      renderedExploreOwnerContext,
+    ),
   });
 }
 
-function submitCursorAction(choice) {
+function submitCursorAction(choice, exploreOwnerContext = activeMoveSelectionOwnerContext) {
   clearActiveGlowForScene(getSceneManager().currentScene);
-  executeCreatureMovesTurn([choice]);
+  executeCreatureMovesTurn([choice], { exploreOwnerContext });
 }
 
 export async function submitKanjiKombatAnswer(answerId, promptRef = {}) {
@@ -1419,12 +1682,13 @@ export async function submitKanjiKombatAnswer(answerId, promptRef = {}) {
   return { handledByCombatLoop: true };
 }
 
-function handleMoveSelected(move, creatureIndex) {
+function handleMoveSelected(move, creatureIndex, exploreOwnerContext = activeMoveSelectionOwnerContext) {
   clearActiveGlowForScene(getSceneManager().currentScene);
+  pendingMoveOwnerContext = exploreOwnerContext;
 
   // Rest pseudo-move: no target selection.
   if (move.isRest) {
-    submitCursorAction({ creatureIndex: currentCreatureIndex, action: 'rest' });
+    submitCursorAction({ creatureIndex: currentCreatureIndex, action: 'rest' }, exploreOwnerContext);
     return;
   }
 
@@ -1436,13 +1700,19 @@ function handleMoveSelected(move, creatureIndex) {
     const alive = enemies.filter(e => e.hp > 0 && !e.befriended);
     if (alive.length === 0) {
       // No valid targets — submit with no target.
-      submitCursorAction({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 });
+      submitCursorAction(
+        { creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 },
+        exploreOwnerContext,
+      );
       return;
     }
     if (alive.length === 1) {
       // Single target — auto-select, skip UI.
       const autoIdx = enemies.indexOf(alive[0]);
-      submitCursorAction({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: autoIdx });
+      submitCursorAction(
+        { creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: autoIdx },
+        exploreOwnerContext,
+      );
       return;
     }
     showEnemies(enemies, move);
@@ -1450,33 +1720,38 @@ function handleMoveSelected(move, creatureIndex) {
     showAllies(state.combat?.allies || state.run?.creatureParty?.active || [], move);
   } else {
     // AoE or self -- no target needed, targetIndex -1
-    submitCursorAction({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 });
+    submitCursorAction(
+      { creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 },
+      exploreOwnerContext,
+    );
   }
 }
 
 function handleTargetSelected(targetIndex) {
   const choice = { creatureIndex: currentCreatureIndex, moveId: pendingMove.id, targetIndex };
+  const exploreOwnerContext = pendingMoveOwnerContext;
   pendingMove = null;
-  submitCursorAction(choice);
+  pendingMoveOwnerContext = null;
+  submitCursorAction(choice, exploreOwnerContext);
 }
 
 function handleTargetCancelled() {
   // Go back to move selection for this creature
   pendingMove = null;
+  pendingMoveOwnerContext = null;
   const state = getGameState();
   const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
   const creature = allies[currentCreatureIndex];
   if (creature) {
-    clearTargetSelect();
-    setActiveLabel(creature);
-    showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
-    showMoves(creature, currentCreatureIndex, befriend.getMoveSelectBefriendOpts(currentCreatureIndex));
+    promptNextCreature();
   }
 }
 
 function handleDefendSelected() {
   // Execute defend turn immediately (all creatures defend)
-  executeCreatureDefendThenPause();
+  executeCreatureDefendThenPause({
+    exploreOwnerContext: activeMoveSelectionOwnerContext,
+  });
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -1501,6 +1776,11 @@ export function isCombatPausedForVocab() {
  * Cleanup combat state without showing results (for returnToHub)
  */
 export function cleanupCombat() {
+  // A forfeit/teardown can remove an attack card while its tap promise is
+  // pending. Settle every shared card control so the playback token unwinds,
+  // and invalidate the old continuation before any replacement run can adopt.
+  exploreCombatPlaybackEpoch += 1;
+  cancelAttackCardContinueControls();
   if (playerAttackTimer) {
     clearTimeout(playerAttackTimer);
     playerAttackTimer = null;
@@ -1513,6 +1793,9 @@ export function cleanupCombat() {
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
+  pendingMove = null;
+  pendingMoveOwnerContext = null;
+  activeMoveSelectionOwnerContext = null;
   _currentRoundBarks = [];
   animatedEnemyKoKeys = new Set();
   _lastLocallyPlayedKanjiKombatWave = 0;
@@ -1871,10 +2154,11 @@ export async function executePlayerAttack() {
   });
 }
 
-function syncFinalState(result) {
+function syncFinalState(result, { isCurrent } = {}) {
+  if (typeof isCurrent === 'function' && !isCurrent()) return false;
   const gs = getGameState();
   const updates = mergeAuthoritativeCombatState(gs, result);
-  if (updates === gs) return;
+  if (updates === gs) return true;
   updateGameState(updates);
 
   // Keep formation popup data in sync with latest HP
@@ -1890,6 +2174,7 @@ function syncFinalState(result) {
   vfx.updateCreatureHpBars(result.creatureParty?.active, null);
 
   // No-op: PixiJS sprites don't leave stale inline transforms
+  return true;
 }
 
 export async function syncKanjiKombatStreakRewardVisuals(result) {
@@ -2018,7 +2303,10 @@ export async function playKanjiKombatNextWaveTransition(result) {
  * One player-side attack line (move turn) — effects, HP, party skills, card tap.
  */
 async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn, options = {}) {
-  const { skipAttackCards = false } = options;
+  const {
+    skipAttackCards = false,
+    fireAttackEffect = vfx.fireCreatureAttackEffect,
+  } = options;
   let attackCard = null;
   let continueControl = null;
   if (!skipAttackCards) {
@@ -2063,13 +2351,17 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
   const atkTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
 
   const atkEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
-  if (atk.damage > 0 && (creatureSlotEl || getCreatureSpriteForScene(getSceneManager().currentScene, 'player', Math.max(0, atkAttackerIdx)))) {
+  if (atk.damage > 0 && (
+    creatureSlotEl
+    || getCreatureSpriteForScene(getSceneManager().currentScene, 'player', Math.max(0, atkAttackerIdx))
+    || options.fireAttackEffect
+  )) {
     playAttackSound(atkElement);
     const tIdx = atk.targetIndex;
     const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
       ? enemyHpMap[tIdx].maxHp
       : (result.enemies?.[0]?.maxHp ?? 100);
-    await vfx.fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType, () => {
+    await fireAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType, () => {
       if (typeof tIdx === 'number' && enemyHpMap[tIdx]) {
         enemyHpMap[tIdx].hp = Math.max(0, enemyHpMap[tIdx].hp - atk.damage);
         const entry = enemyHpMap[tIdx];
@@ -2158,10 +2450,15 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
     kanjiAnswerFeedbackStartedAt = null,
     skipAttackCards = false,
     deferNextSelection = false,
+    isPlaybackCurrent = () => true,
+    canFinalizePlaybackState = () => true,
   } = options;
   const _log = getLog();
 
+  if (!isPlaybackCurrent()) return;
+
   if (result.state) {
+    if (!isPlaybackCurrent() || !canFinalizePlaybackState()) return;
     updateGameState(mergeAuthoritativeCombatState(getGameState(), result));
   }
 
@@ -2202,9 +2499,11 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
     }
   }
 
+  if (!isPlaybackCurrent()) return;
   _currentRoundBarks = result.barks || [];
 
   await vfx.showRoundStartEvents(result);
+  if (!isPlaybackCurrent()) return;
 
   const enemyHpMap = vfx.buildEnemyHpMapForPlayerAttacks(result);
   const allyHpMap = vfx.buildAllyHpMap(result);
@@ -2243,6 +2542,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
 
       orderedSegmentItems.sort((a, b) => a.playbackIndex - b.playbackIndex);
       for (const item of orderedSegmentItems) {
+        if (!isPlaybackCurrent()) return;
         if (item.kind === 'attack') {
           if (shouldSkipAttackRecord(side, item.atk, enemyHpMap, allyHpMap, result)) continue;
           if (side === 'player') {
@@ -2259,6 +2559,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
             mpRegens: []
           });
         }
+        if (!isPlaybackCurrent()) return;
       }
       if (deferredEffectEvents.length > 0 || (segment.mpRegens || []).length > 0) {
         await vfx.showEffectEvents({
@@ -2266,15 +2567,18 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
           effectEvents: deferredEffectEvents,
           mpRegens: segment.mpRegens || []
         });
+        if (!isPlaybackCurrent()) return;
       }
     }
   } else {
     await vfx.showEffectEvents(result);
+    if (!isPlaybackCurrent()) return;
     merged = vfx.buildMergedInitiativeAttacks(result);
   }
 
   if (merged.length > 0) {
     for (const { side, atk } of merged) {
+      if (!isPlaybackCurrent()) return;
       if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
       if (side === 'player' && atk.type === 'counter') {
         await vfx.showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
@@ -2283,6 +2587,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
       } else {
         await vfx.showOneEnemyAttackAnimated(result, atk, allyHpMap, false, { skipAttackCards });
       }
+      if (!isPlaybackCurrent()) return;
     }
   }
 
@@ -2297,14 +2602,19 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
       koPromises.push(animateKOForScene(getSceneManager().currentScene, 'enemy', i));
     }
     if (koPromises.length) await Promise.all(koPromises);
+    if (!isPlaybackCurrent()) return;
   }
 
+  if (!isPlaybackCurrent()) return;
   vfx.syncStatusIconsFromResult(result);
 
   if (result.befriendQuizTriggered && result.befriendQuiz) {
-    syncFinalState(result);
+    if (!syncFinalState(result, {
+      isCurrent: () => isPlaybackCurrent() && canFinalizePlaybackState(),
+    })) return;
     playerAttackPending = false;
     await befriend.renderBefriendQuiz(result.befriendQuiz, result);
+    if (!isPlaybackCurrent()) return;
     logCombatTurnTiming(turnTiming, result, 'befriend_quiz');
     return;
   }
@@ -2317,33 +2627,43 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
       }, result.enemies);
     } else {
       await delay(400);
+      if (!isPlaybackCurrent()) return;
       await vfx.showNpcSkillAttacksAnimated(result, allyHpMap);
     }
+    if (!isPlaybackCurrent()) return;
   }
 
   if (actionSegments.length === 0) {
     const enemyShownInMerge = merged.some(e => e.side === 'enemy');
     if (!enemyShownInMerge && result.enemyAttacks?.length > 0) {
       await delay(400);
+      if (!isPlaybackCurrent()) return;
       await vfx.showEnemyAttacksAnimated(result, allyHpMap, false, { skipAttackCards });
+      if (!isPlaybackCurrent()) return;
     }
 
     const countersShownInMerge = merged.some(e => e.side === 'player' && e.atk.type === 'counter');
     if (!countersShownInMerge) {
       await vfx.showCounterAttacks(result, enemyHpMap);
+      if (!isPlaybackCurrent()) return;
     }
   }
 
   await vfx.showKoSwapAnimations(result);
+  if (!isPlaybackCurrent()) return;
 
-  syncFinalState(result);
+  if (!syncFinalState(result, {
+    isCurrent: () => isPlaybackCurrent() && canFinalizePlaybackState(),
+  })) return;
   if (result.nextWave) {
     await playKanjiKombatNextWaveTransition(result);
+    if (!isPlaybackCurrent()) return;
     animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
   }
 
   if (allPendingMoveLearn.length > 0) {
     await processPendingMoveLearn(allPendingMoveLearn);
+    if (!isPlaybackCurrent()) return;
   }
 
   if (window.__inspector) {
@@ -2363,12 +2683,14 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
   }
 
   if (result.combatEnded) {
+    if (!isPlaybackCurrent()) return;
     const __logEnd = getLog();
     if (__logEnd) {
       __logEnd.act(`Combat ended: ${result.victory ? 'VICTORY' : 'DEFEAT'}`);
       __logEnd.expect('All combat sprites cleared. Combat UI removed.');
     }
     if (result.victory) await delay(500);
+    if (!isPlaybackCurrent()) return;
     logCombatTurnTiming(turnTiming, result, result.victory ? 'victory' : 'defeat');
     stopCombatLoop(result);
     return;
@@ -2379,6 +2701,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
     return;
   }
 
+  if (!isPlaybackCurrent()) return;
   playerAttackPending = false;
 
   await waitBeforeMoveSelection(
@@ -2388,6 +2711,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
       nextSelectionDelayMs
     )
   );
+  if (!isPlaybackCurrent()) return;
   logCombatTurnTiming(turnTiming, result, 'next_selection');
   startMoveSelection();
 }
@@ -2398,6 +2722,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
  */
 async function executeCreatureMovesTurn(choices, options = {}) {
   if (!combatActive || playerAttackPending || getEnemyDialogueActive?.()) return false;
+  const exploreOperation = captureExploreCombatOperation(options.exploreOwnerContext);
   playerAttackPending = true;
   const actionType = options.actionType || 'attack';
   const recoveryActionType = options.recoveryActionType || 'attack';
@@ -2436,11 +2761,16 @@ async function executeCreatureMovesTurn(choices, options = {}) {
             turnTiming,
             recoveryActionType,
             pendingFlag: 'player',
-            playback: localTranscript => playCreatureCombatResult(localTranscript, turnTiming, {
-              choices,
-              logMoveIntent: false,
-              deferNextSelection: true,
-            }),
+            playback: typeof options.playback === 'function'
+              ? options.playback
+              : (localTranscript, { isCurrent, canFinalizeState } = {}) => playCreatureCombatResult(localTranscript, turnTiming, {
+                  choices,
+                  logMoveIntent: false,
+                  deferNextSelection: true,
+                  isPlaybackCurrent: isCurrent,
+                  canFinalizePlaybackState: canFinalizeState,
+                }),
+            exploreOwnerContext: options.exploreOwnerContext,
           });
       if (optimisticHandled) {
         return;
@@ -2502,20 +2832,27 @@ async function executeCreatureMovesTurn(choices, options = {}) {
       });
 
     } catch (error) {
-      console.error('Move turn error:', error);
-      playerAttackPending = false;
-      if (!turnTiming.logged) {
-        logCombatTurnTiming(turnTiming, null, 'exception', true);
-      }
-      if (combatActive) {
-        startMoveSelection();
-      }
+      handleCreatureTurnFailure({
+        label: 'Move turn error:',
+        error,
+        pendingFlag: 'player',
+        turnTiming,
+        exploreOperation,
+        restartMoveSelection: options.restartMoveSelection,
+        reportError: options.reportError,
+      });
     }
   });
 }
 
 async function playCreatureDefendResult(result, turnTiming, options = {}) {
-  const { deferNextSelection = false } = options;
+  const {
+    deferNextSelection = false,
+    isPlaybackCurrent = () => true,
+    canFinalizePlaybackState = () => true,
+  } = options;
+
+  if (!isPlaybackCurrent()) return;
 
   // --- Game Rule Validation: check server result for logic invariants ---
   if (window.__inspector?.checkGameRules) {
@@ -2530,13 +2867,16 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
   }
 
   // Store server-provided barks for speech bubbles
+  if (!isPlaybackCurrent()) return;
   _currentRoundBarks = result.barks || [];
 
   // Show poison/effect ticks
   await vfx.showEffectEvents(result);
+  if (!isPlaybackCurrent()) return;
 
   // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
   await vfx.showRoundStartEvents(result);
+  if (!isPlaybackCurrent()) return;
 
   // Show defend indicator
   const actionArea = document.getElementById('action-area');
@@ -2552,6 +2892,7 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
   // Enemy attacks phase (50% damage already applied server-side)
   const allyHpMap = vfx.buildAllyHpMap(result);
   await vfx.showEnemyAttacksAnimated(result, allyHpMap, true);
+  if (!isPlaybackCurrent()) return;
 
   // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
   const enemyHpMap = {};
@@ -2559,12 +2900,16 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
     if (e) enemyHpMap[i] = { hp: e.hp, maxHp: e.maxHp, index: i };
   });
   await vfx.showCounterAttacks(result, enemyHpMap);
+  if (!isPlaybackCurrent()) return;
 
   // KO swap animations
   await vfx.showKoSwapAnimations(result);
+  if (!isPlaybackCurrent()) return;
 
   // Sync authoritative state from server
-  syncFinalState(result);
+  if (!syncFinalState(result, {
+    isCurrent: () => isPlaybackCurrent() && canFinalizePlaybackState(),
+  })) return;
 
   // --- Intent Log: check UI consistency after defend animations ---
   if (window.__inspector) {
@@ -2582,6 +2927,7 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
 
   // Check combat end
   if (result.combatEnded) {
+    if (!isPlaybackCurrent()) return;
     logCombatTurnTiming(turnTiming, result, result.victory ? 'victory' : 'defeat');
     stopCombatLoop(result);
     return;
@@ -2592,6 +2938,7 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
     return;
   }
 
+  if (!isPlaybackCurrent()) return;
   enemyAttackPending = false;
 
   // Start next turn's move selection
@@ -2603,9 +2950,15 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
  * Execute creature defend — calls /creature-combat-cycle with 'defend'
  * Defend: all creatures regen MP, enemies attack with 50% damage
  */
-async function executeCreatureDefendThenPause() {
+async function executeCreatureDefendThenPause({
+  exploreOwnerContext = null,
+  playback = null,
+  restartMoveSelection,
+  reportError,
+} = {}) {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
+  const exploreOperation = captureExploreCombatOperation(exploreOwnerContext);
   enemyAttackPending = true;
   const turnTiming = createCombatTurnTiming('defend');
 
@@ -2624,9 +2977,14 @@ async function executeCreatureDefendThenPause() {
         turnTiming,
         recoveryActionType: 'defend',
         pendingFlag: 'enemy',
-        playback: localTranscript => playCreatureDefendResult(localTranscript, turnTiming, {
-          deferNextSelection: true,
-        }),
+        playback: typeof playback === 'function'
+          ? playback
+          : (localTranscript, { isCurrent, canFinalizeState } = {}) => playCreatureDefendResult(localTranscript, turnTiming, {
+              deferNextSelection: true,
+              isPlaybackCurrent: isCurrent,
+              canFinalizePlaybackState: canFinalizeState,
+            }),
+        exploreOwnerContext,
       });
       if (optimisticHandled) {
         return;
@@ -2665,14 +3023,15 @@ async function executeCreatureDefendThenPause() {
       await playCreatureDefendResult(result, turnTiming);
 
     } catch (error) {
-      console.error('Creature defend error:', error);
-      enemyAttackPending = false;
-      if (!turnTiming.logged) {
-        logCombatTurnTiming(turnTiming, null, 'exception', true);
-      }
-      if (combatActive) {
-        startMoveSelection();
-      }
+      handleCreatureTurnFailure({
+        label: 'Creature defend error:',
+        error,
+        pendingFlag: 'enemy',
+        turnTiming,
+        exploreOperation,
+        restartMoveSelection,
+        reportError,
+      });
     }
   });
 }
@@ -2900,6 +3259,14 @@ async function executeDefendThenPause() {
 export async function stopCombatLoop(result) {
   logger.info('[CombatLoop] Combat ended:', { victory: result?.victory });
   const gameState = getGameState();
+  // A drained terminal Explore turn can begin this cleanup for combat A, then
+  // auto-proceed into combat B while one of the scene/dialogue/modal awaits below
+  // is still pending. Capture ownership before the first mutation and fence every
+  // continuation after an await: A may finish its synchronous shutdown, but it
+  // must never clear B's controls, run B's NPC/reward flow, or transition B's
+  // scene when its old Promise resumes.
+  const cleanupOwner = capturedCombatCleanupOwner(gameState);
+  const cleanupStillCurrent = () => ownsCombatCleanupContinuation(cleanupOwner);
   trackMilestone('koto_first_combat_ended', {
     ...extractGameContext(gameState),
     outcome: normalizeCombatOutcome(result),
@@ -2970,6 +3337,7 @@ export async function stopCombatLoop(result) {
         console.error('[CombatLoop] failed to clear enemy sprites via scene diff', err);
       }
     }
+    if (!cleanupStillCurrent()) return;
   }
 
   // Clear stale DOM enemy formation slots. Pixi enemy sprites were already
@@ -3000,6 +3368,7 @@ export async function stopCombatLoop(result) {
   const dialogueDismissPromise = getDialogueDismissPromise();
   if (dialogueDismissPromise) {
     await dialogueDismissPromise;
+    if (!cleanupStillCurrent()) return;
   }
 
   // Animate enemy defeat
@@ -3020,12 +3389,16 @@ export async function stopCombatLoop(result) {
     const isCreatureCombat = gs?.combat?.isCreatureCombat;
     if (isCreatureCombat && gs?.combat?.npcId) {
       await npcDialogueUI.runNpcDialogue();
+      if (!cleanupStillCurrent()) return;
     }
     if (isCreatureCombat && showPostCombatShop) {
       await showPostCombatShop();
+      if (!cleanupStillCurrent()) return;
     }
+    if (!cleanupStillCurrent()) return;
     modalPromise = showVictoryModal(result);
   } else {
+    if (!cleanupStillCurrent()) return;
     modalPromise = showGameOverModal(result);
   }
   try {
@@ -3033,6 +3406,7 @@ export async function stopCombatLoop(result) {
   } catch (err) {
     console.error('[CombatLoop] modal dismissal rejected — continuing to cleanup', err);
   }
+  if (!cleanupStillCurrent()) return;
 
   // Surface the mid-run move-learn moment restored by the deterministic learnset
   // backfill (result.learnsetBackfill, emitted by the server's committed victory
@@ -3045,6 +3419,7 @@ export async function stopCombatLoop(result) {
     const pendingBackfillLearn = pendingMoveLearnFromBackfill(result);
     if (pendingBackfillLearn.length > 0) {
       await processPendingMoveLearn(pendingBackfillLearn);
+      if (!cleanupStillCurrent()) return;
     }
   }
 
@@ -3070,6 +3445,7 @@ export async function stopCombatLoop(result) {
   const alliesForExplore = nextState?.run?.creatureParty?.active ?? [];
   try {
     await mgr.transition(ExplorationScene, { roomId, allies: alliesForExplore });
+    if (!cleanupStillCurrent()) return;
   } catch (err) {
     console.error('[CombatLoop] ExplorationScene transition failed — reload to recover', err);
   }

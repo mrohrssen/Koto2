@@ -97,6 +97,7 @@ function hasIntersectingEffect(entries, dependencies) {
 
 export function createExploreSession({
   syncRequest,
+  beforeResponseAdoption = async () => {},
   onCheckpoint = () => {},
   onCorrection = () => {},
   onPause = () => {},
@@ -420,6 +421,15 @@ export function createExploreSession({
     try {
       const response = await syncRequest({ sessionEpoch, entries });
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
+
+      // A combat checkpoint may arrive while the predicted turn is still
+      // animating. Wait before changing either the ordered log or runway owner;
+      // otherwise combat B can become current inside one of combat A's internal
+      // animation awaits and the stale continuation can mutate B's scene.
+      if (response?.status === 'ok' || response?.status === 'corrected') {
+        await beforeResponseAdoption(response);
+        if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
+      }
 
       if (response?.status === 'corrected') {
         log = [];

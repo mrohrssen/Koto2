@@ -295,7 +295,15 @@ export class ExplorationService {
     const tutorialMode = shouldFixRoomSequence(this.gm.meta);
     this.gm.run.rooms = generateAreaRooms(areaId, undefined, undefined, undefined, undefined, tutorialMode);
     if (this.gm.run.rooms[0]) {
-      finalizeRandomRoom(this.gm.run.rooms[0], this.gm.run);
+      // The test queue targets rooms entered AFTER the initial area room. Keep
+      // room 0 random, then let reveal-runway preparation consume queued types
+      // for future slots 1+.
+      finalizeRandomRoom(
+        this.gm.run.rooms[0],
+        this.gm.run,
+        Math.random,
+        { consumeQueuedType: false },
+      );
       this._assignFriendlyNpcIfNeeded(this.gm.run.rooms[0]);
     }
     // encountersNeeded is kept for backwards-compat with other code.
@@ -440,7 +448,10 @@ export class ExplorationService {
 
     const nextRoom = this.gm.run.rooms[this.gm.run.currentRoom];
 
-    // Test queue override — pop queued room type (NODE_ENV=test or debug mode)
+    // Backwards-compatible debug seam: a room queued after the runway already
+    // materialized still overrides the immediately-entered room. The Subway
+    // gate queues before area entry, so its entries are consumed canonically by
+    // finalizeRandomRoom() during runway preparation and never reach this path.
     const queuedType = popTestRoomType();
     if (queuedType && ROOM_TYPES[queuedType] && nextRoom.type !== queuedType) {
       const areaId = this.gm.run.currentArea?.id || 'unknown';

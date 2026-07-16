@@ -1,4 +1,10 @@
 import { test, expect } from '@playwright/test';
+import {
+  hasComparablePartyDigests,
+  isFinalExplorePartyCheckpoint,
+  isPendingNpcBattleRewardState,
+  liveCombatIdentity,
+} from './explore-subway-state.js';
 
 /**
  * Subway harness: plays a full regular-explore area run while the network
@@ -32,12 +38,9 @@ const DEV_USER = 'devtester';
 const DEV_PASS = 'test1234';
 const ROOMS_TIER = process.env.EXPLORE_SUBWAY_SMOKE === '1';
 const COMBAT_TIER = process.env.EXPLORE_SUBWAY_COMBAT === '1';
-// Verification aid (NOT a gate): force a deterministic layout containing a
-// speedReviewRoom via the existing debug-queue-rooms endpoint (proceedToNextRoom
-// pops the queued type on entry), so the speed-review takeover driver can be
-// exercised on demand. Layouts are otherwise random and speedReviewRoom is absent
-// from the random weights, so it is unreachable by chance. Off by default → the
-// gate still runs against a random layout.
+const DETERMINISTIC_LAYOUT = process.env.EXPLORE_SUBWAY_LAYOUT === '1';
+// Optional variant for the deterministic gate: put a speed-review room in slot 2
+// instead of a normal encounter. The standard wrapper leaves this off.
 const FORCE_SPEED_REVIEW = process.env.EXPLORE_SUBWAY_FORCE_SPEED_REVIEW === '1';
 
 // devtester owns these; hi/mizu/ki is a valid 3-creature team.
@@ -58,8 +61,6 @@ const WAIT_CODES = new Set([
   'combat-pending-victory-wait',
   'combat-sac-stuck-wait',
   'combat-offline-wait',
-  'choice-offline-wait',
-  'button-offline-wait',
   'move-learn-offline-wait',
   'speed-review-offline-wait',
   'paused',
@@ -79,7 +80,11 @@ const WAIT_CODES = new Set([
 // online).
 const OFFLINE_WINDOWS = [
   { afterRoom: 2, durationMs: 75_000 },
-  { afterRoom: 4, durationMs: 100_000 },
+  // Badge 4 is the queued friendly-NPC support room. Its PARTY_STATS checkpoint
+  // correctly delays entry into the next combat until reconnect, so an outage
+  // there cannot exercise offline combat. Arm on badge 5 itself instead: this is
+  // the queued encounter and guarantees a combat.cycle append while offline.
+  { afterRoom: 5, durationMs: 100_000 },
 ];
 
 // Copy that must NEVER appear anywhere on the page during a subway session.
@@ -99,13 +104,19 @@ const PAUSE_COPY = 'Connection is spotty';
  * localStorage via an init script, then navigate.
  */
 async function login(page) {
-  const loginRes = await page.request.post('/api/auth/login', {
-    data: { username: DEV_USER, password: DEV_PASS },
-  });
-  expect(loginRes.ok(), 'devtester login should succeed').toBeTruthy();
-  const loginBody = await loginRes.json();
+  let loginBody = null;
+  // The subway config considers Vite ready before its API proxy target has
+  // necessarily finished listening. Poll the real login boundary so a transient
+  // startup ECONNREFUSED cannot fail the browser scenario before navigation.
+  await expect.poll(async () => {
+    const response = await page.request.post('/api/auth/login', {
+      data: { username: DEV_USER, password: DEV_PASS },
+    }).catch(() => null);
+    if (!response?.ok()) return false;
+    loginBody = await response.json().catch(() => null);
+    return Boolean(loginBody?.token);
+  }, { timeout: 20_000 }).toBe(true);
   const token = loginBody.token;
-  expect(token, 'login response must include token').toBeTruthy();
 
   await page.addInitScript(authToken => {
     localStorage.setItem('authToken', authToken);
@@ -174,103 +185,85 @@ async function currentRoomNumber(page) {
   });
 }
 
-/**
- * Drive devtester from the hub (run === null) into an active exploration run:
- * start-run -> select-area -> confirm-creatures -> initial skill pick.
- * Uses the same real endpoints as the integration game-flow helper, executed
- * from inside the page so the client picks up the run on the next reload.
- */
-async function startExplorationRun(page) {
-  const result = await page.evaluate(async ({ team }) => {
-    const token = localStorage.getItem('authToken');
-    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-    const post = async (path, body) => {
-      const res = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body || {}) });
-      const json = await res.json().catch(() => null);
-      return { status: res.status, body: json };
-    };
-    const get = async (path) => {
-      const res = await fetch(path, { headers });
-      const json = await res.json().catch(() => null);
-      return { status: res.status, body: json };
-    };
+/** Drive the complete run-entry flow through the live UI in one document. */
+async function startExplorationRunThroughUi(page) {
+  const dailyDismiss = page.locator('.crystal-daily-dismiss');
+  if (await dailyDismiss.count()) await dailyDismiss.click();
 
-    // devtester starts with 0 crystals; start-run costs 25. Claim the daily
-    // login bonus (500) first so start-run is not rejected with 402.
-    await post('/api/game/crystals/daily-login', {}).catch(() => null);
+  await page.getByRole('button', { name: /Explore/ }).click();
+  await expect(page.locator('.ui-choice-heading')).toHaveText('Choose an area');
+  await page.locator('#action-area .ui-choice').first().click();
 
-    const startRes = await post('/api/game/start-run', {});
-    if (startRes.status !== 200) return { error: `start-run ${startRes.status}`, detail: startRes.body };
+  await expect(page.locator('.collection-select')).toBeVisible();
+  for (const id of DEV_TEAM) {
+    await page.locator(`.collection-cell[data-id="${id}"]`).click();
+  }
+  await expect(page.locator('#collection-confirm-btn')).toBeEnabled();
+  await page.locator('#collection-confirm-btn').click();
 
-    const areaOptions = await get('/api/game/area-options');
-    const areaId = areaOptions.body?.[0]?.id;
-    if (!areaId) return { error: 'no area options', detail: areaOptions.body };
-
-    const selectRes = await post('/api/game/select-area', { areaId });
-    if (selectRes.status !== 200) return { error: `select-area ${selectRes.status}`, detail: selectRes.body };
-
-    const confirmRes = await post('/api/game/confirm-creatures', { starterIds: team });
-    if (confirmRes.status !== 200) return { error: `confirm-creatures ${confirmRes.status}`, detail: confirmRes.body };
-
-    // Complete the initial party skill pick if one is offered.
-    const offersRes = await post('/api/game/skill-master-offers', {});
-    if (offersRes.status === 200 && offersRes.body?.offered?.length > 0) {
-      const skillId = offersRes.body.offered[0].id;
-      const chooseRes = await post('/api/game/skill-master-choose', { skillId });
-      if (chooseRes.status !== 200) return { error: `skill-master-choose ${chooseRes.status}`, detail: chooseRes.body };
+  await expect.poll(async () => (
+    await page.locator('.npc-dialogue-continue').count()
+    + await page.locator('.narration-box.visible').count()
+    + await page.locator('#action-area .ui-choice').count()
+  )).toBeGreaterThan(0);
+  for (let step = 0; step < 8; step += 1) {
+    const dialogueContinue = page.locator('.npc-dialogue-continue');
+    if (await dialogueContinue.count()) {
+      await dialogueContinue.click();
+      await page.waitForTimeout(150);
+      continue;
     }
+    if (await page.locator('.narration-box.visible').count()) {
+      await page.evaluate(() => document.querySelector('.scene-area')?.click());
+      await page.waitForTimeout(600);
+      continue;
+    }
+    if (await page.locator('#action-area .ui-choice').count()) break;
+    await page.waitForTimeout(100);
+  }
 
-    return { ok: true, areaId };
-  }, { team: DEV_TEAM });
-
-  expect(result.error, `run setup failed: ${result.error} ${JSON.stringify(result.detail || {})}`).toBeUndefined();
-  expect(result.ok, 'run setup should complete').toBeTruthy();
-  return result;
+  await expect(page.locator('#action-area .ui-choice').first()).toBeVisible();
+  await page.locator('#action-area .ui-choice').first().click();
+  await expect.poll(async () => {
+    const state = await gameState(page);
+    return state?.run?.exploreRunway?.preparedRooms?.length || 0;
+  }, { timeout: 20_000 }).toBeGreaterThan(0);
 }
 
 /**
- * Verification aid (NOT part of the gate): force a deterministic layout with a
- * speedReviewRoom at an early, reached-ONLINE slot so the speed-review takeover
- * driver can be exercised on demand. Uses the EXISTING test-room queue seam —
- * proceedToNextRoom() pops one queued type per room advance and overrides the
- * entered room (src/game/services/exploration-service.js) — via the existing
- * debug-queue-rooms endpoint. No game-code seam is added; speedReviewRoom is
- * simply absent from the random weights, so it never appears by chance.
- *
- * Consumption is 1 pop per proceed, starting at the SECOND room: room 0 is
- * finalized on area entry (RNG, does not consume the queue), then queue[0] ->
- * room 1, queue[1] -> room 2, etc. So speedReviewRoom at queue index 1 lands at
- * room index 2 (badge "3/10") — in the online gap after the first offline window
- * (armed at badge 2) restores and before the second (armed at badge 4). Verified
- * deterministically before wiring. Must run BEFORE the run is created.
- * No-op unless EXPLORE_SUBWAY_FORCE_SPEED_REVIEW=1.
+ * Queue indices 1–4 deterministically while preserving the fixed later NPC battle
+ * and boss slots. The first outage arms at badge 2, the queued shrine.
  */
-async function forceSpeedReviewLayout(page) {
-  const result = await page.evaluate(async () => {
+async function queueDeterministicExploreLayout(page) {
+  const rooms = FORCE_SPEED_REVIEW
+    ? ['shrine', 'speedReviewRoom', 'friendlyNpc', 'encounter']
+    : ['shrine', 'encounter', 'friendlyNpc', 'encounter'];
+  const result = await page.evaluate(async queuedRooms => {
     const token = localStorage.getItem('authToken');
-    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-    const post = async (path, body) => {
-      const res = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body || {}) });
-      return { status: res.status, body: await res.json().catch(() => null) };
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     };
-    // debug-queue-rooms requires NODE_ENV=test OR server debug mode; dev is
-    // 'development', so enable debug mode first.
-    const dbg = await post('/api/game/debug-mode', { enabled: true });
-    if (dbg.status !== 200) return { error: `debug-mode ${dbg.status}`, detail: dbg.body };
-    // Exactly TWO queued rooms: queue[0] -> room 1 (a cheap shrine),
-    // queue[1] === speedReviewRoom -> room index 2 (badge 3/10). The queue pop
-    // replaces ANY entered room (including npcBattle/boss), and a long
-    // encounter-heavy queue inflates the fight count far past a random layout's
-    // (~10 fights vs ~5) — enough to exhaust MAX_INTERACTIONS across the two
-    // offline holds. Leaving the queue empty after the speed review keeps rooms
-    // 3+ on the normal random profile (npcBattle room 6 and boss room 10 intact).
-    const rooms = ['shrine', 'speedReviewRoom'];
-    const q = await post('/api/game/debug-queue-rooms', { rooms });
-    if (q.status !== 200) return { error: `debug-queue-rooms ${q.status}`, detail: q.body };
-    return { ok: true, rooms };
-  });
-  expect(result.error, `force layout failed: ${result.error} ${JSON.stringify(result.detail || {})}`).toBeUndefined();
-  return result;
+    const post = async (path, body) => {
+      const response = await fetch(path, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+      return {
+        status: response.status,
+        body: await response.json().catch(() => null),
+      };
+    };
+    const debug = await post('/api/game/debug-mode', { enabled: true });
+    if (debug.status !== 200) return { error: 'debug-mode', debug };
+    const queued = await post('/api/game/debug-queue-rooms', {
+      rooms: queuedRooms,
+    });
+    if (queued.status !== 200) return { error: 'debug-queue', queued };
+    return { ok: true };
+  }, rooms);
+  expect(result).toEqual({ ok: true });
 }
 
 /** Derive the current room type from client/server state (currentRoom is an int index). */
@@ -285,6 +278,39 @@ function roomTypeFor(state) {
   const rooms = state?.run?.rooms;
   if (Array.isArray(rooms) && Number.isInteger(idx) && rooms[idx]?.type) return rooms[idx].type;
   return null;
+}
+
+function partyDigest(state) {
+  const run = state?.run;
+  if (!run?.creatureParty) return null;
+  const digestCreature = creature => creature ? {
+    uid: creature.uid ?? null,
+    id: creature.id ?? null,
+    hp: creature.hp ?? null,
+    maxHp: creature.maxHp ?? null,
+    level: creature.level ?? null,
+    xp: creature.xp ?? null,
+    statStages: creature.statStages ?? null,
+    activeEffects: creature.activeEffects ?? [],
+  } : null;
+  return {
+    partySkills: run.partySkills || [],
+    active: (run.creatureParty.active || []).map(digestCreature),
+    reserves: (run.creatureParty.reserves || []).map(digestCreature),
+  };
+}
+
+function partyCheckpointIdentity(state) {
+  const run = state?.run;
+  if (!run?.creatureParty) return null;
+  return JSON.stringify({
+    sessionEpoch: run.exploreRunway?.sessionEpoch ?? null,
+    currentRoom: run.currentRoom ?? null,
+    roomActionSeq: run.roomActionSeq ?? null,
+    phase: state.phase ?? null,
+    combatId: state.combat?.optimistic?.combatId ?? null,
+    combatVersion: state.combat?.optimistic?.stateVersion ?? null,
+  });
 }
 
 /**
@@ -350,52 +376,94 @@ test.describe('explore subway full session', () => {
     // Surface browser console + page errors to Node stdout for triage.
     page.on('console', msg => process.stdout.write(`[browser] ${msg.type()}: ${msg.text()}\n`));
     page.on('pageerror', err => process.stdout.write(`[browser] PAGE ERROR: ${err.message}\n`));
+    // Install correction accounting before live run entry. Setup/initial-room
+    // actions use the same Explore sync boundary as the rest of the run, so a
+    // listener installed afterward could miss the very first correction and
+    // make the final zero-correction gate a false pass.
+    let correctedSyncs = 0;
+    let terminalPartyCheckpoint = null;
+    const responseObservations = [];
+    page.on('response', res => {
+      const isExploreSync = res.url().includes('/api/game/explore/sync');
+      const isProceed = res.url().includes('/api/game/proceed');
+      if (!isExploreSync && !isProceed) return;
+      const observation = (async () => {
+        const body = await res.json().catch(() => null);
+        if (isExploreSync && body?.status === 'corrected') {
+          correctedSyncs += 1;
+          process.stdout.write(
+            `[subway] CORRECTED sync #${correctedSyncs}: reason=${body.reason} `
+            + `rejectedSeq=${body.rejectedSeq} confirmedThroughSeq=${body.confirmedThroughSeq}\n`,
+          );
+        }
 
+        const authoritativeState = body?.state || body?.authoritativeState || null;
+        const requestEntries = (() => {
+          if (!isExploreSync) return [];
+          try {
+            const entries = res.request().postDataJSON()?.entries;
+            return Array.isArray(entries) ? entries : [];
+          } catch {
+            return [];
+          }
+        })();
+        if (!isFinalExplorePartyCheckpoint(authoritativeState, {
+          syncResults: isExploreSync ? body?.results : [],
+          syncEntries: isExploreSync ? requestEntries : [],
+        })) return;
+        const identity = partyCheckpointIdentity(authoritativeState);
+        const serverDigest = partyDigest(authoritativeState);
+        if (!identity || !serverDigest) return;
+
+        // Match the browser to this exact successful final-room response before
+        // area completion tears the run down. The checkpoint adoption barrier can
+        // legitimately hold it until combat playback finishes.
+        for (let attempt = 0; attempt < 750; attempt += 1) {
+          const clientState = await gameState(page);
+          const clientDigest = partyDigest(clientState);
+          if (partyCheckpointIdentity(clientState) === identity
+            && hasComparablePartyDigests(clientDigest, serverDigest)) {
+            terminalPartyCheckpoint = { identity, clientDigest, serverDigest };
+            return;
+          }
+          await page.waitForTimeout(20);
+        }
+      })();
+      responseObservations.push(observation);
+    });
+
+    await page.addInitScript(() => {
+      window.__networkTransitions = [];
+      addEventListener('offline', () => window.__networkTransitions.push('offline'));
+      addEventListener('online', () => window.__networkTransitions.push('online'));
+    });
     await login(page);
-    if (FORCE_SPEED_REVIEW) await forceSpeedReviewLayout(page);
-    await startExplorationRun(page);
-
-    // Reload so the client adopts the freshly-created run + exploreRunway.
-    await page.reload();
-    await page.waitForLoadState('networkidle');
     await page.addStyleTag({ path: 'public/dev-safe-area.css' }).catch(() => {});
-
-    // Wait until the client has an exploration runway with prepared rooms.
-    await expect
-      .poll(async () => {
-        const s = await gameState(page);
-        return s?.run?.exploreRunway?.preparedRooms?.length || 0;
-      }, { timeout: 20_000 })
-      .toBeGreaterThan(0);
+    if (DETERMINISTIC_LAYOUT) await queueDeterministicExploreLayout(page);
+    await startExplorationRunThroughUi(page);
 
     // --- offline window machinery (KK harness pattern) ---
     let offline = false;
-    let correctedSyncs = 0;
-    page.on('response', async res => {
-      if (!res.url().includes('/api/game/explore/sync')) return;
-      const body = await res.json().catch(() => null);
-      if (body?.status === 'corrected') {
-        correctedSyncs += 1;
-        process.stdout.write(
-          `[subway] CORRECTED sync #${correctedSyncs}: reason=${body.reason} `
-          + `rejectedSeq=${body.rejectedSeq} confirmedThroughSeq=${body.confirmedThroughSeq}\n`,
-        );
-      }
-    });
+    let offlineWindowsStarted = 0;
+    let offlineWindowsCompleted = 0;
     // No-progress tracking for the offline stuck-SAC guard (see the combat branch).
     let lastOfflineSacSig = null;
     let offlineSacRepeat = 0;
     async function goOffline() {
+      await context.setOffline(true);
       offline = true;
+      offlineWindowsStarted += 1;
       lastOfflineSacSig = null;
       offlineSacRepeat = 0;
-      await context.route('**/api/**', route => route.abort('failed'));
+      await expect.poll(() => page.evaluate(() => navigator.onLine)).toBe(false);
     }
     async function goOnline() {
+      await context.setOffline(false);
       offline = false;
+      offlineWindowsCompleted += 1;
       lastOfflineSacSig = null;
       offlineSacRepeat = 0;
-      await context.unroute('**/api/**').catch(() => {});
+      await expect.poll(() => page.evaluate(() => navigator.onLine)).toBe(true);
     }
 
     // --- action ledger for the final server comparison ---
@@ -404,8 +472,14 @@ test.describe('explore subway full session', () => {
       supportActions: 0,
       combatStarts: 0,
       combatTurns: 0,
+      offlineCombatTurns: 0,
+      npcRewardScreens: 0,
+      npcRewardChoices: 0,
+      offlineSupportChoices: 0,
       reachedEnd: false,
     };
+    const seenNpcRewardRooms = new Set();
+    const seenCombats = new Set();
 
     /**
      * Tap a locator and assert the tap is acknowledged within TAP_ACK_MS —
@@ -415,13 +489,9 @@ test.describe('explore subway full session', () => {
      */
     async function tapAndAssertAck(locator) {
       const before = await page.locator('#action-area').innerHTML().catch(() => '');
-      await locator.click();
-      // Start measuring only AFTER the click resolves, so we time the
-      // acknowledgment (first observation of a changed #action-area), not the
-      // click dispatch. Poll generously so the check is robust, but make the
-      // 250ms bound the actual assertion: record the elapsed time to the first
-      // changed-DOM observation and assert it is under TAP_ACK_MS.
       const started = Date.now();
+      await locator.click();
+      // Measure the complete dispatch-to-ack interval, beginning before click.
       let elapsed = null;
       await expect
         .poll(async () => {
@@ -582,10 +652,8 @@ test.describe('explore subway full session', () => {
 
     /**
      * Snapshot every decision-relevant DOM signal in ONE evaluate. Purely
-     * DOM-based so it works offline (server /state is unreachable while the API
-     * is routed to abort, and there is no in-page __gameState seam to fall back
-     * on). `phase`/`roomType` from gameState are only best-effort hints used
-     * when online.
+     * DOM-based so it works offline. `phase`/`roomType` from the in-page
+     * window.__gameState seam remain available through real browser outages.
      */
     async function domSignals() {
       return page.evaluate(() => {
@@ -627,54 +695,107 @@ test.describe('explore subway full session', () => {
       });
     }
 
+    async function liveExploreSessionStatus() {
+      const status = await page.evaluate(async () => {
+        const { getExploreSession } = await import('/js/ui/explore-session.js');
+        const session = getExploreSession();
+        return {
+          available: Boolean(session),
+          pendingCount: session?.pendingCount?.() ?? null,
+          paused: session?.isPaused?.() ?? false,
+          pauseReason: session?.getPauseReason?.() ?? null,
+        };
+      });
+      expect(status.available, 'live Explore session must remain inspectable').toBe(true);
+      return status;
+    }
+
+    async function proveOfflineCombatAppend(pendingBefore) {
+      expect(await page.evaluate(() => navigator.onLine)).toBe(false);
+      await expect.poll(async () => (
+        await liveExploreSessionStatus()
+      ).pendingCount, {
+        timeout: 2000,
+        intervals: [25, 50, 100, 200],
+      }).toBeGreaterThan(pendingBefore);
+      played.offlineCombatTurns += 1;
+    }
+
     async function driveOneInteraction() {
-      // Best-effort state hints (null while offline — never relied on for control).
-      const state = offline ? null : await gameState(page);
+      // The in-page seam survives context.setOffline(), so room identity remains
+      // observable during both outages (including the fixed NPC reward room).
+      const state = await gameState(page);
       const phase = state?.phase;
       const roomType = roomTypeFor(state);
+      const combatIdentity = liveCombatIdentity(state);
+      if (combatIdentity && !seenCombats.has(combatIdentity)) {
+        seenCombats.add(combatIdentity);
+        played.combatStarts += 1;
+      }
       const d = await domSignals();
+      const sessionStatus = await liveExploreSessionStatus();
 
-      // 1) Sanctioned soft pause? Assert it is legitimate (we ARE offline) and
-      // wait for it to lift. Checked BEFORE narration dismissal because the pause
-      // is itself rendered in the narration box — we must not click it away.
-      //
-      // OFFLINE vs ONLINE use DIFFERENT signals, because the soft-pause narration
-      // auto-dismisses (~1800ms) while the underlying pause persists for the whole
-      // outage, AND narration-box hide()/forceHide() only remove the `.visible`
-      // class — they never clear the text node — so the pause copy LINGERS in
-      // body.innerText after the box is hidden (same transform-hide caveat the
-      // speed-review view has, noted below).
-      //   • OFFLINE: hold whenever the pause copy is present at all (incl. the
-      //     auto-dismissed lingering text). A combat start that can't run offline
-      //     (startEncounter's pending guard, or a partyStats dependency pause)
-      //     shows the copy once, then auto-dismisses mid-outage; the game is still
-      //     legitimately paused, so the driver must keep holding for reconnect —
-      //     not spin because the box stopped being `.visible`.
-      //   • ONLINE: only a still-VISIBLE pause is a violation. Keying the online
-      //     check off innerText would (a) false-trigger on lingering stale text
-      //     after a resumed pause snapped into the next fight and (b) make the
-      //     "cleared" wait un-satisfiable (the text never leaves innerText) — a
-      //     guaranteed >4s timeout on a run that actually recovered. `.visible`
-      //     reflects the true paused state.
+      // 1) Sanctioned soft pause? The narration node retains old text after it is
+      // hidden, so body copy is not authoritative. Read the live Explore session:
+      // this keeps a genuine hidden pause held while allowing visible support-room
+      // controls to remain actionable through a real browser outage.
       const pauseTextPresent = d.bodyText.includes(PAUSE_COPY);
-      if (pauseTextPresent && offline) {
+      if (sessionStatus.paused && offline) {
         await page.waitForTimeout(1000);
         return 'paused';
       }
-      if (d.narrationVisible && pauseTextPresent) {
-        // Online: wait for the VISIBLE pause to clear; a persisting one is a bug.
-        const cleared = await page
-          .waitForFunction(
-            () => {
-              const box = document.querySelector('.narration-box.visible');
-              return !box || !(box.innerText || '').includes('Connection is spotty');
-            },
-            { timeout: 4000, polling: 300 },
-          )
-          .then(() => true)
-          .catch(() => false);
+      if (!offline && (sessionStatus.paused || (d.narrationVisible && pauseTextPresent))) {
+        // Online: both the live pause and its visible narration must clear quickly.
+        let cleared = false;
+        const deadline = Date.now() + 4000;
+        while (Date.now() < deadline) {
+          const [currentDom, currentSession] = await Promise.all([
+            domSignals(),
+            liveExploreSessionStatus(),
+          ]);
+          const visiblePause = currentDom.narrationVisible && currentDom.bodyText.includes(PAUSE_COPY);
+          if (!currentSession.paused && !visiblePause) {
+            cleared = true;
+            break;
+          }
+          await page.waitForTimeout(300);
+        }
         expect(cleared, `soft pause "${PAUSE_COPY}" persisted >4s while ONLINE`).toBeTruthy();
         return 'paused';
+      }
+
+      // `room` is normally an internal auto-advance phase. The sole actionable
+      // exception is the fixed NPC battle's post-victory dialogue/skill reward:
+      // it intentionally retains `phase === 'room'` while
+      // `skillSelectionPending` is unresolved.
+      // The previous room's controls can remain in #action-area for a few frames
+      // while proceedWithRevealBuffer finishes its scene transition. Clicking
+      // those stale controls can enqueue the completed room's choice a second
+      // time and manufacture a correction that no player could produce from the
+      // current state. Hold (bounded) until either the live session pauses for a
+      // dependency or the state leaves `room`; fail closed if auto-advance truly
+      // stalls, so this fence cannot hide a blank-panel regression.
+      const pendingNpcBattleReward = isPendingNpcBattleRewardState(
+        state,
+        roomType,
+        { npcDialogueCard: d.npcDialogueCard },
+      );
+      if (phase === 'room' && !pendingNpcBattleReward) {
+        const roomTransitionDeadline = Date.now() + 8000;
+        while (Date.now() < roomTransitionDeadline) {
+          const [currentState, currentSession] = await Promise.all([
+            gameState(page),
+            liveExploreSessionStatus(),
+          ]);
+          if (currentSession.paused) return 'paused';
+          if (currentState?.phase !== 'room') return 'transition';
+          await page.waitForTimeout(400);
+        }
+        expect(
+          false,
+          `internal room auto-advance stalled for >8s (offline=${offline}, roomType=${roomType})`,
+        ).toBeTruthy();
+        return 'waiting';
       }
 
       // 1.5) A takeover overlay is active and covers the action area.
@@ -761,21 +882,31 @@ test.describe('explore subway full session', () => {
         }
         if (d.fightButton) {
           await tapAndAssertAck(page.locator('button:has-text("戦う")').first());
-          played.combatStarts += 1;
           return 'combat-start';
         }
         // Move-target picker takes priority over move-cells: after selecting a
         // move the picker replaces the grid; tap the FIRST target card (never the
         // "Back" ui-btn, which cancels the move and loops forever).
         if (d.chooseTarget && d.choiceCards > 0) {
+          const pendingBefore = offline ? sessionStatus.pendingCount : null;
           await page.locator('.ui-choice').first().click();
           played.combatTurns += 1;
+          if (offline) await proveOfflineCombatAppend(pendingBefore);
           await page.waitForTimeout(300);
           return 'combat-target';
         }
         if (d.moveCells > 0) {
+          const pendingBefore = offline ? sessionStatus.pendingCount : null;
           await page.locator('.move-cell:not(.disabled)').first().click();
           await page.waitForTimeout(300);
+          const afterMove = await domSignals();
+          // Multi-target moves stop at a target picker; their actual combat.cycle
+          // append is proven by the branch above. Single-target, self, and AoE
+          // moves submit directly from the move click, so prove that boundary now.
+          if (!afterMove.chooseTarget) {
+            played.combatTurns += 1;
+            if (offline) await proveOfflineCombatAppend(pendingBefore);
+          }
           return 'combat-move';
         }
         // SAC in flight: the continue listener is bound to #action-area and only
@@ -881,8 +1012,25 @@ test.describe('explore subway full session', () => {
       // valid choice that advances the room. Keeps focus on the runway/sync
       // invariant rather than minigame gameplay (out of scope).
       if (d.choiceCards > 0) {
-        if (offline && !COMBAT_TIER) { await page.waitForTimeout(1000); return 'choice-offline-wait'; }
+        const roomIndex = state?.run?.currentRoom;
+        const isNpcReward = roomType === 'npcBattle' && d.heading === 'Choose a skill';
+        const provesOfflineSupport = offline
+          && roomType === 'shrine'
+          && d.heading === 'Choose shrine blessing';
+        const pendingBeforeChoice = provesOfflineSupport ? sessionStatus.pendingCount : null;
+        if (isNpcReward && !seenNpcRewardRooms.has(roomIndex)) {
+          seenNpcRewardRooms.add(roomIndex);
+          played.npcRewardScreens += 1;
+        }
         await page.locator('#action-area .ui-choice').first().click();
+        if (isNpcReward) played.npcRewardChoices += 1;
+        if (provesOfflineSupport) {
+          expect(await page.evaluate(() => navigator.onLine)).toBe(false);
+          await expect.poll(async () => (
+            await liveExploreSessionStatus()
+          ).pendingCount).toBeGreaterThan(pendingBeforeChoice);
+          played.offlineSupportChoices += 1;
+        }
         await page.waitForTimeout(700);
         played.supportActions += 1;
         return 'choice';
@@ -892,7 +1040,6 @@ test.describe('explore subway full session', () => {
       // dealer "leave"): tap the LAST one, which is the decline/skip/leave
       // affordance that advances without playing the minigame.
       if (d.actionButtonCount > 0) {
-        if (offline && !COMBAT_TIER) { await page.waitForTimeout(1000); return 'button-offline-wait'; }
         const buttons = page.locator('#action-area button');
         const n = await buttons.count();
         await buttons.nth(n - 1).click();
@@ -915,21 +1062,21 @@ test.describe('explore subway full session', () => {
       // soft-pause copy is the reportable subway bug: offline the client must
       // show the pause, and online it must render the next control — never
       // nothing. The grace window mirrors the KK harness's stalled-prompt wait.
-      const recovered = await page.waitForFunction(() => {
-        const aa = document.getElementById('action-area');
-        const hasControl = aa && (
-          aa.innerHTML.trim() !== ''
-          || document.querySelector('.split-attack-card')
-          || document.querySelector('.move-cell')
-        );
-        const pause = (document.body?.innerText || '').includes('Connection is spotty');
-        const takeover = !!document.querySelector('.takeover.active');
-        const narration = !!document.querySelector('.narration-box.visible');
-        const dialogue = !!document.querySelector('.npc-dialogue-card');
-        return hasControl || pause || takeover || narration || dialogue;
-      }, { timeout: 8000, polling: 400 }).then(() => true).catch(() => false);
-
-      if (recovered) return 'transition';
+      const recoveryDeadline = Date.now() + 8000;
+      while (Date.now() < recoveryDeadline) {
+        const [currentDom, currentSession] = await Promise.all([
+          domSignals(),
+          liveExploreSessionStatus(),
+        ]);
+        if (currentSession.paused) return 'paused';
+        if (!currentDom.actionAreaEmpty
+          || currentDom.takeoverActive
+          || currentDom.narrationVisible
+          || currentDom.npcDialogueCard) {
+          return 'transition';
+        }
+        await page.waitForTimeout(400);
+      }
 
       expect(
         false,
@@ -957,11 +1104,8 @@ test.describe('explore subway full session', () => {
     const ITERATION_SAFETY_CAP = 4000; // >> any legitimate hold count; catches a hard spin
     const WALLCLOCK_DEADLINE_MS = 540_000; // 9m, under the 10m test timeout
     const loopStartedAt = Date.now();
-    // try/finally guarantees the network route is torn down even if an expect
-    // throws while an offline window is active — otherwise `context.route(...,
-    // abort)` would stay installed and leak into teardown. The finally only
-    // fires goOnline() when a route is actually installed (offline === true),
-    // since goOffline() sets `offline` and installs the route together.
+    // try/finally guarantees the browser context returns online even if an
+    // assertion throws while an outage is active.
     try {
       while (
         actions < MAX_INTERACTIONS
@@ -1015,17 +1159,58 @@ test.describe('explore subway full session', () => {
         if (!WAIT_CODES.has(code)) actions += 1;
       }
     } finally {
-      // Restore connectivity if a window is still active (normal exit or a
-      // mid-outage assertion throw). Guarded on `offline` so it only unroutes
-      // when a route is installed.
       if (offline) await goOnline();
     }
 
     // --- final assertions ---
     await page.waitForTimeout(3000); // allow the final sync drain to land
+    await expect.poll(async () => page.evaluate(async () => {
+      const { getExploreSession } = await import('/js/ui/explore-session.js');
+      const session = getExploreSession();
+      return {
+        pendingCount: session?.pendingCount?.() ?? 0,
+        paused: session?.isPaused?.() ?? false,
+        pauseReason: session?.getPauseReason?.() ?? null,
+      };
+    }), { timeout: 20_000 }).toEqual({
+      pendingCount: 0,
+      paused: false,
+      pauseReason: null,
+    });
+
+    const transitions = await page.evaluate(() => window.__networkTransitions);
+    const client = await gameState(page);
     const server = await serverState(page).catch(() => null);
+    await Promise.allSettled(responseObservations);
     assertServerMatchesPlayed(server, played);
-    expect(correctedSyncs, 'no corrected syncs on the happy path').toBe(0);
+    expect(offlineWindowsStarted).toBe(OFFLINE_WINDOWS.length);
+    expect(offlineWindowsCompleted).toBe(OFFLINE_WINDOWS.length);
+    expect(transitions.filter(value => value === 'offline')).toHaveLength(2);
+    expect(transitions.filter(value => value === 'online')).toHaveLength(2);
+    expect(played.supportActions).toBeGreaterThan(0);
+    expect(played.offlineSupportChoices).toBeGreaterThan(0);
+    expect(played.combatStarts).toBeGreaterThan(0);
+    expect(played.combatTurns).toBeGreaterThan(0);
+    expect(played.offlineCombatTurns).toBeGreaterThan(0);
+    expect(played.npcRewardScreens).toBeGreaterThan(0);
+    expect(played.npcRewardChoices).toBeGreaterThan(0);
+    expect(played.reachedEnd).toBe(true);
+    expect(correctedSyncs).toBe(0);
+    expect(
+      hasComparablePartyDigests(
+        terminalPartyCheckpoint?.clientDigest ?? null,
+        terminalPartyCheckpoint?.serverDigest ?? null,
+      ),
+      'the terminal successful response must retain non-null same-checkpoint client/server party digests',
+    ).toBe(true);
+    expect(terminalPartyCheckpoint.clientDigest).toEqual(terminalPartyCheckpoint.serverDigest);
+    process.stdout.write(`[subway] coverage ${JSON.stringify({
+      offlineWindowsStarted,
+      offlineWindowsCompleted,
+      transitions,
+      correctedSyncs,
+      played,
+    })}\n`);
     // The action budget bounds genuine progress taps (waits/holds excluded). A
     // run that blows this is genuinely looping on actions, not merely holding
     // through an outage.
