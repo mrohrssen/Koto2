@@ -271,7 +271,7 @@ describe('optimistic run action integration', () => {
     );
     const gameWiringSource = sourceBetween(
       explorationSource,
-      'function startWhackAMoleGame(pool, ownerSession = null)',
+      'function startWhackAMoleGame(pool, ownerSession = null, renderOwner = null)',
       '// ============ NPC BATTLE SKILL REWARD ============'
     );
 
@@ -290,8 +290,9 @@ describe('optimistic run action integration', () => {
     );
     assert.doesNotMatch(completeSource, /recordRoomAction\('proceed'/);
     assert.doesNotMatch(skipSource, /recordRoomAction\('proceed'/);
-    assert.match(gameWiringSource, /apiCompleteWhackAMole: ownerSession[\s\S]*completeWhackAMoleOptimistically\(score, ownerSession\)[\s\S]*apiProceed: ownerSession \? proceedWithRevealBuffer : proceedWhackAMoleLegacy/);
-    assert.match(renderSource, /const result = await skipWhackAMoleOptimistically\(activeStandardSession\);[\s\S]*?if \(result\) await proceedWithRevealBuffer\(\)/);
+    assert.match(gameWiringSource, /apiCompleteWhackAMole: ownerSession[\s\S]*requireSupportRoomRenderOwner\(renderOwner\)[\s\S]*completeWhackAMoleOptimistically\(score, ownerSession\)/);
+    assert.match(gameWiringSource, /apiProceed: ownerSession[\s\S]*requireSupportRoomRenderOwner\(renderOwner,[\s\S]*proceedWithRevealBuffer\(\.\.\.args\)[\s\S]*proceedWhackAMoleLegacy/);
+    assert.match(renderSource, /const result = await skipWhackAMoleOptimistically\(activeStandardSession\);[\s\S]*?if \(result && requireSupportRoomRenderOwner\(renderOwner,[\s\S]*?await proceedWithRevealBuffer\(\)/);
   });
 
   it('sends action ids for post-combat shop choices', () => {
@@ -417,7 +418,7 @@ describe('optimistic run action integration', () => {
   it('handles rejected deterministic session choices with soft pause copy', () => {
     const shrineSource = sourceBetween(
       explorationSource,
-      'async function chooseShrineReward(rewardType, creatureKey)',
+      'async function chooseShrineReward(rewardType, creatureKey, renderOwner)',
       '/** Quiz phase'
     );
     assert.match(shrineSource, /if \(!queued\?\.accepted\)[\s\S]*showExploreSoftPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)[\s\S]*renderShrine\(\)/);
@@ -459,7 +460,7 @@ describe('optimistic run action integration', () => {
   it('uses the shared spotty-sync copy for deterministic choice failures', () => {
     const shrineSource = sourceBetween(
       explorationSource,
-      'async function chooseShrineReward(rewardType, creatureKey)',
+      'async function chooseShrineReward(rewardType, creatureKey, renderOwner)',
       '/** Quiz phase'
     );
     assert.match(shrineSource, /showExploreSoftPause/);
@@ -475,10 +476,10 @@ describe('optimistic run action integration', () => {
 
     const tutorialSkillMasterSource = sourceBetween(
       explorationSource,
-      'function renderTutorialSkillMaster(offers)',
+      'function renderTutorialSkillMaster(offers, renderOwner)',
       '// ============ FRIENDLY NPC ROOM ============'
     );
-    assert.match(tutorialSkillMasterSource, /chooseSkillMasterSkill\(s\.id\)/);
+    assert.match(tutorialSkillMasterSource, /chooseSkillMasterSkill\(s\.id, renderOwner\)/);
     assert.doesNotMatch(tutorialSkillMasterSource, /Could not apply skill choice|Failed to choose skill/);
 
     const friendlyNpcSource = sourceBetween(

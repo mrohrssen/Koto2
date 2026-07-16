@@ -4,6 +4,14 @@ import assert from 'node:assert/strict';
 const sceneManagerState = { currentScene: null };
 let renderedChoices = null;
 let dialogueCards = [];
+let dialogueGate = null;
+let choiceRenderCalls = 0;
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(next => { resolve = next; });
+  return { promise, resolve };
+}
 
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
@@ -45,12 +53,15 @@ await mock.module('../../../public/js/ui/room-transition.js', {
 await mock.module('../../../public/js/ui/ui-components.js', {
   namedExports: {
     renderButtons: () => {},
-    renderChoices: choices => { renderedChoices = choices; },
+    renderChoices: choices => { choiceRenderCalls += 1; renderedChoices = choices; },
   },
 });
 await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
   namedExports: {
-    showNpcDialogueCard: async options => { dialogueCards.push(options); },
+    showNpcDialogueCard: async options => {
+      dialogueCards.push(options);
+      await dialogueGate?.promise;
+    },
   },
 });
 await mock.module('../../../public/js/ui/event-popup.js', {
@@ -90,9 +101,54 @@ describe('renderShrine encounter flow', () => {
     resetExploreSession();
     renderedChoices = null;
     dialogueCards = [];
+    dialogueGate = null;
+    choiceRenderCalls = 0;
     sceneManagerState.currentScene = null;
     sceneManagerState.transitioning = false;
   });
+
+  function makePreparedShrineState(roomId, currentRoom = 0) {
+    const room = {
+      id: roomId,
+      type: 'shrine',
+      interacted: false,
+      shrine: { completed: false, used: false },
+    };
+    const rooms = [];
+    rooms[currentRoom] = room;
+    return {
+      phase: 'shrine',
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom,
+        roomActionSeq: 40 + currentRoom,
+        rooms,
+        creatureParty: { active: [], reserves: [] },
+        exploreRunway: {
+          sessionEpoch: 'ese_shrineownership1',
+          currentRoom,
+          roomActionSeq: 40 + currentRoom,
+          preparedRooms: [{
+            index: currentRoom,
+            roomId,
+            actionSeq: 40 + currentRoom,
+            room,
+            acceptedActions: ['shrine.choose', 'proceed'],
+            offlineReady: true,
+            interactionPayload: {
+              kind: 'shrine',
+              roomId,
+              greeting: { tokens: [{ text: `Greeting ${roomId}` }], overrides: {} },
+              rewards: [{ id: 'heal_all', title: `Heal ${roomId}`, description: 'Heal everyone.' }],
+              completed: false,
+            },
+          }],
+        },
+      },
+    };
+  }
 
   it('soft-pauses a malformed active standard shrine without calling legacy offers', async () => {
     const room = {
@@ -149,6 +205,128 @@ describe('renderShrine encounter flow', () => {
     assert.equal(getExploreSession().isPaused(), true);
     assert.equal(renderedChoices, null);
     assert.equal(dialogueCards.length, 0);
+  });
+
+  it('does not render shrine rewards when the session pauses during greeting dialogue', async () => {
+    const state = makePreparedShrineState('shrine-paused-dialogue');
+    let clearCalls = 0;
+    let legacyCalls = 0;
+    dialogueGate = deferred();
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => { clearCalls += 1; renderedChoices = null; },
+      },
+      scene: { showNarration: async () => {} },
+      apiGetShrineOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    const rendering = renderShrine();
+    for (let i = 0; i < 8 && dialogueCards.length === 0; i += 1) await Promise.resolve();
+    assert.equal(dialogueCards.length, 1, 'greeting should be awaiting dismissal');
+
+    getExploreSession().pause('manual-test');
+    dialogueGate.resolve();
+    await rendering;
+
+    assert.equal(renderedChoices, null);
+    assert.ok(clearCalls > 0);
+    assert.equal(choiceRenderCalls, 0);
+    assert.equal(legacyCalls, 0);
+    assert.equal(getExploreSession().isPaused(), true);
+  });
+
+  it('quietly retires an old shrine dialogue after a same-kind successor renders', async () => {
+    let currentState = makePreparedShrineState('shrine-owner-a', 0);
+    let legacyCalls = 0;
+    dialogueGate = deferred();
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetShrineOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    const oldRendering = renderShrine();
+    for (let i = 0; i < 8 && dialogueCards.length === 0; i += 1) await Promise.resolve();
+    assert.equal(dialogueCards.length, 1);
+
+    const oldGate = dialogueGate;
+    dialogueGate = null;
+    currentState = makePreparedShrineState('shrine-owner-b', 1);
+    await renderShrine();
+    assert.equal(choiceRenderCalls, 1);
+    assert.match(renderedChoices.cards[0].title, /owner-b/);
+
+    oldGate.resolve();
+    await oldRendering;
+
+    assert.equal(choiceRenderCalls, 1, 'old render must not repaint or clear successor controls');
+    assert.match(renderedChoices.cards[0].title, /owner-b/);
+    assert.equal(getExploreSession().isPaused(), false);
+    assert.equal(legacyCalls, 0);
+  });
+
+  it('does not clear a non-support successor when old shrine dialogue settles', async () => {
+    let currentState = makePreparedShrineState('shrine-before-combat', 0);
+    let clearCalls = 0;
+    dialogueGate = deferred();
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => { clearCalls += 1; renderedChoices = null; },
+      },
+      scene: { showNarration: async () => {} },
+      apiGetShrineOffers: async () => { throw new Error('legacy offers must remain fenced'); },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    const oldRendering = renderShrine();
+    for (let i = 0; i < 8 && dialogueCards.length === 0; i += 1) await Promise.resolve();
+    assert.equal(dialogueCards.length, 1);
+
+    const encounter = { id: 'combat-successor', type: 'encounter' };
+    currentState = {
+      phase: 'room_encounter',
+      room: encounter,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 1,
+        rooms: [null, encounter],
+        exploreRunway: {
+          sessionEpoch: 'ese_shrineownership1',
+          currentRoom: 1,
+          preparedRooms: [{
+            index: 1,
+            roomId: encounter.id,
+            room: encounter,
+            acceptedActions: ['encounter.start', 'combat.cycle'],
+            offlineReady: true,
+            interactionPayload: { kind: 'combat', roomId: encounter.id },
+          }],
+        },
+      },
+    };
+    const successorControls = { heading: 'Fight' };
+    renderedChoices = successorControls;
+    const clearsBeforeSettlement = clearCalls;
+    dialogueGate.resolve();
+    await oldRendering;
+
+    assert.equal(renderedChoices, successorControls);
+    assert.equal(clearCalls, clearsBeforeSettlement);
+    assert.equal(getExploreSession().isPaused(), false);
   });
 
   function initShrine(overrides = {}) {

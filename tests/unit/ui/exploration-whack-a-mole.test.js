@@ -8,14 +8,26 @@ const roomTransitionCalls = [];
 let dialogueCalls = [];
 let whackAMoleDeps = null;
 let whackAMolePool = null;
+let dialogueGate = null;
+let whackAMoleStartCalls = 0;
+let whackAMoleCancelCalls = 0;
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(next => { resolve = next; });
+  return { promise, resolve };
+}
 
 globalThis.__wamTest = {
   sceneManagerState,
   renderedButtons,
   roomTransitionCalls,
   get dialogueCalls() { return dialogueCalls; },
+  waitForDialogue: () => dialogueGate?.promise,
   setWhackAMoleDeps: deps => { whackAMoleDeps = deps; },
   setWhackAMolePool: pool => { whackAMolePool = pool; },
+  recordWhackAMoleStart: () => { whackAMoleStartCalls += 1; },
+  recordWhackAMoleCancel: () => { whackAMoleCancelCalls += 1; },
 };
 
 function makeWhackAMoleState(room, {
@@ -104,7 +116,8 @@ const mockSources = new Map(Object.entries({
         globalThis.__wamTest.setWhackAMolePool(pool);
         globalThis.__wamTest.setWhackAMoleDeps(deps);
       }
-      start() {}
+      start() { globalThis.__wamTest.recordWhackAMoleStart(); }
+      cancel() { globalThis.__wamTest.recordWhackAMoleCancel(); }
     }
   `,
   '../audio.js': 'export const playSFX = () => {};',
@@ -162,6 +175,7 @@ const mockSources = new Map(Object.entries({
   './npc-dialogue-card.js': `
     export const showNpcDialogueCard = async options => {
       globalThis.__wamTest.dialogueCalls.push(options);
+      await globalThis.__wamTest.waitForDialogue();
     };
   `,
   './tutorial-copy.js': `
@@ -181,7 +195,8 @@ const mockSources = new Map(Object.entries({
         globalThis.__wamTest.setWhackAMolePool(pool);
         globalThis.__wamTest.setWhackAMoleDeps(deps);
       }
-      start() {}
+      start() { globalThis.__wamTest.recordWhackAMoleStart(); }
+      cancel() { globalThis.__wamTest.recordWhackAMoleCancel(); }
     }
   `,
   '../../../public/js/audio.js': 'export const playSFX = () => {};',
@@ -239,6 +254,7 @@ const mockSources = new Map(Object.entries({
   '../../../public/js/ui/npc-dialogue-card.js': `
     export const showNpcDialogueCard = async options => {
       globalThis.__wamTest.dialogueCalls.push(options);
+      await globalThis.__wamTest.waitForDialogue();
     };
   `,
   '../../../public/js/ui/tutorial-copy.js': `
@@ -277,6 +293,9 @@ describe('renderWhackAMole decline flow', () => {
     dialogueCalls = [];
     whackAMoleDeps = null;
     whackAMolePool = null;
+    dialogueGate = null;
+    whackAMoleStartCalls = 0;
+    whackAMoleCancelCalls = 0;
     resetExploreSession();
   });
 
@@ -387,7 +406,7 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(updateUiCalls, 1);
   });
 
-  it('decline rejection leaves state in place and shows retry copy', async () => {
+  it('quietly retires decline controls after their prepared capability changes', async () => {
     const whackRoom = {
       id: 'wam-skip-rejected',
       type: 'whackAMole',
@@ -433,16 +452,12 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(currentState.phase, 'whackAMole');
     assert.equal(currentState.run.currentRoom, 0);
     assert.equal(currentState.room.interacted, false);
-    assert.deepEqual(narrationCalls, [
-      {
-        text: 'Connection is spotty. Your progress will sync when you reconnect.',
-        opts: { autoDismiss: 1800 },
-      },
-    ]);
+    assert.deepEqual(narrationCalls, []);
+    assert.equal(getExploreSession().isPaused(), false);
     assert.equal(updateUiCalls, 0);
   });
 
-  it('completion shows retry copy when the session rejects the action', async () => {
+  it('quietly retires Whack completion after its prepared capability changes', async () => {
     const whackRoom = {
       id: 'wam-complete-rejected',
       type: 'whackAMole',
@@ -489,12 +504,8 @@ describe('renderWhackAMole decline flow', () => {
     assert.deepEqual(getExploreSession().snapshot(), []);
     assert.equal(currentState.phase, 'whackAMole');
     assert.equal(currentState.room.interacted, false);
-    assert.deepEqual(narrationCalls, [
-      {
-        text: 'Connection is spotty. Your progress will sync when you reconnect.',
-        opts: { autoDismiss: 1800 },
-      },
-    ]);
+    assert.deepEqual(narrationCalls, []);
+    assert.equal(getExploreSession().isPaused(), false);
   });
 
   it('completion records a session action and marks the room complete locally', async () => {
@@ -594,6 +605,44 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(replacementSession.isPaused(), false);
     assert.equal(currentState.room.id, roomB.id);
     assert.equal(currentState.room.interacted, false);
+  });
+
+  it('does not let an old Whack game proceed a same-kind successor room', async () => {
+    const roomA = { id: 'wam-proceed-owner-a', type: 'whackAMole', interacted: false };
+    let currentState = makeWhackAMoleState(roomA, {
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(roomA.id),
+    });
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiProceed: async () => { throw new Error('legacy proceed must remain fenced'); },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[0].onClick();
+    const oldProceed = whackAMoleDeps.apiProceed;
+
+    const roomB = { id: 'wam-proceed-owner-b', type: 'whackAMole', interacted: false };
+    const afterB = { id: 'after-wam-proceed-owner-b', type: 'empty' };
+    currentState = makeWhackAMoleState(roomB, {
+      nextRoom: afterB,
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(roomB.id),
+    });
+    getExploreSession().adoptRunway(currentState.run.exploreRunway);
+
+    const result = await oldProceed();
+
+    assert.equal(result, null);
+    assert.deepEqual(getExploreSession().snapshot(), []);
+    assert.equal(currentState.run.currentRoom, 0);
+    assert.equal(currentState.room.id, roomB.id);
+    assert.equal(roomTransitionCalls.length, 0);
   });
 
   it('shows the Game Master greeting with the standard dialogue card', async () => {
@@ -755,6 +804,82 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(legacyGets, 0);
     assert.equal(renderedButtons.length, 0);
     assert.ok(clearCalls > 0);
+    assert.equal(getExploreSession().isPaused(), true);
+  });
+
+  it('does not publish Whack controls when the session pauses during the intro dialogue', async () => {
+    const room = { id: 'wam-pause-during-intro', type: 'whackAMole', interacted: false };
+    const state = makeWhackAMoleState(room, {
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(room.id),
+    });
+    let clearCalls = 0;
+    let legacyGets = 0;
+    dialogueGate = deferred();
+
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => { clearCalls += 1; renderedButtons.length = 0; },
+      },
+      scene: { showNarration: () => {} },
+      apiGetWhackAMoleDialogue: async () => { legacyGets += 1; return null; },
+      apiGetWhackAMolePool: async () => { legacyGets += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+
+    const rendering = renderWhackAMole();
+    await Promise.resolve();
+    assert.equal(dialogueCalls.length, 1, 'intro dialogue should be awaiting dismissal');
+
+    getExploreSession().pause('manual-test');
+    dialogueGate.resolve();
+    await rendering;
+
+    assert.equal(renderedButtons.length, 0);
+    assert.ok(clearCalls > 0);
+    assert.equal(whackAMoleStartCalls, 0);
+    assert.equal(legacyGets, 0);
+    assert.equal(getExploreSession().isPaused(), true);
+  });
+
+  it('revalidates Whack ownership when Yes is clicked after the session pauses', async () => {
+    const room = { id: 'wam-pause-after-render', type: 'whackAMole', interacted: false };
+    const state = makeWhackAMoleState(room, {
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(room.id),
+    });
+    let clearCalls = 0;
+    let legacyGets = 0;
+
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => { clearCalls += 1; renderedButtons.length = 0; },
+      },
+      scene: { showNarration: () => {} },
+      apiGetWhackAMoleDialogue: async () => { legacyGets += 1; return null; },
+      apiGetWhackAMolePool: async () => { legacyGets += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+
+    await renderWhackAMole();
+    assert.equal(renderedButtons.length, 2);
+    const yes = renderedButtons[0];
+    getExploreSession().pause('manual-test');
+    await yes.onClick();
+
+    assert.equal(whackAMoleStartCalls, 0);
+    assert.equal(whackAMolePool, null);
+    assert.equal(renderedButtons.length, 0);
+    assert.ok(clearCalls > 0);
+    assert.equal(legacyGets, 0);
     assert.equal(getExploreSession().isPaused(), true);
   });
 

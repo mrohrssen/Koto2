@@ -4,6 +4,13 @@ import assert from 'node:assert/strict';
 const sceneManagerState = { currentScene: null };
 let renderedChoices = null;
 let dialogueCards = [];
+let dialogueGate = null;
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(next => { resolve = next; });
+  return { promise, resolve };
+}
 
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
@@ -50,7 +57,10 @@ await mock.module('../../../public/js/ui/ui-components.js', {
 });
 await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
   namedExports: {
-    showNpcDialogueCard: async options => { dialogueCards.push(options); },
+    showNpcDialogueCard: async options => {
+      dialogueCards.push(options);
+      await dialogueGate?.promise;
+    },
   },
 });
 await mock.module('../../../public/js/ui/event-popup.js', {
@@ -95,9 +105,70 @@ describe('renderFriendlyNpc item prompt', () => {
     resetExploreSession();
     renderedChoices = null;
     dialogueCards = [];
+    dialogueGate = null;
     sceneManagerState.currentScene = null;
     sceneManagerState.transitioning = false;
   });
+
+  function makePreparedFriendlyState(roomId, currentRoom = 0) {
+    const npc = { id: `npc-${roomId}`, nameEn: `Guide ${roomId}` };
+    const item = {
+      id: `item-${roomId}`,
+      word: '薬',
+      reading: 'くすり',
+      nameToken: { text: `Item ${roomId}` },
+      tokens: [{ text: `Request ${roomId}` }],
+      words: ['薬'],
+      effect: { healAllPercent: 0.2 },
+    };
+    const room = {
+      id: roomId,
+      type: 'friendlyNpc',
+      npc,
+      interacted: false,
+      friendlyNpc: { completed: false },
+    };
+    const rooms = [];
+    rooms[currentRoom] = room;
+    return {
+      room,
+      item,
+      state: {
+        phase: 'friendlyNpc',
+        room,
+        meta: { tutorialStep: 1 },
+        run: {
+          active: true,
+          mode: 'standard',
+          currentRoom,
+          roomActionSeq: 50 + currentRoom,
+          stats: { startTime: 5000 },
+          rooms,
+          creatureParty: { active: [], reserves: [] },
+          exploreRunway: {
+            sessionEpoch: 'ese_friendlyowner01',
+            currentRoom,
+            roomActionSeq: 50 + currentRoom,
+            preparedRooms: [{
+              index: currentRoom,
+              roomId,
+              actionSeq: 50 + currentRoom,
+              room,
+              acceptedActions: ['friendlyNpc.choose', 'proceed'],
+              offlineReady: true,
+              interactionPayload: {
+                kind: 'friendlyNpc',
+                roomId,
+                npc,
+                greeting: { tokens: [{ text: `Greeting ${roomId}` }], overrides: {} },
+                offered: [item],
+              },
+            }],
+          },
+        },
+      },
+    };
+  }
 
   it('uses a complete standard-session capability without calling the legacy offers API', async () => {
     const room = {
@@ -216,6 +287,73 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(getExploreSession().isPaused(), true);
     assert.equal(renderedChoices, null);
     assert.equal(dialogueCards.length, 0);
+  });
+
+  it('does not publish friendly NPC choices when the session pauses during greeting dialogue', async () => {
+    const { state } = makePreparedFriendlyState('friendly-paused-greeting');
+    let clearCalls = 0;
+    let legacyCalls = 0;
+    dialogueGate = deferred();
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => { clearCalls += 1; renderedChoices = null; },
+      },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    const rendering = renderFriendlyNpc();
+    for (let i = 0; i < 4 && dialogueCards.length === 0; i += 1) await Promise.resolve();
+    assert.equal(dialogueCards.length, 1, 'greeting should be awaiting dismissal');
+
+    getExploreSession().pause('manual-test');
+    dialogueGate.resolve();
+    await rendering;
+
+    assert.equal(renderedChoices, null);
+    assert.ok(clearCalls > 0);
+    assert.equal(legacyCalls, 0);
+    assert.equal(getExploreSession().isPaused(), true);
+  });
+
+  it('rejects a friendly NPC selection whose request dialogue outlives its room capability', async () => {
+    const ownerA = makePreparedFriendlyState('friendly-owner-a', 0);
+    let currentState = ownerA.state;
+    let legacyCalls = 0;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => { renderedChoices = null; } },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    await renderFriendlyNpc();
+    const ownerChoices = renderedChoices;
+    dialogueGate = deferred();
+    const choosing = ownerChoices.onSelect(0);
+    for (let i = 0; i < 4 && dialogueCards.length < 2; i += 1) await Promise.resolve();
+    assert.equal(dialogueCards.at(-1)?.speaker, 'You');
+
+    const ownerB = makePreparedFriendlyState('friendly-owner-b', 1);
+    currentState = ownerB.state;
+    getExploreSession().adoptRunway(ownerB.state.run.exploreRunway);
+    dialogueGate.resolve();
+    await choosing;
+
+    assert.deepEqual(getExploreSession().snapshot(), []);
+    assert.equal(currentState.room.id, ownerB.room.id);
+    assert.equal(currentState.room.interacted, false);
+    assert.equal(currentState.room.friendlyNpc.completed, false);
+    assert.equal(getExploreSession().isPaused(), false);
+    assert.equal(legacyCalls, 0);
   });
 
   it('shows the NPC greeting as a dialogue card before item choices', async () => {

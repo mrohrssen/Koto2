@@ -110,6 +110,7 @@ let runwayRecoveryPromise = null;
 let runwayRecoveryTimer = null;
 let runwayRecoveryAttempt = 0;
 let exploreSoftPauseDispatching = false;
+let supportRoomRenderGeneration = 0;
 
 function isInitialSkillPickState(state = getGameState?.()) {
   const room = state?.room || getActiveRoomFromRun(state?.run);
@@ -1530,6 +1531,29 @@ export async function renderShrine() {
     : null;
   const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown';
+  const resetShrineRenderState = () => {
+    shrineState.fetched = false;
+    shrineState.rewards = null;
+    shrineState.greeting = null;
+    shrineState.choosing = false;
+    shrineState.greetingShown = false;
+  };
+  const renderOwner = beginSupportRoomRenderOwner({
+    session: activeStandardSession,
+    state: gameState,
+    room,
+    capability,
+    resolveRoom: state => state?.room || getActiveRoomFromRun(state?.run),
+    resolveCapability: (session, state, currentRoom) => preparedExploreRoomCapability({
+      session,
+      state,
+      room: currentRoom,
+      expectedKind: 'shrine',
+      requiredActions: ['shrine.choose', 'proceed'],
+      validatePayload: shrinePayloadValid,
+    }),
+    onInvalid: resetShrineRenderState,
+  });
 
   if (shrineState.roomId !== roomId) {
     shrineState = {
@@ -1553,13 +1577,7 @@ export async function renderShrine() {
   }
 
   if (activeStandardSession && !capability.valid) {
-    rejectExploreRoomCapability(capability, () => {
-      shrineState.fetched = false;
-      shrineState.rewards = null;
-      shrineState.greeting = null;
-      shrineState.choosing = false;
-      shrineState.greetingShown = false;
-    });
+    rejectExploreRoomCapability(capability, resetShrineRenderState);
     return;
   }
 
@@ -1570,6 +1588,7 @@ export async function renderShrine() {
     const fetchRoomId = roomId;
     try {
       const resp = activeStandardSession ? payload : await apiGetShrineOffers?.();
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       if (shrineState.roomId !== fetchRoomId) return;
       shrineState.rewards = Array.isArray(resp?.rewards) ? resp.rewards : [
         { id: 'heal_all', title: 'Heal all creatures', description: 'Restore 50% HP to living creatures.' },
@@ -1579,6 +1598,7 @@ export async function renderShrine() {
       shrineState.greeting = resp?.greeting || null;
       if (resp?.state) updateGameState(resp.state);
     } catch {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       shrineState.fetched = false;
       shrineState.rewards = null;
       shrineState.greeting = null;
@@ -1594,6 +1614,7 @@ export async function renderShrine() {
   if (!shrineState.greetingShown) {
     shrineState.greetingShown = true;
     await showShrineSprite();
+    if (!requireSupportRoomRenderOwner(renderOwner)) return;
     const greetingTokens = shrineState.greeting?.tokens;
     await showNpcDialogueCard({
       speaker: 'Shrine Fox',
@@ -1607,8 +1628,10 @@ export async function renderShrine() {
           }
         : { text: 'Hello!' }),
     });
+    if (!requireSupportRoomRenderOwner(renderOwner)) return;
   }
 
+  if (!requireSupportRoomRenderOwner(renderOwner)) return;
   const rewards = shrineState.rewards || [];
   renderChoices({
     heading: 'Choose shrine blessing',
@@ -1617,19 +1640,21 @@ export async function renderShrine() {
       subtitle: reward.description,
     })),
     onSelect: async (index) => {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       if (shrineState.choosing) return;
       const reward = rewards[index];
       if (!reward) return;
       if (reward.id === 'level_up') {
-        renderShrineLevelTargets(reward.id);
+        renderShrineLevelTargets(reward.id, renderOwner);
         return;
       }
-      await chooseShrineReward(reward.id, null);
+      await chooseShrineReward(reward.id, null, renderOwner);
     },
   });
 }
 
-function renderShrineLevelTargets(rewardType) {
+function renderShrineLevelTargets(rewardType, renderOwner) {
+  if (!requireSupportRoomRenderOwner(renderOwner)) return;
   const gameState = getGameState();
   const livingCreatures = shrineCreatures(gameState.run?.creatureParty)
     .filter(creature => (creature.hp || 0) > 0);
@@ -1648,13 +1673,15 @@ function renderShrineLevelTargets(rewardType) {
       subtitle: `HP: ${creature.hp}/${creature.maxHp} · MP: ${creature.mp || 0}/${creature.maxMp || 0}`,
     })),
     onSelect: async (index) => {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       const creature = livingCreatures[index];
-      if (creature) await chooseShrineReward(rewardType, shrineCreatureKey(creature));
+      if (creature) await chooseShrineReward(rewardType, shrineCreatureKey(creature), renderOwner);
     },
   });
 }
 
-async function chooseShrineReward(rewardType, creatureKey) {
+async function chooseShrineReward(rewardType, creatureKey, renderOwner) {
+  if (!requireSupportRoomRenderOwner(renderOwner)) return;
   if (shrineState.choosing) return;
   shrineState.choosing = true;
   try {
@@ -2113,6 +2140,89 @@ function rejectExploreRoomCapability(capability, resetState = null) {
   });
 }
 
+/**
+ * Bind async support-room work and its callbacks to the exact prepared
+ * capability that rendered them. A newer render generation owns the shared
+ * action area, so an older continuation exits quietly. Navigation or a replaced
+ * prepared snapshot is also stale ownership and exits quietly. Only the same
+ * exact owner becoming paused/invalid fails closed: clear/cancel its stale UI
+ * and surface the resumable sync pause.
+ */
+function beginSupportRoomRenderOwner({
+  session,
+  state,
+  room,
+  capability,
+  resolveRoom,
+  resolveCapability,
+  onInvalid = null,
+}) {
+  supportRoomRenderGeneration += 1;
+  return {
+    generation: supportRoomRenderGeneration,
+    session,
+    phase: state?.phase,
+    currentRoom: state?.run?.currentRoom,
+    roomActionSeq: capability?.prepared?.actionSeq
+      ?? state?.run?.roomActionSeq
+      ?? state?.run?.exploreRunway?.roomActionSeq
+      ?? null,
+    sessionEpoch: state?.run?.exploreRunway?.sessionEpoch ?? null,
+    roomId: room?.id ?? null,
+    roomType: room?.type ?? null,
+    prepared: capability?.prepared ?? null,
+    payload: capability?.payload ?? null,
+    capability,
+    resolveRoom,
+    resolveCapability,
+    onInvalid,
+    rejected: false,
+  };
+}
+
+function requireSupportRoomRenderOwner(owner, { allowedPhases = null } = {}) {
+  if (!owner || owner.generation !== supportRoomRenderGeneration) return false;
+  // Legacy/non-session rooms retain their existing API flow. Generation still
+  // prevents an older legacy render from repainting a newer support render.
+  if (!owner.session) return true;
+
+  const state = getGameState?.();
+  const session = getActiveStandardExploreSession(state);
+  const room = owner.resolveRoom?.(state) || null;
+  const capability = session
+    ? owner.resolveCapability?.(session, state, room)
+    : null;
+  const actionSeq = capability?.prepared?.actionSeq
+    ?? state?.run?.roomActionSeq
+    ?? state?.run?.exploreRunway?.roomActionSeq
+    ?? null;
+  const phaseMatches = Array.isArray(allowedPhases)
+    ? allowedPhases.includes(state?.phase)
+    : state?.phase === owner.phase;
+  const sameOwner = session === owner.session
+    && phaseMatches
+    && state?.run?.currentRoom === owner.currentRoom
+    && actionSeq === owner.roomActionSeq
+    && (state?.run?.exploreRunway?.sessionEpoch ?? null) === owner.sessionEpoch
+    && room?.id === owner.roomId
+    && room?.type === owner.roomType
+    && capability?.prepared === owner.prepared
+    && capability?.payload === owner.payload;
+  // Navigation, correction adoption, or a newer prepared snapshot means these
+  // controls no longer own the action area. Exit quietly: successor UI must not
+  // be cleared or paused by the stale continuation.
+  if (!sameOwner) return false;
+  if (owner.rejected) return false;
+  if (capability.valid === true) return true;
+
+  if (!owner.rejected) {
+    owner.rejected = true;
+    owner.onInvalid?.();
+    rejectExploreRoomCapability(capability || owner.capability);
+  }
+  return false;
+}
+
 function preparedSpeedReviewPayload(session, state, room) {
   const capability = preparedExploreRoomCapability({
     session,
@@ -2399,6 +2509,7 @@ function preparedWhackAMoleCapability(session, state, room) {
 
   return {
     valid,
+    prepared: capability.prepared,
     payload,
     missingPayloadReasons: capability.missingPayloadReasons,
   };
@@ -2482,6 +2593,23 @@ export async function renderWhackAMole() {
     : null;
   const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'whackAMole';
+  const resetWhackAMoleRenderState = () => {
+    cancelActiveWhackAMoleGame();
+    whackAMoleState.fetched = false;
+    whackAMoleState.pool = null;
+    whackAMoleState.introShown = false;
+  };
+  const renderOwner = beginSupportRoomRenderOwner({
+    session: activeStandardSession,
+    state: gameState,
+    room,
+    capability,
+    resolveRoom: state => getCurrentBufferedRoom(state),
+    resolveCapability: (session, state, currentRoom) => (
+      preparedWhackAMoleCapability(session, state, currentRoom)
+    ),
+    onInvalid: resetWhackAMoleRenderState,
+  });
 
   if (whackAMoleState.roomId !== roomId) {
     if (activeWhackAMoleRoomId && activeWhackAMoleRoomId !== roomId) {
@@ -2505,14 +2633,16 @@ export async function renderWhackAMole() {
     } catch (err) {
       // The proceed owner normally refreshes. If it throws before it can do so,
       // render a fallback state instead of leaving the completed room visible.
+      if (!requireSupportRoomRenderOwner(renderOwner, {
+        allowedPhases: [renderOwner?.phase, 'room'],
+      })) return;
       updateUI();
     }
     return;
   }
 
   if (activeStandardSession && !capability.valid) {
-    cancelActiveWhackAMoleGame();
-    whackAMoleState.fetched = false;
+    resetWhackAMoleRenderState();
     actions.clear?.();
     if (!actions.clear) actions.setContent('');
     showExploreSoftPause({
@@ -2530,6 +2660,7 @@ export async function renderWhackAMole() {
       const resp = activeStandardSession || hasPayloadDetails
         ? payload
         : await apiGetWhackAMoleDialogue();
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       if (resp) {
         whackAMoleState.fetched = true;
         whackAMoleState.dialogue = resp.dialogue || null;
@@ -2544,6 +2675,7 @@ export async function renderWhackAMole() {
         whackAMoleState.pool = Array.isArray(resp.pool) ? resp.pool : null;
       }
     } catch (err) {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       // Leave fetched=false so a later rerender can retry.
     }
   }
@@ -2562,12 +2694,15 @@ export async function renderWhackAMole() {
       useKanji: false,
       audio: whackAMoleState.dialogue.audio,
     });
+    if (!requireSupportRoomRenderOwner(renderOwner)) return;
   }
 
+  if (!requireSupportRoomRenderOwner(renderOwner)) return;
   renderButtons([
     {
       label: whackAMoleState.yesLabel,
       onClick: async () => {
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
         // Fetch pool and start game directly (no intermediate start screen)
         let pool;
         if (Array.isArray(whackAMoleState.pool)) {
@@ -2575,9 +2710,11 @@ export async function renderWhackAMole() {
         } else {
           try {
             const resp = await apiGetWhackAMolePool();
+            if (!requireSupportRoomRenderOwner(renderOwner)) return;
             pool = resp.pool;
             whackAMoleState.pool = Array.isArray(pool) ? pool : null;
           } catch (err) {
+            if (!requireSupportRoomRenderOwner(renderOwner)) return;
             actions.setContent('<div class="wam-error">Failed to load game data</div>');
             return;
           }
@@ -2588,22 +2725,29 @@ export async function renderWhackAMole() {
           return;
         }
 
-        startWhackAMoleGame(pool, activeStandardSession);
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
+        startWhackAMoleGame(pool, activeStandardSession, renderOwner);
       }
     },
     {
       label: whackAMoleState.noLabel,
       onClick: async () => {
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
         cancelActiveWhackAMoleGame();
         actions.clear?.();
         if (!actions.clear) actions.setContent('');
         const scene = getSceneWithNpcs();
         if (scene && !scene.disposed && scene.npcSprite) {
           await scene.hideNpcSprite({ slideOut: true });
+          if (!requireSupportRoomRenderOwner(renderOwner)) return;
         }
         if (activeStandardSession) {
           const result = await skipWhackAMoleOptimistically(activeStandardSession);
-          if (result) await proceedWithRevealBuffer();
+          if (result && requireSupportRoomRenderOwner(renderOwner, {
+            allowedPhases: [renderOwner?.phase, 'room'],
+          })) {
+            await proceedWithRevealBuffer();
+          }
           return;
         }
         await skipWhackAMoleLegacy();
@@ -2684,6 +2828,30 @@ export async function renderSkillMaster() {
   const cacheKey = (isInitialPick || isServerInitialPick)
     ? `${roomId}:${run?.stats?.startTime ?? ''}`
     : roomId;
+  const resetSkillMasterRenderState = () => {
+    skillMasterState.fetched = false;
+    skillMasterState.offered = null;
+    skillMasterState.chosenId = null;
+    skillMasterState.promptTokens = null;
+    skillMasterState.promptShown = false;
+    skillMasterState.cidShown = false;
+  };
+  const renderOwner = beginSupportRoomRenderOwner({
+    session: activeStandardSession,
+    state: gameState,
+    room,
+    capability,
+    resolveRoom: state => state?.room || getActiveRoomFromRun(state?.run),
+    resolveCapability: (session, state, currentRoom) => preparedExploreRoomCapability({
+      session,
+      state,
+      room: currentRoom,
+      expectedKind: 'skillMaster',
+      requiredActions: ['skillMaster.choose', 'proceed'],
+      validatePayload: skillMasterPayloadValid,
+    }),
+    onInvalid: resetSkillMasterRenderState,
+  });
 
   // Reset per-room cache
   // For the initial skill pick, include the run start time so same-phase
@@ -2716,13 +2884,7 @@ export async function renderSkillMaster() {
   }
 
   if (activeStandardSession && !capability.valid) {
-    rejectExploreRoomCapability(capability, () => {
-      skillMasterState.fetched = false;
-      skillMasterState.offered = null;
-      skillMasterState.chosenId = null;
-      skillMasterState.promptTokens = null;
-      skillMasterState.promptShown = false;
-    });
+    rejectExploreRoomCapability(capability, resetSkillMasterRenderState);
     return;
   }
 
@@ -2751,7 +2913,9 @@ export async function renderSkillMaster() {
     let resp;
     try {
       resp = activeStandardSession ? payload : await apiSkillMasterOffers?.();
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
     } catch (err) {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       // Allow retry on next render and avoid caching a bad state
       skillMasterState.fetched = false;
       skillMasterState.offered = null;
@@ -2807,12 +2971,12 @@ export async function renderSkillMaster() {
   // Don't wait for Cid narration — render skills immediately so the player
   // can see them while Cid is still talking.
   if (tutorialStep === 0) {
-    renderTutorialSkillMaster(offers);
+    renderTutorialSkillMaster(offers, renderOwner);
   } else {
-    // Slide Cid in so the player sees who's offering them skills. Intentionally
-    // not awaited — the choices render in parallel with the slide-in so UI
-    // doesn't feel gated on animation.
-    showCidForSkillMaster();
+    // Slide Cid in so the player sees who's offering them skills. Await the
+    // entrance so capability ownership can be revalidated before the prompt.
+    await showCidForSkillMaster();
+    if (!requireSupportRoomRenderOwner(renderOwner)) return;
     if (!skillMasterState.promptShown && skillMasterState.promptTokens?.tokens?.length) {
       skillMasterState.promptShown = true;
       await showNpcDialogueCard({
@@ -2823,8 +2987,10 @@ export async function renderSkillMaster() {
         useKanji: false,
         audio: skillMasterState.promptTokens.audio,
       });
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
     }
 
+    if (!requireSupportRoomRenderOwner(renderOwner)) return;
     renderChoices({
       heading: 'Choose a skill',
       cards: offers.slice(0, 3).map(s => ({
@@ -2832,14 +2998,16 @@ export async function renderSkillMaster() {
         subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
       })),
       onSelect: async (index) => {
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
         const skillId = offers[index]?.id;
-        if (skillId) await chooseSkillMasterSkill(skillId);
+        if (skillId) await chooseSkillMasterSkill(skillId, renderOwner);
       },
     });
   }
 }
 
-async function chooseSkillMasterSkill(skillId) {
+async function chooseSkillMasterSkill(skillId, renderOwner = null) {
+  if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return false;
   if (isInitialSkillPickState()) {
     return chooseInitialSkillMasterSkill(skillId);
   }
@@ -2897,7 +3065,8 @@ async function chooseInitialSkillMasterSkill(skillId) {
 }
 
 /** Tutorial step 0: show all 3 skills but only the first is clickable (glows). */
-function renderTutorialSkillMaster(offers) {
+function renderTutorialSkillMaster(offers, renderOwner) {
+  if (!requireSupportRoomRenderOwner(renderOwner)) return;
   const el = document.getElementById('action-area');
   el.innerHTML = '';
 
@@ -2928,6 +3097,7 @@ function renderTutorialSkillMaster(offers) {
     if (i === 0) {
       let clicked = false;
       btn.addEventListener('click', async () => {
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
         if (clicked) return;
         clicked = true;
         playSFX('button-tap');
@@ -2938,7 +3108,7 @@ function renderTutorialSkillMaster(offers) {
           c.style.pointerEvents = 'none';
         });
 
-        await chooseSkillMasterSkill(s.id);
+        await chooseSkillMasterSkill(s.id, renderOwner);
       });
     }
 
@@ -3024,6 +3194,30 @@ export async function renderFriendlyNpc() {
   const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown';
   const roomCacheKey = `${roomId}:${gameState.run?.stats?.startTime ?? ''}`;
+  const resetFriendlyNpcRenderState = () => {
+    friendlyNpcState.fetched = false;
+    friendlyNpcState.offered = null;
+    friendlyNpcState.greeting = null;
+    friendlyNpcState.choosing = false;
+    friendlyNpcState.greetingShown = false;
+    friendlyNpcState.renderedCards = null;
+  };
+  const renderOwner = beginSupportRoomRenderOwner({
+    session: activeStandardSession,
+    state: gameState,
+    room,
+    capability,
+    resolveRoom: state => state?.room || getActiveRoomFromRun(state?.run),
+    resolveCapability: (session, state, currentRoom) => preparedExploreRoomCapability({
+      session,
+      state,
+      room: currentRoom,
+      expectedKind: 'friendlyNpc',
+      requiredActions: ['friendlyNpc.choose', 'proceed'],
+      validatePayload: friendlyNpcPayloadValid,
+    }),
+    onInvalid: resetFriendlyNpcRenderState,
+  });
 
   // Reset per-room state when entering a new room
   if (friendlyNpcState.roomId !== roomCacheKey) {
@@ -3049,14 +3243,7 @@ export async function renderFriendlyNpc() {
   }
 
   if (activeStandardSession && !capability.valid) {
-    rejectExploreRoomCapability(capability, () => {
-      friendlyNpcState.fetched = false;
-      friendlyNpcState.offered = null;
-      friendlyNpcState.greeting = null;
-      friendlyNpcState.choosing = false;
-      friendlyNpcState.greetingShown = false;
-      friendlyNpcState.renderedCards = null;
-    });
+    rejectExploreRoomCapability(capability, resetFriendlyNpcRenderState);
     return;
   }
 
@@ -3069,7 +3256,9 @@ export async function renderFriendlyNpc() {
     let resp;
     try {
       resp = activeStandardSession ? payload : await apiGetFriendlyNpcOffers?.();
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
     } catch (err) {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
       friendlyNpcState.greeting = null;
@@ -3121,6 +3310,7 @@ export async function renderFriendlyNpc() {
   if (npc && !friendlyNpcState.greetingShown) {
     friendlyNpcState.greetingShown = true;
     await showFriendlyNpcSprite(npc);
+    if (!requireSupportRoomRenderOwner(renderOwner)) return;
     const greetingTokens = friendlyNpcState.greeting?.tokens;
     await showNpcDialogueCard({
       speaker: npc.nameEn || npc.name,
@@ -3134,6 +3324,7 @@ export async function renderFriendlyNpc() {
           }
         : { text: 'Hello!' }),
     });
+    if (!requireSupportRoomRenderOwner(renderOwner)) return;
 
     // Tutorial step 2: Cid explains items after the shopkeeper's greeting,
     // then the shopkeeper returns before item choices render.
@@ -3142,25 +3333,31 @@ export async function renderFriendlyNpc() {
       const cidSprite = npcSpriteUrl('cid');
       showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
       const scene = await waitForSceneWithNpcs();
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       if (scene) {
         await scene.showNpcSprite(cidSprite, { slideIn: true });
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
       }
 
       const [itemShopCidLine] = getTutorialNarration(2);
       if (itemShopCidLine) {
         await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
       }
 
       const afterScene = getSceneWithNpcs();
       if (afterScene && !afterScene.disposed && afterScene.npcSprite) {
         await afterScene.hideNpcSprite({ slideOut: true });
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
       }
 
       await showFriendlyNpcSprite(npc);
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
     }
   }
 
   // Render item cards so they're visible
+  if (!requireSupportRoomRenderOwner(renderOwner)) return;
   renderChoices({
     heading: 'Choose an item',
     cards: friendlyNpcState.renderedCards || offers.map(item => ({
@@ -3171,12 +3368,14 @@ export async function renderFriendlyNpc() {
       pills: buildItemEffectPills(item),
     })),
     onSelect: async (index) => {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       if (friendlyNpcState.choosing) return;
       friendlyNpcState.choosing = true;
       const item = offers[index];
       playSFX('creature-equip');
 
       await showPlayerItemRequest(item);
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
 
       const gameState = getGameState();
       const party = gameState.run?.creatureParty?.active || [];
@@ -3184,6 +3383,7 @@ export async function renderFriendlyNpc() {
       const isPartyWide = item.effect?.healAllPercent || item.effect?.mpRestorePercent;
 
       const applyItem = async (creatureIndex) => {
+        if (!requireSupportRoomRenderOwner(renderOwner)) return;
         const queued = getExploreSession()?.recordRoomAction('friendlyNpc.choose', {
           itemId: item.id,
           targetCreatureIndex: creatureIndex,
@@ -3216,6 +3416,7 @@ export async function renderFriendlyNpc() {
             subtitle: `Lv.${creature.level} · HP: ${creature.hp}/${creature.maxHp}`,
           })),
           onSelect: (index) => {
+            if (!requireSupportRoomRenderOwner(renderOwner)) return;
             const target = targets[index];
             if (target) return applyItem(target.targetIndex);
           },
@@ -3225,21 +3426,34 @@ export async function renderFriendlyNpc() {
   });
 }
 
-function startWhackAMoleGame(pool, ownerSession = null) {
+function startWhackAMoleGame(pool, ownerSession = null, renderOwner = null) {
   cancelActiveWhackAMoleGame();
   const ownerRoomId = whackAMoleState.roomId;
   activeWhackAMoleRoomId = ownerRoomId;
   activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
     apiCompleteWhackAMole: ownerSession
-      ? score => completeWhackAMoleOptimistically(score, ownerSession)
+      ? score => (
+          requireSupportRoomRenderOwner(renderOwner)
+            ? completeWhackAMoleOptimistically(score, ownerSession)
+            : null
+        )
       : apiCompleteWhackAMole,
-    apiProceed: ownerSession ? proceedWithRevealBuffer : proceedWhackAMoleLegacy,
+    apiProceed: ownerSession
+      ? (...args) => (
+          requireSupportRoomRenderOwner(renderOwner, {
+            allowedPhases: [renderOwner?.phase, 'room'],
+          })
+            ? proceedWithRevealBuffer(...args)
+            : null
+        )
+      : proceedWhackAMoleLegacy,
     updateGameState,
     updateUI,
     playSFX,
     isActive: () => getGameState()?.phase === 'whackAMole'
       && getCurrentWhackAMoleRoomId() === ownerRoomId
+      && requireSupportRoomRenderOwner(renderOwner)
   });
   activeWhackAMoleGame.start();
 }
@@ -3278,6 +3492,29 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     : null;
   const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown-npcbattle';
+  const resetNpcBattleSkillRenderState = () => {
+    npcBattleSkillState.fetched = false;
+    npcBattleSkillState.offered = null;
+    npcBattleSkillState.choosing = false;
+    npcBattleSkillState.promptTokens = null;
+    npcBattleSkillState.promptShown = false;
+  };
+  const renderOwner = beginSupportRoomRenderOwner({
+    session: activeStandardSession,
+    state: gameState,
+    room,
+    capability,
+    resolveRoom: state => state?.room || getActiveRoomFromRun(state?.run),
+    resolveCapability: (session, state, currentRoom) => preparedExploreRoomCapability({
+      session,
+      state,
+      room: currentRoom,
+      expectedKind: 'npcBattle',
+      requiredActions: ['npcBattleSkill.choose'],
+      validatePayload: npcBattleSkillPayloadValid,
+    }),
+    onInvalid: resetNpcBattleSkillRenderState,
+  });
 
   // Reset per-room cache when room changes
   if (npcBattleSkillState.roomId !== roomId) {
@@ -3305,13 +3542,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   }
 
   if (activeStandardSession && !capability.valid) {
-    rejectExploreRoomCapability(capability, () => {
-      npcBattleSkillState.fetched = false;
-      npcBattleSkillState.offered = null;
-      npcBattleSkillState.choosing = false;
-      npcBattleSkillState.promptTokens = null;
-      npcBattleSkillState.promptShown = false;
-    });
+    rejectExploreRoomCapability(capability, resetNpcBattleSkillRenderState);
     return;
   }
 
@@ -3338,7 +3569,9 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     let resp;
     try {
       resp = activeStandardSession ? payload : await fetchOffers?.();
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
     } catch (err) {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       npcBattleSkillState.fetched = false;
       npcBattleSkillState.offered = null;
       actions.setContent(`
@@ -3404,6 +3637,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       } catch {
         // Fall through to updateUI — canonical state may already have advanced.
       }
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       updateUI();
       return;
     }
@@ -3428,9 +3662,10 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   const defeatedNpc = gameState.combat?.npcData || room?.npcBattle?.npc || room?.npc || null;
   const speakerName = defeatedNpc?.nameEn || defeatedNpc?.name || 'Cid';
 
-  // Slide the defeated NPC sprite in (no-op if already on stage) so the
-  // player can see who's asking the question. Intentionally not awaited.
-  showDefeatedNpcForSkillSelect(defeatedNpc);
+  // Slide the defeated NPC sprite in (no-op if already on stage) so the player
+  // can see who's asking the question, then revalidate before the prompt.
+  await showDefeatedNpcForSkillSelect(defeatedNpc);
+  if (!requireSupportRoomRenderOwner(renderOwner)) return;
 
   if (!npcBattleSkillState.promptShown && npcBattleSkillState.promptTokens?.tokens?.length) {
     npcBattleSkillState.promptShown = true;
@@ -3442,8 +3677,10 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       useKanji: false,
       audio: npcBattleSkillState.promptTokens.audio,
     });
+    if (!requireSupportRoomRenderOwner(renderOwner)) return;
   }
 
+  if (!requireSupportRoomRenderOwner(renderOwner)) return;
   renderChoices({
     heading: 'Choose a skill',
     cards: offers.slice(0, 3).map(s => ({
@@ -3451,6 +3688,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       subtitle: s.desc || '',
     })),
     onSelect: async (index) => {
+      if (!requireSupportRoomRenderOwner(renderOwner)) return;
       if (npcBattleSkillState.choosing) return;
       npcBattleSkillState.choosing = true;
       const skillId = offers[index]?.id;
