@@ -126,6 +126,7 @@ describe('static dialogue route TTS metadata', () => {
   });
 
   it('attaches audio to NPC defeat lines', async () => {
+    let runwaySnapshotSyncs = 0;
     const router = createCombatRoutes({
       getUserVocabulary: () => ({ words: [] }),
       getCreatureDialogueFromCache: () => null,
@@ -144,7 +145,10 @@ describe('static dialogue route TTS metadata', () => {
       gameManager: {
         combat: { npcId: 'kodomo' },
         run: { creatureParty: { active: [] } },
-        getCurrentRoom: () => ({ type: 'npcBattle', npcBattle: {} })
+        getCurrentRoom: () => ({ type: 'npcBattle', npcBattle: {} }),
+        explorationService: {
+          syncPreparedRoomSnapshot: () => { runwaySnapshotSyncs += 1; },
+        },
       },
       saveGame: () => {},
       getEnrichedGameState: () => ({ phase: 'npc_skill_selection' })
@@ -155,6 +159,7 @@ describe('static dialogue route TTS metadata', () => {
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.body.line.audio, { userId: 'npc-user', key: 'kodomo.wav' });
+    assert.equal(runwaySnapshotSyncs, 1);
   });
 
   it('attaches creature audio to befriend quiz prompt lines', async () => {
@@ -302,10 +307,19 @@ describe('static dialogue route TTS metadata', () => {
 
   it('uses the defeated NPC voice for NPC battle skill prompt audio', async () => {
     const sharedRoom = { type: 'npcBattle', npcBattle: {} };
+    let runwaySnapshotSyncs = 0;
+    let offerBuilds = 0;
     const gameManager = {
       combat: { npcId: 'kodomo' },
       run: { creatureParty: { active: [] }, partySkills: [] },
-      getCurrentRoom: () => sharedRoom
+      getCurrentRoom: () => sharedRoom,
+      explorationService: {
+        syncPreparedRoomSnapshot: () => { runwaySnapshotSyncs += 1; },
+        ensureNpcBattleSkillOffers: () => {
+          offerBuilds += 1;
+          return { offered: [], rewardResolved: false };
+        },
+      },
     };
     const combatRouter = createCombatRoutes({
       getUserVocabulary: () => ({ words: [] }),
@@ -344,6 +358,8 @@ describe('static dialogue route TTS metadata', () => {
 
     assert.equal(defeatRes.statusCode, 200);
     assert.equal(offersRes.statusCode, 200);
+    assert.equal(runwaySnapshotSyncs, 1);
+    assert.equal(offerBuilds, 1);
     assert.equal(offersRes.body.skillSelectPrompt.audio.key, 'kodomo.wav');
     assert.equal(
       offersRes.body.skillSelectPrompt.audio.speakerId,

@@ -11,7 +11,7 @@ import { showNpcDialogueCard } from './npc-dialogue-card.js';
 // Coordinator deps (set via init)
 let ctx = null;
 
-let npcDialogueActive = false;
+let activeNpcDialoguePromise = null;
 
 /**
  * Initialize with coordinator callbacks.
@@ -34,7 +34,7 @@ export async function showNpcGreeting(npcData) {
   if (ctx.updateUI) ctx.updateUI();
 }
 
-export function isNpcDialogueActive() { return npcDialogueActive; }
+export function isNpcDialogueActive() { return activeNpcDialoguePromise !== null; }
 
 function dialogueSpeakerForNpc(npc = {}) {
   return {
@@ -67,82 +67,94 @@ function tokenDialogueOptions({ speaker, speakerId, line, useKanji, audio }) {
  * Run the full NPC post-combat dialogue flow.
  * Called from combat victory and also from updateScene() on page reload recovery.
  */
-export async function runNpcDialogue() {
-  if (npcDialogueActive) return;
-  if (!ctx.apiStartNpcDialogue) return;
-  npcDialogueActive = true;
+export function runNpcDialogue() {
+  if (activeNpcDialoguePromise) return activeNpcDialoguePromise;
+  if (!ctx?.apiStartNpcDialogue) {
+    return Promise.resolve({ ok: false, reason: 'dialogue_unavailable' });
+  }
 
-  try {
-    const dialogueData = await ctx.apiStartNpcDialogue();
-    if (!dialogueData) return;
+  activeNpcDialoguePromise = runNpcDialogueFlow()
+    .catch(error => {
+      console.warn('[NpcDialogue] Dialogue request failed:', error?.message || error);
+      return { ok: false, reason: 'dialogue_request_failed' };
+    })
+    .finally(() => {
+      activeNpcDialoguePromise = null;
+    });
 
-    if (dialogueData.mode === 'defeat_line') {
-      const { npc, line } = dialogueData;
-      const npcSpeaker = dialogueSpeakerForNpc(npc);
+  return activeNpcDialoguePromise;
+}
 
-      if (ctx.showNpcSprite) ctx.showNpcSprite(npcSpeaker.speaker, npc.id, npc);
+async function runNpcDialogueFlow() {
+  const dialogueData = await ctx.apiStartNpcDialogue();
+  if (!dialogueData) return { ok: false, reason: 'dialogue_unavailable' };
 
-      await showNpcDialogueCard(tokenDialogueOptions({
-        ...npcSpeaker,
-        line,
-        useKanji: dialogueData.useKanji,
-        audio: line?.audio,
-      }));
-    } else {
-      const { npc, freed, rounds, userId, freedTts } = dialogueData;
-      const npcSpeaker = dialogueSpeakerForNpc(npc);
+  if (dialogueData.mode === 'defeat_line') {
+    const { npc, line } = dialogueData;
+    const npcSpeaker = dialogueSpeakerForNpc(npc);
 
-      if (ctx.showNpcSprite) ctx.showNpcSprite(npcSpeaker.speaker, npc.id, npc);
+    if (ctx.showNpcSprite) ctx.showNpcSprite(npcSpeaker.speaker, npc.id, npc);
+
+    await showNpcDialogueCard(tokenDialogueOptions({
+      ...npcSpeaker,
+      line,
+      useKanji: dialogueData.useKanji,
+      audio: line?.audio,
+    }));
+  } else {
+    const { npc, freed, rounds, userId, freedTts } = dialogueData;
+    const npcSpeaker = dialogueSpeakerForNpc(npc);
+
+    if (ctx.showNpcSprite) ctx.showNpcSprite(npcSpeaker.speaker, npc.id, npc);
+
+    await showNpcDialogueCard(taggedDialogueOptions({
+      ...npcSpeaker,
+      html: renderEnFirst(freed),
+      audio: freedTts && userId ? { userId, key: freedTts } : null,
+    }));
+
+    let totalDelta = 0;
+
+    for (let i = 0; i < rounds.length; i++) {
+      const round = rounds[i];
 
       await showNpcDialogueCard(taggedDialogueOptions({
         ...npcSpeaker,
-        html: renderEnFirst(freed),
-        audio: freedTts && userId ? { userId, key: freedTts } : null,
+        html: renderEnFirst(round.npcLine),
+        audio: round.npcLineTts && userId ? { userId, key: round.npcLineTts } : null,
       }));
 
-      let totalDelta = 0;
+      const selectedIndex = await renderChoicesAsync({
+        heading: 'Choose a response',
+        cards: round.options.map(o => ({
+          title: renderEnFirst(typeof o === 'string' ? o : o.text),
+        })),
+      });
 
-      for (let i = 0; i < rounds.length; i++) {
-        const round = rounds[i];
-
-        await showNpcDialogueCard(taggedDialogueOptions({
-          ...npcSpeaker,
-          html: renderEnFirst(round.npcLine),
-          audio: round.npcLineTts && userId ? { userId, key: round.npcLineTts } : null,
-        }));
-
-        const selectedIndex = await renderChoicesAsync({
-          heading: 'Choose a response',
-          cards: round.options.map(o => ({
-            title: renderEnFirst(typeof o === 'string' ? o : o.text),
-          })),
-        });
-
-        if (round.options[selectedIndex]?.tts && userId) {
-          playDialogueAudio(userId, round.options[selectedIndex].tts);
-        }
-
-        const result = await ctx.apiRespondNpcDialogue(i, selectedIndex);
-        if (!result) break;
-
-        if (result.dialogueComplete) {
-          totalDelta = result.totalDelta;
-          if (result.state) {
-            ctx.updateGameState(result.state);
-          }
-          break;
-        }
+      if (round.options[selectedIndex]?.tts && userId) {
+        playDialogueAudio(userId, round.options[selectedIndex].tts);
       }
 
-      if (ctx.hideNpcSprite) ctx.hideNpcSprite();
+      const result = await ctx.apiRespondNpcDialogue(i, selectedIndex);
+      if (!result) return { ok: false, reason: 'dialogue_unavailable' };
 
-      showBondSummary(npcSpeaker.speaker, totalDelta);
-      await ctx.delay(2200);
-      document.querySelector('.bond-summary')?.remove();
+      if (result.dialogueComplete) {
+        totalDelta = result.totalDelta;
+        if (result.state) {
+          ctx.updateGameState(result.state);
+        }
+        break;
+      }
     }
-  } finally {
-    npcDialogueActive = false;
+
+    if (ctx.hideNpcSprite) ctx.hideNpcSprite();
+
+    showBondSummary(npcSpeaker.speaker, totalDelta);
+    await ctx.delay(2200);
+    document.querySelector('.bond-summary')?.remove();
   }
+
+  return { ok: true };
 }
 
 function showBondSummary(npcName, totalDelta) {

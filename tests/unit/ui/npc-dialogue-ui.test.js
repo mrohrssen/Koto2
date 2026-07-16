@@ -101,8 +101,9 @@ describe('npc dialogue ui', () => {
       }),
     });
 
-    await runNpcDialogue();
+    const outcome = await runNpcDialogue();
 
+    assert.deepEqual(outcome, { ok: true });
     assert.deepEqual(dialogueCards[0], {
       speaker: 'Mira',
       speakerId: 'mira',
@@ -128,8 +129,75 @@ describe('npc dialogue ui', () => {
       }),
     });
 
-    await runNpcDialogue();
+    const outcome = await runNpcDialogue();
 
+    assert.deepEqual(outcome, { ok: true });
     assert.deepEqual(dialogueCards[0].audio, { userId: 'user-1', key: 'defeat.wav' });
+  });
+
+  it('returns a retryable failure when dialogue start has no response', async () => {
+    init({
+      apiStartNpcDialogue: async () => null,
+    });
+
+    assert.deepEqual(await runNpcDialogue(), {
+      ok: false,
+      reason: 'dialogue_unavailable',
+    });
+  });
+
+  it('releases a failed request so a later retry can complete', async () => {
+    let attempts = 0;
+    init({
+      showNpcSprite: () => {},
+      delay: async () => {},
+      apiStartNpcDialogue: async () => {
+        attempts += 1;
+        if (attempts === 1) throw new Error('offline');
+        return {
+          mode: 'defeat_line',
+          useKanji: false,
+          npc: { id: 'mira', nameEn: 'Mira' },
+          line: { tokens: [{ surface: 'すごい', reading: 'すごい' }] },
+        };
+      },
+    });
+
+    assert.deepEqual(await runNpcDialogue(), {
+      ok: false,
+      reason: 'dialogue_request_failed',
+    });
+    assert.deepEqual(await runNpcDialogue(), { ok: true });
+    assert.equal(attempts, 2);
+  });
+
+  it('shares one in-flight dialogue request across concurrent recovery triggers', async () => {
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    let startCalls = 0;
+    init({
+      showNpcSprite: () => {},
+      delay: async () => {},
+      apiStartNpcDialogue: async () => {
+        startCalls += 1;
+        await gate;
+        return {
+          mode: 'defeat_line',
+          useKanji: false,
+          npc: { id: 'mira', nameEn: 'Mira' },
+          line: { tokens: [{ surface: 'すごい', reading: 'すごい' }] },
+        };
+      },
+    });
+
+    const first = runNpcDialogue();
+    const second = runNpcDialogue();
+    assert.strictEqual(second, first);
+    assert.equal(startCalls, 1);
+
+    release();
+    assert.deepEqual(await first, { ok: true });
+    assert.deepEqual(await second, { ok: true });
+    assert.equal(startCalls, 1);
   });
 });

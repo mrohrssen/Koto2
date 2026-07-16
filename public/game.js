@@ -126,7 +126,7 @@ import { combatEvents } from './js/ui/combat-events.js';
 import { getHpColor } from './js/ui/combat-ui-utils.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
 import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
-import { renderButtonsAsync } from './js/ui/ui-components.js';
+import { renderButtons, renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import {
   setKnownWords,
@@ -138,6 +138,7 @@ import {
 import { getBattleRewardAnchor, showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
 import { createCombatRecoveryGate } from './js/ui/combat-recovery-gate.js';
+import { needsNpcDialogueRecovery } from './js/ui/npc-dialogue-recovery.js';
 import { playNpcBattleIntro, playTutorialBossInterjection } from './js/ui/room-transition.js';
 import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crystals.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
@@ -531,8 +532,82 @@ function updateStatusBar() {
 }
 
 let npcDialogueRecoveryDone = false;
+let npcDialogueRecoveryPromise = null;
+let npcDialogueRecoveryGeneration = 0;
 const combatRecoveryGate = createCombatRecoveryGate();
 let postCombatShopRecoveryDone = false;
+
+function resetNpcDialogueRecovery() {
+  npcDialogueRecoveryGeneration += 1;
+  npcDialogueRecoveryDone = false;
+  npcDialogueRecoveryPromise = null;
+}
+
+function showNpcDialogueRecoveryRetry() {
+  renderButtons([{
+    label: 'Retry Dialogue',
+    primary: true,
+    onClick: () => { void runNpcDialogueRecovery(); },
+  }]);
+}
+
+async function performNpcDialogueRecovery(generation) {
+  const outcome = await combatLoopUI.runNpcDialogue();
+  if (!outcome?.ok) return outcome || { ok: false, reason: 'dialogue_unavailable' };
+  if (generation !== npcDialogueRecoveryGeneration) {
+    return { ok: false, reason: 'recovery_cancelled' };
+  }
+
+  const refreshedState = await loadGameState({ adoptSession: true });
+  if (!refreshedState || needsNpcDialogueRecovery(refreshedState)) {
+    return { ok: false, reason: 'state_refresh_failed' };
+  }
+  if (generation !== npcDialogueRecoveryGeneration) {
+    return { ok: false, reason: 'recovery_cancelled' };
+  }
+
+  updateUI();
+  return { ok: true };
+}
+
+function runNpcDialogueRecovery() {
+  if (npcDialogueRecoveryPromise) return npcDialogueRecoveryPromise;
+  if (!needsNpcDialogueRecovery(gameState)) {
+    return Promise.resolve({ ok: false, reason: 'recovery_not_needed' });
+  }
+
+  npcDialogueRecoveryDone = true;
+  const generation = npcDialogueRecoveryGeneration;
+  const attempt = performNpcDialogueRecovery(generation)
+    .catch(error => {
+      console.warn('[NpcDialogue] Recovery failed:', error);
+      return { ok: false, reason: 'recovery_failed' };
+    })
+    .then(outcome => {
+      if (generation !== npcDialogueRecoveryGeneration) return outcome;
+      if (!outcome?.ok) {
+        npcDialogueRecoveryDone = false;
+        if (needsNpcDialogueRecovery(gameState)) showNpcDialogueRecoveryRetry();
+      }
+      return outcome;
+    });
+
+  let trackedPromise;
+  trackedPromise = attempt.finally(() => {
+    if (npcDialogueRecoveryPromise === trackedPromise) {
+      npcDialogueRecoveryPromise = null;
+    }
+  });
+  npcDialogueRecoveryPromise = trackedPromise;
+  return trackedPromise;
+}
+
+function handleConnectionOnline(...args) {
+  showOnline(...args);
+  if (needsNpcDialogueRecovery(gameState)) {
+    void runNpcDialogueRecovery();
+  }
+}
 
 function clearClientSessionState() {
   const nextState = resetClientSessionState(gameState, {
@@ -542,7 +617,7 @@ function clearClientSessionState() {
     hideEnemies: () => scene.hideEnemies(),
     hidePlayerFormation: () => scene.hideFormation('player'),
     resetFlags: () => {
-      npcDialogueRecoveryDone = false;
+      resetNpcDialogueRecovery();
       combatRecoveryGate.reset();
       postCombatShopRecoveryDone = false;
       sceneTransitionActive = false;
@@ -554,7 +629,9 @@ function clearClientSessionState() {
 }
 
 function updateScene() {
-  if (gameState.phase !== 'npc_dialogue') npcDialogueRecoveryDone = false;
+  if (!needsNpcDialogueRecovery(gameState) && npcDialogueRecoveryDone) {
+    resetNpcDialogueRecovery();
+  }
   combatRecoveryGate.sync(gameState);
   if (gameState.phase !== 'post_combat_shop') postCombatShopRecoveryDone = false;
 
@@ -679,6 +756,10 @@ function updateGameContent() {
       startEncounter();
       break;
     case 'room':
+      if (needsNpcDialogueRecovery(gameState)) {
+        if (!npcDialogueRecoveryDone) void runNpcDialogueRecovery();
+        break;
+      }
       // Auto-advance past completed rooms — skip the "Proceed" dead state
       autoProceed();
       break;
@@ -770,10 +851,7 @@ function updateGameContent() {
       // Normally handled inline by combat-loop's handleCombatEnd().
       // On page reload, the combat flow isn't running, so we must restart
       // the dialogue here to prevent the player from getting stuck.
-      if (!combatLoopUI.isNpcDialogueActive() && !npcDialogueRecoveryDone) {
-        npcDialogueRecoveryDone = true;
-        combatLoopUI.runNpcDialogue().then(() => updateUI());
-      }
+      if (!npcDialogueRecoveryDone) void runNpcDialogueRecovery();
       break;
     case 'post_combat_shop':
       // On page reload, the shop flow isn't running. Re-trigger it so the
@@ -2637,8 +2715,8 @@ async function initGame() {
   initExposureBuffer();
 
   // Connection status banner — shows on API failures, dismisses on recovery
-  setConnectionCallbacks({ onOffline: showOffline, onOnline: showOnline });
-  window.addEventListener('online', showOnline);
+  setConnectionCallbacks({ onOffline: showOffline, onOnline: handleConnectionOnline });
+  window.addEventListener('online', handleConnectionOnline);
   window.addEventListener('offline', showOffline);
 
   setupEventListeners();
