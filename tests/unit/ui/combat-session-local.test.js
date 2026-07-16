@@ -216,6 +216,93 @@ describe('explore-session local combat turns', () => {
     assert.ok(harness.state.combat.enemies[0].hp < 100, 'enemy HP reflects the resolved turn');
   });
 
+  it('keeps post-turn party HP and MP when a mid-fight kill awards deferred XP', async () => {
+    const initialState = sessionCombatState();
+    const ally = initialState.run.creatureParty.active[0];
+    const costlyFinisher = {
+      ...ally.moves[0],
+      id: 'costly-finisher',
+      nameEn: 'Costly Finisher',
+      element: 'neutral',
+      power: 999,
+      mpCost: 3,
+      accuracy: 100,
+    };
+    Object.assign(ally, {
+      level: 10,
+      xp: 0,
+      attack: 50,
+      defense: 10,
+      dex: 100,
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [costlyFinisher],
+    });
+
+    const enemyMove = {
+      ...costlyFinisher,
+      id: 'tap',
+      nameEn: 'Tap',
+      power: 10,
+      mpCost: 0,
+    };
+    initialState.combat.isBoss = true;
+    initialState.combat.enemies = [
+      combatant({
+        id: 'mizu',
+        nameEn: 'Water',
+        element: 'water',
+        level: 1,
+        dex: 1,
+        hp: 1,
+        maxHp: 1,
+        moves: [enemyMove],
+      }),
+      combatant({
+        id: 'kusa',
+        nameEn: 'Grass',
+        element: 'earth',
+        level: 1,
+        dex: 1,
+        hp: 9999,
+        maxHp: 9999,
+        moves: [enemyMove],
+      }),
+    ];
+
+    const harness = initHarness(initialState);
+    let predictedTurn = null;
+    await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: costlyFinisher.id, targetIndex: 0 }],
+      turnTiming: { actionType: 'attack', startedAt: 0, animationStartedAt: null, requestMs: null, logged: false },
+      playback: async transcript => { predictedTurn = structuredClone(transcript); },
+      startMoveSelection: () => {},
+      stopCombatLoop: () => {},
+    });
+
+    assert.ok(predictedTurn, 'the session turn must resolve locally');
+    assert.equal(predictedTurn.enemies[0].hp, 0, 'the first enemy is defeated');
+    assert.ok(predictedTurn.enemies[1].hp > 0, 'the second enemy keeps the fight active');
+    assert.equal(predictedTurn.pendingCombatEnd, undefined, 'the kill is non-terminal');
+    const predictedAlly = predictedTurn.creatureParty.active[0];
+    assert.ok(predictedAlly.hp < 100, 'the surviving enemy damages the resolved ally');
+    assert.equal(predictedAlly.mp, 7, 'the resolved party retains the move MP cost');
+
+    const finalParty = harness.state.run.creatureParty;
+    const finalAlly = finalParty.active[0];
+    assert.ok(finalAlly.xp > 0, 'the defeated enemy awards deferred XP');
+    assert.equal(finalAlly.level, 10, 'the fixture must not hide stale state behind a level-up restore');
+    assert.equal(finalAlly.hp, predictedAlly.hp, 'deferred XP must not restore pre-turn HP');
+    assert.equal(finalAlly.mp, predictedAlly.mp, 'deferred XP must not restore pre-turn MP');
+    assert.strictEqual(harness.state.combat.allies, finalParty.active,
+      'combat allies must stay aliased to the committed party');
+    assert.strictEqual(harness.state.combat.allies[0], finalAlly,
+      'the active combatant must be the committed party creature');
+  });
+
   it('does not play, mutate, or leave attack pending when append is rejected', async () => {
     fakeSession.recordRoomAction = () => ({
       accepted: false,

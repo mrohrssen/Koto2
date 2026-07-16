@@ -900,6 +900,9 @@ function localStateAfterSessionPveTurn(optimistic) {
   if (optimistic.localNextCombat && next.combat) {
     next.combat = { ...next.combat, ...optimistic.localNextCombat };
   }
+  if (optimistic.localTranscript?.creatureParty && next.run) {
+    next.run.creatureParty = optimistic.localTranscript.creatureParty;
+  }
   advanceLocalChain(next);
   applyLocalDeferredKillXp(next, optimistic.localTranscript, optimistic.envelope.seed);
   // On a locally-predicted terminal VICTORY, restore the deterministic
