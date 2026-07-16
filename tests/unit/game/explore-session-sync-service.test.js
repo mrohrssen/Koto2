@@ -135,6 +135,12 @@ async function expectSupportReplayOnce({ roomType, kind, payload = {}, installPe
 describe('ExploreSessionSyncService', () => {
   it('returns correction for stale sessionEpoch with rejectedSeq', async () => {
     const gm = makeGm();
+    gm.run.exploreRunway = {
+      sessionEpoch: LIVE_EPOCH,
+      roomActionSeq: 0,
+      currentRoom: 0,
+      preparedRooms: [],
+    };
     const service = new ExploreSessionSyncService(gm);
 
     const result = await service.applySessionSync({
@@ -176,6 +182,11 @@ describe('ExploreSessionSyncService', () => {
       ['null', service => service.applySessionSync({ sessionEpoch: LIVE_EPOCH, entries: null }), 'invalid_explore_batch'],
     ]) {
       const gm = makeGm();
+      let buildCalls = 0;
+      gm.explorationService.buildExploreRunway = async () => {
+        buildCalls += 1;
+        return gm.run.exploreRunway;
+      };
       const service = new ExploreSessionSyncService(gm);
       const result = await invoke(service);
 
@@ -187,6 +198,7 @@ describe('ExploreSessionSyncService', () => {
       assert.equal(gm.run.currentRoom, 0, name);
       assert.equal(gm.run.roomActionSeq, 0, name);
       assert.deepEqual(gm.meta.actionLedger.order, [], name);
+      assert.equal(buildCalls, 0, name);
     }
   });
 
@@ -498,9 +510,49 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(room.friendlyNpc.chosenId, null);
   });
 
-  it('returns stale sessionEpoch correction without mutating canonical runway state', async () => {
+  it('returns stale sessionEpoch correction without decorating or rolling back concurrent mutations', async () => {
     const gm = makeGm();
+    const active = gm.run.creatureParty.active;
+    gm.combat = { active: true, allies: active };
+    const originalRunway = {
+      sessionEpoch: LIVE_EPOCH,
+      roomActionSeq: 0,
+      currentRoom: 0,
+      preparedRooms: [{ roomId: 'existing' }],
+    };
+    gm.run.exploreRunway = originalRunway;
+    let buildCalls = 0;
+    let releaseBuild;
+    const buildGate = new Promise(resolve => { releaseBuild = resolve; });
+    gm.explorationService.buildExploreRunway = async () => {
+      buildCalls += 1;
+      await buildGate;
+      return { sessionEpoch: LIVE_EPOCH, preparedRooms: [] };
+    };
     const service = new ExploreSessionSyncService(gm);
+
+    const pending = service.applySessionSync({
+      sessionEpoch: 'ese_2222222222222222',
+      entries: [makeEntry(gm, { seq: 40 })],
+    });
+    await Promise.resolve();
+    gm.run.creatureParty.active[0].hp = 7;
+    gm.meta.concurrentMarker = 'landed';
+    releaseBuild?.();
+    const result = await pending;
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'session_epoch_mismatch');
+    assert.equal(result.rejectedSeq, 40);
+    assert.equal(buildCalls, 0);
+    assert.deepEqual(gm.run.exploreRunway, originalRunway);
+    assert.equal(gm.run.creatureParty.active[0].hp, 7);
+    assert.equal(gm.meta.concurrentMarker, 'landed');
+    assert.strictEqual(gm.combat.allies, gm.run.creatureParty.active);
+  });
+
+  it('falls back to the current canonical runway when response decoration throws', async () => {
+    const gm = makeGm();
     const originalRunway = {
       sessionEpoch: LIVE_EPOCH,
       roomActionSeq: 0,
@@ -509,67 +561,15 @@ describe('ExploreSessionSyncService', () => {
     };
     gm.run.exploreRunway = originalRunway;
     gm.explorationService.buildExploreRunway = async () => {
-      gm.run.exploreRunway = {
-        sessionEpoch: LIVE_EPOCH,
-        roomActionSeq: 99,
-        currentRoom: 99,
-        preparedRooms: [{ roomId: 'mutated' }],
-      };
-      gm.run.rooms[0].friendlyNpc.greeting = { id: 'mutated-greeting' };
-      return gm.run.exploreRunway;
+      throw new Error('decoration unavailable');
     };
+    const service = new ExploreSessionSyncService(gm);
 
-    const result = await service.applySessionSync({
-      sessionEpoch: 'ese_2222222222222222',
-      entries: [makeEntry(gm, { seq: 40 })],
-    });
+    const result = await service.ok();
 
-    assert.equal(result.status, 'corrected');
-    assert.equal(result.reason, 'session_epoch_mismatch');
-    assert.equal(result.rejectedSeq, 40);
+    assert.equal(result.status, 'ok');
+    assert.deepEqual(result.exploreRunway, originalRunway);
     assert.deepEqual(gm.run.exploreRunway, originalRunway);
-    assert.equal(gm.run.rooms[0].friendlyNpc.greeting, undefined);
-  });
-
-  it('passes configured runway options when building a stale-epoch correction without mutating canonical runway state', async () => {
-    const gm = makeGm();
-    const getKnownWords = () => ['光'];
-    const getDialogueCardAudio = async () => ({ key: 'dialogue.wav' });
-    const runwayOpts = { userId: 'route-user', getKnownWords, getDialogueCardAudio };
-    const buildCalls = [];
-    const originalRunway = {
-      sessionEpoch: LIVE_EPOCH,
-      roomActionSeq: 0,
-      currentRoom: 0,
-      preparedRooms: [{ roomId: 'existing' }],
-    };
-    gm.run.exploreRunway = originalRunway;
-    gm.explorationService.buildExploreRunway = async (opts) => {
-      buildCalls.push(opts);
-      gm.run.exploreRunway = {
-        sessionEpoch: LIVE_EPOCH,
-        roomActionSeq: 99,
-        currentRoom: 99,
-        preparedRooms: [{ roomId: 'mutated' }],
-      };
-      gm.run.rooms[0].friendlyNpc.greeting = { id: 'mutated-greeting' };
-      return gm.run.exploreRunway;
-    };
-    const service = new ExploreSessionSyncService(gm, { runwayOpts });
-
-    const result = await service.applySessionSync({
-      sessionEpoch: 'ese_2222222222222222',
-      entries: [makeEntry(gm, { seq: 41 })],
-    });
-
-    assert.equal(result.status, 'corrected');
-    assert.equal(result.reason, 'session_epoch_mismatch');
-    assert.equal(buildCalls.length, 1);
-    assert.equal(buildCalls[0].userId, 'route-user');
-    assert.equal(buildCalls[0].getKnownWords, getKnownWords);
-    assert.equal(buildCalls[0].getDialogueCardAudio, getDialogueCardAudio);
-    assert.deepEqual(gm.run.exploreRunway, originalRunway);
-    assert.equal(gm.run.rooms[0].friendlyNpc.greeting, undefined);
   });
 
   it('preflights malformed batches without committing an earlier valid entry', async () => {
@@ -642,7 +642,10 @@ describe('ExploreSessionSyncService', () => {
     });
     assert.equal(first.status, 'ok');
     const before = structuredClone(gm.run);
-    const ledgerBefore = structuredClone(gm.meta.actionLedger);
+    const ledgerBefore = gm.meta.actionLedger;
+    const entriesBefore = ledgerBefore.entries;
+    const recordedEntryBefore = entriesBefore[entry.actionId];
+    const orderBefore = [...ledgerBefore.order];
 
     const result = await service.applySessionSync({
       sessionEpoch: LIVE_EPOCH,
@@ -664,7 +667,10 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(result.confirmedThroughSeq, null);
     assert.deepEqual(result.results, []);
     assert.deepEqual(gm.run, before);
-    assert.deepEqual(gm.meta.actionLedger, ledgerBefore);
+    assert.strictEqual(gm.meta.actionLedger, ledgerBefore);
+    assert.strictEqual(gm.meta.actionLedger.entries, entriesBefore);
+    assert.strictEqual(gm.meta.actionLedger.entries[entry.actionId], recordedEntryBefore);
+    assert.deepEqual(gm.meta.actionLedger.order, orderBefore);
   });
 
   it('rejects a forged proceed that tries to skip an unfinished boss', async () => {

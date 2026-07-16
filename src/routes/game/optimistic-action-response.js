@@ -21,12 +21,21 @@ export function snapshotGameManager(gameManager) {
   };
 }
 
+export function rebindGameManagerAliases(gameManager) {
+  if (!gameManager || typeof gameManager !== 'object') return null;
+  if (gameManager.combat && gameManager.run?.creatureParty?.active) {
+    gameManager.combat.allies = gameManager.run.creatureParty.active;
+  }
+  return gameManager;
+}
+
 export function restoreGameManager(gameManager, snapshot) {
   if (!gameManager || !snapshot) return;
   gameManager.player = cloneValue(snapshot.player);
   gameManager.run = cloneValue(snapshot.run);
   gameManager.combat = cloneValue(snapshot.combat);
   gameManager.meta = cloneValue(snapshot.meta);
+  rebindGameManagerAliases(gameManager);
 }
 
 export function getOptimisticActionLedgerOwner(req) {

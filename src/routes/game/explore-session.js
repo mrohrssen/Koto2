@@ -2,11 +2,7 @@ import { Router } from 'express';
 
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { ExploreSessionSyncService } from '../../game/services/explore-session-sync-service.js';
-import {
-  enrichedState,
-  restoreGameManager,
-  snapshotGameManager,
-} from './optimistic-action-response.js';
+import { enrichedState } from './optimistic-action-response.js';
 
 function withAuthoritativeState(result, req) {
   if (result?.status !== 'corrected' || Object.hasOwn(result, 'authoritativeState')) {
@@ -39,7 +35,6 @@ export default function createExploreSessionRoutes({ getDialogueCardAudio } = {}
       return res.status(400).json({ error: 'entries array required' });
     }
 
-    const snapshot = snapshotGameManager(req.gameManager);
     try {
       const service = new ExploreSessionSyncService(req.gameManager, {
         runwayOpts: buildRunwayOpts(req, { getDialogueCardAudio }),
@@ -48,7 +43,6 @@ export default function createExploreSessionRoutes({ getDialogueCardAudio } = {}
       await req.saveGame?.();
       return res.json(withAuthoritativeState(result, req));
     } catch (error) {
-      restoreGameManager(req.gameManager, snapshot);
       const state = enrichedState(req);
       return res.status(409).json({
         status: 'corrected',

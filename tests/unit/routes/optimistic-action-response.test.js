@@ -384,6 +384,41 @@ describe('optimistic action route response helpers', () => {
     });
   });
 
+  it('rebinds combat allies after legacy save rollback', async () => {
+    const active = [{ id: 'hi', hp: 10 }];
+    const req = {
+      body: { actionId: actionId('aliasrollback') },
+      gameManager: {
+        run: { creatureParty: { active, reserves: [] } },
+        combat: { active: true, allies: active },
+        meta: { actionLedger: { entries: {}, order: [] } },
+      },
+      getEnrichedGameState: () => ({}),
+      saveGame: async () => { throw new Error('disk unavailable'); },
+    };
+    const res = makeRes();
+    const runOptimisticAction = createOptimisticActionRunner({
+      owner: request => request.gameManager.meta,
+    });
+
+    await runOptimisticAction(req, res, {
+      actionType: 'test.alias',
+      perform: async () => {
+        req.gameManager.combat.allies[0].hp = 1;
+        return { ok: true };
+      },
+    });
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(req.gameManager.run.creatureParty.active[0].hp, 10);
+    assert.strictEqual(
+      req.gameManager.combat.allies,
+      req.gameManager.run.creatureParty.active,
+    );
+    req.gameManager.combat.allies[0].hp = 6;
+    assert.equal(req.gameManager.run.creatureParty.active[0].hp, 6);
+  });
+
   it('if getEnrichedGameState throws, accepted/corrected state fields are null, and a duplicate replay also gets null state (no stored-state fallback)', async () => {
     const req = {
       body: { actionId: actionId('throws') },

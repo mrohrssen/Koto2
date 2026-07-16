@@ -12,30 +12,6 @@ import {
 import { ensureRoomActionSeq } from '../room-reveal-buffer.js';
 import { hashTranscript } from '../../shared/action-protocol.js';
 
-function cloneValue(value) {
-  if (value === undefined) return undefined;
-  return globalThis.structuredClone
-    ? globalThis.structuredClone(value)
-    : JSON.parse(JSON.stringify(value));
-}
-
-function snapshotGameManager(gameManager) {
-  return {
-    player: cloneValue(gameManager?.player),
-    run: cloneValue(gameManager?.run),
-    combat: cloneValue(gameManager?.combat),
-    meta: cloneValue(gameManager?.meta),
-  };
-}
-
-function restoreGameManager(gameManager, snapshot) {
-  if (!gameManager || !snapshot) return;
-  gameManager.player = snapshot.player;
-  gameManager.run = snapshot.run;
-  gameManager.combat = snapshot.combat;
-  gameManager.meta = snapshot.meta;
-}
-
 function fingerprintExploreEntry(entry = {}) {
   return hashTranscript({
     actionId: entry.actionId ?? null,
@@ -69,32 +45,34 @@ export class ExploreSessionSyncService {
     return this.gm?.meta || null;
   }
 
-  async responseContext({ mutate = true } = {}) {
-    const snapshot = mutate ? null : snapshotGameManager(this.gm);
-
-    try {
-      let exploreRunway = null;
-      const buildExploreRunway = this.gm?.explorationService?.buildExploreRunway;
-
-      if (typeof buildExploreRunway === 'function') {
-        exploreRunway = await buildExploreRunway.call(this.gm.explorationService, this.runwayOpts);
-        if (this.gm?.run && exploreRunway) {
-          this.gm.run.exploreRunway = exploreRunway;
+  async responseContext({ refreshRunway = true } = {}) {
+    let exploreRunway = this.gm?.run?.exploreRunway || null;
+    if (refreshRunway) {
+      try {
+        const buildExploreRunway = this.gm?.explorationService?.buildExploreRunway;
+        if (typeof buildExploreRunway === 'function') {
+          const built = await buildExploreRunway.call(
+            this.gm.explorationService,
+            this.runwayOpts,
+          );
+          if (built) {
+            exploreRunway = built;
+            if (this.gm?.run) this.gm.run.exploreRunway = built;
+          }
         }
-      }
-
-      const state = typeof this.gm?.getState === 'function' ? this.gm.getState() : null;
-      if (!exploreRunway) {
-        exploreRunway = state?.run?.exploreRunway || this.gm?.run?.exploreRunway || null;
-      }
-
-      const context = { state, exploreRunway };
-      return mutate ? context : cloneValue(context);
-    } finally {
-      if (snapshot) {
-        restoreGameManager(this.gm, snapshot);
+      } catch {
+        exploreRunway = this.gm?.run?.exploreRunway || exploreRunway;
       }
     }
+
+    const state = typeof this.gm?.getState === 'function' ? this.gm.getState() : null;
+    return {
+      state,
+      exploreRunway: state?.run?.exploreRunway
+        || this.gm?.run?.exploreRunway
+        || exploreRunway
+        || null,
+    };
   }
 
   validateEntryPosition(entry) {
@@ -195,9 +173,9 @@ export class ExploreSessionSyncService {
     rejectedSeq = null,
     confirmedThroughSeq = null,
     results = [],
-    mutateContext = true,
+    refreshRunway = true,
   } = {}) {
-    const { state, exploreRunway } = await this.responseContext({ mutate: mutateContext });
+    const { state, exploreRunway } = await this.responseContext({ refreshRunway });
     return makeExploreCorrection({
       reason,
       rejectedSeq,
@@ -225,7 +203,7 @@ export class ExploreSessionSyncService {
       return this.correction({
         reason: 'session_epoch_mismatch',
         rejectedSeq: entries?.[0]?.seq ?? null,
-        mutateContext: false,
+        refreshRunway: false,
       });
     }
 
@@ -234,7 +212,7 @@ export class ExploreSessionSyncService {
       return this.correction({
         reason: batch.reason,
         rejectedSeq: batch.rejectedSeq,
-        mutateContext: false,
+        refreshRunway: false,
       });
     }
     const replayEntries = entries;
