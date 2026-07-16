@@ -29,12 +29,18 @@ describe('optimistic run action integration', () => {
   });
 
   it('records deterministic support-room exploration choices on the explore session', () => {
+    const whackChoiceSource = sourceBetween(
+      explorationSource,
+      'async function completeWhackAMoleOptimistically(score)',
+      '/** Whack-a-Mole mini game'
+    );
+
     assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('friendlyNpc\.choose'/);
     assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('shrine\.choose'/);
     assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('skillMaster\.choose'/);
     assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('npcBattleSkill\.choose'/);
-    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.complete'/);
-    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.skip'/);
+    assert.match(whackChoiceSource, /session\?\.recordRoomAction\('whackAMole\.complete'/);
+    assert.match(whackChoiceSource, /session\?\.recordRoomAction\('whackAMole\.skip'/);
     assert.match(explorationSource, /async function chooseInitialSkillMasterSkill\(skillId\)/);
     assert.match(explorationSource, /if \(isInitialSkillPickState\(\)\)[\s\S]*return chooseInitialSkillMasterSkill\(skillId\)/);
     assert.doesNotMatch(explorationSource, /apiChooseShrineReward\?\.\(rewardType, creatureKey, \{ actionId: pending\.actionId \}\)/);
@@ -237,19 +243,44 @@ describe('optimistic run action integration', () => {
   });
 
   it('records Whack-a-Mole choices through the explore session', () => {
-    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.complete'/);
-    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('whackAMole\.skip'/);
+    const completeSource = sourceBetween(
+      explorationSource,
+      'async function completeWhackAMoleOptimistically(score)',
+      'async function skipWhackAMoleOptimistically()'
+    );
+    const skipSource = sourceBetween(
+      explorationSource,
+      'async function skipWhackAMoleOptimistically()',
+      '/** Whack-a-Mole mini game'
+    );
+    const renderSource = sourceBetween(
+      explorationSource,
+      'export async function renderWhackAMole()',
+      '/**\n * Slide the defeated NPC'
+    );
+    const gameWiringSource = sourceBetween(
+      explorationSource,
+      'function startWhackAMoleGame(pool)',
+      '// ============ NPC BATTLE SKILL REWARD ============'
+    );
+
+    assert.match(completeSource, /session\?\.recordRoomAction\('whackAMole\.complete'/);
+    assert.match(skipSource, /session\?\.recordRoomAction\('whackAMole\.skip'/);
     assert.doesNotMatch(explorationSource, /WHACK_A_MOLE_SAVE_FAILURE_COPY/);
     assert.doesNotMatch(explorationSource, /apiCompleteWhackAMole\(score, \{ actionId: pending\.actionId \}\)/);
     assert.doesNotMatch(explorationSource, /apiSkipWhackAMole\(\{ actionId: pending\.actionId \}\)/);
     assert.match(
-      explorationSource,
-      /async function completeWhackAMoleOptimistically\(score\) \{[\s\S]*?if \(!queued\?\.accepted\) \{\s*showExploreSoftPause/
+      completeSource,
+      /if \(!queued\?\.accepted\) \{\s*if \(session\?\.isPaused\?\.\(\) !== true\) \{\s*showExploreSoftPause/
     );
     assert.match(
-      explorationSource,
-      /async function skipWhackAMoleOptimistically\(\) \{[\s\S]*?if \(!queued\?\.accepted\) \{\s*showExploreSoftPause/
+      skipSource,
+      /if \(!queued\?\.accepted\) \{\s*if \(session\?\.isPaused\?\.\(\) !== true\) \{\s*showExploreSoftPause/
     );
+    assert.doesNotMatch(completeSource, /recordRoomAction\('proceed'/);
+    assert.doesNotMatch(skipSource, /recordRoomAction\('proceed'/);
+    assert.match(gameWiringSource, /apiCompleteWhackAMole: completeWhackAMoleOptimistically,[\s\S]*apiProceed: proceedWithRevealBuffer/);
+    assert.match(renderSource, /const result = await skipWhackAMoleOptimistically\(\);[\s\S]*?if \(result\) \{\s*await proceedWithRevealBuffer\(\)/);
   });
 
   it('sends action ids for post-combat shop choices', () => {
