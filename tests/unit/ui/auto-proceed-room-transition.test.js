@@ -128,17 +128,17 @@ test('exploration wires explore session recovery drains', () => {
   );
 });
 
-test('startEncounter resets in-flight flags when explore drain or encounter API fails', () => {
+test('startEncounter resets in-flight flags when the session fence or encounter API fails', () => {
   const tryIndex = startEncounterSrc.indexOf('try {');
-  const drainIndex = startEncounterSrc.indexOf("await exploreSession.syncNow({ reason: 'combatStart' })");
-  const creatureApiIndex = startEncounterSrc.indexOf('result = await apiStartCreatureEncounter()');
+  const fenceIndex = startEncounterSrc.indexOf('await runWithStableExploreSession(');
+  const creatureApiIndex = startEncounterSrc.indexOf('return apiStartCreatureEncounter()');
   const catchIndex = startEncounterSrc.indexOf('catch (error)');
   const finallyIndex = startEncounterSrc.indexOf('finally {', catchIndex);
   const resetIndex = startEncounterSrc.indexOf('encounterStarting = false', finallyIndex);
   const sceneResetIndex = startEncounterSrc.indexOf('sceneTransitionActive = false', finallyIndex);
 
   assert.ok(tryIndex >= 0, 'startEncounter should wrap setup in try/finally');
-  assert.ok(drainIndex > tryIndex, 'explore drain should be inside the try block');
+  assert.ok(fenceIndex > tryIndex, 'explore session stability fence should be inside the try block');
   assert.ok(creatureApiIndex > tryIndex, 'encounter API selection should be inside the try block');
   assert.ok(catchIndex > creatureApiIndex, 'startEncounter should catch drain/API failures');
   assert.ok(finallyIndex > catchIndex, 'startEncounter should reset flags in finally');

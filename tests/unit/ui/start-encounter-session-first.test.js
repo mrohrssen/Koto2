@@ -42,11 +42,11 @@ test('startEncounter attempts the session-first combat start before the drain/so
   );
 
   const sessionStartIndex = startEncounterSource.indexOf('startCreatureEncounterFromSession(exploreSession)');
-  const drainGuardIndex = startEncounterSource.indexOf("syncNow({ reason: 'combatStart' })");
+  const drainGuardIndex = startEncounterSource.indexOf('runWithStableExploreSession(', sessionStartIndex);
   const softPauseIndex = startEncounterSource.indexOf('Combat will start when your progress syncs');
 
   assert.ok(sessionStartIndex >= 0, 'startEncounter should call startCreatureEncounterFromSession');
-  assert.ok(drainGuardIndex >= 0, 'startEncounter should still have the combatStart drain guard for the legacy path');
+  assert.ok(drainGuardIndex >= 0, 'startEncounter should have a stable combatStart drain guard for retry/fallback');
   assert.ok(softPauseIndex >= 0, 'startEncounter should still surface the soft pause on the legacy/online path');
 
   assert.ok(
@@ -70,5 +70,34 @@ test('session-first local combat sources allies from the current draft run', () 
   assert.match(
     sessionStartSource,
     /buildLocalCombatFromStart\([\s\S]*\{\s*allies:\s*draft\.run\?\.creatureParty\?\.active\s*\|\|\s*\[\]\s*\}/,
+  );
+});
+
+test('retries session start behind a stable drain and fences every legacy encounter start', () => {
+  assert.match(
+    gameSrc,
+    /import \{ getExploreSession, runWithStableExploreSession \} from '\.\/js\/ui\/explore-session\.js';/,
+    'game startup should use the shared stable-session compatibility fence',
+  );
+
+  const startEncounterSource = sourceBetween(
+    gameSrc,
+    'async function startEncounter()',
+    'async function returnToHub()',
+  );
+  assert.match(
+    startEncounterSource,
+    /runWithStableExploreSession\([\s\S]*?startCreatureEncounterFromSession\(exploreSession\)/,
+    'a rejected session start should drain stably and retry the session path',
+  );
+  assert.match(
+    startEncounterSource,
+    /runWithStableExploreSession\([\s\S]*?apiStartCreatureEncounter\(\)[\s\S]*?apiRoomEncounter\(\)[\s\S]*?apiStartEncounter\(\)/,
+    'all compatibility encounter APIs must run inside the stable-session fence',
+  );
+  assert.doesNotMatch(
+    startEncounterSource,
+    /if \(exploreSession\?\.pendingCount\?\.\(\) > 0\)/,
+    'pending count alone is not a sufficient legacy fence',
   );
 });

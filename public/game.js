@@ -81,7 +81,7 @@ import { store } from './js/store.js';
 import * as tts from './js/tts.js';
 import * as settings from './js/settings.js';
 import * as explorationUI from './js/ui/exploration.js';
-import { getExploreSession } from './js/ui/explore-session.js';
+import { getExploreSession, runWithStableExploreSession } from './js/ui/explore-session.js';
 import {
   captureGameStateFetchToken,
   isGameStateErrorResponse,
@@ -1719,27 +1719,39 @@ async function startEncounter() {
     if (hasCreatures && exploreSession) {
       const sessionStarted = await startCreatureEncounterFromSession(exploreSession);
       if (sessionStarted) return;
-    }
 
-    // Legacy/online start path (rooms with no offline combatStart payload): drain
-    // any pending session actions first so the fight starts against synced state.
-    // If the drain can't clear (offline), soft-pause until reconnection.
-    if (exploreSession?.pendingCount?.() > 0) {
-      await exploreSession.syncNow({ reason: 'combatStart' });
-      if (exploreSession.pendingCount() > 0) {
+      // A cap/pending-log rejection may become session-capable after its drain.
+      // Retry the session owner first; an empty paused or revision-changing
+      // stream stays fenced and must never fall through to the compatibility API.
+      const sessionRetry = await runWithStableExploreSession(
+        exploreSession,
+        () => startCreatureEncounterFromSession(exploreSession),
+        { reason: 'combatStartRetry' },
+      );
+      if (!sessionRetry.executed) {
         narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
         return;
       }
+      if (sessionRetry.result) return;
     }
 
-    let result;
-    if (hasCreatures) {
-      result = await apiStartCreatureEncounter();
-    } else if (gameState.phase === 'room_encounter') {
-      result = await apiRoomEncounter();
-    } else {
-      result = await apiStartEncounter();
+    // Compatibility start is legal only across a stable, empty, unpaused
+    // Explore stream. The callback executes in the same turn as the final
+    // revision check, so a new local append cannot race the legacy request.
+    const legacyStart = await runWithStableExploreSession(
+      exploreSession,
+      async () => {
+        if (hasCreatures) return apiStartCreatureEncounter();
+        if (gameState.phase === 'room_encounter') return apiRoomEncounter();
+        return apiStartEncounter();
+      },
+      { reason: 'legacyCombatStart' },
+    );
+    if (!legacyStart.executed) {
+      narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
+      return;
     }
+    const result = legacyStart.result;
 
     if (!result?.state) {
       return;

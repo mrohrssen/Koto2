@@ -537,3 +537,22 @@ export function resetExploreSession() {
   if (activeSession) activeSession.reset();
   activeSession = null;
 }
+
+export async function runWithStableExploreSession(session, action, { reason = 'legacyAction' } = {}) {
+  const revision = session?.getLocalRevision?.() ?? 0;
+  try {
+    if ((session?.pendingCount?.() ?? 0) > 0) {
+      await session.syncNow?.({ reason });
+    }
+  } catch {
+    return { executed: false, result: null };
+  }
+  if (
+    (session?.pendingCount?.() ?? 0) > 0
+    || session?.isPaused?.() === true
+    || (session?.getLocalRevision?.() ?? revision) !== revision
+  ) {
+    return { executed: false, result: null };
+  }
+  return { executed: true, result: await action() };
+}
