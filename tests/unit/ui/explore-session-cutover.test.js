@@ -159,16 +159,22 @@ function initCutoverHarness({
   apiProceed = async () => null,
   apiSyncExploreSession = async () => ({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
   waitForCombatPlaybackIdle = async () => {},
+  reconcileCorrectedCombat = () => false,
+  onUpdateUI = () => {},
 } = {}) {
   let currentState = initialState;
   let updateUiCalls = 0;
   const actionClears = [];
   const finishCombatCalls = [];
   const befriendResumeCalls = [];
+  const correctionReconcileCalls = [];
   init({
     getGameState: () => currentState,
     updateGameState: state => { currentState = state; },
-    updateUI: () => { updateUiCalls += 1; },
+    updateUI: () => {
+      updateUiCalls += 1;
+      onUpdateUI(currentState);
+    },
     actions: {
       clear: () => { actionClears.push('clear'); },
       setContent: () => {},
@@ -176,6 +182,10 @@ function initCutoverHarness({
     scene: { showNarration: () => {} },
     finishCombatLoop: result => { finishCombatCalls.push(result); },
     resumeSessionCombatBefriendQuiz: result => { befriendResumeCalls.push(result); },
+    reconcileCorrectedCombat: (previousState, authoritativeState) => {
+      correctionReconcileCalls.push({ previousState, authoritativeState });
+      return reconcileCorrectedCombat(previousState, authoritativeState);
+    },
     waitForCombatPlaybackIdle,
     apiProceed,
     apiSyncExploreSession,
@@ -186,6 +196,7 @@ function initCutoverHarness({
     actionClears,
     finishCombatCalls,
     befriendResumeCalls,
+    correctionReconcileCalls,
   };
 }
 
@@ -987,6 +998,190 @@ describe('explore session proceed cutover', () => {
     assert.equal(harness.befriendResumeCalls[0].befriendQuizTriggered, true);
     assert.ok(harness.befriendResumeCalls[0].befriendQuiz, 'the befriend quiz payload rides along');
     assert.ok(harness.befriendResumeCalls[0].state, 'authoritative state rides along to the resume');
+  });
+
+  it('consumes a terminal result from a corrected sync before generic correction recovery', async () => {
+    const combatRunway = {
+      sessionEpoch: 'ese_correctterm11', currentRoom: 0, roomActionSeq: 100,
+      preparedRooms: [preparedRoom(0, {
+        room: room(0, { type: 'encounter' }),
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['partyStats'] },
+      })],
+    };
+    const initialState = {
+      ...makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      phase: 'combat',
+      combat: { active: true, optimistic: { combatId: 'cmb-a' } },
+    };
+    const correctedState = {
+      ...makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      combat: { active: false, optimistic: { combatId: 'cmb-a' } },
+    };
+    const harness = initCutoverHarness({
+      initialState,
+      apiSyncExploreSession: async () => ({
+        status: 'corrected',
+        results: [{ actionId: 'act-terminal', combatEnded: true, victory: true }],
+        state: correctedState,
+        exploreRunway: combatRunway,
+      }),
+    });
+    getExploreSession().adoptRunway(combatRunway);
+    getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'mismatch' });
+
+    await getExploreSession().syncNow();
+
+    assert.equal(harness.finishCombatCalls.length, 1);
+    assert.equal(harness.correctionReconcileCalls.length, 0, 'terminal finish owns teardown');
+    assert.equal(harness.updateUiCalls, 0, 'terminal finish owns its render transition');
+  });
+
+  it('consumes a befriend diversion from a corrected sync before generic correction recovery', async () => {
+    const combatRunway = {
+      sessionEpoch: 'ese_correctfriend', currentRoom: 0, roomActionSeq: 100,
+      preparedRooms: [preparedRoom(0, {
+        room: room(0, { type: 'encounter' }),
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['partyStats'] },
+      })],
+    };
+    const activeState = {
+      ...makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      phase: 'combat',
+      combat: { active: true, optimistic: { combatId: 'cmb-a' } },
+    };
+    const harness = initCutoverHarness({
+      initialState: activeState,
+      apiSyncExploreSession: async () => ({
+        status: 'corrected',
+        results: [{
+          actionId: 'act-befriend',
+          befriendQuizTriggered: true,
+          combatEnded: false,
+          befriendQuiz: { targetIndex: 0, creatureId: 'mizu', options: [] },
+        }],
+        state: activeState,
+        exploreRunway: combatRunway,
+      }),
+    });
+    getExploreSession().adoptRunway(combatRunway);
+    getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'mismatch' });
+
+    await getExploreSession().syncNow();
+
+    assert.equal(harness.befriendResumeCalls.length, 1);
+    assert.equal(harness.finishCombatCalls.length, 0);
+    assert.equal(harness.correctionReconcileCalls.length, 0);
+    assert.equal(harness.updateUiCalls, 0);
+  });
+
+  it('reconciles corrected ownership before rendering so inactive A releases and active B re-arms', async () => {
+    const runwayA = {
+      sessionEpoch: 'ese_correctowner1', currentRoom: 0, roomActionSeq: 100,
+      preparedRooms: [preparedRoom(0, {
+        room: room(0, { type: 'encounter' }),
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['partyStats'] },
+      })],
+    };
+    const stateA = {
+      ...makeState({ currentRoom: 0, exploreRunway: runwayA }),
+      phase: 'combat',
+      combat: { active: true, optimistic: { combatId: 'cmb-a' } },
+    };
+    const inactiveA = {
+      ...makeState({ currentRoom: 0, exploreRunway: runwayA }),
+      combat: { active: false, optimistic: { combatId: 'cmb-a' } },
+    };
+    let internalActive = true;
+    let internalOwner = 'cmb-a';
+    const events = [];
+    const harness = initCutoverHarness({
+      initialState: stateA,
+      reconcileCorrectedCombat: (_previous, authoritative) => {
+        events.push('reconcile');
+        internalActive = false;
+        internalOwner = null;
+        return authoritative;
+      },
+      onUpdateUI: state => {
+        events.push('updateUI');
+        if (state.phase === 'combat' && !internalActive) {
+          internalActive = true;
+          internalOwner = state.combat.optimistic.combatId;
+        }
+      },
+      apiSyncExploreSession: async () => ({
+        status: 'corrected', results: [], state: inactiveA, exploreRunway: runwayA,
+      }),
+    });
+    getExploreSession().adoptRunway(runwayA);
+    getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'mismatch' });
+
+    await getExploreSession().syncNow();
+
+    assert.deepEqual(events, ['reconcile', 'updateUI']);
+    assert.equal(internalActive, false);
+    const startNextCombat = combatId => {
+      if (internalActive) return false;
+      internalActive = true;
+      internalOwner = combatId;
+      return true;
+    };
+    assert.equal(startNextCombat('cmb-b'), true, 'inactive correction must release combat A');
+    assert.equal(internalOwner, 'cmb-b');
+    assert.equal(harness.correctionReconcileCalls.length, 1);
+  });
+
+  it('re-arms an authoritative successor combat instead of leaving private ownership on A', async () => {
+    const runway = {
+      sessionEpoch: 'ese_correctnext11', currentRoom: 0, roomActionSeq: 100,
+      preparedRooms: [preparedRoom(0, {
+        room: room(0, { type: 'encounter' }),
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['partyStats'] },
+      })],
+    };
+    const stateA = {
+      ...makeState({ currentRoom: 0, exploreRunway: runway }),
+      phase: 'combat',
+      combat: { active: true, optimistic: { combatId: 'cmb-a' } },
+    };
+    const stateB = {
+      ...makeState({ currentRoom: 1, exploreRunway: runway }),
+      phase: 'combat',
+      combat: { active: true, optimistic: { combatId: 'cmb-b' } },
+    };
+    let internalActive = true;
+    let internalOwner = 'cmb-a';
+    const harness = initCutoverHarness({
+      initialState: stateA,
+      reconcileCorrectedCombat: (previous, authoritative) => {
+        if (previous.combat.optimistic.combatId === authoritative.combat.optimistic.combatId) return false;
+        internalActive = false;
+        internalOwner = null;
+        return true;
+      },
+      onUpdateUI: state => {
+        if (state.phase === 'combat' && !internalActive) {
+          internalActive = true;
+          internalOwner = state.combat.optimistic.combatId;
+        }
+      },
+      apiSyncExploreSession: async () => ({
+        status: 'corrected', results: [], state: stateB, exploreRunway: runway,
+      }),
+    });
+    getExploreSession().adoptRunway(runway);
+    getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'mismatch' });
+
+    await getExploreSession().syncNow();
+
+    assert.equal(harness.currentState.combat.optimistic.combatId, 'cmb-b');
+    assert.equal(internalActive, true);
+    assert.equal(internalOwner, 'cmb-b');
+    assert.equal(harness.correctionReconcileCalls.length, 1);
   });
 
   it('finishes an unseen replayed terminal result once', async () => {

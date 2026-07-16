@@ -612,6 +612,51 @@ function ownsCombatCleanupContinuation(owner, state = getGameState()) {
     && sameKnownValue(owner?.roomId, live.roomId);
 }
 
+function sameCorrectedCombatOwner(left, right) {
+  if (left?.combatId != null || right?.combatId != null) {
+    return left?.combatId != null
+      && right?.combatId != null
+      && left.combatId === right.combatId;
+  }
+  const hasRoomIdentity = left?.roomIndex != null
+    || right?.roomIndex != null
+    || left?.roomId != null
+    || right?.roomId != null;
+  return hasRoomIdentity
+    && left?.roomIndex === right?.roomIndex
+    && left?.roomId === right?.roomId;
+}
+
+/**
+ * Reconcile combat-loop's private owner after a corrected Explore checkpoint.
+ * The authoritative state is already adopted when this runs. A same-owner
+ * active correction keeps its live loop; an inactive correction or a different
+ * active successor releases the old loop so updateUI can start the new owner.
+ */
+export function reconcileExploreCombatCorrection(previousState, authoritativeState) {
+  const liveState = getGameState?.();
+  const authoritativeActive = isRecoveredCombatActive(authoritativeState);
+  const liveActive = isRecoveredCombatActive(liveState);
+
+  // A newer combat landed after this correction was adopted. Never tear it down.
+  if (liveActive && !sameCorrectedCombatOwner(
+    capturedCombatCleanupOwner(authoritativeState),
+    capturedCombatCleanupOwner(liveState),
+  )) {
+    return false;
+  }
+
+  if (authoritativeActive && sameCorrectedCombatOwner(
+    capturedCombatCleanupOwner(previousState),
+    capturedCombatCleanupOwner(authoritativeState),
+  )) {
+    return false;
+  }
+
+  cleanupCombat();
+  return true;
+}
+
 function preparedExploreRoomContext(session) {
   const room = session?.currentPreparedRoom?.();
   return {

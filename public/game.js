@@ -2429,6 +2429,9 @@ async function initGame() {
     // Resume into the befriend quiz when the checkpoint reports the server rolled
     // befriend on a terminal turn the client optimistically predicted as victory.
     resumeSessionCombatBefriendQuiz: result => combatLoopUI.resumeSessionCombatBefriendQuiz(result),
+    reconcileCorrectedCombat: (previousState, authoritativeState) => (
+      combatLoopUI.reconcileExploreCombatCorrection(previousState, authoritativeState)
+    ),
     waitForCombatPlaybackIdle: () => combatLoopUI.waitForExploreCombatPlaybackIdle(),
     // Recover an online explore-session stall (empty-log soft-pause that no drain
     // can clear) by pulling a rebuilt runway. adoptSession → /state?adoptSession=1

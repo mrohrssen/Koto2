@@ -89,6 +89,7 @@ let returnToHub = null;
 let showAdventureReport = null;
 let finishCombatLoop = null;
 let resumeSessionCombatBefriendQuiz = null;
+let reconcileCorrectedCombat = null;
 let waitForCombatPlaybackIdle = async () => {};
 let exploreSessionOnlineDrainTarget = null;
 let exploreSessionVisibilityDrainTarget = null;
@@ -282,10 +283,16 @@ function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
 }
 
 function onExploreSessionCorrection(response) {
+  const previousState = getGameState?.();
   const authoritativeState = response?.state || response?.authoritativeState;
   if (authoritativeState) updateGameState(authoritativeState);
   applyExploreSessionRunway(response);
   applyExploreSessionKnownWordReviewResults(response);
+  const finished = finishSessionCombatFromResults(response);
+  if (finished) return;
+  if (authoritativeState && typeof reconcileCorrectedCombat === 'function') {
+    reconcileCorrectedCombat(previousState, authoritativeState);
+  }
   updateUI();
 }
 
@@ -629,6 +636,7 @@ export function init(callbacks) {
   returnToHub = callbacks.returnToHub;
   finishCombatLoop = callbacks.finishCombatLoop;
   resumeSessionCombatBefriendQuiz = callbacks.resumeSessionCombatBefriendQuiz;
+  reconcileCorrectedCombat = callbacks.reconcileCorrectedCombat;
   waitForCombatPlaybackIdle = callbacks.waitForCombatPlaybackIdle || (async () => {});
   refreshRunwayState = callbacks.refreshRunwayState;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;

@@ -1241,6 +1241,42 @@ describe('explore-session local combat turns', () => {
     assert.equal(combatLoop.isCombatActive(), true, 'combat A cleanup must not deactivate combat B');
   });
 
+  it('reconciles corrected combat ownership without preserving A or tearing down live B', () => {
+    const harness = initHarness(sessionCombatState({ enemyHp: 100 }));
+    const combatA = harness.state;
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true, enemy: true });
+
+    const inactiveA = structuredClone(combatA);
+    inactiveA.phase = 'room';
+    inactiveA.combat.active = false;
+    harness.replaceState(inactiveA);
+    assert.equal(combatLoop.reconcileExploreCombatCorrection(combatA, inactiveA), true);
+    assert.equal(combatLoop.isCombatActive(), false);
+    assert.deepEqual(combatLoop.__combatNetworkTest.getPendingFlags(), { player: false, enemy: false });
+
+    const combatB = sessionCombatState({ enemyHp: 100 });
+    combatB.run.currentRoom = 1;
+    combatB.run.rooms = [
+      { id: 'room-0', type: 'encounter' },
+      { id: 'room-b', type: 'encounter' },
+    ];
+    combatB.combat.optimistic.combatId = 'cmb-b';
+    harness.replaceState(combatB);
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+
+    assert.equal(combatLoop.reconcileExploreCombatCorrection(combatA, combatB), true);
+    assert.equal(combatLoop.isCombatActive(), false, 'A ownership is released so updateUI can start B');
+    assert.deepEqual(combatLoop.__combatNetworkTest.getPendingFlags(), { player: false, enemy: false });
+
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+    assert.equal(combatLoop.reconcileExploreCombatCorrection(combatB, combatB), false);
+    assert.equal(combatLoop.isCombatActive(), true, 'same-owner correction keeps B live');
+    assert.deepEqual(combatLoop.__combatNetworkTest.getPendingFlags(), { player: true, enemy: false });
+  });
+
   for (const {
     actionName,
     pendingFlag,
