@@ -7,6 +7,7 @@ let renderedButtons = [];
 const roomTransitionCalls = [];
 let dialogueCalls = [];
 let whackAMoleDeps = null;
+let whackAMolePool = null;
 
 globalThis.__wamTest = {
   sceneManagerState,
@@ -14,12 +15,16 @@ globalThis.__wamTest = {
   roomTransitionCalls,
   get dialogueCalls() { return dialogueCalls; },
   setWhackAMoleDeps: deps => { whackAMoleDeps = deps; },
+  setWhackAMolePool: pool => { whackAMolePool = pool; },
 };
 
 function makeWhackAMoleState(room, {
   nextRoom = null,
   acceptedActions = ['whackAMole.complete', 'whackAMole.skip', 'proceed'],
   interactionPayload = null,
+  activeStandard = false,
+  offlineReady = true,
+  missingPayloadReasons = [],
 } = {}) {
   const revealedRooms = [{ index: 0, room }];
   const preparedRooms = [{
@@ -27,7 +32,8 @@ function makeWhackAMoleState(room, {
     roomId: room.id,
     room,
     actionSeq: 1,
-    offlineReady: true,
+    offlineReady,
+    missingPayloadReasons,
     acceptedActions,
     actionEffects: {
       'whackAMole.complete': ['credits', 'partyStats'],
@@ -53,6 +59,7 @@ function makeWhackAMoleState(room, {
     phase: 'whackAMole',
     room,
     run: {
+      ...(activeStandard ? { active: true, mode: 'standard' } : {}),
       currentRoom: 0,
       totalRooms: nextRoom ? 2 : 1,
       rooms: nextRoom ? [room, nextRoom] : [room],
@@ -67,6 +74,25 @@ function makeWhackAMoleState(room, {
   };
 }
 
+function makePreparedWhackPayload(roomId = 'wam-prepared') {
+  const tokenFrame = text => ({ tokens: [{ surface: text, text }], words: [] });
+  return {
+    kind: 'whackAMole',
+    roomId,
+    dialogue: tokenFrame('遊ぶ？'),
+    yesTokens: tokenFrame('はい'),
+    noTokens: tokenFrame('いいえ'),
+    pool: Array.from({ length: 9 }, (_, index) => ({
+      id: `prepared-${index}`,
+      type: 'creature',
+      word: `語${index}`,
+      reading: `ご${index}`,
+      meaning: `word ${index}`,
+      sprite: `/prepared-${index}.webp`,
+    })),
+  };
+}
+
 const mockSources = new Map(Object.entries({
   '../scenes/scene-manager.js': 'export const getSceneManager = () => globalThis.__wamTest.sceneManagerState;',
   '../scenes/exploration-scene.js': 'export class ExplorationScene {}',
@@ -75,6 +101,7 @@ const mockSources = new Map(Object.entries({
     export class WhackAMoleGame {
       constructor(pool, deps) {
         this.pool = pool;
+        globalThis.__wamTest.setWhackAMolePool(pool);
         globalThis.__wamTest.setWhackAMoleDeps(deps);
       }
       start() {}
@@ -149,6 +176,7 @@ const mockSources = new Map(Object.entries({
     export class WhackAMoleGame {
       constructor(pool, deps) {
         this.pool = pool;
+        globalThis.__wamTest.setWhackAMolePool(pool);
         globalThis.__wamTest.setWhackAMoleDeps(deps);
       }
       start() {}
@@ -244,6 +272,7 @@ describe('renderWhackAMole decline flow', () => {
     sceneManagerState.currentScene = null;
     dialogueCalls = [];
     whackAMoleDeps = null;
+    whackAMolePool = null;
     resetExploreSession();
   });
 
@@ -314,7 +343,11 @@ describe('renderWhackAMole decline flow', () => {
       whackAMole: { completed: false },
     };
     const nextRoom = { id: 'after-wam-skip', type: 'empty' };
-    let currentState = makeWhackAMoleState(whackRoom, { nextRoom });
+    let currentState = makeWhackAMoleState(whackRoom, {
+      nextRoom,
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(whackRoom.id),
+    });
     let updateUiCalls = 0;
 
     init({
@@ -360,7 +393,8 @@ describe('renderWhackAMole decline flow', () => {
     const nextRoom = { id: 'after-wam-rejected', type: 'empty' };
     let currentState = makeWhackAMoleState(whackRoom, {
       nextRoom,
-      acceptedActions: ['whackAMole.complete'],
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(whackRoom.id),
     });
     let updateUiCalls = 0;
     const narrationCalls = [];
@@ -387,6 +421,8 @@ describe('renderWhackAMole decline flow', () => {
     });
 
     await renderWhackAMole();
+    currentState.run.exploreRunway.preparedRooms[0].acceptedActions = ['whackAMole.complete'];
+    getExploreSession().adoptRunway(currentState.run.exploreRunway);
     await renderedButtons[1].onClick();
 
     assert.deepEqual(getExploreSession().snapshot(), []);
@@ -410,7 +446,8 @@ describe('renderWhackAMole decline flow', () => {
       whackAMole: { completed: false },
     };
     let currentState = makeWhackAMoleState(whackRoom, {
-      acceptedActions: ['whackAMole.skip'],
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(whackRoom.id),
     });
     const narrationCalls = [];
 
@@ -438,6 +475,8 @@ describe('renderWhackAMole decline flow', () => {
 
     await renderWhackAMole();
     await renderedButtons[0].onClick();
+    currentState.run.exploreRunway.preparedRooms[0].acceptedActions = ['whackAMole.skip'];
+    getExploreSession().adoptRunway(currentState.run.exploreRunway);
 
     assert.ok(whackAMoleDeps);
     const result = await whackAMoleDeps.apiCompleteWhackAMole(3);
@@ -461,7 +500,10 @@ describe('renderWhackAMole decline flow', () => {
       interacted: false,
       whackAMole: { completed: false },
     };
-    let currentState = makeWhackAMoleState(whackRoom);
+    let currentState = makeWhackAMoleState(whackRoom, {
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(whackRoom.id),
+    });
 
     init({
       getGameState: () => currentState,
@@ -507,6 +549,47 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(currentState.room.interacted, true);
     assert.equal(currentState.room.whackAMole.completed, true);
     assert.equal(currentState.room.whackAMole.score, 3);
+  });
+
+  it('keeps completion bound to the session that started the Whack game', async () => {
+    const roomA = { id: 'wam-owner-a', type: 'whackAMole', interacted: false };
+    let currentState = makeWhackAMoleState(roomA, {
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(roomA.id),
+    });
+
+    const callbacks = state => ({
+      getGameState: () => state(),
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+    init(callbacks(() => currentState));
+    await renderWhackAMole();
+    await renderedButtons[0].onClick();
+
+    const ownerSession = getExploreSession();
+    const ownerCompletion = whackAMoleDeps.apiCompleteWhackAMole;
+    const roomB = { id: 'wam-owner-b', type: 'whackAMole', interacted: false };
+    currentState = makeWhackAMoleState(roomB, {
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(roomB.id),
+    });
+    init(callbacks(() => currentState));
+    const replacementSession = getExploreSession();
+    replacementSession.adoptRunway(currentState.run.exploreRunway);
+
+    const result = await ownerCompletion(4);
+
+    assert.notEqual(replacementSession, ownerSession);
+    assert.equal(result, null);
+    assert.deepEqual(ownerSession.snapshot(), []);
+    assert.deepEqual(replacementSession.snapshot(), []);
+    assert.equal(replacementSession.isPaused(), false);
+    assert.equal(currentState.room.id, roomB.id);
+    assert.equal(currentState.room.interacted, false);
   });
 
   it('shows the Game Master greeting with the standard dialogue card', async () => {
@@ -573,6 +656,169 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(renderedButtons.length, 2);
     assert.equal(renderedButtons[0].label, 'Yes');
     assert.equal(renderedButtons[1].label, 'No');
+  });
+
+  it('pauses an active standard session with incomplete Whack payload instead of using legacy GETs', async () => {
+    const narrationCalls = [];
+    let dialogueGets = 0;
+    let poolGets = 0;
+    const room = { id: 'wam-incomplete', type: 'whackAMole', interacted: false };
+
+    init({
+      getGameState: () => makeWhackAMoleState(room, {
+        activeStandard: true,
+        offlineReady: true,
+        missingPayloadReasons: ['whackAMole.pool'],
+        interactionPayload: { kind: 'whackAMole', roomId: room.id },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: (text, opts) => narrationCalls.push({ text, opts }) },
+      apiGetWhackAMoleDialogue: async () => {
+        dialogueGets += 1;
+        throw new Error('legacy dialogue GET must remain fenced');
+      },
+      apiGetWhackAMolePool: async () => {
+        poolGets += 1;
+        throw new Error('legacy pool GET must remain fenced');
+      },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+
+    await renderWhackAMole();
+
+    assert.equal(dialogueGets, 0);
+    assert.equal(poolGets, 0);
+    assert.equal(renderedButtons.length, 0);
+    assert.equal(getExploreSession().isPaused(), true);
+    assert.equal(getExploreSession().getPauseReason(), 'missingPayload');
+    assert.equal(narrationCalls.length, 1);
+    assert.match(narrationCalls[0].text, /whackAMole\.pool/);
+  });
+
+  it('requires canonical proceed capability before exposing active-session Whack controls', async () => {
+    const room = { id: 'wam-missing-proceed', type: 'whackAMole', interacted: false };
+    let legacyGets = 0;
+
+    init({
+      getGameState: () => makeWhackAMoleState(room, {
+        activeStandard: true,
+        acceptedActions: ['whackAMole.complete', 'whackAMole.skip'],
+        interactionPayload: makePreparedWhackPayload(room.id),
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiGetWhackAMoleDialogue: async () => { legacyGets += 1; },
+      apiGetWhackAMolePool: async () => { legacyGets += 1; },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+
+    await renderWhackAMole();
+
+    assert.equal(legacyGets, 0);
+    assert.equal(renderedButtons.length, 0);
+    assert.equal(getExploreSession().isPaused(), true);
+    assert.equal(getExploreSession().getPauseReason(), 'missingPayload');
+  });
+
+  it('legacy decline uses its combined skip-and-proceed endpoint exactly once', async () => {
+    const room = { id: 'wam-legacy-skip', type: 'whackAMole', interacted: false };
+    const nextRoom = { id: 'after-legacy-skip', type: 'empty' };
+    let currentState = makeWhackAMoleState(room, { nextRoom });
+    let skipCalls = 0;
+    let proceedCalls = 0;
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetWhackAMoleDialogue: async () => ({ dialogue: null, yesTokens: null, noTokens: null }),
+      apiSkipWhackAMole: async () => {
+        skipCalls += 1;
+        return {
+          state: {
+            ...currentState,
+            phase: 'room',
+            room: nextRoom,
+            run: { ...currentState.run, currentRoom: 1 },
+          },
+        };
+      },
+      apiProceed: async () => { proceedCalls += 1; },
+    });
+
+    assert.equal(getExploreSession(), null, 'legacy fixture has no configured session owner');
+    await renderWhackAMole();
+    await renderedButtons[1].onClick();
+
+    assert.equal(skipCalls, 1);
+    assert.equal(proceedCalls, 0);
+    assert.equal(currentState.run.currentRoom, 1);
+    assert.equal(currentState.room.id, 'after-legacy-skip');
+  });
+
+  it('no-session Yes flow uses legacy dialogue and pool APIs despite stale prepared content', async () => {
+    const room = { id: 'wam-legacy-yes', type: 'whackAMole', interacted: false };
+    const nextRoom = { id: 'after-legacy-yes', type: 'empty' };
+    const stalePrepared = makePreparedWhackPayload(room.id);
+    let currentState = makeWhackAMoleState(room, { nextRoom, interactionPayload: stalePrepared });
+    let dialogueGets = 0;
+    let poolGets = 0;
+    let completionCalls = 0;
+    let proceedCalls = 0;
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetWhackAMoleDialogue: async () => {
+        dialogueGets += 1;
+        return {
+          dialogue: stalePrepared.dialogue,
+          yesTokens: stalePrepared.yesTokens,
+          noTokens: stalePrepared.noTokens,
+        };
+      },
+      apiGetWhackAMolePool: async () => {
+        poolGets += 1;
+        return { pool: stalePrepared.pool };
+      },
+      apiCompleteWhackAMole: async score => {
+        completionCalls += 1;
+        return { score };
+      },
+      apiProceed: async () => {
+        proceedCalls += 1;
+        return {
+          state: {
+            ...currentState,
+            phase: 'room',
+            room: nextRoom,
+            run: { ...currentState.run, currentRoom: 1 },
+          },
+        };
+      },
+    });
+
+    assert.equal(getExploreSession(), null);
+    await renderWhackAMole();
+    await renderedButtons[0].onClick();
+    await whackAMoleDeps.apiCompleteWhackAMole(5);
+    await whackAMoleDeps.apiProceed();
+
+    assert.equal(dialogueGets, 1);
+    assert.equal(poolGets, 1);
+    assert.equal(completionCalls, 1);
+    assert.equal(proceedCalls, 1);
+    assert.equal(currentState.room.id, nextRoom.id);
+    assert.ok(whackAMoleDeps);
   });
 
   it('passes normal proceed ingredient drops into the room transition', async () => {
@@ -668,10 +914,13 @@ describe('renderWhackAMole decline flow', () => {
 
   it('advances locally from the prepared runway after Whack-a-Mole completion', async () => {
     const nextRoom = { id: 'after-wam', type: 'empty' };
+    const preparedPayload = makePreparedWhackPayload('wam-start');
     let currentState = {
       phase: 'whackAMole',
       room: { id: 'wam-start', type: 'whackAMole', interacted: false },
       run: {
+        active: true,
+        mode: 'standard',
         currentRoom: 0,
         roomActionSeq: 7,
         rooms: [{ type: 'whackAMole' }, nextRoom],
@@ -696,7 +945,7 @@ describe('renderWhackAMole decline flow', () => {
                 'whackAMole.skip': [],
                 proceed: ['ingredients', 'areaProgress'],
               },
-              interactionPayload: { kind: 'whackAMole' },
+              interactionPayload: preparedPayload,
             },
             {
               index: 1,
@@ -714,6 +963,8 @@ describe('renderWhackAMole decline flow', () => {
     };
     let updateUiCalls = 0;
     const proceedCalls = [];
+    let dialogueGets = 0;
+    let poolGets = 0;
 
     init({
       getGameState: () => currentState,
@@ -724,17 +975,19 @@ describe('renderWhackAMole decline flow', () => {
         clear: () => {},
       },
       scene: { showNarration: async () => {} },
-      apiGetWhackAMoleDialogue: async () => ({
-        dialogue: null,
-        yesTokens: null,
-        noTokens: null,
-      }),
-      apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
+      apiGetWhackAMoleDialogue: async () => {
+        dialogueGets += 1;
+        throw new Error('legacy dialogue GET must not run');
+      },
+      apiGetWhackAMolePool: async () => {
+        poolGets += 1;
+        throw new Error('legacy pool GET must not run');
+      },
       apiProceed: async options => {
         proceedCalls.push(options);
         throw new Error('legacy proceed should not run after session whack-a-mole completion');
       },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
+      apiSyncExploreSession: async () => { throw new Error('offline'); },
     });
 
     await renderWhackAMole();
@@ -753,6 +1006,9 @@ describe('renderWhackAMole decline flow', () => {
       ['whackAMole.complete', 'proceed'],
     );
     assert.equal(proceedCalls.length, 0);
+    assert.equal(dialogueGets, 0);
+    assert.equal(poolGets, 0);
+    assert.deepEqual(whackAMolePool, preparedPayload.pool);
     assert.equal(currentState.run.currentRoom, 1);
     assert.equal(currentState.room.id, 'after-wam');
     assert.equal(updateUiCalls, 1);
@@ -760,5 +1016,6 @@ describe('renderWhackAMole decline flow', () => {
       status: 'queued',
       actionId: entries[1].actionId,
     });
+    resetExploreSession();
   });
 });

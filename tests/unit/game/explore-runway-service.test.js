@@ -2,7 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createNewRun } from '../../../src/game/state.js';
-import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
+import {
+  clearTestRoomQueue,
+  createRoom,
+  generateAreaRooms,
+  queueTestRooms,
+  ROOM_TYPES,
+} from '../../../src/game/rooms.js';
 import { buildExploreRunway } from '../../../src/game/services/explore-runway-service.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
@@ -230,6 +236,121 @@ test('prepares campfire yes and no response frames', async () => {
   assert.equal(campfire.offlineReady, true);
 });
 
+function assertFullWhackPayload(prepared) {
+  assert.equal(prepared.interactionPayload.kind, 'whackAMole');
+  assert.ok(prepared.interactionPayload.dialogue?.tokens?.length > 0);
+  assert.ok(prepared.interactionPayload.yesTokens?.tokens?.length > 0);
+  assert.ok(prepared.interactionPayload.noTokens?.tokens?.length > 0);
+  assert.ok(prepared.interactionPayload.pool.length >= 9);
+  assert.ok(prepared.interactionPayload.pool.every(entry => (
+    entry.id && entry.type && entry.word && entry.reading && entry.meaning && entry.sprite
+  )));
+  assert.equal(prepared.offlineReady, true);
+  assert.deepEqual(prepared.missingPayloadReasons, []);
+}
+
+test('prepares the scripted Starting Meadow whack room for a fully offline Yes flow', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter]);
+  gm.meta.tutorialStep = 0;
+  gm.run.rooms = generateAreaRooms(
+    'hajimari-no-hiroba',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    true,
+  );
+  gm.run.currentRoom = 0;
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'starting-meadow-whack-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+  const whack = runway.preparedRooms.find(entry => entry.index === 4);
+
+  assert.equal(runway.currentRoom, 0);
+  assert.equal(whack.room.randomRoomResolved, undefined);
+  assertFullWhackPayload(whack);
+});
+
+test('repairs malformed persisted Whack dialogue from the shared frame content', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.whackAMole]);
+  gm.run.rooms[1].whackAMole.dialogue = { tokens: [], words: [] };
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'repair-whack-dialogue-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+  });
+  const whack = runway.preparedRooms.find(entry => entry.index === 1);
+
+  assertFullWhackPayload(whack);
+  assert.ok(gm.run.rooms[1].whackAMole.dialogue.tokens.length > 0);
+});
+
+test('finalized random whack rooms carry the same stable offline capability', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.randomRoom, ROOM_TYPES.boss]);
+  queueTestRooms([ROOM_TYPES.whackAMole]);
+  try {
+    const first = await buildExploreRunway(gm, {
+      userId: 'random-whack-user',
+      getKnownWords: () => [],
+      getDialogueCardAudio: async () => null,
+    });
+    const whack = first.preparedRooms.find(entry => entry.index === 1);
+    assert.equal(whack.room.randomRoomResolved, true);
+    assertFullWhackPayload(whack);
+
+    const rebuilt = await buildExploreRunway(gm, {
+      userId: 'random-whack-user',
+      getKnownWords: () => [],
+      getDialogueCardAudio: async () => null,
+    });
+    assert.deepEqual(
+      rebuilt.preparedRooms.find(entry => entry.index === 1).interactionPayload.pool,
+      whack.interactionPayload.pool,
+      'runway refresh should rebuild the same stable pool without rerolling it',
+    );
+    assert.equal(
+      Object.hasOwn(gm.run.rooms[1].whackAMole, 'pool'),
+      false,
+      'large pool capability must not be duplicated into persisted room state',
+    );
+  } finally {
+    clearTestRoomQueue();
+  }
+});
+
+test('marks a whack room offline-incomplete with distinct missing capability reasons', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.whackAMole]);
+  const runway = await buildExploreRunway(gm, {
+    userId: 'invalid-whack-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+    buildWhackAMolePool: () => [{ id: 'too-small' }],
+  });
+  const whack = runway.preparedRooms.find(entry => entry.index === 1);
+
+  assert.equal(whack.offlineReady, false);
+  assert.deepEqual(whack.missingPayloadReasons, ['whackAMole.pool']);
+});
+
+test('Whack-a-Mole dialogue remains offline-ready when Game Master audio preparation fails', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.whackAMole]);
+  const runway = await buildExploreRunway(gm, {
+    userId: 'whack-audio-failure-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => { throw new Error('voicevox down'); },
+  });
+  const whack = runway.preparedRooms.find(entry => entry.index === 1);
+
+  assert.ok(whack.interactionPayload.dialogue?.tokens?.length > 0);
+  assert.equal(Object.hasOwn(whack.interactionPayload.dialogue, 'audio'), false);
+  assert.equal(whack.offlineReady, true);
+  assert.equal(gm.run.rooms[1].whackAMole.dialogueAudio, undefined);
+});
+
 test('prepares friendly NPC greeting before marking payload offline ready', async () => {
   const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.friendlyNpc]);
   gm.run.rooms[1].npc = { id: 'test_npc', name: 'Test NPC', nameEn: 'Test NPC' };
@@ -349,6 +470,25 @@ test('attaches shrine greeting audio under the game-master (13) client-matching 
 
   const expectedText = getDialogueLineText(greeting);
   assert.equal(greeting.audio.key, hashKey(13, expectedText));
+});
+
+test('attaches Whack-a-Mole dialogue audio under the game-master (13) client-matching key', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.whackAMole]);
+  const calls = [];
+  const runway = await buildExploreRunway(gm, {
+    userId: 'whack-audio-user',
+    getKnownWords: () => [],
+    getDialogueCardAudio: makeAudioResolver({ calls }),
+  });
+
+  const whack = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.whackAMole);
+  const dialogue = whack.interactionPayload.dialogue;
+  const call = calls.find(entry => entry.speakerKey === 'game-master');
+
+  assert.ok(call, 'resolver called with the Game Master speaker key');
+  assert.equal(dialogue.audio.key, hashKey(13, getDialogueLineText(dialogue)));
+  assert.deepEqual(gm.run.rooms[1].whackAMole.dialogueAudio, dialogue.audio);
+  assert.equal(whack.offlineReady, true);
 });
 
 test('reuses the persisted greeting audio descriptor across rebuilds without recompute', async () => {

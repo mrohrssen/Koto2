@@ -9,7 +9,8 @@ import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { rollFriendlyNpcOffers } from '../../game/services/friendly-npc-offers.js';
-import { getAreaById } from '../../game/rooms.js';
+import { buildWhackAMoleDialogueContent } from '../../game/services/whack-a-mole-content.js';
+import { buildWhackAMolePool } from '../../game/services/whack-a-mole-pool.js';
 import { getActionLedgerEntry } from '../../game/services/action-ledger-service.js';
 import { ensureRoomActionSeq } from '../../game/room-reveal-buffer.js';
 import { isActionId } from '../../shared/action-protocol.js';
@@ -29,18 +30,13 @@ import {
 } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { isNpcBattleRewardResolved } from '../../game/npc-battle-reward.js';
-import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
-import { SPRITE_VERSION } from '../../shared/asset-versions.js';
+import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterFinishFrames, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 import {
   createOptimisticActionRunner,
   getOptimisticActionLedgerOwner,
   sendOptimisticActionError,
   withOptimisticActionStatus,
 } from './optimistic-action-response.js';
-
-function versionedSpriteUrl(path) {
-  return `/assets/sprites/${path}.webp?v=${SPRITE_VERSION}`;
-}
 
 const SHRINE_REWARDS = [
   {
@@ -62,12 +58,8 @@ const SHRINE_REWARDS = [
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
-const creaturesPath = join(__dirname, '../../../data/creatures.json');
 const itemsPath = join(__dirname, '../../../data/items.json');
-const movesPath = join(__dirname, '../../../data/moves.json');
-const allCreatures = JSON.parse(readFileSync(creaturesPath, 'utf8'));
 const allItems = JSON.parse(readFileSync(itemsPath, 'utf8'));
-const allMoves = JSON.parse(readFileSync(movesPath, 'utf8'));
 
 export function getCurrentAreaDialogueEntityIds(run = {}) {
   const area = run.currentArea || null;
@@ -819,78 +811,7 @@ export default function createRunRoutes({
   // Whack-a-Mole: get random pool of creatures + items + skills for matching game
   router.get('/whack-a-mole-pool', (req, res) => {
     try {
-      // Filter by area progression (same pattern as friendly NPC shop)
-      const gm = req.gameManager;
-      const areaPath = gm.run.areaPath || [];
-      const currentAreaId = gm.run.currentArea?.id;
-      const areaIds = [...new Set([...areaPath, currentAreaId].filter(Boolean))];
-
-      // Build set of creature IDs belonging to reached areas
-      const areaCreatureIds = new Set();
-      for (const areaId of areaIds) {
-        const area = getAreaById(areaId);
-        if (area?.creatures) {
-          for (const cId of area.creatures) areaCreatureIds.add(cId);
-        }
-      }
-
-      const filteredCreatures = areaCreatureIds.size > 0
-        ? allCreatures.filter(c => areaCreatureIds.has(c.id))
-        : allCreatures;
-
-      const creaturePool = filteredCreatures.map(c => ({
-        id: c.id,
-        type: 'creature',
-        creatureId: c.id,
-        word: c.name,
-        reading: c.reading || c.name,
-        meaning: c.meaning || c.nameEn,
-        element: c.element || '',
-        sprite: versionedSpriteUrl(`creatures/${c.id}`)
-      }));
-
-      // Filter items by area (same as friendly NPC shop)
-      const filteredItems = areaIds.length > 0
-        ? allItems.filter(i => !i.area || areaIds.includes(i.area))
-        : allItems;
-
-      const itemPool = filteredItems.map(i => ({
-        id: i.id,
-        type: 'item',
-        itemId: i.id,
-        word: i.word,
-        reading: i.reading,
-        meaning: i.meaning,
-        sprite: versionedSpriteUrl(`items/${i.id}`)
-      }));
-
-      // Filter moves to those in learnsets of area creatures
-      const areaMovesIds = new Set();
-      for (const c of filteredCreatures) {
-        if (c.learnset) {
-          for (const entry of c.learnset) areaMovesIds.add(entry.moveId);
-        }
-      }
-
-      const filteredMoves = areaMovesIds.size > 0
-        ? allMoves.filter(m => areaMovesIds.has(m.id))
-        : allMoves;
-
-      const skillPool = filteredMoves.map(m => {
-        const actionSlug = (m.nameEn || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        return {
-          id: `move-${m.id}`,
-          type: 'skill',
-          actionSlug,
-          word: m.name,
-          reading: m.reading,
-          meaning: m.nameEn || m.name,
-          sprite: versionedSpriteUrl(`actions/${actionSlug}`)
-        };
-      });
-
-      const pool = [...creaturePool, ...itemPool, ...skillPool].sort(() => Math.random() - 0.5);
-      res.json({ pool });
+      res.json({ pool: buildWhackAMolePool(req.gameManager.run) });
     } catch (err) {
       res.status(500).json({ error: 'Failed to build whack-a-mole pool' });
     }
@@ -926,13 +847,8 @@ export default function createRunRoutes({
     try {
       const knownWords = getKnownWordsFromFsrs(req.user.id);
       const knownSet = new Set(knownWords);
-      const askFrames = getGameMasterAskFrames();
-      const candidates = askFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
-      const dialogue = selectBestFrame(candidates, knownSet, { dict: getWordDict() }) || { tokens: [], words: [] };
+      const { dialogue, yesTokens, noTokens } = buildWhackAMoleDialogueContent(knownSet);
       const dialogueWithAudio = await attachAudio(dialogue, req, 'game-master');
-
-      const yesTokens = getEligibleFrameTokens(getGameMasterYesFrame(), knownSet, { dict: getWordDict() });
-      const noTokens = getEligibleFrameTokens(getGameMasterNoFrame(), knownSet, { dict: getWordDict() });
       res.json({ dialogue: dialogueWithAudio, yesTokens, noTokens });
     } catch (err) {
       res.status(400).json({ error: err.message });

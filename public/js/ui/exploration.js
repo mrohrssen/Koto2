@@ -101,6 +101,7 @@ const RUNWAY_RECOVERY_RETRY_MS = [500, 1000, 2000, 4000, 8000, 15000];
 let runwayRecoveryPromise = null;
 let runwayRecoveryTimer = null;
 let runwayRecoveryAttempt = 0;
+let exploreSoftPauseDispatching = false;
 
 function isInitialSkillPickState(state = getGameState?.()) {
   const room = state?.room || getActiveRoomFromRun(state?.run);
@@ -239,9 +240,18 @@ function onExploreSessionCorrection(response) {
 }
 
 function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
+  // Calling session.pause invokes this same function through onPause. Let the
+  // outer call retain its detailed missing-capability copy while suppressing
+  // the nested notification, so one pause produces one narration card.
+  if (exploreSoftPauseDispatching) return;
   const session = getExploreSession?.();
   if (session?.isPaused?.() !== true) {
-    session?.pause?.(reason || 'missingPayload');
+    exploreSoftPauseDispatching = true;
+    try {
+      session?.pause?.(reason || 'missingPayload');
+    } finally {
+      exploreSoftPauseDispatching = false;
+    }
   }
   const missingDetails = Array.isArray(missingPayloadReasons)
     ? missingPayloadReasons.filter(Boolean)
@@ -2028,8 +2038,47 @@ function markWhackAMoleRoomComplete(room, { score = null, skipped = false } = {}
   room.interacted = true;
 }
 
-async function completeWhackAMoleOptimistically(score) {
-  const session = getExploreSession();
+function preparedWhackAMoleCapability(session, state, room) {
+  const prepared = session?.currentPreparedRoom?.();
+  const payload = prepared?.interactionPayload;
+  const accepted = prepared?.acceptedActions;
+  const roomId = prepared?.roomId || prepared?.room?.id;
+  const pool = payload?.pool;
+  const validPool = Array.isArray(pool)
+    && pool.length >= 9
+    && pool.every(entry => (
+      entry?.id
+      && entry?.type
+      && entry?.word
+      && entry?.reading
+      && entry?.meaning
+      && entry?.sprite
+    ));
+  const valid = prepared?.index === state?.run?.currentRoom
+    && roomId === room?.id
+    && prepared?.offlineReady === true
+    && Array.isArray(accepted)
+    && accepted.includes('whackAMole.complete')
+    && accepted.includes('whackAMole.skip')
+    && accepted.includes('proceed')
+    && payload?.kind === 'whackAMole'
+    && payload?.roomId === room?.id
+    && payload?.dialogue?.tokens?.length > 0
+    && payload?.yesTokens?.tokens?.length > 0
+    && payload?.noTokens?.tokens?.length > 0
+    && validPool;
+
+  return {
+    valid,
+    payload,
+    missingPayloadReasons: prepared?.missingPayloadReasons?.length
+      ? prepared.missingPayloadReasons
+      : ['whackAMole.payload'],
+  };
+}
+
+async function completeWhackAMoleOptimistically(score, session = getExploreSession()) {
+  if (!session || session !== getExploreSession()) return null;
   const queued = session?.recordRoomAction('whackAMole.complete', { score });
   if (!queued?.accepted) {
     if (session?.isPaused?.() !== true) {
@@ -2044,8 +2093,8 @@ async function completeWhackAMoleOptimistically(score) {
   return queued;
 }
 
-async function skipWhackAMoleOptimistically() {
-  const session = getExploreSession();
+async function skipWhackAMoleOptimistically(session = getExploreSession()) {
+  if (!session || session !== getExploreSession()) return null;
   const queued = session?.recordRoomAction('whackAMole.skip', {});
   if (!queued?.accepted) {
     if (session?.isPaused?.() !== true) {
@@ -2060,13 +2109,51 @@ async function skipWhackAMoleOptimistically() {
   return queued;
 }
 
+async function applyWhackAMoleLegacyAdvance(result, missingStateMessage) {
+  if (!result?.state) throw new Error(missingStateMessage);
+  updateGameState(result.state);
+  getExploreSession()?.adoptRunway(result.state.run?.exploreRunway || null);
+  const ingredientDrops = result.ingredientDrops || result.room?.ingredientDrops || [];
+  await playRoomTransition(result.state, { ingredientDrops });
+  updateUI();
+  if (ingredientDrops.length > 0) showIngredientDropPopups(ingredientDrops);
+  return result;
+}
+
+async function skipWhackAMoleLegacy() {
+  try {
+    return await applyWhackAMoleLegacyAdvance(
+      await apiSkipWhackAMole?.(),
+      'No Whack-a-Mole skip state',
+    );
+  } catch {
+    showExploreSoftPause();
+    return null;
+  }
+}
+
+async function proceedWhackAMoleLegacy() {
+  try {
+    return await applyWhackAMoleLegacyAdvance(
+      await apiProceed?.(),
+      'No Whack-a-Mole proceed state',
+    );
+  } catch {
+    showExploreSoftPause();
+    return null;
+  }
+}
+
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
 export async function renderWhackAMole() {
   getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
   const gameState = getGameState();
   const room = getCurrentBufferedRoom(gameState);
-  const prepared = getExploreSession()?.currentPreparedRoom();
-  const payload = prepared?.interactionPayload;
+  const activeStandardSession = getActiveStandardExploreSession(gameState);
+  const capability = activeStandardSession
+    ? preparedWhackAMoleCapability(activeStandardSession, gameState, room)
+    : null;
+  const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'whackAMole';
 
   if (whackAMoleState.roomId !== roomId) {
@@ -2096,12 +2183,26 @@ export async function renderWhackAMole() {
     return;
   }
 
+  if (activeStandardSession && !capability.valid) {
+    cancelActiveWhackAMoleGame();
+    whackAMoleState.fetched = false;
+    actions.clear?.();
+    if (!actions.clear) actions.setContent('');
+    showExploreSoftPause({
+      reason: 'missingPayload',
+      missingPayloadReasons: capability.missingPayloadReasons,
+    });
+    return;
+  }
+
   if (!whackAMoleState.fetched) {
     try {
       const hasPayloadDetails = Boolean(
         payload?.dialogue || payload?.labels || payload?.yesTokens || payload?.noTokens || payload?.pool
       );
-      const resp = hasPayloadDetails ? payload : await apiGetWhackAMoleDialogue();
+      const resp = activeStandardSession || hasPayloadDetails
+        ? payload
+        : await apiGetWhackAMoleDialogue();
       if (resp) {
         whackAMoleState.fetched = true;
         whackAMoleState.dialogue = resp.dialogue || null;
@@ -2160,7 +2261,7 @@ export async function renderWhackAMole() {
           return;
         }
 
-        startWhackAMoleGame(pool);
+        startWhackAMoleGame(pool, activeStandardSession);
       }
     },
     {
@@ -2173,10 +2274,12 @@ export async function renderWhackAMole() {
         if (scene && !scene.disposed && scene.npcSprite) {
           await scene.hideNpcSprite({ slideOut: true });
         }
-        const result = await skipWhackAMoleOptimistically();
-        if (result) {
-          await proceedWithRevealBuffer();
+        if (activeStandardSession) {
+          const result = await skipWhackAMoleOptimistically(activeStandardSession);
+          if (result) await proceedWithRevealBuffer();
+          return;
         }
+        await skipWhackAMoleLegacy();
       }
     }
   ]);
@@ -2753,18 +2856,21 @@ export async function renderFriendlyNpc() {
   });
 }
 
-function startWhackAMoleGame(pool) {
+function startWhackAMoleGame(pool, ownerSession = null) {
   cancelActiveWhackAMoleGame();
-  activeWhackAMoleRoomId = whackAMoleState.roomId;
+  const ownerRoomId = whackAMoleState.roomId;
+  activeWhackAMoleRoomId = ownerRoomId;
   activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
-    apiCompleteWhackAMole: completeWhackAMoleOptimistically,
-    apiProceed: proceedWithRevealBuffer,
+    apiCompleteWhackAMole: ownerSession
+      ? score => completeWhackAMoleOptimistically(score, ownerSession)
+      : apiCompleteWhackAMole,
+    apiProceed: ownerSession ? proceedWithRevealBuffer : proceedWhackAMoleLegacy,
     updateGameState,
     updateUI,
     playSFX,
     isActive: () => getGameState()?.phase === 'whackAMole'
-      && getCurrentWhackAMoleRoomId() === activeWhackAMoleRoomId
+      && getCurrentWhackAMoleRoomId() === ownerRoomId
   });
   activeWhackAMoleGame.start();
 }

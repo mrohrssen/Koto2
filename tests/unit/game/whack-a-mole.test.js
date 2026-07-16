@@ -3,6 +3,8 @@ import assert from 'node:assert';
 import { ROOM_TYPES, createRoom, getRoomEntryNarration, getRoomActions, resolveSupportRoomType } from '../../../src/game/rooms.js';
 import { GameManager } from '../../../src/game/loop.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
+import { buildWhackAMoleDialogueContent } from '../../../src/game/services/whack-a-mole-content.js';
+import { buildWhackAMolePool } from '../../../src/game/services/whack-a-mole-pool.js';
 
 // ============ ROOM GENERATION ============
 
@@ -176,6 +178,16 @@ describe('Whack-a-Mole Pool', () => {
     assert.strictEqual(ids.length, uniqueIds.size, 'all pool entry ids should be unique');
   });
 
+  it('legacy pool route reuses the stable runway pool builder', () => {
+    const handler = getHandler(router, 'get', '/whack-a-mole-pool');
+    const req = mockReq();
+    const res = { statusCode: 200, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
+
+    handler(req, res);
+
+    assert.deepStrictEqual(res.body.pool, buildWhackAMolePool(req.gameManager.run));
+  });
+
   it('GET /whack-a-mole-dialogue should return dialogue tokens', async () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-dialogue');
     assert.ok(handler, 'GET /whack-a-mole-dialogue handler should exist');
@@ -205,6 +217,11 @@ describe('Whack-a-Mole Pool', () => {
     assert.ok(res.body.dialogue, 'response should have dialogue');
     assert.ok(Array.isArray(res.body.dialogue.tokens), 'dialogue should have tokens array');
     assert.ok(Array.isArray(res.body.dialogue.words), 'dialogue should have words array');
+    assert.deepStrictEqual(
+      res.body,
+      buildWhackAMoleDialogueContent(new Set()),
+      'legacy dialogue route and prepared runway must share the same content selection',
+    );
   });
 
   it('POST /whack-a-mole-complete should include finishDialogue in response', async () => {

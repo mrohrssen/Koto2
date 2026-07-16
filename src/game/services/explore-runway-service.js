@@ -47,6 +47,8 @@ import {
 } from './cooking-service.js';
 import { rollFriendlyNpcOffers } from './friendly-npc-offers.js';
 import { shouldShowStartingMeadowHinonekoIntro } from './tutorial-service.js';
+import { buildWhackAMoleDialogueContent } from './whack-a-mole-content.js';
+import { buildWhackAMolePool } from './whack-a-mole-pool.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIALOGUE_FRAMES_PATH = join(__dirname, '../../../data/dialogue/frames.json');
@@ -364,6 +366,37 @@ function buildCampfirePayload(gm, room, opts) {
   };
 }
 
+async function buildWhackAMolePayload(gm, room, opts) {
+  room.whackAMole ||= { score: 0, completed: false };
+  const state = room.whackAMole;
+  const knownSet = knownSetForOpts(opts);
+
+  const content = buildWhackAMoleDialogueContent(knownSet);
+  if (!state.dialogue?.tokens?.length) state.dialogue = content.dialogue;
+
+  const poolBuilder = typeof opts?.buildWhackAMolePool === 'function'
+    ? opts.buildWhackAMolePool
+    : buildWhackAMolePool;
+  const pool = poolBuilder(gm?.run);
+
+  const dialogueAudio = await resolveGreetingAudio(
+    state.dialogue,
+    state,
+    'dialogueAudio',
+    opts,
+    { speakerKey: 'game-master' },
+  );
+
+  return {
+    kind: 'whackAMole',
+    roomId: room.id,
+    dialogue: greetingWithAudio(cloneExploreValue(state.dialogue || null), dialogueAudio),
+    yesTokens: content.yesTokens,
+    noTokens: content.noTokens,
+    pool: cloneExploreValue(pool || []),
+  };
+}
+
 function buildDealerPayload(gm, room) {
   if (!room.dealer) {
     room.dealer = {
@@ -579,6 +612,8 @@ async function buildInteractionPayload(gm, room, opts) {
       return buildDealerPayload(gm, room);
     case ROOM_TYPES.speedReviewRoom:
       return buildSpeedReviewPayload(opts?.userId, room);
+    case ROOM_TYPES.whackAMole:
+      return buildWhackAMolePayload(gm, room, opts);
     default:
       return { kind: room?.type || 'room' };
   }
@@ -635,6 +670,26 @@ function missingPayloadReasonsFor(room, interactionPayload) {
     ) {
       missing.push('speedReviewRoom.snapshotWordKeys');
     }
+  }
+  if (room?.type === ROOM_TYPES.whackAMole) {
+    if (!interactionPayload?.roomId || interactionPayload.roomId !== room.id) {
+      missing.push('whackAMole.roomId');
+    }
+    if (!interactionPayload?.dialogue?.tokens?.length) missing.push('whackAMole.dialogue');
+    if (!interactionPayload?.yesTokens?.tokens?.length) missing.push('whackAMole.yesTokens');
+    if (!interactionPayload?.noTokens?.tokens?.length) missing.push('whackAMole.noTokens');
+    const pool = interactionPayload?.pool;
+    const hasCompletePool = Array.isArray(pool)
+      && pool.length >= 9
+      && pool.every(entry => (
+        entry?.id
+        && entry?.type
+        && entry?.word
+        && entry?.reading
+        && entry?.meaning
+        && entry?.sprite
+      ));
+    if (!hasCompletePool) missing.push('whackAMole.pool');
   }
   return missing;
 }
