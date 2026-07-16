@@ -230,6 +230,43 @@ function sampleGameState(overrides = {}) {
   };
 }
 
+function activeCampfireCapability({ offlineReady = true, paused = false } = {}) {
+  const gameState = sampleGameState();
+  gameState.run.active = true;
+  gameState.run.mode = 'standard';
+  const room = gameState.room;
+  const base = sampleState();
+  const payload = {
+    ...base,
+    kind: 'campfire',
+    roomId: room.id,
+    ingredientCount: 3,
+    recipes: [...base.discoveredRecipes],
+    room,
+  };
+  const prepared = {
+    index: 0,
+    roomId: room.id,
+    room,
+    acceptedActions: ['campfire.cook', 'campfire.feed', 'campfire.skip', 'proceed'],
+    offlineReady,
+    missingPayloadReasons: offlineReady ? [] : ['campfire.yesTokens'],
+    interactionPayload: offlineReady ? payload : { ...payload, yesTokens: null },
+  };
+  gameState.run.exploreRunway = {
+    sessionEpoch: 'ese_4444444444444444',
+    currentRoom: 0,
+    preparedRooms: [prepared],
+  };
+  const session = {
+    currentPreparedRoom: () => prepared,
+    isPaused: () => paused,
+    pause: () => { paused = true; },
+    adoptRunway: () => {},
+  };
+  return { gameState, payload, prepared, session };
+}
+
 describe('campfire UI', () => {
   beforeEach(() => {
     exposureBuffer.teardown();
@@ -250,6 +287,61 @@ describe('campfire UI', () => {
     assert.equal(actionArea.querySelectorAll('.ui-btn').length, 2);
     assert.equal(actionArea.querySelector('.campfire-panel'), null);
     assert.equal(actionArea.querySelector('.ui-choice'), null);
+  });
+
+  it('uses safe English labels when frame tokens are unavailable', () => {
+    campfire.renderForTest(sampleState({ yesTokens: null, noTokens: null }));
+
+    assert.match(renderedHtml(actionArea), /Yes/);
+    assert.match(renderedHtml(actionArea), /No/);
+    assert.doesNotMatch(renderedHtml(actionArea), /はい|いいえ/);
+  });
+
+  it('shows a valid active standard capability without calling the legacy API', async () => {
+    const value = activeCampfireCapability();
+    let legacyCalls = 0;
+    campfire.init({
+      getGameState: () => value.gameState,
+      getExploreSession: () => value.session,
+      apiGetCampfire: async () => { legacyCalls += 1; return null; },
+    });
+
+    await campfire.show();
+
+    assert.equal(legacyCalls, 0);
+    assert.equal(value.session.isPaused(), false);
+    assert.equal(actionArea.querySelectorAll('.ui-btn').length, 2);
+  });
+
+  it('clears and pauses an invalid active standard capability without legacy fallback', async () => {
+    const value = activeCampfireCapability({ offlineReady: false });
+    let legacyCalls = 0;
+    campfire.init({
+      getGameState: () => value.gameState,
+      getExploreSession: () => value.session,
+      apiGetCampfire: async () => { legacyCalls += 1; return sampleState(); },
+    });
+
+    await campfire.show();
+
+    assert.equal(legacyCalls, 0);
+    assert.equal(value.session.isPaused(), true);
+    assert.equal(actionArea.innerHTML, '');
+    assert.equal(sceneArea.querySelector('.campfire-scene'), null);
+  });
+
+  it('retains the legacy API for runs without an active standard session', async () => {
+    let legacyCalls = 0;
+    campfire.init({
+      getGameState: () => sampleGameState(),
+      getExploreSession: () => null,
+      apiGetCampfire: async () => { legacyCalls += 1; return sampleState(); },
+    });
+
+    await campfire.show();
+
+    assert.equal(legacyCalls, 1);
+    assert.equal(actionArea.querySelectorAll('.ui-btn').length, 2);
   });
 
   it('shows a persistent campfire scene during the entry prompt without cooking focus', () => {

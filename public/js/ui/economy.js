@@ -3,6 +3,10 @@ import * as narrationBox from './narration-box.js';
 import { t } from './i18n.js';
 import { credits as creditsPopup, animateCounter } from './event-popup.js';
 import { pop } from './dom-effects.js';
+import {
+  activeRoomForExploreState,
+  preparedExploreRoomCapability,
+} from './explore-room-capability.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -84,10 +88,40 @@ export function init(callbacks) {
 
 /** Render dealer room UI */
 export async function renderDealerRoom(actionsModule) {
-  getExploreSession?.()?.adoptRunway?.(getGameState?.()?.run?.exploreRunway || null);
-  const prepared = getExploreSession?.()?.currentPreparedRoom();
-  const payload = prepared?.interactionPayload;
-  const dealerData = payload || await apiGetDealerState();
+  const state = getGameState?.();
+  const session = getExploreSession?.();
+  if (session?.isPaused?.() !== true) {
+    session?.adoptRunway?.(state?.run?.exploreRunway || null);
+  }
+  const capability = preparedExploreRoomCapability({
+    session,
+    state,
+    room: activeRoomForExploreState(state),
+    expectedKind: 'dealer',
+    requiredActions: ['dealer.sell', 'dealer.buy', 'dealer.leave', 'proceed'],
+    validatePayload: payload => (
+      payload?.dealer
+      && typeof payload.dealer === 'object'
+      && Array.isArray(payload?.offeredCreatures)
+      && Array.isArray(payload?.partyCreatures)
+      && Number.isFinite(payload?.credits)
+      && payload.credits >= 0
+      && typeof payload?.canBuy === 'boolean'
+      && Number.isInteger(payload?.sellCount)
+      && payload.sellCount >= 0
+      && Number.isInteger(payload?.maxSells)
+      && payload.maxSells >= 0
+    ),
+  });
+  if (capability.activeStandard && !capability.valid) {
+    actionsModule.clear?.();
+    if (!actionsModule.clear) actionsModule.setContent('');
+    session?.pause?.('missingPayload');
+    return null;
+  }
+  const dealerData = capability.activeStandard
+    ? capability.payload
+    : await apiGetDealerState();
   if (!dealerData || dealerData.error) {
     console.error('Failed to load dealer state:', dealerData?.error);
     return;

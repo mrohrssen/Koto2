@@ -85,14 +85,137 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 });
 
 const { init, renderFriendlyNpc } = await import('../../../public/js/ui/exploration.js');
-const { getExploreSession } = await import('../../../public/js/ui/explore-session.js');
+const {
+  getExploreSession,
+  resetExploreSession,
+} = await import('../../../public/js/ui/explore-session.js');
 
 describe('renderFriendlyNpc item prompt', () => {
   beforeEach(() => {
+    resetExploreSession();
     renderedChoices = null;
     dialogueCards = [];
     sceneManagerState.currentScene = null;
     sceneManagerState.transitioning = false;
+  });
+
+  it('uses a complete standard-session capability without calling the legacy offers API', async () => {
+    const room = {
+      id: 'friendly-standard-ready',
+      type: 'friendlyNpc',
+      npc: { id: 'guide', nameEn: 'Guide' },
+      friendlyNpc: { completed: false },
+    };
+    const payload = {
+      kind: 'friendlyNpc',
+      roomId: room.id,
+      npc: room.npc,
+      greeting: { tokens: [{ text: 'Safe frame' }], overrides: {} },
+      offered: [{
+        id: 'field-tonic',
+        word: '薬',
+        reading: 'くすり',
+        nameToken: { text: 'Medicine' },
+        tokens: [{ text: 'Safe request' }],
+        words: ['薬'],
+        effect: { healAllPercent: 0.2 },
+      }],
+    };
+    const state = {
+      phase: 'friendlyNpc',
+      room,
+      meta: { tutorialStep: 1 },
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        stats: { startTime: 1 },
+        rooms: [room],
+        creatureParty: { active: [] },
+        exploreRunway: {
+          sessionEpoch: 'ese_1111111111111111',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            room,
+            interactionPayload: payload,
+            acceptedActions: ['friendlyNpc.choose', 'proceed'],
+            offlineReady: true,
+          }],
+        },
+      },
+    };
+    let legacyCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    await renderFriendlyNpc();
+
+    assert.equal(legacyCalls, 0);
+    assert.equal(getExploreSession().isPaused(), false);
+    assert.equal(renderedChoices?.heading, 'Choose an item');
+  });
+
+  it('clears and soft-pauses malformed standard-session capabilities without legacy fallback', async () => {
+    const room = {
+      id: 'friendly-standard-malformed',
+      type: 'friendlyNpc',
+      npc: { id: 'guide', nameEn: 'Guide' },
+      friendlyNpc: { completed: false },
+    };
+    const state = {
+      phase: 'friendlyNpc',
+      room,
+      meta: { tutorialStep: 1 },
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        stats: { startTime: 2 },
+        rooms: [room],
+        creatureParty: { active: [] },
+        exploreRunway: {
+          sessionEpoch: 'ese_2222222222222222',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            room,
+            interactionPayload: { kind: 'friendlyNpc', roomId: room.id, offered: [] },
+            acceptedActions: ['friendlyNpc.choose', 'proceed'],
+            offlineReady: false,
+            missingPayloadReasons: ['friendlyNpc.offered'],
+          }],
+        },
+      },
+    };
+    let legacyCalls = 0;
+    let clearCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => { clearCalls += 1; } },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    await renderFriendlyNpc();
+
+    assert.equal(legacyCalls, 0);
+    assert.ok(clearCalls > 0);
+    assert.equal(getExploreSession().isPaused(), true);
+    assert.equal(renderedChoices, null);
+    assert.equal(dialogueCards.length, 0);
   });
 
   it('shows the NPC greeting as a dialogue card before item choices', async () => {
@@ -457,7 +580,7 @@ describe('renderFriendlyNpc item prompt', () => {
 
     const youLine = dialogueCards.find(card => card.speaker === 'You');
     assert.ok(youLine);
-    assert.match(youLine.html || youLine.text || '', /ください|りんご/);
+    assert.equal(youLine.text, 'Please give me this item.');
     const [recordedAction] = getExploreSession().snapshot();
     assert.equal(recordedAction?.kind, 'friendlyNpc.choose');
     assert.deepEqual(recordedAction?.payload, { itemId: 'test-apple', targetCreatureIndex: 0 });

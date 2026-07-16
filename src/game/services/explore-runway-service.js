@@ -290,6 +290,7 @@ async function buildFriendlyNpcPayload(gm, room, opts) {
 
   return {
     kind: 'friendlyNpc',
+    roomId: room.id,
     npc: room.npc || null,
     offered: cloneExploreValue(room.friendlyNpc.offered || []),
     greeting: greetingWithAudio(room.friendlyNpc.greeting || null, greetingAudio),
@@ -318,6 +319,7 @@ async function buildShrinePayload(room, opts) {
 
   return {
     kind: 'shrine',
+    roomId: room.id,
     rewards: cloneExploreValue(SHRINE_REWARDS),
     greeting: greetingWithAudio(cloneExploreValue(room.shrine.greeting || null), greetingAudio),
     completed: room.shrine.completed === true || room.shrine.used === true,
@@ -342,6 +344,7 @@ function buildSkillMasterPayload(gm, room, opts) {
 
   return {
     kind: 'skillMaster',
+    roomId: room.id,
     offered,
     skillSelectPrompt,
     completed: room.skillMaster.completed === true,
@@ -354,6 +357,7 @@ function buildCampfirePayload(gm, room, opts) {
   const knownSet = knownSetForOpts(opts);
   return {
     kind: 'campfire',
+    roomId: room.id,
     ingredients: cloneExploreValue(ingredients),
     ingredientCatalog: cloneExploreValue(COOKING_INGREDIENTS),
     ingredientCount: getIngredientCount(ingredients),
@@ -425,6 +429,7 @@ function buildDealerPayload(gm, room) {
 
   return {
     kind: 'dealer',
+    roomId: room.id,
     dealer: cloneExploreValue(room.dealer),
     offeredCreatures,
     partyCreatures,
@@ -691,6 +696,27 @@ function buildResolvedCombatPayload(room) {
   };
 }
 
+function buildResolvedNpcBattleSkillPayload(gm, room, opts) {
+  const ensured = gm?.explorationService?.ensureNpcBattleSkillOffers?.(room);
+  const offered = Array.isArray(ensured?.offered)
+    ? ensured.offered
+    : (room?.npcBattle?.offered || [])
+      .map(offer => getPartySkillOfferDisplay(offer, gm?.run?.partySkills || []))
+      .filter(Boolean);
+  return {
+    kind: 'npcBattle',
+    roomId: room.id,
+    lifecycle: 'resolved',
+    rewardPending: true,
+    offered: cloneExploreValue(offered),
+    skillSelectPrompt: getEligibleFrameTokens(
+      skillSelectFrame(),
+      knownSetForOpts(opts),
+      { dict: getWordDict() },
+    ),
+  };
+}
+
 async function buildInteractionPayload(gm, room, opts) {
   if (combatKindForRoom(room)) {
     return buildPreparedCombatPayload(gm, room);
@@ -717,9 +743,53 @@ async function buildInteractionPayload(gm, room, opts) {
   }
 }
 
-function missingPayloadReasonsFor(room, interactionPayload) {
+function addPayloadIdentityReasons(room, interactionPayload, missing) {
+  if (interactionPayload?.kind !== room?.type) missing.push(`${room?.type}.kind`);
+  if (interactionPayload?.roomId !== room?.id) missing.push(`${room?.type}.roomId`);
+}
+
+function validSkillOffers(offers) {
+  return Array.isArray(offers)
+    && offers.length > 0
+    && offers.every(offer => (
+      typeof offer?.id === 'string'
+      && offer.id.length > 0
+      && typeof (offer.title || offer.name) === 'string'
+      && (offer.title || offer.name).length > 0
+      && typeof offer?.desc === 'string'
+    ));
+}
+
+function validFriendlyNpcOffers(offers) {
+  return Array.isArray(offers)
+    && offers.length > 0
+    && offers.every(item => (
+      typeof item?.id === 'string'
+      && item.id.length > 0
+      && typeof item?.word === 'string'
+      && item.word.length > 0
+      && typeof item?.reading === 'string'
+      && item.reading.length > 0
+      && Array.isArray(item?.tokens)
+      && item.tokens.length > 0
+      && Array.isArray(item?.words)
+      && item.words.length > 0
+    ));
+}
+
+export function missingPayloadReasonsFor(room, interactionPayload) {
   const missing = [];
   if (room?.type === ROOM_TYPES.npcBattle && room.interacted === true) {
+    if (room.npcBattle?.skillSelectionPending === true) {
+      if (interactionPayload?.kind !== 'npcBattle') missing.push('npcBattle.kind');
+      if (interactionPayload?.roomId !== room.id) missing.push('npcBattle.roomId');
+      if (interactionPayload?.lifecycle !== 'resolved') missing.push('npcBattle.lifecycle');
+      if (interactionPayload?.rewardPending !== true) missing.push('npcBattle.rewardPending');
+      if (!validSkillOffers(interactionPayload?.offered)) missing.push('npcBattle.offered');
+      if (!interactionPayload?.skillSelectPrompt?.tokens?.length) {
+        missing.push('npcBattle.skillSelectPrompt');
+      }
+    }
     return missing;
   }
   // Not-started and active combat payloads need enemies plus a non-empty seed
@@ -732,28 +802,78 @@ function missingPayloadReasonsFor(room, interactionPayload) {
     return missing;
   }
   if (room?.type === ROOM_TYPES.friendlyNpc) {
+    addPayloadIdentityReasons(room, interactionPayload, missing);
     if (!interactionPayload?.npc) missing.push('friendlyNpc.npc');
-    if (!Array.isArray(interactionPayload?.offered) || interactionPayload.offered.length === 0) {
+    if (!validFriendlyNpcOffers(interactionPayload?.offered)) {
       missing.push('friendlyNpc.offered');
-    }
-    if ((interactionPayload?.offered || []).some(item =>
-      item?.word && (!item.tokens?.length || !item.words?.length)
-    )) {
-      missing.push('friendlyNpc.offeredTokens');
     }
     if (!interactionPayload?.greeting?.tokens?.length) missing.push('friendlyNpc.greeting');
   }
+  if (room?.type === ROOM_TYPES.shrine) {
+    addPayloadIdentityReasons(room, interactionPayload, missing);
+    if (
+      !Array.isArray(interactionPayload?.rewards)
+      || interactionPayload.rewards.length === 0
+      || interactionPayload.rewards.some(reward => (
+        !reward?.id || !reward?.title || !reward?.description
+      ))
+    ) {
+      missing.push('shrine.rewards');
+    }
+    if (!interactionPayload?.greeting?.tokens?.length) missing.push('shrine.greeting');
+    if (typeof interactionPayload?.completed !== 'boolean') missing.push('shrine.completed');
+  }
   if (room?.type === ROOM_TYPES.skillMaster) {
-    if (!Array.isArray(interactionPayload?.offered) || interactionPayload.offered.length === 0) {
+    addPayloadIdentityReasons(room, interactionPayload, missing);
+    if (!validSkillOffers(interactionPayload?.offered)) {
       missing.push('skillMaster.offered');
     }
     if (!interactionPayload?.skillSelectPrompt?.tokens?.length) {
       missing.push('skillMaster.skillSelectPrompt');
     }
+    if (typeof interactionPayload?.completed !== 'boolean') missing.push('skillMaster.completed');
   }
   if (room?.type === ROOM_TYPES.campfire) {
+    addPayloadIdentityReasons(room, interactionPayload, missing);
+    if (!interactionPayload?.ingredients || typeof interactionPayload.ingredients !== 'object') {
+      missing.push('campfire.ingredients');
+    }
+    if (!Array.isArray(interactionPayload?.ingredientCatalog)) {
+      missing.push('campfire.ingredientCatalog');
+    }
+    if (!Number.isInteger(interactionPayload?.ingredientCount) || interactionPayload.ingredientCount < 0) {
+      missing.push('campfire.ingredientCount');
+    }
+    if (!Array.isArray(interactionPayload?.discoveredRecipes)) {
+      missing.push('campfire.discoveredRecipes');
+    }
+    if (!Array.isArray(interactionPayload?.cookableRecipeHints)) {
+      missing.push('campfire.cookableRecipeHints');
+    }
+    if (!Array.isArray(interactionPayload?.recipes)) missing.push('campfire.recipes');
+    if (!interactionPayload?.room || typeof interactionPayload.room !== 'object') {
+      missing.push('campfire.room');
+    }
     if (!interactionPayload?.yesTokens?.tokens?.length) missing.push('campfire.yesTokens');
     if (!interactionPayload?.noTokens?.tokens?.length) missing.push('campfire.noTokens');
+  }
+  if (room?.type === ROOM_TYPES.dealer) {
+    addPayloadIdentityReasons(room, interactionPayload, missing);
+    if (!interactionPayload?.dealer || typeof interactionPayload.dealer !== 'object') {
+      missing.push('dealer.dealer');
+    }
+    if (!Array.isArray(interactionPayload?.offeredCreatures)) missing.push('dealer.offeredCreatures');
+    if (!Array.isArray(interactionPayload?.partyCreatures)) missing.push('dealer.partyCreatures');
+    if (!Number.isFinite(interactionPayload?.credits) || interactionPayload.credits < 0) {
+      missing.push('dealer.credits');
+    }
+    if (typeof interactionPayload?.canBuy !== 'boolean') missing.push('dealer.canBuy');
+    if (!Number.isInteger(interactionPayload?.sellCount) || interactionPayload.sellCount < 0) {
+      missing.push('dealer.sellCount');
+    }
+    if (!Number.isInteger(interactionPayload?.maxSells) || interactionPayload.maxSells < 0) {
+      missing.push('dealer.maxSells');
+    }
   }
   if (room?.type === ROOM_TYPES.speedReviewRoom) {
     if (
@@ -900,17 +1020,22 @@ export async function buildExploreRunway(gm, opts = {}) {
 
     prepareEntryIngredientDrops(gm, index, currentRoom);
     const entryPayload = buildEntryPayload(gm, room);
+    const pendingNpcBattleSkillReward = lifecycle === 'resolved'
+      && room.type === ROOM_TYPES.npcBattle
+      && room.npcBattle?.skillSelectionPending === true;
     const interactionPayload = lifecycle === 'active'
       ? buildActiveCombatPayload(gm, room)
       : lifecycle === 'resolved'
-        ? buildResolvedCombatPayload(room)
+        ? (pendingNpcBattleSkillReward
+            ? buildResolvedNpcBattleSkillPayload(gm, room, payloadOpts)
+            : buildResolvedCombatPayload(room))
         : await buildInteractionPayload(gm, room, payloadOpts);
     const acceptedActions = acceptedExploreActionsForRoom(room, {
       combat: gm?.combat,
       isCurrentRoom: index === currentRoom,
       includeProjectedCombatCycle: true,
     });
-    const missingPayloadReasons = lifecycle === 'resolved'
+    const missingPayloadReasons = lifecycle === 'resolved' && !pendingNpcBattleSkillReward
       ? []
       : missingPayloadReasonsFor(room, interactionPayload);
 

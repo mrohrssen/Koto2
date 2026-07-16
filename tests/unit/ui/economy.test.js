@@ -115,6 +115,8 @@ function makeDealerState() {
   const room = { id: 'dealer-room', type: 'dealer', dealer: { soldCreatures: [] } };
   const payload = {
     kind: 'dealer',
+    roomId: room.id,
+    dealer: room.dealer,
     offeredCreatures: [
       { id: 'kitsune', name: '狐', nameEn: 'Kitsune', element: 'fire', rarity: 'common', level: 2, maxHp: 12, attack: 4, buyPrice: 25 },
     ],
@@ -128,6 +130,8 @@ function makeDealerState() {
     phase: 'dealer',
     room,
     run: {
+      active: true,
+      mode: 'standard',
       currentRoom: 0,
       player: { credits: 30 },
       revealedRooms: [{ index: 0, room }],
@@ -140,6 +144,8 @@ function makeDealerState() {
           roomId: 'dealer-room',
           room,
           interactionPayload: payload,
+          acceptedActions: ['dealer.sell', 'dealer.buy', 'dealer.leave', 'proceed'],
+          offlineReady: true,
         }],
       },
     },
@@ -157,6 +163,7 @@ describe('dealer room session UI', () => {
       currentPreparedRoom: () => gameState.run.exploreRunway.preparedRooms[0],
       adoptRunway: runway => { gameState.run.exploreRunway = runway; },
       recordRoomAction: (kind, payload) => ({ accepted: true, entry: { kind, payload } }),
+      isPaused: () => false,
     };
     economy.init({
       getGameState: () => gameState,
@@ -175,5 +182,82 @@ describe('dealer room session UI', () => {
     assert.doesNotMatch(actionArea.innerHTML, /Kitsune/);
     assert.equal(gameState.run.exploreRunway.preparedRooms[0].interactionPayload.canBuy, false);
     assert.equal(gameState.run.exploreRunway.preparedRooms[0].interactionPayload.credits, 5);
+  });
+
+  it('clears and pauses malformed active standard dealer data without a legacy GET', async () => {
+    const gameState = makeDealerState();
+    const prepared = gameState.run.exploreRunway.preparedRooms[0];
+    prepared.offlineReady = false;
+    prepared.missingPayloadReasons = ['dealer.credits'];
+    prepared.interactionPayload.credits = 'thirty';
+    let paused = false;
+    let legacyCalls = 0;
+    const session = {
+      currentPreparedRoom: () => prepared,
+      adoptRunway: () => {},
+      isPaused: () => paused,
+      pause: () => { paused = true; },
+    };
+    economy.init({
+      getGameState: () => gameState,
+      updateGameState: () => {},
+      updateUI: () => {},
+      getExploreSession: () => session,
+      apiGetDealerState: async () => { legacyCalls += 1; return null; },
+    });
+
+    await economy.renderDealerRoom({ setContent: html => { actionArea.innerHTML = html; } });
+
+    assert.equal(legacyCalls, 0);
+    assert.equal(paused, true);
+    assert.equal(actionArea.innerHTML, '');
+  });
+
+  it('keeps an already-paused valid dealer capability non-playable without adopting or fetching', async () => {
+    const gameState = makeDealerState();
+    const prepared = gameState.run.exploreRunway.preparedRooms[0];
+    let adoptCalls = 0;
+    let legacyCalls = 0;
+    const session = {
+      currentPreparedRoom: () => prepared,
+      adoptRunway: () => { adoptCalls += 1; },
+      isPaused: () => true,
+      pause: () => {},
+    };
+    economy.init({
+      getGameState: () => gameState,
+      updateGameState: () => {},
+      updateUI: () => {},
+      getExploreSession: () => session,
+      apiGetDealerState: async () => { legacyCalls += 1; return null; },
+    });
+    actionArea.innerHTML = '<button class="stale-control">Stale</button>';
+
+    await economy.renderDealerRoom({ setContent: html => { actionArea.innerHTML = html; } });
+
+    assert.equal(adoptCalls, 0);
+    assert.equal(legacyCalls, 0);
+    assert.equal(actionArea.innerHTML, '');
+  });
+
+  it('keeps the dealer GET fallback when there is no active standard session', async () => {
+    const legacyState = makeDealerState();
+    legacyState.run.active = false;
+    let legacyCalls = 0;
+    economy.init({
+      getGameState: () => legacyState,
+      updateGameState: () => {},
+      updateUI: () => {},
+      getExploreSession: () => null,
+      apiGetDealerState: async () => {
+        legacyCalls += 1;
+        return legacyState.run.exploreRunway.preparedRooms[0].interactionPayload;
+      },
+    });
+
+    await economy.renderDealerRoom({ setContent: html => { actionArea.innerHTML = html; } });
+
+    assert.equal(legacyCalls, 1);
+    assert.match(actionArea.innerHTML, /Kitsune/);
   });
 });

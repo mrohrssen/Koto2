@@ -16,7 +16,10 @@ import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
 import { escapeHtml } from './html-utils.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
-import { preparedPayloadHasSkillOffers } from './combat-ui-utils.js';
+import {
+  isActiveStandardExploreSession,
+  preparedExploreRoomCapability,
+} from './explore-room-capability.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
@@ -1397,7 +1400,7 @@ export function renderAreaComplete() {
 }
 
 export async function renderCampfire() {
-  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
+  adoptRunwayForRoomRender(getGameState());
   return campfireUI.show();
 }
 
@@ -1503,11 +1506,21 @@ async function showShrineSprite() {
 
 /** Shrine phase - modern NPC-style reward room */
 export async function renderShrine() {
-  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
+  adoptRunwayForRoomRender(getGameState());
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
-  const prepared = getExploreSession()?.currentPreparedRoom();
-  const payload = prepared?.interactionPayload;
+  const activeStandardSession = getActiveStandardExploreSession(gameState);
+  const capability = activeStandardSession
+    ? preparedExploreRoomCapability({
+        session: activeStandardSession,
+        state: gameState,
+        room,
+        expectedKind: 'shrine',
+        requiredActions: ['shrine.choose', 'proceed'],
+        validatePayload: shrinePayloadValid,
+      })
+    : null;
+  const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown';
 
   if (shrineState.roomId !== roomId) {
@@ -1531,13 +1544,24 @@ export async function renderShrine() {
     return;
   }
 
+  if (activeStandardSession && !capability.valid) {
+    rejectExploreRoomCapability(capability, () => {
+      shrineState.fetched = false;
+      shrineState.rewards = null;
+      shrineState.greeting = null;
+      shrineState.choosing = false;
+      shrineState.greetingShown = false;
+    });
+    return;
+  }
+
   actions.clear();
 
   if (!shrineState.fetched) {
     shrineState.fetched = true;
     const fetchRoomId = roomId;
     try {
-      const resp = payload || await apiGetShrineOffers?.();
+      const resp = activeStandardSession ? payload : await apiGetShrineOffers?.();
       if (shrineState.roomId !== fetchRoomId) return;
       shrineState.rewards = Array.isArray(resp?.rewards) ? resp.rewards : [
         { id: 'heal_all', title: 'Heal all creatures', description: 'Restore 50% HP to living creatures.' },
@@ -1573,7 +1597,7 @@ export async function renderShrine() {
             useKanji: false,
             audio: shrineState.greeting?.audio,
           }
-        : { text: 'こんにちは！' }),
+        : { text: 'Hello!' }),
     });
   }
 
@@ -1997,29 +2021,106 @@ function getActiveSpeedReviewRoom(gameState) {
 
 function getActiveStandardExploreSession(state = getGameState?.()) {
   const session = getExploreSession?.();
-  return session
-    && state?.run?.active === true
-    && state.run.mode !== 'kanjiKombat'
-    ? session
-    : null;
+  return isActiveStandardExploreSession(session, state) ? session : null;
+}
+
+function adoptRunwayForRoomRender(state = getGameState?.()) {
+  const session = getExploreSession?.();
+  if (session?.isPaused?.() !== true) {
+    session?.adoptRunway?.(state?.run?.exploreRunway || null);
+  }
+  return session;
+}
+
+function hasFrameTokens(frame) {
+  return Array.isArray(frame?.tokens) && frame.tokens.length > 0;
+}
+
+function hasDisplaySkillOffers(offers) {
+  return Array.isArray(offers)
+    && offers.length > 0
+    && offers.every(offer => (
+      typeof offer?.id === 'string'
+      && offer.id.length > 0
+      && typeof (offer.title || offer.name) === 'string'
+      && (offer.title || offer.name).length > 0
+      && typeof offer?.desc === 'string'
+    ));
+}
+
+function friendlyNpcPayloadValid(payload) {
+  return payload?.npc
+    && Array.isArray(payload?.offered)
+    && payload.offered.length > 0
+    && payload.offered.every(item => (
+      typeof item?.id === 'string'
+      && item.id.length > 0
+      && typeof item?.word === 'string'
+      && item.word.length > 0
+      && typeof item?.reading === 'string'
+      && item.reading.length > 0
+      && Array.isArray(item?.tokens)
+      && item.tokens.length > 0
+      && Array.isArray(item?.words)
+      && item.words.length > 0
+    ))
+    && hasFrameTokens(payload?.greeting);
+}
+
+function shrinePayloadValid(payload) {
+  return Array.isArray(payload?.rewards)
+    && payload.rewards.length > 0
+    && payload.rewards.every(reward => (
+      typeof reward?.id === 'string'
+      && reward.id.length > 0
+      && typeof reward?.title === 'string'
+      && reward.title.length > 0
+      && typeof reward?.description === 'string'
+      && reward.description.length > 0
+    ))
+    && hasFrameTokens(payload?.greeting)
+    && typeof payload?.completed === 'boolean';
+}
+
+function skillMasterPayloadValid(payload) {
+  return hasDisplaySkillOffers(payload?.offered)
+    && hasFrameTokens(payload?.skillSelectPrompt)
+    && typeof payload?.completed === 'boolean';
+}
+
+function npcBattleSkillPayloadValid(payload) {
+  return payload?.lifecycle === 'resolved'
+    && payload?.rewardPending === true
+    && hasDisplaySkillOffers(payload?.offered)
+    && hasFrameTokens(payload?.skillSelectPrompt);
+}
+
+function rejectExploreRoomCapability(capability, resetState = null) {
+  resetState?.();
+  actions.clear?.();
+  if (!actions.clear) actions.setContent('');
+  showExploreSoftPause({
+    reason: 'missingPayload',
+    missingPayloadReasons: capability?.missingPayloadReasons || [],
+  });
 }
 
 function preparedSpeedReviewPayload(session, state, room) {
-  const prepared = session?.currentPreparedRoom?.();
-  const payload = prepared?.interactionPayload;
-  const accepted = prepared?.acceptedActions;
+  const capability = preparedExploreRoomCapability({
+    session,
+    state,
+    room,
+    expectedKind: 'speedReviewRoom',
+    requiredActions: ['speedReview.commit', 'speedReview.complete', 'proceed'],
+    validatePayload: () => true,
+  });
+  const prepared = capability.prepared;
+  const payload = capability.payload;
   const roomId = prepared?.roomId || prepared?.room?.id;
   const snapshotWords = payload?.snapshotWords;
   const snapshotWordKeys = payload?.snapshotWordKeys;
   const reviewedCards = Number(payload?.reviewedCards || 0);
-  const valid = prepared?.index === state?.run?.currentRoom
-    && roomId === room?.id
-    && prepared?.offlineReady === true
-    && Array.isArray(accepted)
-    && accepted.includes('speedReview.commit')
-    && accepted.includes('speedReview.complete')
-    && payload?.kind === 'speedReviewRoom'
-    && payload?.roomId === room?.id
+  const valid = capability.valid
     && payload?.snapshotInitialized === true
     && Array.isArray(snapshotWords)
     && snapshotWords.every(card => typeof card?.word === 'string' && card.word.length > 0)
@@ -2034,7 +2135,7 @@ function preparedSpeedReviewPayload(session, state, room) {
     payload,
     snapshotWords: valid ? snapshotWords : [],
     reviewedCards: valid ? reviewedCards : 0,
-    missingPayloadReasons: prepared?.missingPayloadReasons || ['speedReviewRoom.snapshotWords'],
+    missingPayloadReasons: capability.missingPayloadReasons,
   };
 }
 
@@ -2087,7 +2188,9 @@ async function completeSpeedReviewRoomOptimistically(
 export async function renderSpeedReviewRoom() {
   const gameState = getGameState();
   const session = getActiveStandardExploreSession(gameState);
-  session?.adoptRunway(gameState?.run?.exploreRunway || null);
+  if (session?.isPaused?.() !== true) {
+    session?.adoptRunway(gameState?.run?.exploreRunway || null);
+  }
   const room = getActiveSpeedReviewRoom(gameState);
   if (!room?.id) {
     return;
@@ -2111,14 +2214,7 @@ export async function renderSpeedReviewRoom() {
       : null;
     if (session && !sessionPayload.valid) {
       speedReviewRoomLaunchState.roomId = null;
-      if (session.isPaused?.() !== true) {
-        session.pause?.('missingPayload');
-      } else {
-        showExploreSoftPause({
-          reason: 'missingPayload',
-          missingPayloadReasons: sessionPayload.missingPayloadReasons,
-        });
-      }
+      rejectExploreRoomCapability(sessionPayload);
       return;
     }
 
@@ -2267,10 +2363,15 @@ function markWhackAMoleRoomComplete(room, { score = null, skipped = false } = {}
 }
 
 function preparedWhackAMoleCapability(session, state, room) {
-  const prepared = session?.currentPreparedRoom?.();
-  const payload = prepared?.interactionPayload;
-  const accepted = prepared?.acceptedActions;
-  const roomId = prepared?.roomId || prepared?.room?.id;
+  const capability = preparedExploreRoomCapability({
+    session,
+    state,
+    room,
+    expectedKind: 'whackAMole',
+    requiredActions: ['whackAMole.complete', 'whackAMole.skip', 'proceed'],
+    validatePayload: () => true,
+  });
+  const payload = capability.payload;
   const pool = payload?.pool;
   const validPool = Array.isArray(pool)
     && pool.length >= 9
@@ -2282,15 +2383,7 @@ function preparedWhackAMoleCapability(session, state, room) {
       && entry?.meaning
       && entry?.sprite
     ));
-  const valid = prepared?.index === state?.run?.currentRoom
-    && roomId === room?.id
-    && prepared?.offlineReady === true
-    && Array.isArray(accepted)
-    && accepted.includes('whackAMole.complete')
-    && accepted.includes('whackAMole.skip')
-    && accepted.includes('proceed')
-    && payload?.kind === 'whackAMole'
-    && payload?.roomId === room?.id
+  const valid = capability.valid
     && payload?.dialogue?.tokens?.length > 0
     && payload?.yesTokens?.tokens?.length > 0
     && payload?.noTokens?.tokens?.length > 0
@@ -2299,9 +2392,7 @@ function preparedWhackAMoleCapability(session, state, room) {
   return {
     valid,
     payload,
-    missingPayloadReasons: prepared?.missingPayloadReasons?.length
-      ? prepared.missingPayloadReasons
-      : ['whackAMole.payload'],
+    missingPayloadReasons: capability.missingPayloadReasons,
   };
 }
 
@@ -2374,7 +2465,7 @@ async function proceedWhackAMoleLegacy() {
 
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
 export async function renderWhackAMole() {
-  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
+  adoptRunwayForRoomRender(getGameState());
   const gameState = getGameState();
   const room = getCurrentBufferedRoom(gameState);
   const activeStandardSession = getActiveStandardExploreSession(gameState);
@@ -2549,7 +2640,7 @@ async function showCidForSkillMaster() {
 
 /** Skill Master room — placeholder UI (to be expanded in later task) */
 export async function renderSkillMaster() {
-  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
+  adoptRunwayForRoomRender(getGameState());
   const gameState = getGameState();
   const run = gameState.run;
   const isInitialPick = run?.initialSkillPick && !run.initialSkillPick.chosenId;
@@ -2565,10 +2656,20 @@ export async function renderSkillMaster() {
   // payload's item `offered` would render as skills; a combat payload would
   // dead-end "Failed to load offers."). Only consume the prepared payload
   // when it belongs to an actual skillMaster room.
-  const prepared = getExploreSession()?.currentPreparedRoom();
-  const payload = (!isInitialPick && !isServerInitialPick && prepared?.room?.type === 'skillMaster')
-    ? prepared.interactionPayload
+  const activeStandardSession = (!isInitialPick && !isServerInitialPick)
+    ? getActiveStandardExploreSession(gameState)
     : null;
+  const capability = activeStandardSession
+    ? preparedExploreRoomCapability({
+        session: activeStandardSession,
+        state: gameState,
+        room,
+        expectedKind: 'skillMaster',
+        requiredActions: ['skillMaster.choose', 'proceed'],
+        validatePayload: skillMasterPayloadValid,
+      })
+    : null;
+  const payload = capability?.payload || null;
   const roomId = (isInitialPick || isServerInitialPick)
     ? 'initialSkillPick'
     : (room?.id || room?.type || 'unknown');
@@ -2606,6 +2707,17 @@ export async function renderSkillMaster() {
     return;
   }
 
+  if (activeStandardSession && !capability.valid) {
+    rejectExploreRoomCapability(capability, () => {
+      skillMasterState.fetched = false;
+      skillMasterState.offered = null;
+      skillMasterState.chosenId = null;
+      skillMasterState.promptTokens = null;
+      skillMasterState.promptShown = false;
+    });
+    return;
+  }
+
   // Tutorial step 0: start Cid narration early so it runs while offers load
   const tutorialStep = getGameState()?.meta?.tutorialStep;
   if (tutorialStep === 0 && !skillMasterState.tutorialNarrationStarted) {
@@ -2630,7 +2742,7 @@ export async function renderSkillMaster() {
     const fetchCacheKey = cacheKey;
     let resp;
     try {
-      resp = payload || await apiSkillMasterOffers?.();
+      resp = activeStandardSession ? payload : await apiSkillMasterOffers?.();
     } catch (err) {
       // Allow retry on next render and avoid caching a bad state
       skillMasterState.fetched = false;
@@ -2877,7 +2989,7 @@ async function showPlayerItemRequest(item) {
   if (item.word) {
     await showNpcDialogueCard({
       speaker: 'You',
-      text: `${item.word}、ください`,
+      text: 'Please give me this item.',
     });
   }
 }
@@ -2887,11 +2999,21 @@ async function showPlayerItemRequest(item) {
  * Player picks one; item is applied immediately.
  */
 export async function renderFriendlyNpc() {
-  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
+  adoptRunwayForRoomRender(getGameState());
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
-  const prepared = getExploreSession()?.currentPreparedRoom();
-  const payload = prepared?.interactionPayload;
+  const activeStandardSession = getActiveStandardExploreSession(gameState);
+  const capability = activeStandardSession
+    ? preparedExploreRoomCapability({
+        session: activeStandardSession,
+        state: gameState,
+        room,
+        expectedKind: 'friendlyNpc',
+        requiredActions: ['friendlyNpc.choose', 'proceed'],
+        validatePayload: friendlyNpcPayloadValid,
+      })
+    : null;
+  const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown';
   const roomCacheKey = `${roomId}:${gameState.run?.stats?.startTime ?? ''}`;
 
@@ -2912,10 +3034,21 @@ export async function renderFriendlyNpc() {
   if (room?.interacted || room?.friendlyNpc?.completed) {
     actions.setContent(`
       <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;">
-        <div style="text-align:center;font-weight:800;">アイテムをもらった！</div>
-        <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Item received.</div>
+        <div style="text-align:center;font-weight:800;">Item received.</div>
       </div>
     `);
+    return;
+  }
+
+  if (activeStandardSession && !capability.valid) {
+    rejectExploreRoomCapability(capability, () => {
+      friendlyNpcState.fetched = false;
+      friendlyNpcState.offered = null;
+      friendlyNpcState.greeting = null;
+      friendlyNpcState.choosing = false;
+      friendlyNpcState.greetingShown = false;
+      friendlyNpcState.renderedCards = null;
+    });
     return;
   }
 
@@ -2927,7 +3060,7 @@ export async function renderFriendlyNpc() {
     const fetchRoomId = roomCacheKey;
     let resp;
     try {
-      resp = payload || await apiGetFriendlyNpcOffers?.();
+      resp = activeStandardSession ? payload : await apiGetFriendlyNpcOffers?.();
     } catch (err) {
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
@@ -2991,7 +3124,7 @@ export async function renderFriendlyNpc() {
             useKanji: false,
             audio: friendlyNpcState.greeting?.audio,
           }
-        : { text: 'こんにちは！' }),
+        : { text: 'Hello!' }),
     });
 
     // Tutorial step 2: Cid explains items after the shopkeeper's greeting,
@@ -3121,11 +3254,21 @@ let npcBattleSkillState = {
  * @param {object} opts - { onSkillChosen(skillId), fetchOffers() }
  */
 export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers } = {}) {
-  getExploreSession()?.adoptRunway(getGameState()?.run?.exploreRunway || null);
+  adoptRunwayForRoomRender(getGameState());
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
-  const prepared = getExploreSession()?.currentPreparedRoom();
-  const payload = prepared?.interactionPayload;
+  const activeStandardSession = getActiveStandardExploreSession(gameState);
+  const capability = activeStandardSession
+    ? preparedExploreRoomCapability({
+        session: activeStandardSession,
+        state: gameState,
+        room,
+        expectedKind: 'npcBattle',
+        requiredActions: ['npcBattleSkill.choose'],
+        validatePayload: npcBattleSkillPayloadValid,
+      })
+    : null;
+  const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown-npcbattle';
 
   // Reset per-room cache when room changes
@@ -3153,6 +3296,17 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     return;
   }
 
+  if (activeStandardSession && !capability.valid) {
+    rejectExploreRoomCapability(capability, () => {
+      npcBattleSkillState.fetched = false;
+      npcBattleSkillState.offered = null;
+      npcBattleSkillState.choosing = false;
+      npcBattleSkillState.promptTokens = null;
+      npcBattleSkillState.promptShown = false;
+    });
+    return;
+  }
+
   // Show loading state immediately
   actions.setContent(`
     <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
@@ -3175,11 +3329,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     };
     let resp;
     try {
-      // The npcBattle prepared payload is the combat-start payload (enemies /
-      // seedChain), NOT the skill offers — only reuse it when it actually carries
-      // offers, otherwise fetch the reward offers from the server. Treating the
-      // combat payload as offers reads zero offers and silently auto-proceeds.
-      resp = preparedPayloadHasSkillOffers(payload) ? payload : await fetchOffers?.();
+      resp = activeStandardSession ? payload : await fetchOffers?.();
     } catch (err) {
       npcBattleSkillState.fetched = false;
       npcBattleSkillState.offered = null;

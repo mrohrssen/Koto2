@@ -345,6 +345,7 @@ describe('renderHub fusion core review narration', () => {
       preparedRooms: [{
         index: 0,
         roomId: 'speed-room-1',
+        room: gameState.room,
         actionSeq: 0,
         offlineReady: true,
         acceptedActions: ['speedReview.commit', 'speedReview.complete', 'proceed'],
@@ -509,6 +510,56 @@ describe('renderHub fusion core review narration', () => {
     resetExploreSession();
   });
 
+  it('does not launch a paused standard-session speed review even with a valid payload', async () => {
+    const room = {
+      id: 'speed-room-paused-valid',
+      type: 'speedReviewRoom',
+      speedReviewRoom: { completed: false },
+    };
+    const gameState = makeRunRoomState({ phase: 'speedReviewRoom', room });
+    gameState.run.active = true;
+    gameState.run.mode = 'standard';
+    gameState.run.exploreRunway = {
+      sessionEpoch: 'ese_9999999999999999',
+      currentRoom: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: room.id,
+        room,
+        offlineReady: true,
+        acceptedActions: ['speedReview.commit', 'speedReview.complete', 'proceed'],
+        interactionPayload: {
+          kind: 'speedReviewRoom',
+          roomId: room.id,
+          snapshotInitialized: true,
+          snapshotWords: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
+          snapshotWordKeys: ['火'],
+          reviewedCards: 0,
+        },
+      }],
+    };
+    let legacyCalls = 0;
+    let clearCalls = 0;
+    init({
+      getGameState: () => gameState,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => { clearCalls += 1; } },
+      scene: { showNarration: async () => {} },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiStartSpeedReviewRoom: async () => { legacyCalls += 1; return null; },
+    });
+    getExploreSession().adoptRunway(gameState.run.exploreRunway);
+    getExploreSession().pause('manual-test');
+
+    await renderSpeedReviewRoom();
+
+    assert.equal(legacyCalls, 0);
+    assert.equal(speedReviewStartCount, 0);
+    assert.ok(clearCalls > 0);
+    assert.equal(getExploreSession().isPaused(), true);
+  });
+
   it('runs a prepared word discovery fully offline without legacy status, words, review, or completion calls', async () => {
     const room = {
       id: 'word-discovery-offline',
@@ -529,6 +580,7 @@ describe('renderHub fusion core review narration', () => {
       preparedRooms: [{
         index: 0,
         roomId: room.id,
+        room,
         actionSeq: 0,
         offlineReady: true,
         acceptedActions: ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'],
@@ -636,6 +688,7 @@ describe('renderHub fusion core review narration', () => {
       preparedRooms: [{
         index: 0,
         roomId: room.id,
+        room,
         actionSeq: 0,
         offlineReady: true,
         acceptedActions: ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'],
@@ -704,6 +757,7 @@ describe('renderHub fusion core review narration', () => {
       preparedRooms: [{
         index: 0,
         roomId: room.id,
+        room,
         actionSeq: 0,
         offlineReady: true,
         acceptedActions: ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'],
@@ -832,6 +886,7 @@ describe('renderHub fusion core review narration', () => {
       preparedRooms: [{
         index: 0,
         roomId: room.id,
+        room,
         actionSeq: 0,
         offlineReady: true,
         acceptedActions: ['speedReview.commit', 'speedReview.complete', 'proceed'],
@@ -871,7 +926,7 @@ describe('renderHub fusion core review narration', () => {
     assert.equal(legacyCompleteCalls, 0);
   });
 
-  it('soft-pauses an invalid session payload without blanking and can launch after refresh', async () => {
+  it('soft-pauses and clears an invalid session payload, then launches after refresh', async () => {
     const room = {
       id: 'speed-room-refresh',
       type: 'speedReviewRoom',
@@ -883,6 +938,7 @@ describe('renderHub fusion core review narration', () => {
     const prepared = {
       index: 0,
       roomId: room.id,
+      room,
       actionSeq: 0,
       offlineReady: false,
       missingPayloadReasons: ['speedReviewRoom.snapshotWords'],
@@ -906,7 +962,7 @@ describe('renderHub fusion core review narration', () => {
       getGameState: () => gameState,
       updateGameState: nextState => { gameState = nextState; },
       updateUI: () => {},
-      actions: { setContent: () => { blankCalls += 1; }, clear: () => {} },
+      actions: { setContent: () => {}, clear: () => { blankCalls += 1; } },
       scene: { showNarration: async () => { narrationCalls += 1; } },
       apiSyncExploreSession: async () => { throw new Error('offline'); },
       apiStartSpeedReviewRoom: async () => { legacyStartCalls += 1; return null; },
@@ -914,7 +970,7 @@ describe('renderHub fusion core review narration', () => {
 
     await renderSpeedReviewRoom();
     assert.equal(speedReviewStartCount, 0);
-    assert.equal(blankCalls, 0, 'invalid payload must preserve the visible soft-pause surface');
+    assert.ok(blankCalls > 0, 'invalid payload must clear stale playable controls');
     assert.equal(narrationCalls, 1);
     assert.equal(getExploreSession().isPaused(), true);
     assert.equal(legacyStartCalls, 0);
@@ -929,6 +985,7 @@ describe('renderHub fusion core review narration', () => {
       reviewedCards: 0,
       snapshotInitialized: true,
     };
+    getExploreSession().adoptRunway(gameState.run.exploreRunway);
     await renderSpeedReviewRoom();
     resetExploreSession();
 

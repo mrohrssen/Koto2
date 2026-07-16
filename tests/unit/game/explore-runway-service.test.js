@@ -9,7 +9,10 @@ import {
   queueTestRooms,
   ROOM_TYPES,
 } from '../../../src/game/rooms.js';
-import { buildExploreRunway } from '../../../src/game/services/explore-runway-service.js';
+import {
+  buildExploreRunway,
+  missingPayloadReasonsFor,
+} from '../../../src/game/services/explore-runway-service.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
 import { getDialogueLineText } from '../../../src/services/dialogue-card-tts.js';
@@ -106,6 +109,80 @@ test('marks missing payloads instead of pretending offline readiness', async () 
   assert.equal(friendly.room.type, ROOM_TYPES.friendlyNpc);
   assert.equal(friendly.offlineReady, false);
   assert.ok(friendly.missingPayloadReasons.includes('friendlyNpc.offered'));
+});
+
+test('rejects malformed support-room identities and essential payload fields', () => {
+  const cases = [
+    {
+      room: { id: 'friendly-1', type: ROOM_TYPES.friendlyNpc },
+      payload: { kind: 'wrong', roomId: 'other', npc: null, offered: [], greeting: null },
+      expected: [
+        'friendlyNpc.kind',
+        'friendlyNpc.roomId',
+        'friendlyNpc.npc',
+        'friendlyNpc.offered',
+        'friendlyNpc.greeting',
+      ],
+    },
+    {
+      room: { id: 'shrine-1', type: ROOM_TYPES.shrine },
+      payload: { kind: 'wrong', roomId: 'other', rewards: [], greeting: null },
+      expected: [
+        'shrine.kind',
+        'shrine.roomId',
+        'shrine.rewards',
+        'shrine.greeting',
+        'shrine.completed',
+      ],
+    },
+    {
+      room: { id: 'campfire-1', type: ROOM_TYPES.campfire },
+      payload: { kind: 'wrong', roomId: 'other', yesTokens: null, noTokens: null },
+      expected: [
+        'campfire.kind',
+        'campfire.roomId',
+        'campfire.ingredients',
+        'campfire.ingredientCatalog',
+        'campfire.ingredientCount',
+        'campfire.discoveredRecipes',
+        'campfire.cookableRecipeHints',
+        'campfire.recipes',
+        'campfire.room',
+        'campfire.yesTokens',
+        'campfire.noTokens',
+      ],
+    },
+    {
+      room: { id: 'skill-1', type: ROOM_TYPES.skillMaster },
+      payload: { kind: 'wrong', roomId: 'other', offered: [], skillSelectPrompt: null },
+      expected: [
+        'skillMaster.kind',
+        'skillMaster.roomId',
+        'skillMaster.offered',
+        'skillMaster.skillSelectPrompt',
+        'skillMaster.completed',
+      ],
+    },
+    {
+      room: { id: 'dealer-1', type: ROOM_TYPES.dealer },
+      payload: { kind: 'wrong', roomId: 'other' },
+      expected: [
+        'dealer.kind',
+        'dealer.roomId',
+        'dealer.dealer',
+        'dealer.offeredCreatures',
+        'dealer.partyCreatures',
+        'dealer.credits',
+        'dealer.canBuy',
+        'dealer.sellCount',
+        'dealer.maxSells',
+      ],
+    },
+  ];
+
+  for (const { room, payload, expected } of cases) {
+    assert.deepEqual(missingPayloadReasonsFor(room, payload), expected);
+  }
 });
 
 test('treats an initialized zero-card speed review snapshot as offline ready', async () => {

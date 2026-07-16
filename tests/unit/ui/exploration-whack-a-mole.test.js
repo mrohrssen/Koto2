@@ -728,6 +728,36 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(getExploreSession().getPauseReason(), 'missingPayload');
   });
 
+  it('keeps a paused valid Whack capability non-playable without legacy GETs', async () => {
+    const room = { id: 'wam-paused-valid', type: 'whackAMole', interacted: false };
+    const state = makeWhackAMoleState(room, {
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(room.id),
+    });
+    let legacyGets = 0;
+    let clearCalls = 0;
+
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => { clearCalls += 1; } },
+      scene: { showNarration: () => {} },
+      apiGetWhackAMoleDialogue: async () => { legacyGets += 1; },
+      apiGetWhackAMolePool: async () => { legacyGets += 1; },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+    getExploreSession().adoptRunway(state.run.exploreRunway);
+    getExploreSession().pause('manual-test');
+
+    await renderWhackAMole();
+
+    assert.equal(legacyGets, 0);
+    assert.equal(renderedButtons.length, 0);
+    assert.ok(clearCalls > 0);
+    assert.equal(getExploreSession().isPaused(), true);
+  });
+
   it('legacy decline uses its combined skip-and-proceed endpoint exactly once', async () => {
     const room = { id: 'wam-legacy-skip', type: 'whackAMole', interacted: false };
     const nextRoom = { id: 'after-legacy-skip', type: 'empty' };

@@ -39,7 +39,7 @@ function createElementStub() {
   };
 }
 
-function makeNpcRewardState({ currentRoom, rewardResolved }) {
+function makeNpcRewardState({ currentRoom, rewardResolved, active = false, mode = 'standard' }) {
   const room = {
     id: `npc-room-${currentRoom}`,
     type: 'npcBattle',
@@ -95,8 +95,8 @@ function makeNpcRewardState({ currentRoom, rewardResolved }) {
     phase: rewardResolved ? 'room' : 'npc_skill_selection',
     room,
     run: {
-      active: true,
-      mode: 'standard',
+      active,
+      mode,
       currentRoom,
       roomActionSeq: 10,
       rooms,
@@ -203,11 +203,138 @@ const {
 
 describe('renderSkillMaster tutorial Cid narration', () => {
   beforeEach(() => {
+    resetExploreSession();
     sceneManagerState.currentScene = null;
     sceneManagerState.transitioning = false;
     renderedChoices = null;
     renderedButtons = [];
     dialogueCalls = [];
+  });
+
+  it('uses strict prepared skill-master offers in an active standard session', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const room = { id: 'skill-standard-ready', type: 'skillMaster', skillMaster: { completed: false } };
+    const payload = {
+      kind: 'skillMaster',
+      roomId: room.id,
+      offered: [{ id: 'hpMaster', title: 'HP Master', name: 'HP Master', desc: 'More HP.' }],
+      skillSelectPrompt: { tokens: [{ text: 'Safe prompt' }], overrides: {} },
+      completed: false,
+      chosenId: null,
+    };
+    const state = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 1 },
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        stats: { startTime: 991 },
+        rooms: [room],
+        creatureParty: { active: [] },
+        exploreRunway: {
+          sessionEpoch: 'ese_5555555555555555',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            room,
+            acceptedActions: ['skillMaster.choose', 'proceed'],
+            offlineReady: true,
+            interactionPayload: payload,
+          }],
+        },
+      },
+    };
+    let legacyCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    try {
+      await renderSkillMaster();
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(legacyCalls, 0);
+    assert.equal(getExploreSession().isPaused(), false);
+    assert.equal(renderedChoices?.heading, 'Choose a skill');
+  });
+
+  it('clears and pauses malformed standard skill-master data without a legacy fetch', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const room = { id: 'skill-standard-bad', type: 'skillMaster', skillMaster: { completed: false } };
+    const state = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 1 },
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        stats: { startTime: 992 },
+        rooms: [room],
+        creatureParty: { active: [] },
+        exploreRunway: {
+          sessionEpoch: 'ese_6666666666666666',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            room,
+            acceptedActions: ['skillMaster.choose', 'proceed'],
+            offlineReady: false,
+            missingPayloadReasons: ['skillMaster.offered'],
+            interactionPayload: {
+              kind: 'skillMaster',
+              roomId: room.id,
+              offered: [],
+              skillSelectPrompt: null,
+              completed: false,
+            },
+          }],
+        },
+      },
+    };
+    let legacyCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => { actionArea.innerHTML = ''; } },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    try {
+      await renderSkillMaster();
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(legacyCalls, 0);
+    assert.equal(getExploreSession().isPaused(), true);
+    assert.equal(actionArea.innerHTML, '');
+    assert.equal(renderedChoices, null);
   });
 
   it('does not restart Cid entrance narration on same-room rerender', async () => {
@@ -666,16 +793,20 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       scene: { showNarration: () => { showNarrationCalls += 1; } },
     });
 
+    let fetchCalls = 0;
     try {
       await renderNpcBattleSkillSelection({
-        fetchOffers: async () => ({
-          skillSelectPrompt: prompt,
-          offered: [
-            { id: 'arcStrike', level: 1, name: 'Arc Strike', title: 'Arc Strike - Lvl. 1', desc: 'Your attacks arc to another enemy for 30% damage.' },
-            { id: 'guard', name: 'Guard', desc: 'Defend' },
-            { id: 'haste', name: 'Haste', desc: 'Speed up' },
-          ],
-        }),
+        fetchOffers: async () => {
+          fetchCalls += 1;
+          return {
+            skillSelectPrompt: prompt,
+            offered: [
+              { id: 'arcStrike', level: 1, name: 'Arc Strike', title: 'Arc Strike - Lvl. 1', desc: 'Your attacks arc to another enemy for 30% damage.' },
+              { id: 'guard', name: 'Guard', desc: 'Defend' },
+              { id: 'haste', name: 'Haste', desc: 'Speed up' },
+            ],
+          };
+        },
         onSkillChosen: async () => {},
       });
     } finally {
@@ -683,6 +814,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     }
 
     assert.equal(showNarrationCalls, 0);
+    assert.equal(fetchCalls, 1, 'no-session NPC rewards retain the legacy offer API');
     assert.equal(dialogueCalls.length, 1);
     assert.equal(dialogueCalls[0].speaker, 'Nagi');
     assert.equal(dialogueCalls[0].speakerId, 'nagi');
@@ -692,6 +824,141 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     assert.equal(renderedChoices?.heading, 'Choose a skill');
     assert.match(actionArea.innerHTML, /Arc Strike - Lvl\. 1/);
     assert.match(actionArea.innerHTML, /30% damage/);
+  });
+
+  it('uses prepared NPC reward offers without a legacy fetch in a standard session', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const room = {
+      id: 'npc-prepared-reward',
+      type: 'npcBattle',
+      interacted: true,
+      npcBattle: { skillSelectionPending: true, rewardResolved: false },
+    };
+    const payload = {
+      kind: 'npcBattle',
+      roomId: room.id,
+      lifecycle: 'resolved',
+      rewardPending: true,
+      offered: [{ id: 'hpMaster', title: 'HP Master', name: 'HP Master', desc: 'More HP.' }],
+      skillSelectPrompt: { tokens: [{ text: 'Safe prompt' }], overrides: {} },
+    };
+    const state = {
+      phase: 'npc_skill_selection',
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        rooms: [room],
+        creatureParty: { active: [] },
+        exploreRunway: {
+          sessionEpoch: 'ese_7777777777777777',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            room,
+            acceptedActions: ['npcBattleSkill.choose'],
+            offlineReady: true,
+            interactionPayload: payload,
+          }],
+        },
+      },
+    };
+    let fetchCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => { actionArea.innerHTML = ''; } },
+      scene: { showNarration: () => {} },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    try {
+      await renderNpcBattleSkillSelection({
+        fetchOffers: async () => { fetchCalls += 1; return null; },
+      });
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(fetchCalls, 0);
+    assert.equal(getExploreSession().isPaused(), false);
+    assert.equal(renderedChoices?.heading, 'Choose a skill');
+  });
+
+  it('clears and pauses malformed standard NPC reward payloads without fetching', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const room = {
+      id: 'npc-malformed-reward',
+      type: 'npcBattle',
+      interacted: true,
+      npcBattle: { skillSelectionPending: true, rewardResolved: false },
+    };
+    const state = {
+      phase: 'npc_skill_selection',
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        rooms: [room],
+        creatureParty: { active: [] },
+        exploreRunway: {
+          sessionEpoch: 'ese_8888888888888888',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            room,
+            acceptedActions: ['npcBattleSkill.choose'],
+            offlineReady: false,
+            missingPayloadReasons: ['npcBattle.skillSelectPrompt'],
+            interactionPayload: {
+              kind: 'npcBattle',
+              roomId: room.id,
+              lifecycle: 'resolved',
+              rewardPending: true,
+              offered: [],
+              skillSelectPrompt: null,
+            },
+          }],
+        },
+      },
+    };
+    let fetchCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => { actionArea.innerHTML = ''; } },
+      scene: { showNarration: () => {} },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    try {
+      await renderNpcBattleSkillSelection({
+        fetchOffers: async () => { fetchCalls += 1; return null; },
+      });
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(fetchCalls, 0);
+    assert.equal(getExploreSession().isPaused(), true);
+    assert.equal(actionArea.innerHTML, '');
+    assert.equal(renderedChoices, null);
   });
 
   // Regression (explore subway rooms tier): zero eligible skills must resolve on
@@ -1008,7 +1275,12 @@ describe('renderSkillMaster tutorial Cid narration', () => {
             dependencies: ['partySkills'],
             offlineReady: true,
             interactionPayload: {
-              offered: [{ id: 'hpMaster', level: 1, title: 'HP Master' }],
+              kind: 'skillMaster',
+              roomId: room.id,
+              offered: [{ id: 'hpMaster', level: 1, title: 'HP Master', name: 'HP Master', desc: 'More HP.' }],
+              skillSelectPrompt: { tokens: [{ text: 'Safe prompt' }], overrides: {} },
+              completed: false,
+              chosenId: null,
             },
           }],
         },
@@ -1082,6 +1354,14 @@ describe('renderSkillMaster tutorial Cid narration', () => {
             actionEffects: { 'npcBattleSkill.choose': ['partySkills'] },
             dependencies: ['partySkills'],
             offlineReady: true,
+            interactionPayload: {
+              kind: 'npcBattle',
+              roomId: room.id,
+              lifecycle: 'resolved',
+              rewardPending: true,
+              offered: [{ id: 'hpMaster', level: 1, title: 'HP Master', name: 'HP Master', desc: 'More HP.' }],
+              skillSelectPrompt: { tokens: [{ text: 'Safe prompt' }], overrides: {} },
+            },
           }],
         },
       },
@@ -1106,9 +1386,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
 
     try {
       await renderNpcBattleSkillSelection({
-        fetchOffers: async () => ({
-          offered: [{ id: 'hpMaster', level: 1, title: 'HP Master' }],
-        }),
+        fetchOffers: async () => { throw new Error('prepared payload expected'); },
       });
       await renderedChoices.onSelect(0);
     } finally {

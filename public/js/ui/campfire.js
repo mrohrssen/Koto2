@@ -3,6 +3,10 @@ import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-clie
 import { showItemTargetPicker } from './item-target-picker.js';
 import { renderButtons } from './ui-components.js';
 import { itemSpriteUrl, spriteUrl } from '../assets/asset-urls.js';
+import {
+  activeRoomForExploreState,
+  preparedExploreRoomCapability,
+} from './explore-room-capability.js';
 
 let callbacks = {};
 let campfireState = null;
@@ -24,13 +28,30 @@ export function init(cbs) {
 }
 
 export async function show() {
-  const prepared = callbacks.getExploreSession?.()?.currentPreparedRoom();
-  const payload = prepared?.interactionPayload;
-  campfireState = normalizeCampfireState(payload || await callbacks.apiGetCampfire());
+  const state = callbacks.getGameState?.();
+  const session = callbacks.getExploreSession?.();
+  const capability = preparedExploreRoomCapability({
+    session,
+    state,
+    room: activeRoomForExploreState(state),
+    expectedKind: 'campfire',
+    requiredActions: ['campfire.cook', 'campfire.feed', 'campfire.skip', 'proceed'],
+    validatePayload: validCampfirePayload,
+  });
+  if (capability.activeStandard && !capability.valid) {
+    clearCampfireUi();
+    session?.pause?.('missingPayload');
+    return null;
+  }
+  const source = capability.activeStandard
+    ? capability.payload
+    : await callbacks.apiGetCampfire();
+  campfireState = normalizeCampfireState(source);
   selected = {};
   activeTab = 'ingredients';
   displayMode = campfireState?.room?.cookedDish ? 'cooking' : 'entry';
   render();
+  return campfireState;
 }
 
 export function renderForTest(state, cbs = {}) {
@@ -115,6 +136,23 @@ function cloneValue(value) {
 function normalizeCampfireState(state) {
   const next = state?.room?.campfire ? { ...state, room: state.room.campfire } : state;
   return hydrateCampfireRecipes(next);
+}
+
+function validCampfirePayload(payload) {
+  return payload?.ingredients
+    && typeof payload.ingredients === 'object'
+    && Array.isArray(payload?.ingredientCatalog)
+    && Number.isInteger(payload?.ingredientCount)
+    && payload.ingredientCount >= 0
+    && Array.isArray(payload?.discoveredRecipes)
+    && Array.isArray(payload?.cookableRecipeHints)
+    && Array.isArray(payload?.recipes)
+    && payload?.room
+    && typeof payload.room === 'object'
+    && Array.isArray(payload?.yesTokens?.tokens)
+    && payload.yesTokens.tokens.length > 0
+    && Array.isArray(payload?.noTokens?.tokens)
+    && payload.noTokens.tokens.length > 0;
 }
 
 function hydrateCampfireRecipes(state) {
@@ -224,11 +262,11 @@ function renderFrameTokens(framePayload, fallback) {
 }
 
 function yesLabel() {
-  return renderFrameTokens(campfireState?.yesTokens, 'はい');
+  return renderFrameTokens(campfireState?.yesTokens, 'Yes');
 }
 
 function noLabel() {
-  return renderFrameTokens(campfireState?.noTokens, 'いいえ');
+  return renderFrameTokens(campfireState?.noTokens, 'No');
 }
 
 function renderIngredientIcon(entity, className = 'campfire-ingredient-icon') {

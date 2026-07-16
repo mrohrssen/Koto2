@@ -83,14 +83,72 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 });
 
 const { init, renderShrine } = await import('../../../public/js/ui/exploration.js');
-const { getExploreSession } = await import('../../../public/js/ui/explore-session.js');
+const { getExploreSession, resetExploreSession } = await import('../../../public/js/ui/explore-session.js');
 
 describe('renderShrine encounter flow', () => {
   beforeEach(() => {
+    resetExploreSession();
     renderedChoices = null;
     dialogueCards = [];
     sceneManagerState.currentScene = null;
     sceneManagerState.transitioning = false;
+  });
+
+  it('soft-pauses a malformed active standard shrine without calling legacy offers', async () => {
+    const room = {
+      id: 'shrine-malformed-standard',
+      type: 'shrine',
+      shrine: { completed: false, used: false },
+    };
+    const state = {
+      phase: 'shrine',
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        rooms: [room],
+        creatureParty: { active: [], reserves: [] },
+        exploreRunway: {
+          sessionEpoch: 'ese_3333333333333333',
+          currentRoom: 0,
+          preparedRooms: [{
+            index: 0,
+            roomId: room.id,
+            room,
+            acceptedActions: ['shrine.choose', 'proceed'],
+            offlineReady: false,
+            missingPayloadReasons: ['shrine.greeting'],
+            interactionPayload: {
+              kind: 'shrine',
+              roomId: room.id,
+              rewards: [{ id: 'heal_all', title: 'Heal', description: 'Heal all.' }],
+              greeting: null,
+              completed: false,
+            },
+          }],
+        },
+      },
+    };
+    let legacyCalls = 0;
+    let clearCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => { clearCalls += 1; } },
+      scene: { showNarration: async () => {} },
+      apiGetShrineOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    await renderShrine();
+
+    assert.equal(legacyCalls, 0);
+    assert.ok(clearCalls > 0);
+    assert.equal(getExploreSession().isPaused(), true);
+    assert.equal(renderedChoices, null);
+    assert.equal(dialogueCards.length, 0);
   });
 
   function initShrine(overrides = {}) {

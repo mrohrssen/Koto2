@@ -365,6 +365,12 @@ test('pending post-victory NPC rewards are offline-ready with only choose accept
   assert.deepEqual(entry.acceptedActions, ['npcBattleSkill.choose']);
   assert.equal(entry.offlineReady, true);
   assert.deepEqual(entry.missingPayloadReasons, []);
+  assert.equal(entry.interactionPayload.kind, 'npcBattle');
+  assert.equal(entry.interactionPayload.roomId, room.id);
+  assert.equal(entry.interactionPayload.lifecycle, 'resolved');
+  assert.equal(entry.interactionPayload.rewardPending, true);
+  assert.deepEqual(entry.interactionPayload.offered.map(offer => offer.id), ['hpMaster']);
+  assert.ok(entry.interactionPayload.skillSelectPrompt?.tokens?.length > 0);
   assert.equal(room.preparedCombat, undefined);
 });
 

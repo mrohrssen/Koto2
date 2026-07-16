@@ -28,6 +28,14 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(campfireSource, /did not save\. Please/);
   });
 
+  it('does not ship unvalidated literal Japanese support-room fallbacks', () => {
+    assert.doesNotMatch(explorationSource, /text:\s*'こんにちは！'/);
+    assert.doesNotMatch(explorationSource, /\$\{item\.word\}、ください/);
+    assert.doesNotMatch(explorationSource, /アイテムをもらった！/);
+    assert.doesNotMatch(campfireSource, /renderFrameTokens\(campfireState\?\.yesTokens,\s*'はい'\)/);
+    assert.doesNotMatch(campfireSource, /renderFrameTokens\(campfireState\?\.noTokens,\s*'いいえ'\)/);
+  });
+
   it('records deterministic support-room exploration choices on the explore session', () => {
     const whackChoiceSource = sourceBetween(
       explorationSource,
