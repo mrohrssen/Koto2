@@ -900,7 +900,7 @@ test('corrected response clears the log, notifies, and adopts response runway', 
   assert.equal(session.currentPreparedRoom().index, 1);
 });
 
-test('same-epoch correction advances revision when it rejects and clears pending actions', async () => {
+test('same-epoch correction advances its continuation revision without faking local work', async () => {
   const runway = makeRunway({ sessionEpoch: 'ese_same_epoch_correction' });
   const session = createExploreSession({
     syncRequest: async () => ({
@@ -914,13 +914,16 @@ test('same-epoch correction advances revision when it rejects and clears pending
   });
   session.adoptRunway(runway);
   session.recordRoomAction('friendlyNpc.choose', { itemId: 'iron-charm' });
-  const afterAppend = session.getLocalRevision();
+  const localAfterAppend = session.getLocalRevision();
+  const correctionBefore = session.getCorrectionRevision();
 
   await session.syncNow();
 
   assert.equal(session.pendingCount(), 0);
-  assert.ok(session.getLocalRevision() > afterAppend,
-    'a same-epoch correction must invalidate continuations captured after append');
+  assert.equal(session.getLocalRevision(), localAfterAppend,
+    'a same-epoch correction must not look like newly appended local work');
+  assert.ok(session.getCorrectionRevision() > correctionBefore,
+    'a same-epoch correction must still invalidate captured continuations');
 });
 
 test('corrected response with null exploreRunway clears stale prepared room', async () => {

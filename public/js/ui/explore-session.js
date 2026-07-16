@@ -123,6 +123,7 @@ export function createExploreSession({
   let pauseReason = null;
   let generation = 0;
   let localRevision = 0;
+  let correctionRevision = 0;
   let handledResultActionIds = new Set();
   let actionNonce = createSessionNonce();
 
@@ -130,6 +131,7 @@ export function createExploreSession({
   function isPaused() { return paused; }
   function getPauseReason() { return pauseReason; }
   function getLocalRevision() { return localRevision; }
+  function getCorrectionRevision() { return correctionRevision; }
 
   function consumeResultOnce(actionId) {
     if (typeof actionId !== 'string' || actionId.length === 0) return true;
@@ -429,7 +431,7 @@ export function createExploreSession({
       // known. Combat playback may still be holding response adoption; waiting
       // until after that hold creates a race where the rejected local turn can
       // publish during the handoff.
-      if (response?.status === 'corrected') localRevision += 1;
+      if (response?.status === 'corrected') correctionRevision += 1;
 
       // A combat checkpoint may arrive while the predicted turn is still
       // animating. Wait before changing either the ordered log or runway owner;
@@ -525,6 +527,7 @@ export function createExploreSession({
     isPaused,
     getPauseReason,
     getLocalRevision,
+    getCorrectionRevision,
     consumeResultOnce,
     pause: enterPause,
   };

@@ -714,11 +714,14 @@ function classifyExploreCombatContinuation(session, capturedOwner, capturedProgr
     expectedVersion,
     expectedSeed,
     sessionRevision,
+    correctionRevision,
   } = capturedProgress;
 
   if (
-    sessionRevision != null
-    && session?.getLocalRevision?.() !== sessionRevision
+    (sessionRevision != null
+      && session?.getLocalRevision?.() !== sessionRevision)
+    || (correctionRevision != null
+      && session?.getCorrectionRevision?.() !== correctionRevision)
   ) {
     return 'adopted';
   }
@@ -835,17 +838,31 @@ function handleCreatureTurnFailure({
   return true;
 }
 
-async function fenceExploreSessionBeforeLegacyCombat(session) {
+async function fenceExploreSessionBeforeLegacyCombat(session, capturedOwner = null) {
   const revision = session?.getLocalRevision?.() ?? 0;
+  const correctionRevision = session?.getCorrectionRevision?.() ?? 0;
   try {
     await session?.syncNow?.({ reason: 'combatSeedFallback' });
   } catch {}
   const unchanged = (session?.getLocalRevision?.() ?? revision) === revision;
+  const corrected = (session?.getCorrectionRevision?.() ?? correctionRevision) !== correctionRevision;
   const empty = (session?.pendingCount?.() ?? 0) === 0;
   const online = globalThis.navigator?.onLine !== false;
-  const ready = online && empty && unchanged && session?.isPaused?.() !== true;
+  const currentOwner = capturedOwner == null
+    || ownsCurrentExploreCombat(session, capturedOwner);
+  const ready = online
+    && empty
+    && currentOwner
+    && unchanged
+    && !corrected
+    && session?.isPaused?.() !== true;
   if (!ready) {
-    session?.pause?.(empty && !online ? 'runwayExhausted' : 'syncPending');
+    // Empty authoritative corrections are a completed rebase, not unsynced
+    // work. Never strand them in syncPending, and never submit the input chosen
+    // against pre-correction state: the correction's UI recovery owns the next
+    // selection. Only a genuinely non-empty log remains sync-blocked.
+    if (!empty) session?.pause?.('syncPending');
+    else if (!online) session?.pause?.('runwayExhausted');
   }
   return ready;
 }
@@ -1078,6 +1095,7 @@ async function runSessionCreatureCombatTurn({
   // the append so a later correction/adoption — including a same-epoch one —
   // invalidates this continuation without mistaking our own append for drift.
   capturedProgress.sessionRevision = session?.getLocalRevision?.() ?? null;
+  capturedProgress.correctionRevision = session?.getCorrectionRevision?.() ?? null;
 
   const hasPendingCombatEnd = !!optimistic.localTranscript?.pendingCombatEnd;
   const requestStartedAt = performance.now();
@@ -1207,7 +1225,15 @@ async function runOptimisticCreatureCombatTurn({
       }
     }
 
-    const legacyReady = await fenceExploreSessionBeforeLegacyCombat(owner);
+    const capturedFallbackOwner = capturedExploreCombatOwner(
+      standardSession,
+      getGameState()?.combat?.optimistic?.combatId ?? null,
+      exploreOwnerContext,
+    );
+    const legacyReady = await fenceExploreSessionBeforeLegacyCombat(
+      owner,
+      capturedFallbackOwner,
+    );
     if (!legacyReady) {
       clearCombatPendingFlag(pendingFlag);
       return true;

@@ -763,6 +763,91 @@ describe('explore-session local combat turns', () => {
     assert.deepEqual(events.slice(0, 3), ['sync:start', 'sync:end', 'verify']);
   });
 
+  for (const correction of [
+    {
+      label: 'same-epoch',
+      reason: 'transcript_mismatch',
+      sessionEpoch: 'ese_seed_fallback_correction',
+    },
+    {
+      label: 'epoch-rotated',
+      reason: 'session_epoch_mismatch',
+      sessionEpoch: 'ese_seed_fallback_rotated',
+    },
+  ]) {
+    it(`keeps ${correction.label} corrected empty-log seed fallback recoverable`, async () => {
+      const initialState = sessionCombatState({ turnSeeds: ['seed-a'] });
+      const authoritativeState = structuredClone(initialState);
+      authoritativeState.meta = { correctionOwner: 'seed-fallback-base' };
+      const runway = {
+        sessionEpoch: 'ese_seed_fallback_correction',
+        currentRoom: 0,
+        roomActionSeq: 0,
+        preparedRooms: [{
+          index: 0,
+          roomId: 'room-0',
+          actionSeq: 0,
+          offlineReady: true,
+          acceptedActions: ['combat.cycle'],
+          actionEffects: { 'combat.cycle': ['combatState', 'partyStats'] },
+          dependencies: ['combatState', 'partyStats'],
+          interactionPayload: {
+            combatId: 'cmb_sess',
+            combatStart: { optimistic: { combatId: 'cmb_sess' } },
+          },
+        }],
+      };
+      const pauses = [];
+      let correctionRenders = 0;
+      let harness;
+      const correctedRunway = {
+        ...structuredClone(runway),
+        sessionEpoch: correction.sessionEpoch,
+      };
+      fakeSession = createExploreSession({
+        syncRequest: async () => ({
+          status: 'corrected',
+          reason: correction.reason,
+          state: authoritativeState,
+          exploreRunway: correctedRunway,
+        }),
+        onCorrection: response => {
+          harness.replaceState(response.state);
+          correctionRenders += 1;
+        },
+        onPause: ({ reason }) => { pauses.push(reason); },
+        schedule: () => null,
+        cancel: () => {},
+      });
+      fakeSession.adoptRunway(runway);
+      harness = initHarness(initialState);
+      combatLoop.__combatNetworkTest.setCombatActive(true);
+      combatLoop.__combatNetworkTest.setPendingFlags({ player: true, enemy: false });
+      assert.equal(fakeSession.recordRoomAction('combat.cycle', {
+        actionType: 'attack',
+        moveChoices: [],
+        predictedHash: 'rejected-prior-turn',
+      }).accepted, true);
+      let playbackCount = 0;
+
+      const handled = await runTurn(harness, async () => { playbackCount += 1; });
+
+      assert.equal(handled, true);
+      assert.equal(fakeSession.pendingCount(), 0);
+      assert.equal(fakeSession.isPaused(), false,
+        'a corrected empty log must not be stranded in syncPending');
+      assert.equal(fakeSession.getPauseReason(), null);
+      assert.deepEqual(pauses, []);
+      assert.equal(verifyCalls.length, 0,
+        'an input chosen before correction must not be submitted against the rebased state');
+      assert.equal(playbackCount, 0,
+        'the rejected pre-correction input must not play a local prediction');
+      assert.equal(correctionRenders, 1,
+        'the authoritative correction callback owns re-rendering the current selection');
+      assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, false);
+    });
+  }
+
   it('does not verify when the session fence cannot clear its log', async () => {
     const pauses = [];
     fakeSession.pendingCount = () => 1;
