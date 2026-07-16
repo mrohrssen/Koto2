@@ -851,7 +851,12 @@ export function missingPayloadReasonsFor(room, interactionPayload) {
       missing.push('campfire.cookableRecipeHints');
     }
     if (!Array.isArray(interactionPayload?.recipes)) missing.push('campfire.recipes');
-    if (!interactionPayload?.room || typeof interactionPayload.room !== 'object') {
+    if (
+      !interactionPayload?.room
+      || typeof interactionPayload.room !== 'object'
+      || interactionPayload.room.id !== room.id
+      || interactionPayload.room.type !== ROOM_TYPES.campfire
+    ) {
       missing.push('campfire.room');
     }
     if (!interactionPayload?.yesTokens?.tokens?.length) missing.push('campfire.yesTokens');

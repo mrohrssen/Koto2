@@ -330,6 +330,50 @@ describe('campfire UI', () => {
     assert.equal(sceneArea.querySelector('.campfire-scene'), null);
   });
 
+  it('rejects stale nested campfire room state before rendering cooked, feed, or completion UI', async () => {
+    for (const staleRoom of [
+      {
+        id: 'previous-campfire-room',
+        type: 'campfire',
+        campfire: { cookedDish: { id: 'stale-dish' }, completed: true, fedTargetIndex: 0 },
+      },
+      {
+        id: 'campfire-room',
+        type: 'shrine',
+        campfire: { cookedDish: { id: 'stale-dish' }, completed: true, fedTargetIndex: 0 },
+      },
+    ]) {
+      const value = activeCampfireCapability();
+      value.prepared.interactionPayload.room = staleRoom;
+      let legacyCalls = 0;
+      campfire.renderForTest(sampleState({
+        room: {
+          cookedDish: {
+            id: 'stale-dish',
+            word: '料理',
+            reading: 'りょうり',
+            nameEn: 'Stale dish',
+            effectDescription: 'Should never remain visible.',
+          },
+          completed: true,
+          fedTargetIndex: 0,
+        },
+      }));
+      campfire.init({
+        getGameState: () => value.gameState,
+        getExploreSession: () => value.session,
+        apiGetCampfire: async () => { legacyCalls += 1; return sampleState(); },
+      });
+
+      await campfire.show();
+
+      assert.equal(legacyCalls, 0);
+      assert.equal(value.session.isPaused(), true);
+      assert.equal(actionArea.innerHTML, '');
+      assert.equal(sceneArea.querySelector('.campfire-scene'), null);
+    }
+  });
+
   it('retains the legacy API for runs without an active standard session', async () => {
     let legacyCalls = 0;
     campfire.init({

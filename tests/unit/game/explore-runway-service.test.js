@@ -185,6 +185,33 @@ test('rejects malformed support-room identities and essential payload fields', (
   }
 });
 
+test('rejects stale nested campfire room identity before accepting cooked or feed state', () => {
+  const room = { id: 'campfire-current', type: ROOM_TYPES.campfire };
+  const payload = {
+    kind: ROOM_TYPES.campfire,
+    roomId: room.id,
+    ingredients: {},
+    ingredientCatalog: [],
+    ingredientCount: 0,
+    discoveredRecipes: [],
+    cookableRecipeHints: [],
+    recipes: [],
+    room: {
+      id: 'campfire-previous',
+      type: ROOM_TYPES.campfire,
+      campfire: { cookedDish: { id: 'stale-dish' }, completed: true, fedTargetIndex: 0 },
+    },
+    yesTokens: { tokens: [{}] },
+    noTokens: { tokens: [{}] },
+  };
+
+  assert.deepEqual(missingPayloadReasonsFor(room, payload), ['campfire.room']);
+
+  payload.room.id = room.id;
+  payload.room.type = ROOM_TYPES.shrine;
+  assert.deepEqual(missingPayloadReasonsFor(room, payload), ['campfire.room']);
+});
+
 test('treats an initialized zero-card speed review snapshot as offline ready', async () => {
   const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.speedReviewRoom]);
   const runway = await buildExploreRunway(gm, {

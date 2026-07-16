@@ -138,7 +138,7 @@ function normalizeCampfireState(state) {
   return hydrateCampfireRecipes(next);
 }
 
-function validCampfirePayload(payload) {
+function validCampfirePayload(payload, _prepared, room) {
   return payload?.ingredients
     && typeof payload.ingredients === 'object'
     && Array.isArray(payload?.ingredientCatalog)
@@ -149,6 +149,8 @@ function validCampfirePayload(payload) {
     && Array.isArray(payload?.recipes)
     && payload?.room
     && typeof payload.room === 'object'
+    && payload.room.id === room?.id
+    && payload.room.type === 'campfire'
     && Array.isArray(payload?.yesTokens?.tokens)
     && payload.yesTokens.tokens.length > 0
     && Array.isArray(payload?.noTokens?.tokens)
