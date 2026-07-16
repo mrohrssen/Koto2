@@ -429,6 +429,93 @@ describe('optimistic combat turn client', () => {
     }), null);
   });
 
+  it('keeps session KO swaps out of reserves without taking ownership of the input party', () => {
+    const activeAlly = createCombatant({
+      id: 'hi',
+      hp: 1,
+      maxHp: 100,
+      defense: 1,
+    });
+    const reserveAlly = createCombatant({
+      id: 'kaze',
+      name: '風',
+      nameEn: 'Wind',
+      reading: 'かぜ',
+      element: 'wind',
+      hp: 75,
+      maxHp: 75,
+      statStages: { atk: 2, def: 0, dex: 0 },
+    });
+    const enemy = createCombatant({
+      id: 'mizu',
+      hp: 999,
+      maxHp: 999,
+      defense: 999,
+      attack: 1000,
+      moves: [{
+        id: 'slam',
+        name: '打つ',
+        nameEn: 'Hit',
+        reading: 'うつ',
+        element: 'neutral',
+        category: 'damage',
+        target: 'single_enemy',
+        power: 1000,
+        mpCost: 0,
+        accuracy: 100,
+      }],
+    });
+    const sessionState = state({
+      combat: {
+        allies: [activeAlly],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: {
+          combatId: 'cmb_session_ko_swap',
+          stateVersion: 4,
+          nextTurnSeed: 'session-ko-swap-seed',
+        },
+      },
+      run: {
+        creatureParty: { active: [activeAlly], reserves: [reserveAlly] },
+      },
+    });
+    const inputPartyBefore = structuredClone(sessionState.run.creatureParty);
+
+    const result = buildOptimisticCombatTurn({
+      state: sessionState,
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      actionId: 'act_session_ko_swap',
+      predictionPolicy: 'session',
+    });
+
+    assert.ok(result);
+    assert.equal(result.localTranscript.koSwaps.length, 1);
+    assert.strictEqual(
+      result.localTranscript.creatureParty.active,
+      result.localNextCombat.allies,
+      'the run party and combat must share the post-turn active array',
+    );
+    assert.deepEqual(result.localTranscript.stateSummary.reserves, []);
+    assert.deepEqual(result.localTranscript.creatureParty.reserves, []);
+    assert.deepEqual(
+      result.localTranscript.creatureParty.active.map(creature => creature.id),
+      ['kaze'],
+    );
+    assert.equal(
+      [
+        ...result.localTranscript.creatureParty.active,
+        ...result.localTranscript.creatureParty.reserves,
+      ].filter(creature => creature.id === 'kaze').length,
+      1,
+      'the promoted reserve must not remain duplicated in reserves',
+    );
+    assert.notStrictEqual(result.localTranscript.creatureParty, sessionState.run.creatureParty);
+    assert.notStrictEqual(result.localTranscript.creatureParty.active[0], reserveAlly);
+    assert.deepEqual(sessionState.run.creatureParty, inputPartyBefore);
+  });
+
   it('builds optimistic Kanji Kombat answer envelopes from the visible quiz', () => {
     const kkState = kanjiKombatState();
 

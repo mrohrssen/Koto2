@@ -103,14 +103,17 @@ function addPendingCombatEndShell(localTranscript, predictedTranscript) {
 
 export function buildVisualSafePveLocalTranscript({ predictedTranscript, nextCombat, run }) {
   const visualTranscript = cloneVisualSafeTranscript(predictedTranscript);
+  const resolvedCreatureParty = visualTranscript?.creatureParty
+    || cloneVisualSafeTranscript(run?.creatureParty);
+  const localAllies = nextCombat?.allies || resolvedCreatureParty?.active || [];
   return addPendingCombatEndShell({
     ...visualTranscript,
-    allies: nextCombat?.allies || [],
+    allies: localAllies,
     enemies: nextCombat?.enemies || [],
-    creatureParty: run?.creatureParty
+    creatureParty: resolvedCreatureParty
       ? {
-          ...run.creatureParty,
-          active: nextCombat?.allies || run.creatureParty.active || [],
+          ...resolvedCreatureParty,
+          active: localAllies,
         }
       : null,
   }, predictedTranscript);
