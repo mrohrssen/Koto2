@@ -158,6 +158,63 @@ test('records actions with room identity and predicted effects', () => {
   assert.equal(typeof entry.createdAt, 'number');
 });
 
+test('fails closed when the current prepared room omits offline readiness', () => {
+  const room = preparedRoom(0, {
+    actionSeq: 7,
+    acceptedActions: ['friendlyNpc.choose'],
+    actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+  });
+  delete room.offlineReady;
+  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  session.adoptRunway(makeRunway({ preparedRooms: [room] }));
+
+  const result = session.recordRoomAction('friendlyNpc.choose', { itemId: 'iron-charm' });
+
+  assert.deepEqual(result, {
+    accepted: false,
+    reason: 'currentRoomNotReady',
+    pendingCount: 0,
+  });
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.isPaused(), true);
+  assert.equal(session.getPauseReason(), 'currentRoomNotReady');
+});
+
+test('fails closed instead of falling back to the first room when the runway cursor is missing', () => {
+  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  session.adoptRunway(makeRunway({
+    currentRoom: 4,
+    preparedRooms: [preparedRoom(3, {
+      acceptedActions: ['friendlyNpc.choose'],
+      actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    })],
+  }));
+
+  assert.equal(session.currentPreparedRoom(), null);
+  const result = session.recordRoomAction('friendlyNpc.choose', { itemId: 'iron-charm' });
+
+  assert.deepEqual(result, {
+    accepted: false,
+    reason: 'noPreparedRoom',
+    pendingCount: 0,
+  });
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.isPaused(), true);
+  assert.equal(session.getPauseReason(), 'noPreparedRoom');
+});
+
+test('uses the first prepared room as the initial cursor only when the runway omits a cursor', () => {
+  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  session.adoptRunway({
+    sessionEpoch: 'ese_1212121212121212',
+    roomActionSeq: 12,
+    preparedRooms: [preparedRoom(5, { actionSeq: 12 })],
+  });
+
+  assert.equal(session.currentPreparedRoom()?.index, 5);
+  assert.equal(session.recordRoomAction('proceed').reason, 'runwayExhausted');
+});
+
 test('serializes checkpoint adoption until active combat playback is idle', async () => {
   let releasePlayback;
   const playbackIdle = new Promise(resolve => { releasePlayback = resolve; });

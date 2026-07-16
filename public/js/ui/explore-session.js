@@ -71,7 +71,7 @@ function dependenciesFor(preparedRoom) {
 }
 
 function isRoomReady(preparedRoom) {
-  return Boolean(preparedRoom) && preparedRoom.offlineReady !== false;
+  return Boolean(preparedRoom) && preparedRoom.offlineReady === true;
 }
 
 function isAcceptedAction(preparedRoom, kind) {
@@ -160,7 +160,10 @@ export function createExploreSession({
   function currentPreparedRoom() {
     const rooms = preparedRoomsFor(runway);
     if (rooms.length === 0) return null;
-    return rooms.find(room => roomIndexFor(room) === localCurrentRoom) || rooms[0] || null;
+    if (Number.isInteger(localCurrentRoom)) {
+      return rooms.find(room => roomIndexFor(room) === localCurrentRoom) || null;
+    }
+    return rooms[0] || null;
   }
 
   function enterPause(reason) {
