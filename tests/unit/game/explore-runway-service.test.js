@@ -61,8 +61,10 @@ test('builds current plus five prepared rooms without removing legacy reveal com
   assert.equal(runway.preparedAhead, 5);
   assert.deepEqual(runway.preparedRooms.map(entry => entry.index), [1, 2, 3, 4, 5, 6]);
   assert.deepEqual(runway.preparedRooms.map(entry => entry.actionSeq), [4, 5, 6, 7, 8, 9]);
+  const friendlyNpc = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.friendlyNpc);
+  assert.deepEqual(friendlyNpc.dependencies, ['partyStats']);
   const dealer = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.dealer);
-  assert.deepEqual(dealer.actionEffects['dealer.sell'], ['credits']);
+  assert.deepEqual(dealer.actionEffects['dealer.sell'], ['credits', 'partyStats']);
   const boss = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.boss);
   assert.deepEqual(boss.acceptedActions, ['boss.start', 'combat.cycle']);
 });

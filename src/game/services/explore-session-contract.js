@@ -38,7 +38,7 @@ const ACTION_EFFECTS = Object.freeze({
   'speedReview.complete': [EXPLORE_EFFECTS.SRS, EXPLORE_EFFECTS.PARTY_STATS],
   'wordDiscovery.review': [EXPLORE_EFFECTS.SRS],
   'wordDiscovery.complete': [EXPLORE_EFFECTS.CREDITS, EXPLORE_EFFECTS.PARTY_STATS],
-  'dealer.sell': [EXPLORE_EFFECTS.CREDITS],
+  'dealer.sell': [EXPLORE_EFFECTS.CREDITS, EXPLORE_EFFECTS.PARTY_STATS],
   'dealer.buy': [EXPLORE_EFFECTS.CREDITS, EXPLORE_EFFECTS.PARTY_STATS],
   'dealer.leave': [],
 });
@@ -92,7 +92,9 @@ const ROOM_DEPENDENCIES = Object.freeze({
   dealer: [EXPLORE_EFFECTS.CREDITS],
   speedReviewRoom: [EXPLORE_EFFECTS.SRS],
   wordDiscovery: [EXPLORE_EFFECTS.SRS],
-  friendlyNpc: [],
+  // Friendly NPC rewards target concrete active-party slots. Any queued roster
+  // mutation must land before the client can choose against this prepared room.
+  friendlyNpc: [EXPLORE_EFFECTS.PARTY_STATS],
   shrine: [EXPLORE_EFFECTS.PARTY_STATS],
   skillMaster: [EXPLORE_EFFECTS.PARTY_SKILLS],
   whackAMole: [],

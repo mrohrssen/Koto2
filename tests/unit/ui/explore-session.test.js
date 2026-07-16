@@ -11,7 +11,10 @@ import {
   EXPLORE_SYNC_DEBOUNCE_MS,
   EXPLORE_SYNC_RETRY_DELAYS_MS,
 } from '../../../public/js/ui/explore-session.js';
-import { roomDependenciesForType } from '../../../src/game/services/explore-session-contract.js';
+import {
+  predictedEffectsForAction,
+  roomDependenciesForType,
+} from '../../../src/game/services/explore-session-contract.js';
 
 function makeManualScheduler() {
   const timers = [];
@@ -271,6 +274,48 @@ test('dependency pause keeps local room when unsynced effects intersect next dep
   assert.equal(pauses.length, 1);
   assert.equal(pauses[0].reason, 'dependency');
   assert.equal(pauses[0].pendingCount, 1);
+});
+
+test('dealer sell pauses before a friendly NPC until the changed roster is authoritative', () => {
+  const dealerSellEffects = predictedEffectsForAction('dealer.sell');
+  const friendlyNpcDependencies = roomDependenciesForType('friendlyNpc');
+  assert.ok(dealerSellEffects.includes('partyStats'), 'dealer sell changes the active roster');
+  assert.ok(friendlyNpcDependencies.includes('partyStats'), 'friendly NPC choices address active roster slots');
+
+  const pauses = [];
+  const session = createExploreSession({
+    syncRequest: async () => okResponse(1),
+    onPause: detail => pauses.push(detail),
+  });
+  session.adoptRunway(makeRunway({
+    preparedRooms: [
+      preparedRoom(0, {
+        actionSeq: 3,
+        type: 'dealer',
+        acceptedActions: ['dealer.sell', 'proceed'],
+        actionEffects: {
+          'dealer.sell': dealerSellEffects,
+          proceed: [],
+        },
+      }),
+      preparedRoom(1, {
+        actionSeq: 4,
+        type: 'friendlyNpc',
+        acceptedActions: ['friendlyNpc.choose', 'proceed'],
+        actionEffects: { 'friendlyNpc.choose': ['partyStats'], proceed: [] },
+        dependencies: friendlyNpcDependencies,
+      }),
+    ],
+  }));
+
+  assert.equal(session.recordRoomAction('dealer.sell', { creatureId: 'hi' }).accepted, true);
+  const proceed = session.recordRoomAction('proceed');
+
+  assert.deepEqual(proceed, { accepted: false, reason: 'dependency', pendingCount: 1 });
+  assert.equal(session.isPaused(), true);
+  assert.equal(session.currentPreparedRoom().index, 0);
+  assert.deepEqual(session.snapshot().map(entry => entry.kind), ['dealer.sell']);
+  assert.equal(pauses[0]?.reason, 'dependency');
 });
 
 test('shrine.choose pending pauses the proceed INTO a combat room (transcript_mismatch fix, task-12f)', () => {

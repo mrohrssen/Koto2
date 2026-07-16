@@ -197,7 +197,7 @@ test('maps predicted effects for every plan action kind', () => {
     ['speedReview.complete', ['srs', 'partyStats']],
     ['wordDiscovery.review', ['srs']],
     ['wordDiscovery.complete', ['credits', 'partyStats']],
-    ['dealer.sell', ['credits']],
+    ['dealer.sell', ['credits', 'partyStats']],
     ['dealer.buy', ['credits', 'partyStats']],
     ['dealer.leave', []],
     ['encounter.start', []],
@@ -246,7 +246,7 @@ test('maps room dependencies for every plan room type', () => {
     ['dealer', ['credits']],
     ['speedReviewRoom', ['srs']],
     ['wordDiscovery', ['srs']],
-    ['friendlyNpc', []],
+    ['friendlyNpc', ['partyStats']],
     ['shrine', ['partyStats']],
     ['skillMaster', ['partySkills']],
     ['whackAMole', []],
@@ -260,12 +260,12 @@ test('maps room dependencies for every plan room type', () => {
 
 test('returns fresh effect and dependency arrays', () => {
   const effects = predictedEffectsForAction('dealer.sell');
-  effects.push('partyStats');
+  effects.push('srs');
 
   const dependencies = roomDependenciesForType('campfire');
   dependencies.push('credits');
 
-  assert.deepEqual(predictedEffectsForAction('dealer.sell'), ['credits']);
+  assert.deepEqual(predictedEffectsForAction('dealer.sell'), ['credits', 'partyStats']);
   assert.deepEqual(roomDependenciesForType('campfire'), ['ingredients', 'partyStats']);
 });
 
