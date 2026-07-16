@@ -131,6 +131,7 @@ import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
 import { getBattleRewardAnchor, showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
+import { createCombatRecoveryGate } from './js/ui/combat-recovery-gate.js';
 import { playNpcBattleIntro, playTutorialBossInterjection } from './js/ui/room-transition.js';
 import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crystals.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
@@ -524,7 +525,7 @@ function updateStatusBar() {
 }
 
 let npcDialogueRecoveryDone = false;
-let combatRecoveryDone = false;
+const combatRecoveryGate = createCombatRecoveryGate();
 let postCombatShopRecoveryDone = false;
 
 function clearClientSessionState() {
@@ -536,7 +537,7 @@ function clearClientSessionState() {
     hidePlayerFormation: () => scene.hideFormation('player'),
     resetFlags: () => {
       npcDialogueRecoveryDone = false;
-      combatRecoveryDone = false;
+      combatRecoveryGate.reset();
       postCombatShopRecoveryDone = false;
       sceneTransitionActive = false;
       lastNarrationHidePhase = null;
@@ -548,7 +549,7 @@ function clearClientSessionState() {
 
 function updateScene() {
   if (gameState.phase !== 'npc_dialogue') npcDialogueRecoveryDone = false;
-  if (gameState.phase !== 'combat') combatRecoveryDone = false;
+  combatRecoveryGate.sync(gameState);
   if (gameState.phase !== 'post_combat_shop') postCombatShopRecoveryDone = false;
 
   // Guarantee an active scene exists for the current phase. Fire-and-forget:
@@ -749,11 +750,12 @@ function updateGameContent() {
         const playbackRecovery = playbackRecoveryState === 'ready'
           && combatLoopUI.consumeExploreCombatPlaybackRecovery?.() === true;
         const playbackRecoveryHeld = playbackRecoveryState !== 'none';
-        if (
-          !combatIsActive
-          && (playbackRecovery || (!playbackRecoveryHeld && !combatRecoveryDone))
-        ) {
-          combatRecoveryDone = true;
+        if (combatRecoveryGate.shouldRecover(gameState, {
+          combatActive: combatIsActive,
+          playbackRecovery,
+          playbackRecoveryHeld,
+        })) {
+          combatRecoveryGate.markDone(gameState);
           combatLoopUI.startCombatLoop({ recovery: true });
         }
       }

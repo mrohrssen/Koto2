@@ -359,8 +359,13 @@ describe('optimistic run action integration', () => {
   });
 
   it('lets an owner-checked playback recovery bypass an already-consumed reload gate', () => {
-    const combatCaseSource = sourceBetween(
+    const updateGameContentSource = sourceBetween(
       gameSource,
+      'function updateGameContent()',
+      '// ============ AUTO-PROCEED ============'
+    );
+    const combatCaseSource = sourceBetween(
+      updateGameContentSource,
       "case 'combat':",
       "case 'npc_dialogue':"
     );
@@ -377,8 +382,13 @@ describe('optimistic run action integration', () => {
     );
     assert.match(
       combatCaseSource,
-      /playbackRecovery \|\| \(!playbackRecoveryHeld && !combatRecoveryDone\)/,
+      /combatRecoveryGate\.shouldRecover\(gameState, \{[\s\S]*?combatActive: combatIsActive,[\s\S]*?playbackRecovery,[\s\S]*?playbackRecoveryHeld/,
       'pending playback recovery must block ordinary restart while ready recovery bypasses the reload gate',
+    );
+    assert.match(
+      combatCaseSource,
+      /combatRecoveryGate\.markDone\(gameState\)/,
+      'the recovered combat owner must consume only its own one-shot gate',
     );
   });
 

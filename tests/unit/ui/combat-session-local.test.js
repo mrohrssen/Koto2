@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { createCombatRecoveryGate } from '../../../public/js/ui/combat-recovery-gate.js';
 
 // --- Minimal DOM/global shims so combat-loop.js imports cleanly (headless) ---
 globalThis.window = { __intentLog: null };
@@ -533,6 +534,162 @@ describe('explore-session local combat turns', () => {
     assert.ok(events.indexOf('pause:combatPlaybackFailed') < events.indexOf('adoption-unblocked'));
     assert.ok(events.indexOf('checkpoint') < events.indexOf('resume:combatPlaybackFailed'));
     assert.ok(events.indexOf('resume:combatPlaybackFailed') < events.indexOf('rearmed'));
+  });
+
+  it('re-arms corrected combat B once after reload-recovered combat A playback fails', async () => {
+    const combatA = sessionCombatState();
+    const combatB = sessionCombatState();
+    combatB.run.currentRoom = 1;
+    combatB.run.rooms = [
+      { id: 'room-0', type: 'encounter' },
+      { id: 'room-b', type: 'encounter' },
+    ];
+    combatB.combat.optimistic = {
+      combatId: 'cmb_b',
+      stateVersion: 0,
+      nextTurnSeed: 'seed-b-0',
+      turnSeeds: ['seed-b-0', 'seed-b-1'],
+    };
+    const runwayA = {
+      sessionEpoch: 'ese_correction_to_b',
+      currentRoom: 0,
+      roomActionSeq: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: 'room-0',
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['combatState', 'partyStats'] },
+        dependencies: ['combatState', 'partyStats'],
+        interactionPayload: {
+          combatId: 'cmb_sess',
+          combatStart: { optimistic: { combatId: 'cmb_sess' } },
+        },
+      }],
+    };
+    const runwayB = {
+      sessionEpoch: 'ese_correction_to_b',
+      currentRoom: 1,
+      roomActionSeq: 0,
+      preparedRooms: [{
+        index: 1,
+        roomId: 'room-b',
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['combatState', 'partyStats'] },
+        dependencies: ['combatState', 'partyStats'],
+        interactionPayload: {
+          combatId: 'cmb_b',
+          combatStart: { optimistic: { combatId: 'cmb_b' } },
+        },
+      }],
+    };
+    const recoveryGate = createCombatRecoveryGate();
+    const recoveryStarts = ['cmb_sess'];
+    const events = [];
+    let harness;
+
+    function driveCombatRecovery() {
+      const combatIsActive = combatLoop.__combatNetworkTest.isCombatActive();
+      const playbackRecoveryState = !combatIsActive
+        ? combatLoop.getExploreCombatPlaybackRecoveryState()
+        : 'none';
+      const playbackRecovery = playbackRecoveryState === 'ready'
+        && combatLoop.consumeExploreCombatPlaybackRecovery() === true;
+      const playbackRecoveryHeld = playbackRecoveryState !== 'none';
+      if (recoveryGate.shouldRecover(harness.state, {
+        combatActive: combatIsActive,
+        playbackRecovery,
+        playbackRecoveryHeld,
+      })) {
+        recoveryGate.markDone(harness.state);
+        recoveryStarts.push(harness.state.combat.optimistic.combatId);
+        combatLoop.__combatNetworkTest.setCombatActive(true);
+        combatLoop.__combatNetworkTest.setPendingFlags({ player: true, enemy: false });
+      }
+    }
+
+    let markResponseReady;
+    let markAdoptionWaiting;
+    let markCorrectionAdopted;
+    const responseReady = new Promise(resolve => { markResponseReady = resolve; });
+    const adoptionWaiting = new Promise(resolve => { markAdoptionWaiting = resolve; });
+    const correctionAdopted = new Promise(resolve => { markCorrectionAdopted = resolve; });
+    fakeSession = createExploreSession({
+      syncRequest: async () => {
+        markResponseReady();
+        return {
+          status: 'corrected',
+          reason: 'authoritative_successor',
+          state: combatB,
+          exploreRunway: runwayB,
+        };
+      },
+      beforeResponseAdoption: async () => {
+        markAdoptionWaiting();
+        await combatLoop.waitForExploreCombatPlaybackIdle();
+      },
+      onCorrection: response => {
+        events.push('correction');
+        harness.replaceState(response.state);
+        driveCombatRecovery();
+        markCorrectionAdopted();
+      },
+      onPause: ({ reason }) => { events.push(`pause:${reason}`); },
+      onResume: ({ reason }) => {
+        events.push(`resume:${reason}`);
+        driveCombatRecovery();
+      },
+      schedule: fn => {
+        queueMicrotask(fn);
+        return fn;
+      },
+      cancel: () => {},
+    });
+    fakeSession.adoptRunway(runwayA);
+    harness = initHarness(combatA);
+    recoveryGate.markDone(combatA);
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: false, enemy: false });
+
+    let markPlaybackStarted;
+    let rejectPlayback;
+    const playbackStarted = new Promise(resolve => { markPlaybackStarted = resolve; });
+    const playbackGate = new Promise((resolve, reject) => { rejectPlayback = reject; });
+    let selectionRestarts = 0;
+    const turn = combatLoop.__combatNetworkTest.executeCreatureMovesTurn(
+      [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      {
+        playback: async () => {
+          markPlaybackStarted();
+          await playbackGate;
+        },
+        restartMoveSelection: () => { selectionRestarts += 1; },
+        reportError: () => { events.push('reported'); },
+      },
+    );
+
+    await playbackStarted;
+    await responseReady;
+    await adoptionWaiting;
+    rejectPlayback(new Error('combat A playback failed before correction to B'));
+    await correctionAdopted;
+    await turn;
+
+    driveCombatRecovery();
+    assert.deepEqual(recoveryStarts, ['cmb_sess', 'cmb_b'],
+      'the corrected successor should consume exactly one fresh recovery gate');
+    assert.equal(harness.state, combatB);
+    assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), true);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true,
+      'combat A outer catch must not clear combat B input ownership');
+    assert.equal(selectionRestarts, 0, 'combat A must not redraw combat B selection');
+    assert.equal(fakeSession.pendingCount(), 0);
+    assert.equal(fakeSession.isPaused(), false);
+    assert.ok(events.indexOf('pause:combatPlaybackFailed') < events.indexOf('correction'));
+    assert.ok(events.indexOf('correction') < events.indexOf('resume:combatPlaybackFailed'));
   });
 
   it('keeps generic pre-append failures on the existing current-owner recovery path', async () => {
