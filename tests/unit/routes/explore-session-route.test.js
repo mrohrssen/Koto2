@@ -211,6 +211,7 @@ describe('explore session route', () => {
 
   it('binds canonical speed-review grading to the authenticated request user', async () => {
     let delivered = null;
+    let buildOpts = null;
     const handler = getHandler(createExploreSessionRoutes({
       applyKnownWordReview: (req, review) => {
         delivered = { userId: req.user.id, ...review };
@@ -251,7 +252,8 @@ describe('explore session route', () => {
           room.speedReviewRoom.reviewedCards = 1;
           return { committed: true, review };
         },
-        async buildExploreRunway() {
+        async buildExploreRunway(opts) {
+          buildOpts = opts;
           const runway = {
             sessionEpoch: run.exploreSessionEpoch,
             currentRoom: 0,
@@ -289,6 +291,7 @@ describe('explore session route', () => {
         }],
       },
       gameManager,
+      getSettings: () => ({ dailyWordLimit: 6 }),
       saveGame: async () => {},
       getEnrichedGameState: () => gameManager.getState(),
     };
@@ -298,7 +301,12 @@ describe('explore session route', () => {
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'ok');
-    assert.deepEqual(delivered, { userId: 'route-user', word: '光', grade: 'good' });
+    assert.deepEqual(delivered, {
+      userId: 'route-user', word: '光', grade: 'good', isDiscovery: false,
+    });
     assert.equal(room.speedReviewRoom.reviewedCards, 1);
+    assert.equal(buildOpts.dailyWordLimit, 6);
+    assert.equal(typeof buildOpts.getDiscoveryStatus, 'function');
+    assert.equal(typeof buildOpts.getDiscoveryWords, 'function');
   });
 });

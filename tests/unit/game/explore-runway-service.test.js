@@ -123,6 +123,141 @@ test('treats an initialized zero-card speed review snapshot as offline ready', a
   assert.deepEqual(speedReview.missingPayloadReasons, []);
 });
 
+test('prepares a stable word discovery snapshot capped to the remaining daily allowance', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.wordDiscovery]);
+  let statusCalls = 0;
+  let wordsCalls = 0;
+  const opts = {
+    userId: 'word-discovery-runway-user',
+    dailyWordLimit: 3,
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+    getDiscoveryStatus: async () => {
+      statusCalls += 1;
+      return { todayCount: 2, dailyLimit: 3, atLimit: false };
+    },
+    getDiscoveryWords: async limit => {
+      wordsCalls += 1;
+      assert.equal(limit, 1);
+      return {
+        words: [
+          { word: '火' },
+          { word: '水', reading: 'みず', meanings: ['water'] },
+        ],
+        available: true,
+      };
+    },
+  };
+
+  const first = await buildExploreRunway(gm, opts);
+  const discovery = first.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.wordDiscovery);
+
+  assert.deepEqual(discovery.interactionPayload, {
+    kind: 'wordDiscovery',
+    roomId: gm.run.rooms[1].id,
+    snapshotInitialized: true,
+    snapshotWords: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
+    snapshotWordKeys: ['火'],
+    todayCount: 2,
+    dailyLimit: 3,
+    atLimit: false,
+    available: true,
+    wordsLearned: 0,
+  });
+  assert.equal(discovery.offlineReady, true);
+  assert.deepEqual(discovery.missingPayloadReasons, []);
+
+  const rebuilt = await buildExploreRunway(gm, opts);
+  assert.deepEqual(
+    rebuilt.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.wordDiscovery).interactionPayload,
+    discovery.interactionPayload,
+  );
+  assert.equal(statusCalls, 1, 'the persisted runway status is not fetched again');
+  assert.equal(wordsCalls, 1, 'the persisted discovery snapshot is not rerolled');
+});
+
+test('prepares finalized random word discovery rooms with the same persisted snapshot contract', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.randomRoom, ROOM_TYPES.boss]);
+  queueTestRooms([ROOM_TYPES.wordDiscovery]);
+  try {
+    const runway = await buildExploreRunway(gm, {
+      userId: 'queued-word-discovery-user',
+      dailyWordLimit: 5,
+      getKnownWords: () => [],
+      getDialogueCardAudio: async () => null,
+      getDiscoveryStatus: async () => ({ todayCount: 0, dailyLimit: 5, atLimit: false }),
+      getDiscoveryWords: async () => ({ words: [{ word: '水' }], available: true }),
+    });
+    const discovery = runway.preparedRooms.find(entry => entry.index === 1);
+
+    assert.equal(discovery.room.randomRoomResolved, true);
+    assert.equal(discovery.interactionPayload.kind, 'wordDiscovery');
+    assert.deepEqual(discovery.interactionPayload.snapshotWords, [
+      { word: '水', reading: 'みず', meanings: ['water'] },
+    ]);
+    assert.deepEqual(discovery.interactionPayload.snapshotWordKeys, ['水']);
+    assert.equal(discovery.offlineReady, true);
+  } finally {
+    clearTestRoomQueue();
+  }
+});
+
+test('treats an initialized empty at-limit word discovery snapshot as offline ready', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.wordDiscovery]);
+  let wordsCalls = 0;
+  const runway = await buildExploreRunway(gm, {
+    userId: 'at-limit-word-discovery-user',
+    dailyWordLimit: 2,
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+    getDiscoveryStatus: async () => ({ todayCount: 2, dailyLimit: 2, atLimit: true }),
+    getDiscoveryWords: async () => {
+      wordsCalls += 1;
+      return [{ word: '火' }];
+    },
+  });
+  const discovery = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.wordDiscovery);
+
+  assert.equal(wordsCalls, 0);
+  assert.deepEqual(discovery.interactionPayload.snapshotWords, []);
+  assert.deepEqual(discovery.interactionPayload.snapshotWordKeys, []);
+  assert.equal(discovery.interactionPayload.snapshotInitialized, true);
+  assert.equal(discovery.interactionPayload.available, false);
+  assert.equal(discovery.interactionPayload.atLimit, true);
+  assert.equal(discovery.offlineReady, true);
+  assert.deepEqual(discovery.missingPayloadReasons, []);
+});
+
+test('reports explicit word discovery payload reasons instead of accepting malformed persisted data', async () => {
+  const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.wordDiscovery]);
+  Object.assign(gm.run.rooms[1].wordDiscovery, {
+    snapshotInitialized: true,
+    snapshotWords: [{ word: '火', reading: null, meanings: [] }],
+    snapshotWordKeys: ['水'],
+    todayCount: 'two',
+    dailyLimit: 2,
+    atLimit: false,
+    available: 1,
+    wordsLearned: -1,
+  });
+
+  const runway = await buildExploreRunway(gm, {
+    userId: 'malformed-word-discovery-user',
+    dailyWordLimit: 2,
+    getKnownWords: () => [],
+    getDialogueCardAudio: async () => null,
+    getDiscoveryStatus: async () => { throw new Error('initialized snapshots must not refetch'); },
+    getDiscoveryWords: async () => { throw new Error('initialized snapshots must not refetch'); },
+  });
+  const discovery = runway.preparedRooms.find(entry => entry.room.type === ROOM_TYPES.wordDiscovery);
+
+  assert.equal(discovery.offlineReady, false);
+  assert.ok(discovery.missingPayloadReasons.includes('wordDiscovery.snapshotWords'));
+  assert.ok(discovery.missingPayloadReasons.includes('wordDiscovery.snapshotWordKeys'));
+  assert.ok(discovery.missingPayloadReasons.includes('wordDiscovery.status'));
+  assert.ok(discovery.missingPayloadReasons.includes('wordDiscovery.wordsLearned'));
+});
+
 test('does not include raw static Japanese entry narration', async () => {
   const gm = makeGm([ROOM_TYPES.encounter, ROOM_TYPES.shrine]);
   const runway = await buildExploreRunway(gm, {

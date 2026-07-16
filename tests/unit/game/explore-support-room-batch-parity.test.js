@@ -98,7 +98,13 @@ function makeGm({
     };
   }
   if (supportRoomType === ROOM_TYPES.wordDiscovery) {
-    run.rooms[0].wordDiscovery = { completed: false };
+    run.rooms[0].wordDiscovery = {
+      completed: false,
+      snapshotInitialized: true,
+      snapshotWords: [],
+      snapshotWordKeys: [],
+      wordsLearned: 0,
+    };
   }
   if (supportRoomType === ROOM_TYPES.whackAMole) {
     run.rooms[0].whackAMole = { completed: false, score: 0 };

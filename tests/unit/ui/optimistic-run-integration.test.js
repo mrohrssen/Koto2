@@ -133,10 +133,10 @@ describe('optimistic run action integration', () => {
     assert.match(apiSource, /if \(options\?\.actionId\) body\.actionId = options\.actionId/);
     assert.match(apiSource, /verifiedRunAction\('\/complete-discovery', \{ actionId: options\.actionId \}\)/);
     assert.match(gameSource, /apiSwipeWord: \(word, grade, isDiscovery, options = \{\}\) => reviewVocabWord\(word, grade, isDiscovery, options\)/);
-    assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('wordDiscovery\.review'/);
+    assert.match(explorationSource, /session\.recordRoomAction\('wordDiscovery\.review'/);
     assert.match(explorationSource, /const grade = detail\.knew \? 'good' : 'again'/);
-    assert.match(explorationSource, /word: detail\.word,\s*grade,/);
-    assert.doesNotMatch(explorationSource, /apiSwipeWord\(currentWord\.word, 'again', true/);
+    assert.match(explorationSource, /roomId: room\.id,\s*word: currentWord\.word,\s*grade,\s*reviewIndex: currentIndex,/);
+    assert.match(explorationSource, /apiSwipeWord\?\.\(currentWord\.word, grade, true\)/);
     assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.complete', \{ learnedWords \}\)/);
     assert.doesNotMatch(explorationSource, /apiCompleteDiscovery\(\{ actionId: pending\.actionId \}\)/);
   });

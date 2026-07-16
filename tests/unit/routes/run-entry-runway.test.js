@@ -97,6 +97,7 @@ function makeRunReq({ currentRoom = 0, buildCalls } = {}) {
   return {
     body: {},
     user: { id: 'run-entry-user' },
+    getSettings: () => ({ dailyWordLimit: 4 }),
     gameManager,
     saveGame: () => {},
     // Mirror the real enrichment: run (with its freshly-built exploreRunway)
@@ -121,6 +122,9 @@ describe('run-entry explore runway (first-room spotty deadlock)', () => {
 
     assert.equal(res.statusCode, 200, `expected 200, got ${res.statusCode}: ${JSON.stringify(res.body)}`);
     assert.equal(buildCalls.length, 1, 'confirm-creatures must rebuild the explore runway once');
+    assert.equal(buildCalls[0].dailyWordLimit, 4);
+    assert.equal(typeof buildCalls[0].getDiscoveryStatus, 'function');
+    assert.equal(typeof buildCalls[0].getDiscoveryWords, 'function');
     const runway = res.body?.state?.run?.exploreRunway;
     assert.ok(runway, 'response state must carry an explore runway');
     assert.equal(runway.sessionEpoch, RUNWAY_EPOCH, 'runway must have a non-null session epoch');

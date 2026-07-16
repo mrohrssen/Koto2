@@ -1,7 +1,9 @@
 import { Router } from 'express';
 
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { ExploreSessionSyncService } from '../../game/services/explore-session-sync-service.js';
+import { getDiscoveryStatus } from '../../word-tracking.js';
 import { enrichedState } from './optimistic-action-response.js';
 
 function withAuthoritativeState(result, req) {
@@ -19,10 +21,14 @@ function currentExploreRunway(req, state) {
 }
 
 function buildRunwayOpts(req, { getDialogueCardAudio } = {}) {
+  const dailyWordLimit = req.getSettings?.()?.dailyWordLimit ?? 10;
   return {
     userId: req.user?.id,
     getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
     getDialogueCardAudio,
+    dailyWordLimit,
+    getDiscoveryStatus: limit => getDiscoveryStatus(req.user?.id, limit ?? dailyWordLimit),
+    getDiscoveryWords: limit => getNewWordsForDiscovery(limit, req.user?.id),
   };
 }
 

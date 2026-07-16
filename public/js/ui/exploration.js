@@ -20,10 +20,9 @@ import { preparedPayloadHasSkillOffers } from './combat-ui-utils.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
+import * as bootstrapClient from './bootstrap-client.js';
 import {
-  addKnownWord,
   getKnownWords,
-  removeKnownWord,
   renderJpSentence,
 } from './bootstrap-client.js';
 import {
@@ -167,7 +166,7 @@ function findLastUnconsumedSessionResult(results, predicate) {
   return null;
 }
 
-export function applyExploreSessionSpeedReviewResults(response) {
+export function applyExploreSessionKnownWordReviewResults(response) {
   const results = Array.isArray(response?.results) ? response.results : [];
   const session = getExploreSession?.();
   let applied = 0;
@@ -183,8 +182,11 @@ export function applyExploreSessionSpeedReviewResults(response) {
       continue;
     }
 
-    if (review.grade === 'good') addKnownWord(review.word);
-    else removeKnownWord(review.word);
+    const isKnown = typeof review.isKnown === 'boolean'
+      ? review.isKnown
+      : (typeof review.mastered === 'boolean' ? review.mastered : null);
+    if (isKnown === null) continue;
+    bootstrapClient.applyKnownWordReviewMembership?.(review.word, review);
     applied += 1;
 
     if (review.fusionCoreDrop?.awarded === true) {
@@ -199,6 +201,10 @@ export function applyExploreSessionSpeedReviewResults(response) {
 
   return applied;
 }
+
+// Backward-compatible export for focused callers while Word Discovery and
+// Speed Review now share the same authoritative checkpoint consumer.
+export const applyExploreSessionSpeedReviewResults = applyExploreSessionKnownWordReviewResults;
 
 // Scan a checkpoint's committed results for a combat.cycle turn that ended the
 // fight, and hand it to the combat-loop finish path (the same one a live victory/
@@ -238,13 +244,13 @@ function finishSessionCombatFromResults(response) {
 function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
   if (logEmpty === false) {
     applyExploreSessionRunway(response);
-    applyExploreSessionSpeedReviewResults(response);
+    applyExploreSessionKnownWordReviewResults(response);
     finishSessionCombatFromResults(response);
     return;
   }
   if (response?.state) updateGameState(response.state);
   applyExploreSessionRunway(response);
-  applyExploreSessionSpeedReviewResults(response);
+  applyExploreSessionKnownWordReviewResults(response);
   const finished = finishSessionCombatFromResults(response);
   // Re-drive the phase after a fully-drained checkpoint (mirrors the correction
   // path's updateUI and KK's refreshKanjiKombatAction). Without this, a combat
@@ -276,7 +282,7 @@ function onExploreSessionCorrection(response) {
   const authoritativeState = response?.state || response?.authoritativeState;
   if (authoritativeState) updateGameState(authoritativeState);
   applyExploreSessionRunway(response);
-  applyExploreSessionSpeedReviewResults(response);
+  applyExploreSessionKnownWordReviewResults(response);
   updateUI();
 }
 
@@ -459,11 +465,25 @@ function applyPartySkillChoiceToDraft(draft, skillId) {
   syncPartySkillHpBonuses(draft.run.creatureParty, draft.run.partySkills);
 }
 
-async function completeWordDiscoveryOptimistically({ learnedWords = [] } = {}) {
-  const queued = getExploreSession()?.recordRoomAction('wordDiscovery.complete', { learnedWords });
-  if (!queued?.accepted) {
-    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
-    return null;
+async function completeWordDiscoveryOptimistically({ learnedWords = [], session = null } = {}) {
+  let completionResult;
+  if (session) {
+    completionResult = session.recordRoomAction('wordDiscovery.complete', { learnedWords });
+    if (!completionResult?.accepted) {
+      showExploreSoftPause({ reason: completionResult?.reason || 'missingPayload' });
+      return null;
+    }
+  } else {
+    try {
+      completionResult = await apiCompleteDiscovery?.();
+      if (!completionResult || completionResult.error) {
+        throw new Error(completionResult?.error || 'No response from word discovery completion API');
+      }
+      if (completionResult.state) updateGameState(completionResult.state);
+    } catch {
+      showExploreSoftPause({ reason: 'missingPayload' });
+      return null;
+    }
   }
 
   updateSupportRoomDraft(room => {
@@ -471,11 +491,11 @@ async function completeWordDiscoveryOptimistically({ learnedWords = [] } = {}) {
     if (room) room.interacted = true;
   }, { phase: 'room' });
 
-  if (learnedWords.length > 0) {
+  if (!session && learnedWords.length > 0) {
     apiPostCombatRefresh?.(learnedWords).catch(() => {});
   }
   updateUI();
-  return queued;
+  return completionResult;
 }
 
 function clearActionArea() {
@@ -1639,15 +1659,129 @@ export async function renderQuiz() {
   await proceedWithRevealBuffer();
 }
 
+function getActiveWordDiscoveryRoom(gameState) {
+  if (gameState?.room?.type === 'wordDiscovery') return gameState.room;
+  const fromRun = getCurrentBufferedRoom(gameState);
+  return fromRun?.type === 'wordDiscovery' ? fromRun : null;
+}
+
+function preparedWordDiscoveryPayload(session, state, room) {
+  const prepared = session?.currentPreparedRoom?.();
+  const payload = prepared?.interactionPayload;
+  const accepted = prepared?.acceptedActions;
+  const snapshotWords = payload?.snapshotWords;
+  const snapshotWordKeys = payload?.snapshotWordKeys;
+  const wordsLearned = payload?.wordsLearned;
+  const validWords = Array.isArray(snapshotWords)
+    && snapshotWords.every(word => (
+      typeof word?.word === 'string'
+      && word.word.length > 0
+      && typeof word?.reading === 'string'
+      && word.reading.length > 0
+      && Array.isArray(word?.meanings)
+      && word.meanings.length > 0
+      && word.meanings.every(meaning => typeof meaning === 'string' && meaning.length > 0)
+    ));
+  const validKeys = Array.isArray(snapshotWordKeys)
+    && validWords
+    && snapshotWordKeys.length === snapshotWords.length
+    && snapshotWordKeys.every((key, index) => key === snapshotWords[index]?.word);
+  const validStatus = Number.isInteger(payload?.todayCount)
+    && payload.todayCount >= 0
+    && Number.isInteger(payload?.dailyLimit)
+    && payload.dailyLimit >= 0
+    && typeof payload?.atLimit === 'boolean'
+    && payload.atLimit === (
+      payload.dailyLimit === 0 || payload.todayCount >= payload.dailyLimit
+    )
+    && typeof payload?.available === 'boolean'
+    && payload.available === (snapshotWords?.length > 0)
+    && (!payload.atLimit || snapshotWords?.length === 0)
+    && (
+      payload.atLimit
+      || snapshotWords?.length <= Math.max(0, payload.dailyLimit - payload.todayCount)
+    );
+  const valid = session?.isPaused?.() !== true
+    && prepared?.index === state?.run?.currentRoom
+    && (prepared?.roomId || prepared?.room?.id) === room?.id
+    && prepared?.offlineReady === true
+    && Array.isArray(accepted)
+    && accepted.includes('wordDiscovery.review')
+    && accepted.includes('wordDiscovery.complete')
+    && accepted.includes('proceed')
+    && payload?.kind === 'wordDiscovery'
+    && payload?.roomId === room?.id
+    && payload?.snapshotInitialized === true
+    && validWords
+    && validKeys
+    && validStatus
+    && Number.isInteger(wordsLearned)
+    && wordsLearned >= 0
+    && wordsLearned <= snapshotWords.length;
+
+  return {
+    valid,
+    payload,
+    missingPayloadReasons: prepared?.missingPayloadReasons || ['wordDiscovery.snapshotWords'],
+  };
+}
+
+let wordDiscoveryRenderGeneration = 0;
+let wordDiscoverySwipeListener = null;
+let wordDiscoveryTestSwipeListener = null;
+
+function clearWordDiscoverySwipeListeners() {
+  if (typeof document === 'undefined') return;
+  if (wordDiscoverySwipeListener) {
+    document.removeEventListener('discovery-card-swiped', wordDiscoverySwipeListener);
+    wordDiscoverySwipeListener = null;
+  }
+  if (wordDiscoveryTestSwipeListener) {
+    document.removeEventListener('test-swipe', wordDiscoveryTestSwipeListener);
+    wordDiscoveryTestSwipeListener = null;
+  }
+}
+
+function clearWordDiscoveryPlayableUi() {
+  clearWordDiscoverySwipeListeners();
+  actions?.setContent?.('');
+}
+
 /** Word Discovery phase - show flash cards for new words */
 export async function renderWordDiscovery() {
+  const renderGeneration = ++wordDiscoveryRenderGeneration;
+  clearWordDiscoverySwipeListeners();
   const gameState = getGameState();
-  const room = gameState.room;
-
-  // Clear stale content immediately before any async operations
-  actions.setContent('');
+  const session = getActiveStandardExploreSession(gameState);
+  if (session?.isPaused?.() === true) {
+    clearWordDiscoveryPlayableUi();
+    showExploreSoftPause({ reason: 'missingPayload' });
+    return;
+  }
+  session?.adoptRunway(gameState?.run?.exploreRunway || null);
+  const room = getActiveWordDiscoveryRoom(gameState);
 
   if (!room) return;
+
+  const sessionPayload = session
+    ? preparedWordDiscoveryPayload(session, gameState, room)
+    : null;
+  if (session && !sessionPayload.valid) {
+    clearWordDiscoveryPlayableUi();
+    if (session.isPaused?.() !== true) {
+      session.pause?.('missingPayload');
+    } else {
+      showExploreSoftPause({
+        reason: 'missingPayload',
+        missingPayloadReasons: sessionPayload.missingPayloadReasons,
+      });
+    }
+    return;
+  }
+
+  // Only clear stale content after a prepared capability has passed strict
+  // validation. An invalid session keeps the visible soft-pause surface intact.
+  actions.setContent('');
 
   // Discovery state is scene-owned now (ExplorationScene.discoveryState),
   // so walking into a new room naturally gets a fresh scene + fresh state.
@@ -1681,7 +1815,8 @@ export async function renderWordDiscovery() {
     discoveryState.dailyLimit = 10;
   }
 
-  // Stage tracking from server state
+  // Stage tracking from server state (legacy) or the immutable prepared runway
+  // snapshot (active standard Explore session).
   const discovery = room.wordDiscovery || {
     wordsToLearn: 2,
     wordsLearned: 0,
@@ -1692,11 +1827,29 @@ export async function renderWordDiscovery() {
   // If completed on server, show proceed
   if (discovery.completed) {
     renderButtons([
-      { label: '続ける', onClick: async () => {
+      { label: 'Continue', onClick: async () => {
         await proceedWithRevealBuffer();
       }, primary: true },
     ]);
     return;
+  }
+
+  if (session && !discoveryState.fetched) {
+    const payload = sessionPayload.payload;
+    discoveryState.fetched = true;
+    discoveryState.statusChecked = true;
+    discoveryState.words = payload.snapshotWords;
+    const localWordsLearned = Number(room.wordDiscovery?.wordsLearned);
+    discoveryState.wordsLearned = Math.min(
+      payload.snapshotWords.length,
+      Math.max(
+        payload.wordsLearned,
+        Number.isInteger(localWordsLearned) && localWordsLearned >= 0 ? localWordsLearned : 0,
+      ),
+    );
+    discoveryState.atLimit = payload.atLimit;
+    discoveryState.todayCount = payload.todayCount;
+    discoveryState.dailyLimit = payload.dailyLimit;
   }
 
   // Check discovery status first (only once per room)
@@ -1709,14 +1862,14 @@ export async function renderWordDiscovery() {
 
     // If at limit, skip room silently
     if (status.atLimit) {
-      await completeWordDiscoveryOptimistically();
+      await completeWordDiscoveryOptimistically({ session });
       return;
     }
   }
 
   // If we hit the limit mid-room, stop
   if (discoveryState.atLimit) {
-    await completeWordDiscoveryOptimistically();
+    await completeWordDiscoveryOptimistically({ session });
     return;
   }
 
@@ -1728,7 +1881,7 @@ export async function renderWordDiscovery() {
 
     if (!result.available || result.words.length === 0) {
       // No new words available - mark complete on server first
-      await completeWordDiscoveryOptimistically();
+      await completeWordDiscoveryOptimistically({ session });
       return;
     }
 
@@ -1742,7 +1895,7 @@ export async function renderWordDiscovery() {
   if (currentIndex >= words.length) {
     // All words learned - mark complete on server first
     const learnedWords = words.map(w => w.word);
-    await completeWordDiscoveryOptimistically({ learnedWords });
+    await completeWordDiscoveryOptimistically({ learnedWords, session });
     return;
   }
 
@@ -1760,13 +1913,29 @@ export async function renderWordDiscovery() {
       : { word: currentWord.word, knew: rawDetail === 'right' };
     const grade = detail.knew ? 'good' : 'again';
     console.log(`[Discovery] Swiped ${rawDetail} on "${currentWord.word}"`);
-    const queued = getExploreSession()?.recordRoomAction('wordDiscovery.review', {
-      word: detail.word,
-      grade,
-    });
-    if (!queued?.accepted) {
-      showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
-      return;
+    if (session) {
+      const queued = session.recordRoomAction('wordDiscovery.review', {
+        roomId: room.id,
+        word: currentWord.word,
+        grade,
+        reviewIndex: currentIndex,
+      });
+      if (!queued?.accepted) {
+        showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+        return;
+      }
+    } else {
+      try {
+        const reviewResult = await apiSwipeWord?.(currentWord.word, grade, true);
+        if (!reviewResult || reviewResult.error) {
+          throw new Error(reviewResult?.error || 'No response from word review API');
+        }
+        if (reviewResult.state) updateGameState(reviewResult.state);
+        bootstrapClient.applyKnownWordReviewMembership?.(currentWord.word, reviewResult);
+      } catch {
+        showExploreSoftPause({ reason: 'missingPayload' });
+        return;
+      }
     }
 
     const nextWordsLearned = Math.min(discoveryState.wordsLearned + 1, discoveryState.words.length);
@@ -1780,21 +1949,37 @@ export async function renderWordDiscovery() {
     discoveryState.wordsLearned = nextWordsLearned;
     console.log(`[Discovery] Progress: ${discoveryState.wordsLearned}/${discoveryState.words.length} words learned`);
 
-    renderWordDiscovery();
+    await renderWordDiscovery();
   };
 
   // The actions module has a test-swipe event listener, but we need to hook into the actual swipe
   // We'll use a custom event approach - dispatch from here when flash card completes
-  document.addEventListener('discovery-card-swiped', async function handler(e) {
-    document.removeEventListener('discovery-card-swiped', handler);
+  let swipeConsumed = false;
+  const handler = async (e) => {
+    const liveState = getGameState?.();
+    const liveRoom = getActiveWordDiscoveryRoom(liveState);
+    if (
+      swipeConsumed
+      || renderGeneration !== wordDiscoveryRenderGeneration
+      || liveRoom?.id !== room.id
+      || Number(liveRoom?.wordDiscovery?.wordsLearned || 0) !== currentIndex
+    ) {
+      return;
+    }
+    swipeConsumed = true;
+    clearWordDiscoverySwipeListeners();
     await handleDiscoverySwipe(e.detail);
-  }, { once: true });
+  };
+  wordDiscoverySwipeListener = handler;
+  document.addEventListener('discovery-card-swiped', handler);
 
   // Monkey-patch the test-swipe for discovery mode
   const testSwipeHandler = async (e) => {
+    if (renderGeneration !== wordDiscoveryRenderGeneration) return;
     document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: e.detail }));
   };
-  document.addEventListener('test-swipe', testSwipeHandler, { once: true });
+  wordDiscoveryTestSwipeListener = testSwipeHandler;
+  document.addEventListener('test-swipe', testSwipeHandler);
 }
 
 function getActiveSpeedReviewRoom(gameState) {

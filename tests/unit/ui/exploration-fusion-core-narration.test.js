@@ -10,6 +10,8 @@ let speedReviewActive = false;
 let clientKnownWords = new Set();
 let knownWordMembershipEvents = [];
 let wordLevelUpCalls = [];
+let flashCardWords = [];
+let documentListeners = new Map();
 
 function createDomButton(textContent) {
   const classes = new Set();
@@ -121,6 +123,16 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
       clientKnownWords.delete(word);
       knownWordMembershipEvents.push(['remove', word]);
     },
+    applyKnownWordReviewMembership: (word, result) => {
+      const isKnown = typeof result?.isKnown === 'boolean' ? result.isKnown : result?.mastered;
+      if (isKnown === true) {
+        clientKnownWords.add(word);
+        knownWordMembershipEvents.push(['add', word]);
+      } else if (isKnown === false) {
+        clientKnownWords.delete(word);
+        knownWordMembershipEvents.push(['remove', word]);
+      }
+    },
     entityToToken: value => value,
   },
 });
@@ -139,10 +151,11 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 
 const {
   init,
-  applyExploreSessionSpeedReviewResults,
+  applyExploreSessionKnownWordReviewResults,
   proceedWithRevealBuffer,
   renderHub,
   renderSpeedReviewRoom,
+  renderWordDiscovery,
 } = await import('../../../public/js/ui/exploration.js');
 const { getExploreSession, resetExploreSession } = await import('../../../public/js/ui/explore-session.js');
 
@@ -157,11 +170,27 @@ describe('renderHub fusion core review narration', () => {
     clientKnownWords = new Set();
     knownWordMembershipEvents = [];
     wordLevelUpCalls = [];
+    flashCardWords = [];
+    documentListeners = new Map();
     sceneManagerState.currentScene = null;
     globalThis.document = {
       body: {},
       getElementById: () => null,
       querySelectorAll: () => domButtons,
+      addEventListener: (type, listener) => { documentListeners.set(type, listener); },
+      removeEventListener: (type, listener) => {
+        if (documentListeners.get(type) === listener) documentListeners.delete(type);
+      },
+      dispatchEvent: event => {
+        documentListeners.get(event.type)?.(event);
+        return true;
+      },
+    };
+    globalThis.CustomEvent = class CustomEvent {
+      constructor(type, options = {}) {
+        this.type = type;
+        this.detail = options.detail;
+      }
     };
   });
 
@@ -373,6 +402,7 @@ describe('renderHub fusion core review narration', () => {
                 word: entry.payload.word,
                 grade: entry.payload.grade,
                 mastered: entry.payload.grade === 'good',
+                isKnown: true,
                 fusionCoreDrop: entry.payload.grade === 'good'
                   ? { awarded: true, message: 'Obtained 1x Fusion Core!' }
                   : null,
@@ -460,22 +490,331 @@ describe('renderHub fusion core review narration', () => {
     await getExploreSession().syncNow({ reason: 'testReconnect' });
     assert.deepEqual(knownWordMembershipEvents, [
       ['add', '火'],
-      ['remove', '土'],
+      ['add', '土'],
     ]);
     assert.equal(clientKnownWords.has('火'), true);
-    assert.equal(clientKnownWords.has('土'), false);
+    assert.equal(clientKnownWords.has('土'), true,
+      'Again moves a reviewed card to Learning/Relearning, which remains known');
     assert.equal(wordLevelUpCalls.length, 1);
     assert.equal(wordLevelUpCalls[0][2].message, 'Obtained 1x Fusion Core!');
 
-    applyExploreSessionSpeedReviewResults(latestSyncResponse);
-    applyExploreSessionSpeedReviewResults(latestSyncResponse);
+    applyExploreSessionKnownWordReviewResults(latestSyncResponse);
+    applyExploreSessionKnownWordReviewResults(latestSyncResponse);
     assert.deepEqual(knownWordMembershipEvents, [
       ['add', '火'],
-      ['remove', '土'],
+      ['add', '土'],
     ], 'replayed results must not update known-word membership twice');
     assert.equal(wordLevelUpCalls.length, 1,
       'replayed results must not repeat Fusion Core feedback');
     resetExploreSession();
+  });
+
+  it('runs a prepared word discovery fully offline without legacy status, words, review, or completion calls', async () => {
+    const room = {
+      id: 'word-discovery-offline',
+      type: 'wordDiscovery',
+      wordDiscovery: { completed: false, wordsLearned: 0, wordsToLearn: 2 },
+    };
+    const words = [
+      { word: '火', reading: 'ひ', meanings: ['fire'] },
+      { word: '水', reading: 'みず', meanings: ['water'] },
+    ];
+    let gameState = makeRunRoomState({ phase: 'wordDiscovery', room });
+    gameState.run.active = true;
+    gameState.run.mode = 'standard';
+    gameState.run.totalRooms = 2;
+    gameState.run.exploreRunway = {
+      sessionEpoch: 'ese_word_discovery_offline',
+      currentRoom: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: room.id,
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'],
+        actionEffects: {
+          'wordDiscovery.review': [],
+          'wordDiscovery.complete': [],
+          proceed: [],
+        },
+        dependencies: [],
+        room,
+        interactionPayload: {
+          kind: 'wordDiscovery',
+          roomId: room.id,
+          snapshotInitialized: true,
+          snapshotWords: words,
+          snapshotWordKeys: ['火', '水'],
+          todayCount: 0,
+          dailyLimit: 2,
+          atLimit: false,
+          available: true,
+          wordsLearned: 0,
+        },
+      }, {
+        index: 1,
+        roomId: 'room-after-word-discovery',
+        actionSeq: 1,
+        offlineReady: true,
+        acceptedActions: [],
+        actionEffects: {},
+        dependencies: [],
+        room: { id: 'room-after-word-discovery', type: 'room' },
+        interactionPayload: { kind: 'room' },
+      }],
+    };
+    sceneManagerState.currentScene = {
+      layers: { npcs: {} },
+      discoveryState: {},
+    };
+    const legacyCalls = { status: 0, words: 0, review: 0, complete: 0 };
+    let autoProceedPromise = null;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      updateUI: () => {
+        if (gameState.phase === 'room' && autoProceedPromise === null) {
+          autoProceedPromise = proceedWithRevealBuffer();
+        }
+      },
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+        showFlashCards: shown => { flashCardWords = shown; },
+      },
+      scene: { showNarration: async () => {} },
+      apiSyncExploreSession: async () => { throw new Error('offline'); },
+      apiGetDiscoveryStatus: async () => { legacyCalls.status += 1; return {}; },
+      apiGetDiscoveryWords: async () => { legacyCalls.words += 1; return {}; },
+      apiSwipeWord: async () => { legacyCalls.review += 1; return {}; },
+      apiCompleteDiscovery: async () => { legacyCalls.complete += 1; return {}; },
+    });
+
+    await renderWordDiscovery();
+    assert.deepEqual(flashCardWords, [words[0]]);
+    await documentListeners.get('discovery-card-swiped')({ detail: { knew: true } });
+    assert.deepEqual(flashCardWords, [words[1]]);
+    assert.equal(getExploreSession().snapshot().length, 1);
+    sceneManagerState.currentScene = { layers: { npcs: {} }, discoveryState: {} };
+    await renderWordDiscovery();
+    assert.deepEqual(flashCardWords, [words[1]],
+      'scene recreation must seed from optimistic room progress, not repeat the first card');
+    assert.equal(getExploreSession().snapshot().length, 1);
+    await documentListeners.get('discovery-card-swiped')({ detail: { knew: false } });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await autoProceedPromise;
+
+    assert.deepEqual(legacyCalls, { status: 0, words: 0, review: 0, complete: 0 });
+    assert.deepEqual(getExploreSession().snapshot().map(entry => entry.kind), [
+      'wordDiscovery.review',
+      'wordDiscovery.review',
+      'wordDiscovery.complete',
+      'proceed',
+    ]);
+    assert.deepEqual(getExploreSession().snapshot()[0].payload, {
+      roomId: room.id,
+      word: '火',
+      grade: 'good',
+      reviewIndex: 0,
+    });
+    assert.equal(gameState.run.currentRoom, 1);
+  });
+
+  it('soft-pauses malformed prepared word discovery without any legacy GET fallback', async () => {
+    const room = {
+      id: 'word-discovery-malformed',
+      type: 'wordDiscovery',
+      wordDiscovery: { completed: false, wordsLearned: 0, wordsToLearn: 1 },
+    };
+    let gameState = makeRunRoomState({ phase: 'wordDiscovery', room });
+    gameState.run.active = true;
+    gameState.run.mode = 'standard';
+    gameState.run.exploreRunway = {
+      sessionEpoch: 'ese_word_discovery_malformed',
+      currentRoom: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: room.id,
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'],
+        missingPayloadReasons: ['wordDiscovery.snapshotWords'],
+        interactionPayload: {
+          kind: 'wordDiscovery',
+          roomId: room.id,
+          snapshotInitialized: true,
+          snapshotWords: [{ word: '火', reading: '', meanings: [] }],
+          snapshotWordKeys: ['水'],
+          todayCount: 0,
+          dailyLimit: 2,
+          atLimit: false,
+          available: true,
+          wordsLearned: 0,
+        },
+      }],
+    };
+    sceneManagerState.currentScene = { layers: { npcs: {} }, discoveryState: {} };
+    let statusCalls = 0;
+    let wordsCalls = 0;
+    let blankCalls = 0;
+    let narrationCalls = 0;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      updateUI: () => {},
+      actions: {
+        setContent: () => { blankCalls += 1; },
+        clear: () => {},
+        showFlashCards: shown => { flashCardWords = shown; },
+      },
+      scene: { showNarration: async () => { narrationCalls += 1; } },
+      apiSyncExploreSession: async () => { throw new Error('offline'); },
+      apiGetDiscoveryStatus: async () => { statusCalls += 1; return {}; },
+      apiGetDiscoveryWords: async () => { wordsCalls += 1; return {}; },
+    });
+
+    await renderWordDiscovery();
+
+    assert.equal(statusCalls, 0);
+    assert.equal(wordsCalls, 0);
+    assert.equal(blankCalls, 1, 'invalid capability clears any stale playable card');
+    assert.deepEqual(flashCardWords, []);
+    assert.equal(narrationCalls, 1);
+    assert.equal(getExploreSession().isPaused(), true);
+  });
+
+  it('clears a paused word discovery owner and accepts exactly one swipe after resume', async () => {
+    const room = {
+      id: 'word-discovery-paused',
+      type: 'wordDiscovery',
+      wordDiscovery: { completed: false, wordsLearned: 0, wordsToLearn: 2 },
+    };
+    const words = [
+      { word: '火', reading: 'ひ', meanings: ['fire'] },
+      { word: '水', reading: 'みず', meanings: ['water'] },
+    ];
+    let gameState = makeRunRoomState({ phase: 'wordDiscovery', room });
+    gameState.run.active = true;
+    gameState.run.mode = 'standard';
+    const runway = {
+      sessionEpoch: 'ese_word_discovery_paused',
+      currentRoom: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: room.id,
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['wordDiscovery.review', 'wordDiscovery.complete', 'proceed'],
+        actionEffects: { 'wordDiscovery.review': [], 'wordDiscovery.complete': [], proceed: [] },
+        dependencies: [],
+        room,
+        interactionPayload: {
+          kind: 'wordDiscovery', roomId: room.id, snapshotInitialized: true,
+          snapshotWords: words, snapshotWordKeys: ['火', '水'], wordsLearned: 0,
+          todayCount: 0, dailyLimit: 2, atLimit: false, available: true,
+        },
+      }],
+    };
+    gameState.run.exploreRunway = runway;
+    sceneManagerState.currentScene = { layers: { npcs: {} }, discoveryState: {} };
+    let legacyCalls = 0;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      updateUI: () => {},
+      actions: {
+        setContent: () => { flashCardWords = []; },
+        clear: () => {},
+        showFlashCards: shown => { flashCardWords = shown; },
+      },
+      scene: { showNarration: async () => {} },
+      apiSyncExploreSession: async () => { throw new Error('offline'); },
+      apiGetDiscoveryStatus: async () => { legacyCalls += 1; return {}; },
+      apiGetDiscoveryWords: async () => { legacyCalls += 1; return {}; },
+    });
+
+    await renderWordDiscovery();
+    const staleHandler = documentListeners.get('discovery-card-swiped');
+    const session = getExploreSession();
+    session.pause('manual-test');
+    await renderWordDiscovery();
+    assert.deepEqual(flashCardWords, []);
+    assert.equal(documentListeners.has('discovery-card-swiped'), false);
+
+    session.adoptRunway(runway);
+    assert.equal(session.isPaused(), false);
+    await renderWordDiscovery();
+    const liveHandler = documentListeners.get('discovery-card-swiped');
+    await staleHandler({ detail: { knew: true } });
+    await liveHandler({ detail: { knew: true } });
+    await liveHandler({ detail: { knew: true } });
+
+    assert.equal(legacyCalls, 0);
+    assert.equal(session.snapshot().length, 1);
+    assert.equal(session.snapshot()[0].kind, 'wordDiscovery.review');
+    assert.equal(gameState.room.wordDiscovery.wordsLearned, 1);
+    assert.deepEqual(flashCardWords, [words[1]]);
+  });
+
+  it('keeps no-session word discovery on the legacy status, words, review, and completion APIs', async () => {
+    const room = {
+      id: 'word-discovery-legacy',
+      type: 'wordDiscovery',
+      wordDiscovery: { completed: false, wordsLearned: 0, wordsToLearn: 1 },
+    };
+    let gameState = makeRunRoomState({ phase: 'wordDiscovery', room });
+    sceneManagerState.currentScene = { layers: { npcs: {} }, discoveryState: {} };
+    const calls = [];
+    let updateUiPromise = null;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      updateUI: () => {
+        if (gameState.phase === 'room' && !updateUiPromise) updateUiPromise = Promise.resolve();
+      },
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+        showFlashCards: shown => { flashCardWords = shown; },
+      },
+      scene: { showNarration: async () => {} },
+      apiGetDiscoveryStatus: async () => {
+        calls.push('status');
+        return { todayCount: 0, dailyLimit: 2, atLimit: false };
+      },
+      apiGetDiscoveryWords: async () => {
+        calls.push('words');
+        return { available: true, words: [{ word: '火', reading: 'ひ', meanings: ['fire'] }] };
+      },
+      apiSwipeWord: async (word, grade, isDiscovery) => {
+        calls.push(['review', word, grade, isDiscovery]);
+        return { ok: true, isKnown: true };
+      },
+      apiCompleteDiscovery: async () => {
+        calls.push('complete');
+        return { ok: true };
+      },
+      apiPostCombatRefresh: async words => { calls.push(['refresh', words]); },
+    });
+
+    await renderWordDiscovery();
+    await documentListeners.get('discovery-card-swiped')({ detail: { knew: true } });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await updateUiPromise;
+
+    assert.deepEqual(calls, [
+      'status',
+      'words',
+      ['review', '火', 'good', true],
+      'complete',
+      ['refresh', ['火']],
+    ]);
+    assert.equal(getExploreSession(), null);
+    assert.equal(gameState.phase, 'room');
   });
 
   it('canonically auto-completes an initialized zero-card session snapshot', async () => {

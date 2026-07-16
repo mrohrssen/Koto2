@@ -160,12 +160,18 @@ export class ExploreSessionSyncService {
         return this.gm.explorationService.applyCampfireFeed(entry.payload || {});
       case 'speedReview.commit':
         return this.gm.explorationService.applySpeedReviewCommit(entry.payload || {}, {
-          applyReview: this.applyKnownWordReview,
+          applyReview: this.applyKnownWordReview
+            ? review => this.applyKnownWordReview({ ...review, isDiscovery: false })
+            : null,
         });
       case 'speedReview.complete':
         return this.gm.explorationService.applySpeedReviewComplete(entry.payload || {});
       case 'wordDiscovery.review':
-        return this.gm.explorationService.applyWordDiscoveryReview(entry.payload || {});
+        return this.gm.explorationService.applyWordDiscoveryReview(entry.payload || {}, {
+          applyReview: this.applyKnownWordReview
+            ? review => this.applyKnownWordReview({ ...review, isDiscovery: true })
+            : null,
+        });
       case 'wordDiscovery.complete':
         return this.gm.explorationService.applyWordDiscoveryComplete(entry.payload || {});
       default:

@@ -113,15 +113,16 @@ export default function createMiscRoutes({
             }
           }
           gameManager.run.areaSelectionRequired = false;
+          gameManager.run.areaCleared = false;
           gameManager.combat = null;
           gameManager.run.postCombatShop = null;
-          const { WORDS_PER_DISCOVERY } = await import('../../game/rooms.js');
+          const { WORDS_PER_DISCOVERY, createRoom, ROOM_TYPES } = await import('../../game/rooms.js');
           // Set up a word discovery room
           const wordRoom = {
             id: 'debug_word_discovery',
             type: 'wordDiscovery',
             roomNumber: 1,
-            totalRooms: 3,
+            totalRooms: 2,
             areaId: gameManager.run.currentArea?.id || 'okunomori',
             explored: true,
             interacted: false,
@@ -132,8 +133,17 @@ export default function createMiscRoutes({
               completed: false
             }
           };
-          gameManager.run.rooms = [wordRoom];
+          const successor = createRoom(
+            ROOM_TYPES.campfire,
+            wordRoom.areaId,
+            2,
+            2,
+          );
+          successor.id = 'debug_word_discovery_successor';
+          gameManager.run.rooms = [wordRoom, successor];
           gameManager.run.currentRoom = 0;
+          gameManager.run.roomActionSeq = 0;
+          gameManager.run.exploreRunway = null;
           break;
         }
         case 'speedReviewRoom': {

@@ -394,10 +394,14 @@ export default function createRunRoutes({
     const gameManager = req.gameManager;
     const run = gameManager?.run;
     if (!run?.active || run.mode === 'kanjiKombat' || run.areaCleared) return;
+    const dailyWordLimit = req.getSettings?.()?.dailyWordLimit ?? 10;
     run.exploreRunway = await gameManager.explorationService.buildExploreRunway({
       userId: req.user?.id,
       getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
       getDialogueCardAudio,
+      dailyWordLimit,
+      getDiscoveryStatus: limit => getDiscoveryStatus(req.user?.id, limit ?? dailyWordLimit),
+      getDiscoveryWords: limit => getNewWordsForDiscovery(limit, req.user?.id),
     });
   }
 

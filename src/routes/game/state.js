@@ -5,6 +5,8 @@ import {
   rotateExploreSessionEpoch,
 } from '../../game/services/explore-session-contract.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
+import { getDiscoveryStatus } from '../../word-tracking.js';
 
 /**
  * Create game state router
@@ -39,10 +41,14 @@ export default function createGameStateRoutes({ getDialogueCardAudio } = {}) {
         } else {
           rotateExploreSessionEpoch(run);
         }
+        const dailyWordLimit = req.getSettings?.()?.dailyWordLimit ?? 10;
         run.exploreRunway = await req.gameManager.explorationService.buildExploreRunway({
           userId: req.user?.id,
           getKnownWords: () => getKnownWordsFromFsrs(req.user?.id),
           getDialogueCardAudio,
+          dailyWordLimit,
+          getDiscoveryStatus: limit => getDiscoveryStatus(req.user?.id, limit ?? dailyWordLimit),
+          getDiscoveryWords: limit => getNewWordsForDiscovery(limit, req.user?.id),
         });
         await req.saveGame();
       }

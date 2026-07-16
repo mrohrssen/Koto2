@@ -5,6 +5,7 @@ import { createTestApp } from '../helpers/test-app.js';
 import { createApiClient } from '../helpers/api-client.js';
 import { startExplorationRun, queueRooms, clearQueuedRooms, setupRunBeforeArea, finishExplorationSetup } from '../helpers/game-flow.js';
 import { clearSrsCache, createCard, getDeckCards } from '../../../src/game/internal-srs.js';
+import { clearDiscoveryTracking, getDiscoveryStatus } from '../../../src/word-tracking.js';
 
 function staleEpochDifferentFrom(currentEpoch) {
   return currentEpoch === 'ese_0000000000000000'
@@ -204,7 +205,7 @@ describe('POST /api/game/explore/sync', () => {
     assert.equal(replayRes.body.state.room?.preparedCombat, undefined);
   });
 
-  it('grades an offline speed-review commit once through the authenticated sync route', async () => {
+  it('grades offline speed-review and word-discovery commits once through the authenticated sync route', async () => {
     const login = await client.loginAsNewUser('speed-sync-user', 'test-pass-123');
     const userId = login.body?.user?.id;
     assert.ok(userId, `login failed: ${JSON.stringify(login.body)}`);
@@ -279,6 +280,74 @@ describe('POST /api/game/explore/sync', () => {
     assert.equal(duplicate.body.results[0].alreadyCommitted, true);
     assert.equal(afterRetries, afterFirst,
       'ledger replay and a different action for the same review key must not grade twice');
+
+    // Reuse the same authenticated user/app to stay below the integration auth
+    // rate limit while proving the discovery-specific daily counter path too.
+    createCard(userId, 'vocab', '火', { word: '火' });
+    const forced = await client.post('/api/game/debug-force-phase', { phase: 'wordDiscovery' });
+    assert.equal(forced.status, 200, `force phase failed: ${JSON.stringify(forced.body)}`);
+    const stateRes = await client.getState();
+    assert.equal(stateRes.status, 200, `state failed: ${JSON.stringify(stateRes.body)}`);
+    const discoveryRunway = stateRes.body.run?.exploreRunway;
+    const discoveryPrepared = discoveryRunway?.preparedRooms?.find(
+      preparedEntry => preparedEntry.index === stateRes.body.run.currentRoom,
+    );
+    assert.equal(discoveryPrepared?.room?.type, 'wordDiscovery');
+    assert.deepEqual(discoveryPrepared.interactionPayload.snapshotWordKeys, ['火']);
+
+    const beforeCard = JSON.stringify(getDeckCards(userId, 'vocab').find(card => card.id === '火'));
+    const beforeStatus = getDiscoveryStatus(userId, 10);
+    const discoveryEntry = {
+      seq: 1,
+      actionId: 'run_es_wordgrade01',
+      kind: 'wordDiscovery.review',
+      roomIndex: discoveryPrepared.index,
+      roomId: discoveryPrepared.roomId,
+      actionSeq: discoveryPrepared.actionSeq,
+      payload: {
+        roomId: discoveryPrepared.roomId,
+        word: '火',
+        grade: 'again',
+        reviewIndex: 0,
+      },
+    };
+
+    const firstDiscovery = await client.post('/api/game/explore/sync', {
+      sessionEpoch: discoveryRunway.sessionEpoch,
+      entries: [discoveryEntry],
+    });
+    assert.equal(firstDiscovery.status, 200, `first sync failed: ${JSON.stringify(firstDiscovery.body)}`);
+    assert.equal(firstDiscovery.body.status, 'ok');
+    assert.deepEqual(firstDiscovery.body.results[0].knownWordReview, {
+      word: '火',
+      grade: 'again',
+      mastered: false,
+      isKnown: true,
+    });
+    assert.equal(firstDiscovery.body.state.room.wordDiscovery.wordsLearned, 1);
+    const afterFirstCard = JSON.stringify(getDeckCards(userId, 'vocab').find(card => card.id === '火'));
+    const afterFirstStatus = getDiscoveryStatus(userId, 10);
+    assert.notEqual(afterFirstCard, beforeCard);
+    assert.equal(afterFirstStatus.todayCount, beforeStatus.todayCount + 1);
+
+    const discoveryReplay = await client.post('/api/game/explore/sync', {
+      sessionEpoch: discoveryRunway.sessionEpoch,
+      entries: [discoveryEntry],
+    });
+    const discoveryDuplicate = await client.post('/api/game/explore/sync', {
+      sessionEpoch: discoveryRunway.sessionEpoch,
+      entries: [{ ...discoveryEntry, seq: 2, actionId: 'run_es_wordgrade02' }],
+    });
+
+    assert.equal(discoveryReplay.body.results[0].replayed, true);
+    assert.equal(discoveryDuplicate.body.status, 'ok');
+    assert.equal(discoveryDuplicate.body.results[0].alreadyCommitted, true);
+    assert.equal(
+      JSON.stringify(getDeckCards(userId, 'vocab').find(card => card.id === '火')),
+      afterFirstCard,
+    );
+    assert.equal(getDiscoveryStatus(userId, 10).todayCount, afterFirstStatus.todayCount);
+    clearDiscoveryTracking(userId);
     clearSrsCache(userId);
   });
 

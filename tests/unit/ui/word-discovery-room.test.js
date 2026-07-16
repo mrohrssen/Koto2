@@ -21,16 +21,19 @@ describe('word discovery optimistic room flow', () => {
   );
 
   it('records review progress and completion on the explore session', () => {
-    assert.match(wordDiscoverySource, /getExploreSession\(\)\?\.recordRoomAction\('wordDiscovery\.review'/);
+    assert.match(wordDiscoverySource, /session\.recordRoomAction\('wordDiscovery\.review'/);
     assert.match(wordDiscoverySource, /const grade = detail\.knew \? 'good' : 'again'/);
-    assert.match(wordDiscoverySource, /word: detail\.word,\s*grade,/);
-    assert.doesNotMatch(wordDiscoverySource, /apiSwipeWord\(currentWord\.word, 'again', true/);
+    assert.match(wordDiscoverySource, /roomId: room\.id,\s*word: currentWord\.word,\s*grade,\s*reviewIndex: currentIndex,/);
+    assert.match(wordDiscoverySource, /apiSwipeWord\?\.\(currentWord\.word, grade, true\)/,
+      'legacy review API remains fenced to the no-session branch');
     assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.complete', \{ learnedWords \}\)/);
     assert.doesNotMatch(explorationSource, /apiCompleteDiscovery\(\{ actionId: pending\.actionId \}\)/);
   });
 
   it('keeps completed word discovery proceed on the reveal-buffer helper', () => {
     assert.match(wordDiscoverySource, /discovery\.completed[\s\S]*proceedWithRevealBuffer\(\)/);
+    assert.match(wordDiscoverySource, /label: 'Continue'/);
+    assert.doesNotMatch(wordDiscoverySource, /続ける/);
   });
 
   it('soft pauses when completion cannot be queued', () => {

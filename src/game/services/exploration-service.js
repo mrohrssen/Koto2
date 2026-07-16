@@ -843,18 +843,114 @@ export class ExplorationService {
   }
 
   applyWordDiscoveryComplete() {
+    const room = this.getCurrentRoom();
+    const discovery = room?.wordDiscovery;
+    const snapshotWords = discovery?.snapshotWords;
+    const snapshotWordKeys = discovery?.snapshotWordKeys;
+    const hasValidPreparedSnapshot = room?.type === ROOM_TYPES.wordDiscovery
+      && discovery?.snapshotInitialized === true
+      && Array.isArray(snapshotWords)
+      && Array.isArray(snapshotWordKeys)
+      && snapshotWordKeys.length === snapshotWords.length
+      && snapshotWordKeys.every((key, index) => (
+        key === snapshotWords[index]?.word
+        && typeof snapshotWords[index]?.reading === 'string'
+        && snapshotWords[index].reading.length > 0
+        && Array.isArray(snapshotWords[index]?.meanings)
+        && snapshotWords[index].meanings.length > 0
+      ));
+    if (!hasValidPreparedSnapshot) {
+      throw new Error('word_discovery_snapshot_not_initialized');
+    }
+    if (
+      Math.max(0, Number(discovery.wordsLearned) || 0) < snapshotWords.length
+    ) {
+      throw new Error('word_discovery_reviews_incomplete');
+    }
     return this.completeWordDiscovery();
   }
 
-  applyWordDiscoveryReview({ word, grade } = {}) {
+  applyWordDiscoveryReview(
+    { roomId, word, grade, reviewIndex } = {},
+    { applyReview = null } = {},
+  ) {
     if (!word || !['good', 'again'].includes(grade)) {
       throw new Error('invalid_word_discovery_review');
     }
-    if (!this.gm.run?.pendingWordDiscoveryReviews) {
-      this.gm.run.pendingWordDiscoveryReviews = [];
+    if (!roomId || !Number.isInteger(reviewIndex) || reviewIndex < 0) {
+      throw new Error('invalid_word_discovery_review');
     }
-    this.gm.run.pendingWordDiscoveryReviews.push({ word, grade });
-    return { ok: true, word, grade };
+
+    const room = this.getCurrentRoom();
+    const state = room?.wordDiscovery;
+    if (!room || room.type !== ROOM_TYPES.wordDiscovery || room.id !== roomId || !state) {
+      throw new Error('word_discovery_room_mismatch');
+    }
+    if (
+      state.snapshotInitialized !== true
+      || !Array.isArray(state.snapshotWordKeys)
+      || !Array.isArray(state.snapshotWords)
+      || state.snapshotWordKeys.length !== state.snapshotWords.length
+      || !state.snapshotWords.every((snapshotWord, index) => (
+        state.snapshotWordKeys[index] === snapshotWord?.word
+        && typeof snapshotWord?.reading === 'string'
+        && snapshotWord.reading.length > 0
+        && Array.isArray(snapshotWord?.meanings)
+        && snapshotWord.meanings.length > 0
+      ))
+    ) {
+      throw new Error('word_discovery_snapshot_not_initialized');
+    }
+    if (reviewIndex >= state.snapshotWordKeys.length || state.snapshotWordKeys[reviewIndex] !== word) {
+      throw new Error('word_discovery_review_order_mismatch');
+    }
+
+    state.reviewedWordKeys = Array.isArray(state.reviewedWordKeys) ? state.reviewedWordKeys : [];
+    const reviewKey = `${room.id}:${reviewIndex}:${word}`;
+    if (state.reviewedWordKeys.includes(reviewKey)) {
+      return {
+        roomId: room.id,
+        reviewKey,
+        reviewedCards: Math.max(0, Number(state.wordsLearned) || 0),
+        completed: state.completed === true,
+        alreadyCommitted: true,
+      };
+    }
+
+    const wordsLearned = Math.max(0, Number(state.wordsLearned) || 0);
+    if (reviewIndex !== wordsLearned) {
+      throw new Error('word_discovery_review_order_mismatch');
+    }
+
+    const reviewResult = typeof applyReview === 'function'
+      ? applyReview({ word, grade })
+      : null;
+    if (typeof applyReview === 'function' && reviewResult?.ok !== true) {
+      throw new Error('word_discovery_grade_not_applied');
+    }
+
+    if (typeof applyReview !== 'function') {
+      if (!this.gm.run.pendingWordDiscoveryReviews) {
+        this.gm.run.pendingWordDiscoveryReviews = [];
+      }
+      this.gm.run.pendingWordDiscoveryReviews.push({ word, grade });
+    }
+
+    state.reviewedWordKeys.push(reviewKey);
+    state.wordsLearned = wordsLearned + 1;
+    this.gm.emitState();
+
+    const knownWordReview = reviewResult?.ok === true
+      ? this._compactKnownWordReview({ word, grade, reviewResult })
+      : null;
+    return {
+      roomId: room.id,
+      reviewKey,
+      reviewedCards: state.wordsLearned,
+      completed: state.completed === true,
+      alreadyCommitted: false,
+      ...(knownWordReview ? { knownWordReview } : {}),
+    };
   }
 
   /**
@@ -1442,6 +1538,31 @@ export class ExplorationService {
     };
   }
 
+  _buildSpeedReviewCommitResponse(room, extras = {}) {
+    return {
+      roomId: room.id,
+      reviewKey: extras.reviewKey,
+      reviewedCards: room.speedReviewRoom.reviewedCards || 0,
+      completed: room.speedReviewRoom.completed === true,
+      alreadyCommitted: extras.alreadyCommitted === true,
+      ...(extras.knownWordReview ? { knownWordReview: extras.knownWordReview } : {}),
+    };
+  }
+
+  _compactKnownWordReview({ word, grade, reviewResult }) {
+    return {
+      word,
+      grade,
+      mastered: reviewResult.mastered === true,
+      isKnown: typeof reviewResult.isKnown === 'boolean'
+        ? reviewResult.isKnown
+        : reviewResult.mastered === true,
+      ...(reviewResult.fusionCoreDrop?.awarded === true
+        ? { fusionCoreDrop: cloneExploreValue(reviewResult.fusionCoreDrop) }
+        : {}),
+    };
+  }
+
   _applySpeedReviewXpForReviewKey(room, reviewKey) {
     const roomState = room.speedReviewRoom;
     if (roomState.awardedReviewKeys.includes(reviewKey)) {
@@ -1555,7 +1676,7 @@ export class ExplorationService {
 
   recordSpeedReviewRoomCommit(
     { roomId, word, grade, commitIndex } = {},
-    { applyReview = null, allowLegacyWithoutGrade = false } = {},
+    { applyReview = null, allowLegacyWithoutGrade = false, compactResponse = false } = {},
   ) {
     if (!roomId) {
       throw new Error('roomId is required');
@@ -1590,10 +1711,13 @@ export class ExplorationService {
     const reviewKey = `${room.id}:${commitIndex}:${word}`;
     if (roomState.awardedReviewKeys.includes(reviewKey) || roomState.pendingReviewKeys.includes(reviewKey)) {
       this._syncSpeedReviewCompletion(room);
-      return this._buildSpeedReviewRoomResponse(room, {
+      const extras = {
         reviewKey,
         alreadyCommitted: true
-      });
+      };
+      return compactResponse
+        ? this._buildSpeedReviewCommitResponse(room, extras)
+        : this._buildSpeedReviewRoomResponse(room, extras);
     }
 
     const reviewResult = typeof applyReview === 'function'
@@ -1603,14 +1727,7 @@ export class ExplorationService {
       throw new Error('speed_review_grade_not_applied');
     }
     const knownWordReview = reviewResult?.ok === true
-      ? {
-          word,
-          grade,
-          mastered: reviewResult.mastered === true,
-          ...(reviewResult.fusionCoreDrop?.awarded === true
-            ? { fusionCoreDrop: cloneExploreValue(reviewResult.fusionCoreDrop) }
-            : {}),
-        }
+      ? this._compactKnownWordReview({ word, grade, reviewResult })
       : null;
 
     roomState.reviewedCards = (roomState.reviewedCards || 0) + 1;
@@ -1620,11 +1737,14 @@ export class ExplorationService {
     this._syncSpeedReviewCompletion(room);
     this.gm.emitState();
 
-    return this._buildSpeedReviewRoomResponse(room, {
+    const extras = {
       reviewKey,
       alreadyCommitted: false,
       ...(knownWordReview ? { knownWordReview } : {}),
-    });
+    };
+    return compactResponse
+      ? this._buildSpeedReviewCommitResponse(room, extras)
+      : this._buildSpeedReviewRoomResponse(room, extras);
   }
 
   completeSpeedReviewRoom({ roomId } = {}) {
@@ -1641,7 +1761,7 @@ export class ExplorationService {
   }
 
   applySpeedReviewCommit(payload = {}, options = {}) {
-    return this.recordSpeedReviewRoomCommit(payload, options);
+    return this.recordSpeedReviewRoomCommit(payload, { ...options, compactResponse: true });
   }
 
   applySpeedReviewComplete(payload = {}) {

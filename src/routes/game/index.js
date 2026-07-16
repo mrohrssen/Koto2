@@ -149,10 +149,10 @@ export default function createGameRoutes(deps) {
   // Mount explore session routes
   router.use('/explore', createExploreSessionRoutes({
     getDialogueCardAudio: deps.getDialogueCardAudio,
-    applyKnownWordReview: (req, { word, grade }) => performKnownWordReview(req, {
+    applyKnownWordReview: (req, { word, grade, isDiscovery = false }) => performKnownWordReview(req, {
       word,
       grade,
-      isDiscovery: false,
+      isDiscovery,
     }),
   }));
 

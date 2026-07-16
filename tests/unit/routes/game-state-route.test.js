@@ -25,7 +25,7 @@ function makeRes() {
   };
 }
 
-function makeStateReq({ app = {}, buildExploreRunway, saveGame, query = {}, exploreSessionEpoch = 'ese_aaaaaaaaaaaaaaaa' } = {}) {
+function makeStateReq({ app = {}, buildExploreRunway, saveGame, query = {}, exploreSessionEpoch = 'ese_aaaaaaaaaaaaaaaa', dailyWordLimit = 7 } = {}) {
   const previousRunway = {
     sessionEpoch: 'ese_aaaaaaaaaaaaaaaa',
     roomActionSeq: 4,
@@ -57,6 +57,7 @@ function makeStateReq({ app = {}, buildExploreRunway, saveGame, query = {}, expl
       },
     },
     saveGame: saveGame || (() => {}),
+    getSettings: () => ({ dailyWordLimit }),
     getEnrichedGameState: () => ({ run }),
     previousRunway,
   };
@@ -98,6 +99,9 @@ describe('game state route', () => {
       assert.equal(res.statusCode, 200);
       assert.equal(buildOpts.getDialogueCardAudio, getDialogueCardAudio);
       assert.deepEqual(buildOpts.getKnownWords(), ['光']);
+      assert.equal(buildOpts.dailyWordLimit, 7);
+      assert.equal(typeof buildOpts.getDiscoveryStatus, 'function');
+      assert.equal(typeof buildOpts.getDiscoveryWords, 'function');
     } finally {
       configureSrs({ dataDir: 'data/' });
       await tmp.cleanup();

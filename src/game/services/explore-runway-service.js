@@ -483,6 +483,102 @@ function buildSpeedReviewPayload(userId, room) {
   };
 }
 
+function sanitizeWordDiscoveryWord(card, dict = getWordDict()) {
+  const word = String(card?.word || card?.id || '').trim();
+  const entry = word ? dict.get(word) : null;
+  const suppliedMeanings = Array.isArray(card?.meanings)
+    ? card.meanings
+    : (card?.meaning ? [card.meaning] : []);
+  const meanings = suppliedMeanings
+    .map(meaning => String(meaning || '').trim())
+    .filter(Boolean);
+
+  return {
+    word,
+    reading: String(card?.reading || entry?.reading || '').trim(),
+    meanings: meanings.length > 0
+      ? meanings
+      : (entry?.definitions || []).map(definition => String(definition?.en || '').trim()).filter(Boolean),
+  };
+}
+
+function validDiscoveryStatus(status) {
+  return Number.isInteger(status?.todayCount)
+    && status.todayCount >= 0
+    && Number.isInteger(status?.dailyLimit)
+    && status.dailyLimit >= 0
+    && typeof status?.atLimit === 'boolean';
+}
+
+async function buildWordDiscoveryPayload(room, opts) {
+  if (!room.wordDiscovery) {
+    room.wordDiscovery = {
+      wordsToLearn: 2,
+      wordsLearned: 0,
+      wordIds: [],
+      completed: false,
+    };
+  }
+
+  const state = room.wordDiscovery;
+  if (state.snapshotInitialized !== true && typeof opts?.getDiscoveryStatus === 'function') {
+    try {
+      const requestedLimit = Number.isInteger(opts?.dailyWordLimit) && opts.dailyWordLimit >= 0
+        ? opts.dailyWordLimit
+        : 10;
+      const rawStatus = await Promise.resolve(opts.getDiscoveryStatus(requestedLimit));
+      if (validDiscoveryStatus(rawStatus)) {
+        const dailyLimit = rawStatus.dailyLimit;
+        const todayCount = rawStatus.todayCount;
+        const atLimit = rawStatus.atLimit === true || dailyLimit === 0 || todayCount >= dailyLimit;
+        const remainingAllowance = atLimit ? 0 : Math.max(0, dailyLimit - todayCount);
+        const targetWords = Math.max(0, Number(state.wordsToLearn) || 2);
+        const snapshotLimit = Math.min(targetWords, remainingAllowance);
+
+        let result = { words: [], available: false };
+        if (snapshotLimit > 0 && typeof opts?.getDiscoveryWords === 'function') {
+          result = await Promise.resolve(opts.getDiscoveryWords(snapshotLimit)) || result;
+        }
+        if (snapshotLimit === 0 || typeof opts?.getDiscoveryWords === 'function') {
+          const rawWords = Array.isArray(result) ? result : result?.words;
+          const snapshotWords = (Array.isArray(rawWords) ? rawWords : [])
+            .slice(0, snapshotLimit)
+            .map(word => sanitizeWordDiscoveryWord(word));
+          const snapshotWordKeys = snapshotWords.map(word => word.word);
+
+          state.snapshotWords = snapshotWords;
+          state.snapshotWordKeys = snapshotWordKeys;
+          state.wordIds = [...snapshotWordKeys];
+          state.wordsLearned = 0;
+          state.reviewedWordKeys = [];
+          state.todayCount = todayCount;
+          state.dailyLimit = dailyLimit;
+          state.atLimit = atLimit;
+          state.available = snapshotWords.length > 0;
+          state.snapshotInitialized = true;
+        }
+      }
+    } catch {
+      // Discovery preparation is best-effort. Leave the snapshot uninitialized
+      // so the runway advertises explicit missing capability reasons instead of
+      // failing the entire enriched-state response.
+    }
+  }
+
+  return {
+    kind: 'wordDiscovery',
+    roomId: room.id,
+    snapshotInitialized: state.snapshotInitialized === true,
+    snapshotWords: cloneExploreValue(state.snapshotWords || []),
+    snapshotWordKeys: cloneExploreValue(state.snapshotWordKeys || []),
+    todayCount: state.todayCount,
+    dailyLimit: state.dailyLimit,
+    atLimit: state.atLimit,
+    available: state.available,
+    wordsLearned: state.wordsLearned,
+  };
+}
+
 // Combat kind for a room type. Combat rooms carry a prepared start payload so
 // they can be entered and fought offline (encounter/boss/npcBattle).
 function combatKindForRoom(room) {
@@ -612,6 +708,8 @@ async function buildInteractionPayload(gm, room, opts) {
       return buildDealerPayload(gm, room);
     case ROOM_TYPES.speedReviewRoom:
       return buildSpeedReviewPayload(opts?.userId, room);
+    case ROOM_TYPES.wordDiscovery:
+      return buildWordDiscoveryPayload(room, opts);
     case ROOM_TYPES.whackAMole:
       return buildWhackAMolePayload(gm, room, opts);
     default:
@@ -669,6 +767,59 @@ function missingPayloadReasonsFor(room, interactionPayload) {
       || interactionPayload.snapshotWordKeys.length !== (interactionPayload?.snapshotWords?.length || 0)
     ) {
       missing.push('speedReviewRoom.snapshotWordKeys');
+    }
+  }
+  if (room?.type === ROOM_TYPES.wordDiscovery) {
+    if (!interactionPayload?.roomId || interactionPayload.roomId !== room.id) {
+      missing.push('wordDiscovery.roomId');
+    }
+    const snapshotWords = interactionPayload?.snapshotWords;
+    const hasCompleteSnapshot = interactionPayload?.snapshotInitialized === true
+      && Array.isArray(snapshotWords)
+      && snapshotWords.every(word => (
+        typeof word?.word === 'string'
+        && word.word.length > 0
+        && typeof word?.reading === 'string'
+        && word.reading.length > 0
+        && Array.isArray(word?.meanings)
+        && word.meanings.length > 0
+        && word.meanings.every(meaning => typeof meaning === 'string' && meaning.length > 0)
+      ));
+    if (!hasCompleteSnapshot) missing.push('wordDiscovery.snapshotWords');
+
+    const snapshotWordKeys = interactionPayload?.snapshotWordKeys;
+    const hasMatchingKeys = Array.isArray(snapshotWordKeys)
+      && Array.isArray(snapshotWords)
+      && snapshotWordKeys.length === snapshotWords.length
+      && snapshotWordKeys.every((key, index) => key === snapshotWords[index]?.word);
+    if (!hasMatchingKeys) missing.push('wordDiscovery.snapshotWordKeys');
+
+    const hasValidStatus = Number.isInteger(interactionPayload?.todayCount)
+      && interactionPayload.todayCount >= 0
+      && Number.isInteger(interactionPayload?.dailyLimit)
+      && interactionPayload.dailyLimit >= 0
+      && typeof interactionPayload?.atLimit === 'boolean'
+      && typeof interactionPayload?.available === 'boolean'
+      && interactionPayload.atLimit === (
+        interactionPayload.dailyLimit === 0
+        || interactionPayload.todayCount >= interactionPayload.dailyLimit
+      )
+      && interactionPayload.available === (snapshotWords?.length > 0)
+      && (!interactionPayload.atLimit || snapshotWords?.length === 0)
+      && (
+        interactionPayload.atLimit
+        || snapshotWords?.length <= interactionPayload.dailyLimit - interactionPayload.todayCount
+      );
+    if (!hasValidStatus) missing.push('wordDiscovery.status');
+
+    const wordsLearned = interactionPayload?.wordsLearned;
+    if (
+      !Number.isInteger(wordsLearned)
+      || wordsLearned < 0
+      || !Array.isArray(snapshotWords)
+      || wordsLearned > snapshotWords.length
+    ) {
+      missing.push('wordDiscovery.wordsLearned');
     }
   }
   if (room?.type === ROOM_TYPES.whackAMole) {

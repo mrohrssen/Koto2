@@ -123,6 +123,21 @@ function prepareSpeedReviewRoom(gm, word = '明るい') {
   return room;
 }
 
+function prepareWordDiscoveryRoom(gm, word = '明るい') {
+  const room = gm.run.rooms[0];
+  room.wordDiscovery = {
+    ...room.wordDiscovery,
+    wordsToLearn: 1,
+    wordsLearned: 0,
+    completed: false,
+    snapshotInitialized: true,
+    snapshotWords: [{ word, reading: 'あかるい', meanings: ['bright'] }],
+    snapshotWordKeys: [word],
+    reviewedWordKeys: [],
+  };
+  return room;
+}
+
 async function expectSupportReplayOnce({ roomType, kind, payload = {}, installPerformer, assertApplied }) {
   const gm = makeGm();
   gm.run.rooms[0] = createRoom(roomType, AREA_ID, 1, 3);
@@ -989,25 +1004,133 @@ describe('ExploreSessionSyncService', () => {
     });
   });
 
-  it('wordDiscovery.review replays without double grading', async () => {
-    const gm = makeGm();
-    gm.run.rooms[0] = createRoom(ROOM_TYPES.wordDiscovery, AREA_ID, 1, 3);
-    gm.run.roomActionSeq = 2;
-    let reviewCount = 0;
-    gm.explorationService.applyWordDiscoveryReview = ({ word, grade }) => {
-      reviewCount += 1;
-      return { ok: true, word, grade };
-    };
+  it('rejects wordDiscovery.complete before every prepared snapshot word is reviewed without awarding rewards', async () => {
+    const gm = makeGm([ROOM_TYPES.wordDiscovery, ROOM_TYPES.friendlyNpc]);
+    const room = prepareWordDiscoveryRoom(gm, '明るい');
+    room.wordDiscovery.snapshotWords.push({ word: '水', reading: 'みず', meanings: ['water'] });
+    room.wordDiscovery.snapshotWordKeys.push('水');
+    room.wordDiscovery.wordsToLearn = 2;
+    room.wordDiscovery.wordsLearned = 1;
+    const beforeCredits = gm.run.player.credits;
+    const beforeXp = gm.run.creatureParty.active[0].xp || 0;
     const service = new ExploreSessionSyncService(gm);
-    const entry = {
+    const entry = makeEntry(gm, {
+      actionId: 'run_es_wdcomplete1',
+      kind: 'wordDiscovery.complete',
+      roomId: room.id,
+      payload: { learnedWords: ['明るい'] },
+    });
+
+    const result = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [entry],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'word_discovery_reviews_incomplete');
+    assert.equal(room.interacted, false);
+    assert.equal(room.wordDiscovery.completed, false);
+    assert.equal(gm.run.player.credits, beforeCredits);
+    assert.equal(gm.run.creatureParty.active[0].xp || 0, beforeXp);
+  });
+
+  it('rejects canonical wordDiscovery.complete for an invalid snapshot without awarding rewards', async () => {
+    const gm = makeGm([ROOM_TYPES.wordDiscovery, ROOM_TYPES.friendlyNpc]);
+    const room = prepareWordDiscoveryRoom(gm);
+    room.wordDiscovery.snapshotWordKeys = ['different-word'];
+    const beforeCredits = gm.run.player.credits;
+    const beforeXp = gm.run.creatureParty.active[0].xp || 0;
+    const service = new ExploreSessionSyncService(gm);
+
+    const result = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [makeEntry(gm, {
+        actionId: 'run_es_wdbadsnap1',
+        kind: 'wordDiscovery.complete',
+        roomId: room.id,
+      })],
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'word_discovery_snapshot_not_initialized');
+    assert.equal(room.interacted, false);
+    assert.equal(room.wordDiscovery.completed, false);
+    assert.equal(gm.run.player.credits, beforeCredits);
+    assert.equal(gm.run.creatureParty.active[0].xp || 0, beforeXp);
+  });
+
+  it('completes word discovery after the final prepared review and allows initialized empty snapshots', async () => {
+    for (const [name, words] of [
+      ['reviewed', [{ word: '明るい', reading: 'あかるい', meanings: ['bright'] }]],
+      ['empty-at-limit', []],
+    ]) {
+      const gm = makeGm([ROOM_TYPES.wordDiscovery, ROOM_TYPES.friendlyNpc]);
+      const room = gm.run.rooms[0];
+      Object.assign(room.wordDiscovery, {
+        snapshotInitialized: true,
+        snapshotWords: words,
+        snapshotWordKeys: words.map(word => word.word),
+        wordsLearned: words.length,
+      });
+      const service = new ExploreSessionSyncService(gm);
+      const result = await service.applySessionSync({
+        sessionEpoch: gm.run.exploreSessionEpoch,
+        entries: [makeEntry(gm, {
+          actionId: `run_es_wd${name.replace(/[^a-z]/g, '')}1`,
+          kind: 'wordDiscovery.complete',
+          roomId: room.id,
+        })],
+      });
+
+      assert.equal(result.status, 'ok', name);
+      assert.equal(room.interacted, true, name);
+      assert.equal(room.wordDiscovery.completed, true, name);
+    }
+  });
+
+  it('keeps legacy pre-snapshot word discovery completion compatible', () => {
+    const gm = makeGm([ROOM_TYPES.wordDiscovery, ROOM_TYPES.friendlyNpc]);
+    const room = gm.run.rooms[0];
+    assert.equal(room.wordDiscovery.snapshotInitialized, undefined);
+
+    const result = gm.explorationService.completeWordDiscovery();
+
+    assert.equal(result.type, 'word_discovery_complete');
+    assert.equal(room.interacted, true);
+    assert.equal(room.wordDiscovery.completed, true);
+  });
+
+  it('keeps initialized-snapshot legacy completion compatible because legacy reviews do not mutate room progress', () => {
+    const gm = makeGm([ROOM_TYPES.wordDiscovery, ROOM_TYPES.friendlyNpc]);
+    const room = prepareWordDiscoveryRoom(gm);
+    assert.equal(room.wordDiscovery.wordsLearned, 0);
+
+    const result = gm.explorationService.completeWordDiscovery();
+
+    assert.equal(result.type, 'word_discovery_complete');
+    assert.equal(room.interacted, true);
+    assert.equal(room.wordDiscovery.completed, true);
+  });
+
+  it('wordDiscovery.review grades once across ledger replay and a different duplicate action', async () => {
+    const gm = makeGm([ROOM_TYPES.wordDiscovery, ROOM_TYPES.friendlyNpc]);
+    const room = prepareWordDiscoveryRoom(gm);
+    gm.run.roomActionSeq = 2;
+    const delivered = [];
+    const service = new ExploreSessionSyncService(gm, {
+      applyKnownWordReview: review => {
+        delivered.push(review);
+        return { ok: true, mastered: false, isKnown: true };
+      },
+    });
+    const entry = makeEntry(gm, {
       seq: 1,
       actionId: 'run_es_00002001',
       kind: 'wordDiscovery.review',
-      roomIndex: 0,
-      roomId: gm.run.rooms[0].id,
+      roomId: room.id,
       actionSeq: 2,
-      payload: { word: '明るい', grade: 'good' },
-    };
+      payload: { roomId: room.id, word: '明るい', grade: 'again', reviewIndex: 0 },
+    });
 
     const first = await service.applySessionSync({
       sessionEpoch: gm.run.exploreSessionEpoch,
@@ -1017,15 +1140,30 @@ describe('ExploreSessionSyncService', () => {
       sessionEpoch: gm.run.exploreSessionEpoch,
       entries: [entry],
     });
+    const duplicate = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [{ ...entry, seq: 2, actionId: 'run_es_00002004' }],
+    });
 
     assert.equal(first.status, 'ok');
-    assert.equal(reviewCount, 1);
+    assert.deepEqual(first.results[0].knownWordReview, {
+      word: '明るい', grade: 'again', mastered: false, isKnown: true,
+    });
+    assert.equal(Object.hasOwn(first.results[0], 'snapshotWords'), false);
+    assert.equal(Object.hasOwn(first.results[0], 'snapshotWordKeys'), false);
+    assert.equal(first.results[0].reviewedCards, 1);
+    assert.deepEqual(delivered, [{ word: '明るい', grade: 'again', isDiscovery: true }]);
+    assert.equal(room.wordDiscovery.wordsLearned, 1);
+    assert.deepEqual(room.wordDiscovery.reviewedWordKeys, [`${room.id}:0:明るい`]);
     assert.equal(replay.results[0].replayed, true);
+    assert.deepEqual(replay.results[0].knownWordReview, first.results[0].knownWordReview);
+    assert.equal(duplicate.results[0].alreadyCommitted, true);
+    assert.equal(room.wordDiscovery.wordsLearned, 1);
   });
 
   it('wordDiscovery.review fallback records pending review intent once', async () => {
-    const gm = makeGm();
-    gm.run.rooms[0] = createRoom(ROOM_TYPES.wordDiscovery, AREA_ID, 1, 3);
+    const gm = makeGm([ROOM_TYPES.wordDiscovery, ROOM_TYPES.friendlyNpc]);
+    const room = prepareWordDiscoveryRoom(gm);
     gm.run.roomActionSeq = 2;
     const service = new ExploreSessionSyncService(gm);
     const entry = {
@@ -1035,7 +1173,7 @@ describe('ExploreSessionSyncService', () => {
       roomIndex: 0,
       roomId: gm.run.rooms[0].id,
       actionSeq: 2,
-      payload: { word: '明るい', grade: 'good' },
+      payload: { roomId: room.id, word: '明るい', grade: 'good', reviewIndex: 0 },
     };
 
     const first = await service.applySessionSync({
@@ -1046,16 +1184,22 @@ describe('ExploreSessionSyncService', () => {
       sessionEpoch: gm.run.exploreSessionEpoch,
       entries: [entry],
     });
+    const duplicate = await service.applySessionSync({
+      sessionEpoch: gm.run.exploreSessionEpoch,
+      entries: [{ ...entry, seq: 2, actionId: 'run_es_00002005' }],
+    });
 
     assert.equal(first.status, 'ok');
     assert.deepEqual(gm.run.pendingWordDiscoveryReviews, [{ word: '明るい', grade: 'good' }]);
     assert.equal(replay.results[0].replayed, true);
+    assert.equal(duplicate.results[0].alreadyCommitted, true);
     assert.deepEqual(gm.run.pendingWordDiscoveryReviews, [{ word: '明るい', grade: 'good' }]);
+    assert.equal(room.wordDiscovery.wordsLearned, 1);
   });
 
   it('wordDiscovery.review fallback rejects invalid review payloads', async () => {
-    const gm = makeGm();
-    gm.run.rooms[0] = createRoom(ROOM_TYPES.wordDiscovery, AREA_ID, 1, 3);
+    const gm = makeGm([ROOM_TYPES.wordDiscovery, ROOM_TYPES.friendlyNpc]);
+    const room = prepareWordDiscoveryRoom(gm);
     gm.run.roomActionSeq = 2;
     const service = new ExploreSessionSyncService(gm);
     const entry = {
@@ -1065,7 +1209,7 @@ describe('ExploreSessionSyncService', () => {
       roomIndex: 0,
       roomId: gm.run.rooms[0].id,
       actionSeq: 2,
-      payload: { word: '明るい', grade: 'later' },
+      payload: { roomId: room.id, word: '明るい', grade: 'later', reviewIndex: 0 },
     };
 
     const result = await service.applySessionSync({
@@ -1185,6 +1329,7 @@ describe('ExploreSessionSyncService', () => {
         return {
           ok: true,
           mastered: review.grade === 'good',
+          isKnown: true,
           fusionCoreDrop: review.grade === 'good'
             ? { awarded: true, message: 'Obtained 1x Fusion Core!' }
             : null,
@@ -1229,6 +1374,7 @@ describe('ExploreSessionSyncService', () => {
     assert.equal(first.status, 'ok');
     assert.deepEqual(first.results[0].knownWordReview, {
       mastered: true,
+      isKnown: true,
       word: '明るい',
       grade: 'good',
       fusionCoreDrop: { awarded: true, message: 'Obtained 1x Fusion Core!' },
@@ -1237,9 +1383,11 @@ describe('ExploreSessionSyncService', () => {
     assert.deepEqual(replay.results[0].knownWordReview, first.results[0].knownWordReview);
     assert.equal(duplicate.status, 'ok');
     assert.equal(duplicate.results[0].alreadyCommitted, true);
+    assert.equal(Object.hasOwn(first.results[0], 'snapshotWords'), false);
+    assert.equal(Object.hasOwn(first.results[0], 'snapshotWordKeys'), false);
     assert.equal(invalidDuplicate.status, 'corrected');
     assert.match(invalidDuplicate.reason, /grade/);
-    assert.deepEqual(delivered, [{ word: '明るい', grade: 'good' }]);
+    assert.deepEqual(delivered, [{ word: '明るい', grade: 'good', isDiscovery: false }]);
     assert.equal(room.speedReviewRoom.reviewedCards, 1);
   });
 
