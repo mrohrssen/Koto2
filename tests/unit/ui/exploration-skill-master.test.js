@@ -928,6 +928,142 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     assert.equal(showNarrationCalls, 1);
   });
 
+  it('renders fetched offers when the initial pick is inferred over a non-skill first room', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    const firstRoom = { id: 'first-whack-room', type: 'whackAMole' };
+    const state = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 1 },
+      room: firstRoom,
+      run: {
+        currentRoom: 0,
+        stats: { startTime: 223 },
+        creatureParty: { active: [] },
+        rooms: [firstRoom],
+      },
+    };
+
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => ({
+        offered: [
+          { id: 'arcStrike', name: 'Arc Strike', title: 'Arc Strike', desc: 'Arc damage.' },
+          { id: 'guard', name: 'Guard', title: 'Guard', desc: 'Defend.' },
+          { id: 'haste', name: 'Haste', title: 'Haste', desc: 'Speed up.' },
+        ],
+      }),
+    });
+
+    try {
+      await renderSkillMaster();
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(renderedChoices?.heading, 'Choose a skill');
+    assert.match(actionArea.innerHTML, /Arc Strike/);
+  });
+
+  it('does not consume room-zero Skill Master payloads before the initial party skill exists', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    const firstRoom = {
+      id: 'first-skill-room',
+      type: 'skillMaster',
+      interacted: false,
+      skillMaster: { completed: false, chosenId: null },
+    };
+    const preparedOffer = {
+      id: 'preparedRoomSkill',
+      name: 'Prepared Room Skill',
+      title: 'Prepared Room Skill',
+      desc: 'This belongs to room zero.',
+    };
+    const state = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 1 },
+      room: firstRoom,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        roomActionSeq: 1,
+        stats: { startTime: 224 },
+        partySkills: [],
+        creatureParty: { active: [] },
+        rooms: [firstRoom],
+        exploreRunway: {
+          sessionEpoch: 'ese_initialskill001',
+          currentRoom: 0,
+          roomActionSeq: 1,
+          preparedRooms: [{
+            index: 0,
+            roomId: firstRoom.id,
+            actionSeq: 1,
+            room: firstRoom,
+            acceptedActions: ['skillMaster.choose', 'proceed'],
+            offlineReady: true,
+            interactionPayload: {
+              kind: 'skillMaster',
+              roomId: firstRoom.id,
+              offered: [preparedOffer],
+              skillSelectPrompt: { tokens: [{ text: 'Prepared prompt' }], overrides: {} },
+              completed: false,
+              chosenId: null,
+            },
+          }],
+        },
+      },
+    };
+
+    configureExploreSession({ syncRequest: async () => ({ results: [] }) });
+    let offersCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => {
+        offersCalls += 1;
+        return {
+          offered: [{
+            id: 'initialArcStrike',
+            name: 'Initial Arc Strike',
+            title: 'Initial Arc Strike',
+            desc: 'This is the initial pick.',
+          }],
+        };
+      },
+    });
+
+    try {
+      await renderSkillMaster();
+    } finally {
+      globalThis.document = originalDocument;
+      resetExploreSession();
+    }
+
+    assert.equal(offersCalls, 1);
+    assert.match(actionArea.innerHTML, /Initial Arc Strike/);
+    assert.doesNotMatch(actionArea.innerHTML, /Prepared Room Skill/);
+  });
+
   it('labels non-tutorial skill choices with Choose a skill', async () => {
     const originalDocument = globalThis.document;
     const actionArea = createElementStub();
