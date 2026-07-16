@@ -128,7 +128,13 @@ import * as speechBubble from './js/ui/speech-bubble.js';
 import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
-import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
+import {
+  setKnownWords,
+  applyKnownWordReviewMembership,
+  renderEnFirst,
+  renderJpSentence,
+  getKnownWords,
+} from './js/ui/bootstrap-client.js';
 import { getBattleRewardAnchor, showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
 import { createCombatRecoveryGate } from './js/ui/combat-recovery-gate.js';
@@ -2252,8 +2258,7 @@ async function initGame() {
       const internalGrade = grade >= 3 ? 'good' : 'again';
       const result = await reviewVocabWord(wordText, internalGrade);
       if (result?.state) updateGameState(result.state);
-      if (result?.mastered) addKnownWord(wordText);
-      else if (result && !result.mastered) removeKnownWord(wordText);
+      applyKnownWordReviewMembership(wordText, result);
       if (result?.fusionCoreDrop?.awarded) {
         const anchor = document.getElementById('speed-review-content')
           || document.getElementById('speed-review-modal')

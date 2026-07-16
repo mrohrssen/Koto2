@@ -75,6 +75,7 @@ export function performKnownWordReview(req, {
   const baseResponse = {
     ok: true,
     mastered: grade === 'good',
+    isKnown: getKnownWordsFromFsrs(userId).includes(word),
     card: {
       state: updatedCard.state,
       due: updatedCard.due,

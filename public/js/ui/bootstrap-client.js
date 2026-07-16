@@ -146,6 +146,18 @@ export function removeKnownWord(word) {
   _knownWords.delete(word);
 }
 
+/** Apply the server's post-review membership, falling back for older responses. */
+export function applyKnownWordReviewMembership(word, result) {
+  if (!result) return;
+
+  const isKnown = typeof result.isKnown === 'boolean'
+    ? result.isKnown
+    : result.mastered;
+
+  if (isKnown === true) addKnownWord(word);
+  else if (isKnown === false) removeKnownWord(word);
+}
+
 /** HTML-escape a string. Exported for use by other UI modules. */
 export function esc(s) {
   if (!s) return '';

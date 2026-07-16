@@ -46,6 +46,22 @@ describe('known-words review — auto-create card', () => {
     const card = cards.find(c => c.id === '古い');
     assert.ok(card.reps > 0, 'card should retain review history');
   });
+
+  it('reports a first Again review as known from its post-grade Learning state', () => {
+    const word = '忘れる';
+    const result = performKnownWordReview({
+      user: { id: userId },
+      getSettings: () => ({ dailyWordLimit: 10 }),
+    }, {
+      word,
+      grade: 'again',
+    });
+
+    assert.equal(result.mastered, false, 'Again remains a non-mastering grade');
+    assert.equal(result.card.state, State.Learning);
+    assert.equal(result.isKnown, true,
+      'a reviewed Learning card must remain in the authoritative known-word set');
+  });
 });
 
 function buildKnownWordsApp({
