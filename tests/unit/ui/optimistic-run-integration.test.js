@@ -159,9 +159,12 @@ describe('optimistic run action integration', () => {
     );
 
     assert.match(speedReviewRoomSource, /recordRoomAction\('speedReview\.complete', \{ roomId: room\?\.id \}\)/);
-    assert.doesNotMatch(speedReviewRoomSource, /apiCompleteSpeedReviewRoom\(room\.id, \{ actionId: pending\.actionId \}\)/);
+    assert.match(speedReviewRoomSource, /recordRoomAction\('speedReview\.commit', \{\s*roomId: room\.id,\s*word: word\?\.word,\s*commitIndex: absoluteCommitIndex,/);
+    assert.match(speedReviewRoomSource, /if \(sessionOwned\)[\s\S]*apiCompleteSpeedReviewRoom\?\.\(room\?\.id\)/);
+    assert.match(speedReviewRoomSource, /const startResult = session\s*\? sessionPayload\.payload\s*:\s*await apiStartSpeedReviewRoom\?\.\(room\.id\)/);
+    assert.doesNotMatch(speedReviewRoomSource, /speedReviewRoomCommitChain/);
     assert.doesNotMatch(speedReviewRoomSource, /correctPendingRunAction\(pending, completeResult\)/);
-    assert.match(speedReviewRoomSource, /if \(snapshotWords\.length === 0\) \{\s*await completeSpeedReviewRoomOptimistically\(room\);/);
+    assert.match(speedReviewRoomSource, /const remainingWords = snapshotWords\.slice\(reviewedCards\);\s*if \(remainingWords\.length === 0\)/);
     assert.match(speedReviewRoomSource, /throw new Error\(EXPLORE_SPOTTY_COPY\)/);
   });
 
