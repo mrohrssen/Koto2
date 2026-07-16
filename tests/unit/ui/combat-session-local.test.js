@@ -1041,6 +1041,114 @@ describe('explore-session local combat turns', () => {
     assert.equal(selectionRestarts, 1, 'same-combat checkpoint should continue the valid UI flow');
   });
 
+  it('preserves a same-owner authoritative base correction that lands during held playback', async () => {
+    const initialState = sessionCombatState({ enemyHp: 100 });
+    const authoritativeState = structuredClone(initialState);
+    authoritativeState.meta = { correctionOwner: 'server-base' };
+    const runwayA = {
+      sessionEpoch: 'ese_same_owner_base_a',
+      currentRoom: 0,
+      roomActionSeq: 0,
+      preparedRooms: [{
+        index: 0,
+        roomId: 'room-0',
+        actionSeq: 0,
+        offlineReady: true,
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['combatState', 'partyStats'] },
+        dependencies: ['combatState', 'partyStats'],
+        interactionPayload: {
+          combatId: 'cmb_sess',
+          combatStart: { optimistic: { combatId: 'cmb_sess' } },
+        },
+      }],
+    };
+    const correctedRunway = {
+      ...structuredClone(runwayA),
+      sessionEpoch: 'ese_same_owner_base_b',
+    };
+    let harness;
+    let markResponseReady;
+    let markAdoptionWaiting;
+    let markCorrectionAdopted;
+    const responseReady = new Promise(resolve => { markResponseReady = resolve; });
+    const adoptionWaiting = new Promise(resolve => { markAdoptionWaiting = resolve; });
+    const correctionAdopted = new Promise(resolve => { markCorrectionAdopted = resolve; });
+    fakeSession = createExploreSession({
+      syncRequest: async () => {
+        markResponseReady();
+        return {
+          status: 'corrected',
+          reason: 'session_epoch_mismatch',
+          state: authoritativeState,
+          exploreRunway: correctedRunway,
+        };
+      },
+      beforeResponseAdoption: async () => {
+        markAdoptionWaiting();
+        await combatLoop.waitForExploreCombatPlaybackIdle();
+      },
+      onCorrection: response => {
+        const previousState = harness.state;
+        harness.replaceState(response.state);
+        combatLoop.reconcileExploreCombatCorrection(previousState, response.state);
+        markCorrectionAdopted();
+      },
+      schedule: fn => {
+        queueMicrotask(fn);
+        return fn;
+      },
+      cancel: () => {},
+    });
+    fakeSession.adoptRunway(runwayA);
+    harness = initHarness(initialState);
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true, enemy: false });
+
+    let markPlaybackStarted;
+    let releasePlayback;
+    const playbackStarted = new Promise(resolve => { markPlaybackStarted = resolve; });
+    const playbackGate = new Promise(resolve => { releasePlayback = resolve; });
+    let selectionRestarts = 0;
+    const turn = combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      turnTiming: {
+        actionType: 'attack',
+        startedAt: 0,
+        animationStartedAt: null,
+        requestMs: null,
+        logged: false,
+      },
+      pendingFlag: 'player',
+      playback: async () => {
+        markPlaybackStarted();
+        await playbackGate;
+      },
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    });
+
+    await playbackStarted;
+    await responseReady;
+    await adoptionWaiting;
+    releasePlayback();
+    await Promise.all([turn, correctionAdopted]);
+
+    assert.equal(harness.state, authoritativeState,
+      'the rejected local turn must not replace the adopted authoritative base object');
+    assert.equal(harness.state.combat.optimistic.stateVersion, 0);
+    assert.equal(harness.state.combat.optimistic.nextTurnSeed, 'seed-a');
+    assert.equal(harness.state.combat.enemies[0].hp, 100);
+    assert.equal(harness.state.meta.correctionOwner, 'server-base');
+    assert.equal(harness.updates.length, 0, 'the rejected local prediction must never commit');
+    assert.equal(fakeSession.pendingCount(), 0, 'the corrected action log must be cleared');
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, false,
+      'the rejected turn must release input ownership');
+    assert.equal(selectionRestarts, 1,
+      'the authoritative active owner must regain move selection exactly once');
+  });
+
   for (const {
     actionName,
     pendingFlag,

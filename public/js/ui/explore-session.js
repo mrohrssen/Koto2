@@ -425,6 +425,12 @@ export function createExploreSession({
       const response = await syncRequest({ sessionEpoch, entries });
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
 
+      // Fence captured continuations as soon as a non-committing correction is
+      // known. Combat playback may still be holding response adoption; waiting
+      // until after that hold creates a race where the rejected local turn can
+      // publish during the handoff.
+      if (response?.status === 'corrected') localRevision += 1;
+
       // A combat checkpoint may arrive while the predicted turn is still
       // animating. Wait before changing either the ordered log or runway owner;
       // otherwise combat B can become current inside one of combat A's internal

@@ -713,7 +713,15 @@ function classifyExploreCombatContinuation(session, capturedOwner, capturedProgr
     baseSeed,
     expectedVersion,
     expectedSeed,
+    sessionRevision,
   } = capturedProgress;
+
+  if (
+    sessionRevision != null
+    && session?.getLocalRevision?.() !== sessionRevision
+  ) {
+    return 'adopted';
+  }
 
   if (current?.stateVersion === baseVersion
     && (baseSeed == null || current?.nextTurnSeed === baseSeed)) {
@@ -1066,6 +1074,10 @@ async function runSessionCreatureCombatTurn({
     clearCombatPendingFlag(pendingFlag);
     return true;
   }
+  // recordRoomAction itself advances the session revision. Capture only after
+  // the append so a later correction/adoption — including a same-epoch one —
+  // invalidates this continuation without mistaking our own append for drift.
+  capturedProgress.sessionRevision = session?.getLocalRevision?.() ?? null;
 
   const hasPendingCombatEnd = !!optimistic.localTranscript?.pendingCombatEnd;
   const requestStartedAt = performance.now();
@@ -1123,10 +1135,11 @@ async function runSessionCreatureCombatTurn({
     return STALE_EXPLORE_COMBAT_OWNER;
   }
 
-  if (continuation === 'checkpoint') {
+  if (continuation === 'checkpoint' || continuation === 'adopted') {
     // This exact turn's same-combat checkpoint landed while playback was in
-    // flight. Preserve its authoritative party/XP/server effects and continue
-    // the current combat UI without applying the local prediction a second time.
+    // flight, or a correction authoritatively restored the same base tuple.
+    // Preserve server effects and continue the current combat UI without
+    // applying the rejected/local prediction over the adopted state.
     clearCombatPendingFlag(pendingFlag);
     return ADOPTED_EXPLORE_COMBAT_CHECKPOINT;
   }
