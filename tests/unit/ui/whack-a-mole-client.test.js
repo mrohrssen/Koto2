@@ -149,6 +149,7 @@ describe('WhackAMoleGame cancellation', () => {
 
   it('does not submit completion after the owning room is no longer active', async () => {
     let completeCalls = 0;
+    let rendered = 'successor controls';
     const game = new WhackAMoleGame([
       { id: 'a', reading: 'あ', sprite: '/a.webp' },
       { id: 'b', reading: 'い', sprite: '/b.webp' },
@@ -160,7 +161,7 @@ describe('WhackAMoleGame cancellation', () => {
       { id: 'h', reading: 'く', sprite: '/h.webp' },
       { id: 'i', reading: 'け', sprite: '/i.webp' },
     ], {
-      actions: { setContent: () => {} },
+      actions: { setContent: html => { rendered = html; } },
       apiCompleteWhackAMole: async () => {
         completeCalls += 1;
         return {};
@@ -175,6 +176,47 @@ describe('WhackAMoleGame cancellation', () => {
     await game._endGame();
 
     assert.equal(completeCalls, 0);
+    assert.equal(rendered, 'successor controls');
+  });
+
+  it('does not clear or narrate after ownership changes during completion', async () => {
+    let resolveComplete;
+    let ownerActive = true;
+    let rendered = 'successor controls';
+    let proceedCalls = 0;
+    const game = new WhackAMoleGame([
+      { id: 'a', reading: 'あ', sprite: '/a.webp' },
+      { id: 'b', reading: 'い', sprite: '/b.webp' },
+      { id: 'c', reading: 'う', sprite: '/c.webp' },
+      { id: 'd', reading: 'え', sprite: '/d.webp' },
+      { id: 'e', reading: 'お', sprite: '/e.webp' },
+      { id: 'f', reading: 'か', sprite: '/f.webp' },
+      { id: 'g', reading: 'き', sprite: '/g.webp' },
+      { id: 'h', reading: 'く', sprite: '/h.webp' },
+      { id: 'i', reading: 'け', sprite: '/i.webp' },
+    ], {
+      actions: { setContent: html => { rendered = html; } },
+      apiCompleteWhackAMole: () => new Promise(resolve => { resolveComplete = resolve; }),
+      apiProceed: async () => { proceedCalls += 1; },
+      updateGameState: () => {},
+      updateUI: () => {},
+      playSFX: () => {},
+      isActive: () => ownerActive,
+    });
+
+    const ending = game._endGame();
+    await Promise.resolve();
+    ownerActive = false;
+    resolveComplete({
+      finishDialogue: { tokens: [{ text: 'Old finish dialogue' }] },
+      xpGrants: [],
+      levelUps: [],
+    });
+    await ending;
+
+    assert.equal(rendered, 'successor controls');
+    assert.equal(dialogueCalls.length, 0);
+    assert.equal(proceedCalls, 0);
   });
 
   it('does not proceed if cancellation happens while completion is in flight', async () => {

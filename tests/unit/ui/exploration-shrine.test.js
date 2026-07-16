@@ -107,7 +107,7 @@ describe('renderShrine encounter flow', () => {
     sceneManagerState.transitioning = false;
   });
 
-  function makePreparedShrineState(roomId, currentRoom = 0) {
+  function makePreparedShrineState(roomId, currentRoom = 0, variant = roomId) {
     const room = {
       id: roomId,
       type: 'shrine',
@@ -140,8 +140,8 @@ describe('renderShrine encounter flow', () => {
             interactionPayload: {
               kind: 'shrine',
               roomId,
-              greeting: { tokens: [{ text: `Greeting ${roomId}` }], overrides: {} },
-              rewards: [{ id: 'heal_all', title: `Heal ${roomId}`, description: 'Heal everyone.' }],
+              greeting: { tokens: [{ text: `Greeting ${variant}` }], overrides: {} },
+              rewards: [{ id: 'heal_all', title: `Heal ${variant}`, description: 'Heal everyone.' }],
               completed: false,
             },
           }],
@@ -274,6 +274,32 @@ describe('renderShrine encounter flow', () => {
     assert.equal(legacyCalls, 0);
   });
 
+  it('replaces cached shrine rewards and greeting for a new same-room capability', async () => {
+    const roomId = 'shrine-same-room-owner';
+    let currentState = makePreparedShrineState(roomId, 0, 'alpha');
+    let legacyCalls = 0;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetShrineOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    await renderShrine();
+    assert.match(renderedChoices.cards[0].title, /alpha/);
+
+    currentState = makePreparedShrineState(roomId, 0, 'beta');
+    getExploreSession().adoptRunway(currentState.run.exploreRunway);
+    await renderShrine();
+
+    assert.match(renderedChoices.cards[0].title, /beta/);
+    assert.match(dialogueCards.at(-1).tokens[0].text, /beta/);
+    assert.equal(legacyCalls, 0);
+  });
+
   it('does not clear a non-support successor when old shrine dialogue settles', async () => {
     let currentState = makePreparedShrineState('shrine-before-combat', 0);
     let clearCalls = 0;
@@ -327,6 +353,117 @@ describe('renderShrine encounter flow', () => {
     assert.equal(renderedChoices, successorControls);
     assert.equal(clearCalls, clearsBeforeSettlement);
     assert.equal(getExploreSession().isPaused(), false);
+  });
+
+  it('quietly drops a legacy shrine fetch after navigation to a non-support room', async () => {
+    const room = {
+      id: 'legacy-shrine-before-combat',
+      type: 'shrine',
+      interacted: false,
+      shrine: { completed: false, used: false },
+    };
+    let currentState = {
+      phase: 'shrine',
+      room,
+      run: { currentRoom: 0, rooms: [room], creatureParty: { active: [], reserves: [] } },
+    };
+    const offersGate = deferred();
+    let legacyCalls = 0;
+    let adoptedOldState = false;
+    let clearCalls = 0;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { adoptedOldState = true; currentState = next; },
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => { clearCalls += 1; renderedChoices = null; },
+      },
+      scene: { showNarration: async () => {} },
+      apiGetShrineOffers: async () => { legacyCalls += 1; return offersGate.promise; },
+    });
+
+    const oldRendering = renderShrine();
+    await Promise.resolve();
+    assert.equal(legacyCalls, 1);
+
+    const encounter = { id: 'legacy-combat-successor', type: 'encounter' };
+    currentState = {
+      phase: 'room_encounter',
+      room: encounter,
+      run: { currentRoom: 1, rooms: [room, encounter] },
+    };
+    const successorControls = { heading: 'Fight' };
+    renderedChoices = successorControls;
+    const clearsBeforeSettlement = clearCalls;
+    offersGate.resolve({
+      state: { phase: 'shrine', room, run: { currentRoom: 0, rooms: [room] } },
+      greeting: { tokens: [{ text: 'Old greeting' }], overrides: {} },
+      rewards: [{ id: 'heal_all', title: 'Old reward', description: 'Old reward.' }],
+    });
+    await oldRendering;
+
+    assert.equal(adoptedOldState, false);
+    assert.equal(currentState.room.id, encounter.id);
+    assert.equal(renderedChoices, successorControls);
+    assert.equal(clearCalls, clearsBeforeSettlement);
+  });
+
+  it('restarts an orphaned same-owner legacy shrine fetch on rerender', async () => {
+    const room = {
+      id: 'legacy-shrine-overlap',
+      type: 'shrine',
+      interacted: false,
+      shrine: { completed: false, used: false },
+    };
+    const state = {
+      phase: 'shrine',
+      room,
+      run: {
+        currentRoom: 0,
+        stats: { startTime: 9101 },
+        rooms: [room],
+        creatureParty: { active: [], reserves: [] },
+      },
+    };
+    const gates = [];
+    let fetchCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetShrineOffers: async () => {
+        fetchCalls += 1;
+        const gate = deferred();
+        gates.push(gate);
+        return gate.promise;
+      },
+    });
+
+    const firstRender = renderShrine();
+    await Promise.resolve();
+    assert.equal(fetchCalls, 1);
+
+    const secondRender = renderShrine();
+    await Promise.resolve();
+    assert.equal(fetchCalls, 2, 'new render must re-own an unresolved cache load');
+
+    gates[1].resolve({
+      greeting: { tokens: [{ text: 'Current greeting' }], overrides: {} },
+      rewards: [{ id: 'heal_all', title: 'Current reward', description: 'Current reward.' }],
+    });
+    await secondRender;
+    const currentChoices = renderedChoices;
+    assert.match(currentChoices.cards[0].title, /Current/);
+
+    gates[0].resolve({
+      greeting: { tokens: [{ text: 'Old greeting' }], overrides: {} },
+      rewards: [{ id: 'heal_all', title: 'Old reward', description: 'Old reward.' }],
+    });
+    await firstRender;
+    assert.equal(renderedChoices, currentChoices);
   });
 
   function initShrine(overrides = {}) {

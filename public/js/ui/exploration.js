@@ -121,11 +121,12 @@ function isInitialSkillPickState(state = getGameState?.()) {
   );
 }
 
-async function resetSceneForInitialRoomEntry(state) {
+async function resetSceneForInitialRoomEntry(state, { isActive = () => true } = {}) {
   const mgr = getSceneManager();
   if (mgr?.transitioning && typeof mgr.waitForIdle === 'function') {
     await mgr.waitForIdle();
   }
+  if (!isActive()) return false;
   const scene = mgr?.currentScene;
   const allies = state?.run?.creatureParty?.active ?? [];
   const roomId = state?.run?.currentRoom ?? null;
@@ -134,7 +135,9 @@ async function resetSceneForInitialRoomEntry(state) {
   } else if (scene && !scene.disposed && !scene._exiting && scene.npcSprite && typeof scene.hideNpcSprite === 'function') {
     await scene.hideNpcSprite({ slideOut: true });
   }
+  if (!isActive()) return false;
   hideEnemy();
+  return true;
 }
 const EXPLORE_SPOTTY_COPY = 'Connection is spotty. Your progress will sync when you reconnect.';
 
@@ -522,29 +525,40 @@ function clearActionArea() {
 // structural (fresh scene = fresh state). See ExplorationScene constructor.
 
 /** Show multi-page Cid tutorial narration. Optionally slides her sprite in/out. */
-export async function showTutorialNarration(pages, { showSprite = false } = {}) {
+export async function showTutorialNarration(pages, {
+  showSprite = false,
+  isActive = () => true,
+} = {}) {
   // Any scene with an npcs layer owns the Pixi slide (HubScene during
   // prologue/skillMaster/hub, ExplorationScene inside rooms, BattleScene
   // during combat interjections). See getSceneWithNpcs() above.
-  const scene = showSprite ? await waitForSceneWithNpcs() : null;
+  const scene = showSprite
+    ? (getSceneWithNpcs() || await waitForSceneWithNpcs())
+    : null;
+  if (!isActive()) return;
   const cidSprite = npcSpriteUrl('cid');
   if (showSprite) {
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
     if (scene) {
       await scene.showNpcSprite(cidSprite, { slideIn: true });
+      if (!isActive()) return;
     }
   }
 
   for (const page of pages) {
+    if (!isActive()) return;
     await sceneModule.showNarration(page, { speaker: 'Cid' });
+    if (!isActive()) return;
   }
 
   if (showSprite) {
     const exitScene = getSceneWithNpcs();
-    if (exitScene && exitScene.npcSprite) {
+    // Cleanup belongs to the scene where this narration started. A successor
+    // scene may already be showing its own NPC when an old narration settles.
+    if (exitScene === scene && exitScene?.npcSprite && isActive()) {
       await exitScene.hideNpcSprite({ slideOut: true });
     }
-    hideEnemy();
+    if (isActive()) hideEnemy();
   }
 }
 
@@ -849,6 +863,7 @@ const PARTY_SKILL_TREE_DISPLAY_FALLBACK = {
 let skillMasterState = {
   cacheKey: null,
   roomId: null,
+  capabilityOwner: null,
   fetched: false,
   offered: null,
   chosenId: null,
@@ -1486,6 +1501,7 @@ export function renderRunEnded() {
 
 let shrineState = {
   roomId: null,
+  capabilityOwner: null,
   fetched: false,
   rewards: null,
   greeting: null,
@@ -1531,6 +1547,7 @@ export async function renderShrine() {
     : null;
   const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown';
+  const capabilityCacheOwner = supportRoomCapabilityCacheOwner(gameState, activeStandardSession);
   const resetShrineRenderState = () => {
     shrineState.fetched = false;
     shrineState.rewards = null;
@@ -1555,9 +1572,13 @@ export async function renderShrine() {
     onInvalid: resetShrineRenderState,
   });
 
-  if (shrineState.roomId !== roomId) {
+  if (
+    shrineState.roomId !== roomId
+    || shrineState.capabilityOwner !== capabilityCacheOwner
+  ) {
     shrineState = {
       roomId,
+      capabilityOwner: capabilityCacheOwner,
       fetched: false,
       rewards: null,
       greeting: null,
@@ -1584,7 +1605,6 @@ export async function renderShrine() {
   actions.clear();
 
   if (!shrineState.fetched) {
-    shrineState.fetched = true;
     const fetchRoomId = roomId;
     try {
       const resp = activeStandardSession ? payload : await apiGetShrineOffers?.();
@@ -1596,6 +1616,7 @@ export async function renderShrine() {
         { id: 'level_up', title: 'Level up one creature', description: 'Choose one living creature.' }
       ];
       shrineState.greeting = resp?.greeting || null;
+      shrineState.fetched = true;
       if (resp?.state) updateGameState(resp.state);
     } catch {
       if (!requireSupportRoomRenderOwner(renderOwner)) return;
@@ -2067,6 +2088,17 @@ function adoptRunwayForRoomRender(state = getGameState?.()) {
   return session;
 }
 
+function supportRoomCapabilityCacheOwner(state, session) {
+  if (session) {
+    return preparedRoomForRunwayCursor(
+      state?.run?.exploreRunway,
+      state?.run?.currentRoom,
+    );
+  }
+  const runStartTime = state?.run?.stats?.startTime;
+  return runStartTime == null ? (state?.run ?? null) : `legacy-run:${runStartTime}`;
+}
+
 function hasFrameTokens(frame) {
   return Array.isArray(frame?.tokens) && frame.tokens.length > 0;
 }
@@ -2163,6 +2195,7 @@ function beginSupportRoomRenderOwner({
     session,
     phase: state?.phase,
     currentRoom: state?.run?.currentRoom,
+    runStartTime: state?.run?.stats?.startTime ?? null,
     roomActionSeq: capability?.prepared?.actionSeq
       ?? state?.run?.roomActionSeq
       ?? state?.run?.exploreRunway?.roomActionSeq
@@ -2182,13 +2215,23 @@ function beginSupportRoomRenderOwner({
 
 function requireSupportRoomRenderOwner(owner, { allowedPhases = null } = {}) {
   if (!owner || owner.generation !== supportRoomRenderGeneration) return false;
-  // Legacy/non-session rooms retain their existing API flow. Generation still
-  // prevents an older legacy render from repainting a newer support render.
-  if (!owner.session) return true;
-
   const state = getGameState?.();
-  const session = getActiveStandardExploreSession(state);
   const room = owner.resolveRoom?.(state) || null;
+  const phaseMatches = Array.isArray(allowedPhases)
+    ? allowedPhases.includes(state?.phase)
+    : state?.phase === owner.phase;
+  // Legacy/non-session requests have no prepared capability identity to check,
+  // so bind them to the run, cursor, phase, and room semantics that launched
+  // them. A navigation or fresh run retires the continuation quietly.
+  if (!owner.session) {
+    return phaseMatches
+      && state?.run?.currentRoom === owner.currentRoom
+      && (state?.run?.stats?.startTime ?? null) === owner.runStartTime
+      && (room?.id ?? null) === owner.roomId
+      && (room?.type ?? null) === owner.roomType;
+  }
+
+  const session = getActiveStandardExploreSession(state);
   const capability = session
     ? owner.resolveCapability?.(session, state, room)
     : null;
@@ -2196,16 +2239,13 @@ function requireSupportRoomRenderOwner(owner, { allowedPhases = null } = {}) {
     ?? state?.run?.roomActionSeq
     ?? state?.run?.exploreRunway?.roomActionSeq
     ?? null;
-  const phaseMatches = Array.isArray(allowedPhases)
-    ? allowedPhases.includes(state?.phase)
-    : state?.phase === owner.phase;
   const sameOwner = session === owner.session
     && phaseMatches
     && state?.run?.currentRoom === owner.currentRoom
     && actionSeq === owner.roomActionSeq
     && (state?.run?.exploreRunway?.sessionEpoch ?? null) === owner.sessionEpoch
-    && room?.id === owner.roomId
-    && room?.type === owner.roomType
+    && (room?.id ?? null) === owner.roomId
+    && (room?.type ?? null) === owner.roomType
     && capability?.prepared === owner.prepared
     && capability?.payload === owner.payload;
   // Navigation, correction adoption, or a newer prepared snapshot means these
@@ -2446,6 +2486,7 @@ export async function renderSpeedReviewRoom() {
 
 let whackAMoleState = {
   roomId: null,
+  capabilityOwner: null,
   fetched: false,
   dialogue: null,
   yesLabel: 'Yes',
@@ -2547,36 +2588,64 @@ async function skipWhackAMoleOptimistically(session = getExploreSession()) {
   return queued;
 }
 
-async function applyWhackAMoleLegacyAdvance(result, missingStateMessage) {
+async function applyWhackAMoleLegacyAdvance(
+  result,
+  missingStateMessage,
+  renderOwner = null,
+  ownerOptions = {},
+) {
+  if (renderOwner && !requireSupportRoomRenderOwner(renderOwner, ownerOptions)) return null;
   if (!result?.state) throw new Error(missingStateMessage);
   updateGameState(result.state);
   getExploreSession()?.adoptRunway(result.state.run?.exploreRunway || null);
   const ingredientDrops = result.ingredientDrops || result.room?.ingredientDrops || [];
   await playRoomTransition(result.state, { ingredientDrops });
+  const liveState = getGameState?.();
+  const liveRoom = liveState?.room || getActiveRoomFromRun(liveState?.run);
+  const expectedRoom = result.state?.room || getActiveRoomFromRun(result.state?.run);
+  const advanceStillCurrent = (!renderOwner || renderOwner.generation === supportRoomRenderGeneration)
+    && liveState?.phase === result.state?.phase
+    && liveState?.run?.currentRoom === result.state?.run?.currentRoom
+    && (liveState?.run?.stats?.startTime ?? null) === (result.state?.run?.stats?.startTime ?? null)
+    && liveRoom?.id === expectedRoom?.id
+    && liveRoom?.type === expectedRoom?.type;
+  if (!advanceStillCurrent) return null;
   updateUI();
   if (ingredientDrops.length > 0) showIngredientDropPopups(ingredientDrops);
   return result;
 }
 
-async function skipWhackAMoleLegacy() {
+async function skipWhackAMoleLegacy(renderOwner = null) {
   try {
+    const result = await apiSkipWhackAMole?.();
+    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return null;
     return await applyWhackAMoleLegacyAdvance(
-      await apiSkipWhackAMole?.(),
+      result,
       'No Whack-a-Mole skip state',
+      renderOwner,
     );
   } catch {
+    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return null;
     showExploreSoftPause();
     return null;
   }
 }
 
-async function proceedWhackAMoleLegacy() {
+async function proceedWhackAMoleLegacy(renderOwner = null) {
+  const ownerOptions = {
+    allowedPhases: [renderOwner?.phase, 'room'],
+  };
   try {
+    const result = await apiProceed?.();
+    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner, ownerOptions)) return null;
     return await applyWhackAMoleLegacyAdvance(
-      await apiProceed?.(),
+      result,
       'No Whack-a-Mole proceed state',
+      renderOwner,
+      ownerOptions,
     );
   } catch {
+    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner, ownerOptions)) return null;
     showExploreSoftPause();
     return null;
   }
@@ -2587,12 +2656,17 @@ export async function renderWhackAMole() {
   adoptRunwayForRoomRender(getGameState());
   const gameState = getGameState();
   const room = getCurrentBufferedRoom(gameState);
+  // A render takes ownership of the shared action area. Never leave an older
+  // board timer alive behind the newly rendered prompt, even when the prepared
+  // capability itself is unchanged.
+  cancelActiveWhackAMoleGame();
   const activeStandardSession = getActiveStandardExploreSession(gameState);
   const capability = activeStandardSession
     ? preparedWhackAMoleCapability(activeStandardSession, gameState, room)
     : null;
   const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'whackAMole';
+  const capabilityCacheOwner = supportRoomCapabilityCacheOwner(gameState, activeStandardSession);
   const resetWhackAMoleRenderState = () => {
     cancelActiveWhackAMoleGame();
     whackAMoleState.fetched = false;
@@ -2611,12 +2685,14 @@ export async function renderWhackAMole() {
     onInvalid: resetWhackAMoleRenderState,
   });
 
-  if (whackAMoleState.roomId !== roomId) {
-    if (activeWhackAMoleRoomId && activeWhackAMoleRoomId !== roomId) {
-      cancelActiveWhackAMoleGame();
-    }
+  if (
+    whackAMoleState.roomId !== roomId
+    || whackAMoleState.capabilityOwner !== capabilityCacheOwner
+  ) {
+    cancelActiveWhackAMoleGame();
     whackAMoleState = {
       roomId,
+      capabilityOwner: capabilityCacheOwner,
       fetched: false,
       dialogue: null,
       yesLabel: 'Yes',
@@ -2750,7 +2826,7 @@ export async function renderWhackAMole() {
           }
           return;
         }
-        await skipWhackAMoleLegacy();
+        await skipWhackAMoleLegacy(renderOwner);
       }
     }
   ]);
@@ -2825,6 +2901,7 @@ export async function renderSkillMaster() {
   const roomId = (isInitialPick || isServerInitialPick)
     ? 'initialSkillPick'
     : (room?.id || room?.type || 'unknown');
+  const capabilityCacheOwner = supportRoomCapabilityCacheOwner(gameState, activeStandardSession);
   const cacheKey = (isInitialPick || isServerInitialPick)
     ? `${roomId}:${run?.stats?.startTime ?? ''}`
     : roomId;
@@ -2841,7 +2918,11 @@ export async function renderSkillMaster() {
     state: gameState,
     room,
     capability,
-    resolveRoom: state => state?.room || getActiveRoomFromRun(state?.run),
+    resolveRoom: state => (
+      isInitialSkillPickState(state)
+        ? null
+        : (state?.room || getActiveRoomFromRun(state?.run))
+    ),
     resolveCapability: (session, state, currentRoom) => preparedExploreRoomCapability({
       session,
       state,
@@ -2852,16 +2933,54 @@ export async function renderSkillMaster() {
     }),
     onInvalid: resetSkillMasterRenderState,
   });
+  // Tutorial narration intentionally survives benign same-owner rerenders while
+  // choices remain interactive. Bind it to stable run/capability semantics
+  // rather than the action area's per-render generation.
+  const tutorialNarrationOwner = {
+    session: activeStandardSession,
+    phase: gameState?.phase,
+    currentRoom: gameState?.run?.currentRoom,
+    runStartTime: gameState?.run?.stats?.startTime ?? null,
+    roomId: room?.id ?? null,
+    roomType: room?.type ?? null,
+    capabilityCacheOwner,
+  };
+  const tutorialNarrationOwnerIsActive = () => {
+    const state = getGameState?.();
+    const initialPick = isInitialSkillPickState(state);
+    const currentRoom = initialPick
+      ? null
+      : (state?.room || getActiveRoomFromRun(state?.run));
+    const currentSession = tutorialNarrationOwner.session
+      ? getActiveStandardExploreSession(state)
+      : null;
+    return state?.phase === tutorialNarrationOwner.phase
+      && state?.run?.currentRoom === tutorialNarrationOwner.currentRoom
+      && (state?.run?.stats?.startTime ?? null) === tutorialNarrationOwner.runStartTime
+      && (currentRoom?.id ?? null) === tutorialNarrationOwner.roomId
+      && (currentRoom?.type ?? null) === tutorialNarrationOwner.roomType
+      && (!tutorialNarrationOwner.session || (
+        currentSession === tutorialNarrationOwner.session
+        && currentSession?.isPaused?.() !== true
+      ))
+      && supportRoomCapabilityCacheOwner(state, currentSession)
+        === tutorialNarrationOwner.capabilityCacheOwner;
+  };
 
   // Reset per-room cache
   // For the initial skill pick, include the run start time so same-phase
   // rerenders don't restart Cid narration, but a fresh run won't reuse offers.
-  if (skillMasterState.cacheKey !== cacheKey) {
+  if (
+    skillMasterState.cacheKey !== cacheKey
+    || skillMasterState.capabilityOwner !== capabilityCacheOwner
+  ) {
     skillMasterState.cacheKey = cacheKey;
     skillMasterState.roomId = roomId;
+    skillMasterState.capabilityOwner = capabilityCacheOwner;
     skillMasterState.fetched = false;
     skillMasterState.offered = null;
     skillMasterState.chosenId = null;
+    skillMasterState.promptTokens = null;
     skillMasterState.promptShown = false;
     skillMasterState.cidShown = false;
     skillMasterState.tutorialNarrationStarted = false;
@@ -2892,7 +3011,10 @@ export async function renderSkillMaster() {
   const tutorialStep = getGameState()?.meta?.tutorialStep;
   if (tutorialStep === 0 && !skillMasterState.tutorialNarrationStarted) {
     skillMasterState.tutorialNarrationStarted = true;
-    showTutorialNarration(getTutorialNarration(0), { showSprite: true });
+    void showTutorialNarration(getTutorialNarration(0), {
+      showSprite: true,
+      isActive: tutorialNarrationOwnerIsActive,
+    });
   }
 
   // Render loading state immediately to avoid flashing old buttons
@@ -2908,7 +3030,6 @@ export async function renderSkillMaster() {
 
   // Fetch offers once per room
   if (!skillMasterState.fetched) {
-    skillMasterState.fetched = true;
     const fetchCacheKey = cacheKey;
     let resp;
     try {
@@ -2964,6 +3085,7 @@ export async function renderSkillMaster() {
         desc: s.desc || PARTY_SKILL_CATALOG_FALLBACK?.[s.id]?.desc || ''
       };
     }
+    skillMasterState.fetched = true;
   }
 
   const offers = skillMasterState.offered || room?.skillMaster?.offered || [];
@@ -3009,7 +3131,7 @@ export async function renderSkillMaster() {
 async function chooseSkillMasterSkill(skillId, renderOwner = null) {
   if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return false;
   if (isInitialSkillPickState()) {
-    return chooseInitialSkillMasterSkill(skillId);
+    return chooseInitialSkillMasterSkill(skillId, renderOwner);
   }
 
   const queued = getExploreSession()?.recordRoomAction('skillMaster.choose', { skillId });
@@ -3037,28 +3159,36 @@ async function chooseSkillMasterSkill(skillId, renderOwner = null) {
   return true;
 }
 
-async function chooseInitialSkillMasterSkill(skillId) {
+async function chooseInitialSkillMasterSkill(skillId, renderOwner = null) {
   let result;
   try {
     result = await apiSkillMasterChoose?.(skillId);
   } catch (err) {
+    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return false;
     console.error('[SkillMaster] Failed to choose initial skill:', err);
     showExploreSoftPause();
     renderSkillMaster();
     return false;
   }
 
+  if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return false;
+
   const nextState = result?.authoritativeState || result?.state;
   if (nextState) {
+    if (nextState.phase !== 'skillMaster') {
+      const reset = await resetSceneForInitialRoomEntry(nextState, {
+        isActive: () => !renderOwner || requireSupportRoomRenderOwner(renderOwner),
+      });
+      if (!reset) return false;
+    }
+    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return false;
     updateGameState(nextState);
     getExploreSession()?.adoptRunway(nextState.run?.exploreRunway || null);
-    if (nextState.phase !== 'skillMaster') {
-      await resetSceneForInitialRoomEntry(nextState);
-    }
     updateUI();
     return true;
   }
 
+  if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return false;
   showExploreSoftPause();
   renderSkillMaster();
   return false;
@@ -3123,6 +3253,7 @@ function renderTutorialSkillMaster(offers, renderOwner) {
 /** Module-level state to avoid refetch across re-renders */
 let friendlyNpcState = {
   roomId: null,
+  capabilityOwner: null,
   fetched: false,
   offered: null,
   greeting: null,
@@ -3194,6 +3325,7 @@ export async function renderFriendlyNpc() {
   const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown';
   const roomCacheKey = `${roomId}:${gameState.run?.stats?.startTime ?? ''}`;
+  const capabilityCacheOwner = supportRoomCapabilityCacheOwner(gameState, activeStandardSession);
   const resetFriendlyNpcRenderState = () => {
     friendlyNpcState.fetched = false;
     friendlyNpcState.offered = null;
@@ -3220,9 +3352,13 @@ export async function renderFriendlyNpc() {
   });
 
   // Reset per-room state when entering a new room
-  if (friendlyNpcState.roomId !== roomCacheKey) {
+  if (
+    friendlyNpcState.roomId !== roomCacheKey
+    || friendlyNpcState.capabilityOwner !== capabilityCacheOwner
+  ) {
     friendlyNpcState = {
       roomId: roomCacheKey,
+      capabilityOwner: capabilityCacheOwner,
       fetched: false,
       offered: null,
       greeting: null,
@@ -3231,6 +3367,10 @@ export async function renderFriendlyNpc() {
       renderedCards: null
     };
   }
+  // Every render owns a new callback generation. An older item-request
+  // dialogue can no longer complete this choice, so release its transient lock
+  // before publishing this render's controls.
+  friendlyNpcState.choosing = false;
 
   // If room already completed (e.g., after reload), show proceed
   if (room?.interacted || room?.friendlyNpc?.completed) {
@@ -3251,7 +3391,6 @@ export async function renderFriendlyNpc() {
 
   // Fetch offers once per room
   if (!friendlyNpcState.fetched) {
-    friendlyNpcState.fetched = true;
     const fetchRoomId = roomCacheKey;
     let resp;
     try {
@@ -3297,6 +3436,7 @@ export async function renderFriendlyNpc() {
         : `${item.word} (${item.reading})`,
       pills: buildItemEffectPills(item),
     }));
+    friendlyNpcState.fetched = true;
     if (resp?.state) {
       updateGameState(resp.state);
     }
@@ -3429,31 +3569,35 @@ export async function renderFriendlyNpc() {
 function startWhackAMoleGame(pool, ownerSession = null, renderOwner = null) {
   cancelActiveWhackAMoleGame();
   const ownerRoomId = whackAMoleState.roomId;
+  const completionOwnerOptions = {
+    allowedPhases: [renderOwner?.phase, 'room'],
+  };
+  const ownsActiveGame = () => getGameState()?.phase === 'whackAMole'
+    && getCurrentWhackAMoleRoomId() === ownerRoomId
+    && requireSupportRoomRenderOwner(renderOwner);
+  const ownsCompletion = () => getCurrentWhackAMoleRoomId() === ownerRoomId
+    && requireSupportRoomRenderOwner(renderOwner, completionOwnerOptions);
   activeWhackAMoleRoomId = ownerRoomId;
   activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
-    apiCompleteWhackAMole: ownerSession
-      ? score => (
-          requireSupportRoomRenderOwner(renderOwner)
-            ? completeWhackAMoleOptimistically(score, ownerSession)
-            : null
-        )
-      : apiCompleteWhackAMole,
-    apiProceed: ownerSession
-      ? (...args) => (
-          requireSupportRoomRenderOwner(renderOwner, {
-            allowedPhases: [renderOwner?.phase, 'room'],
-          })
-            ? proceedWithRevealBuffer(...args)
-            : null
-        )
-      : proceedWhackAMoleLegacy,
+    apiCompleteWhackAMole: async score => {
+      if (!ownsActiveGame()) return null;
+      const result = ownerSession
+        ? await completeWhackAMoleOptimistically(score, ownerSession)
+        : await apiCompleteWhackAMole?.(score);
+      return ownsCompletion() ? result : null;
+    },
+    apiProceed: (...args) => {
+      if (!ownsCompletion()) return null;
+      return ownerSession
+        ? proceedWithRevealBuffer(...args)
+        : proceedWhackAMoleLegacy(renderOwner);
+    },
     updateGameState,
     updateUI,
     playSFX,
-    isActive: () => getGameState()?.phase === 'whackAMole'
-      && getCurrentWhackAMoleRoomId() === ownerRoomId
-      && requireSupportRoomRenderOwner(renderOwner)
+    isActive: ownsActiveGame,
+    isCompletionOwner: ownsCompletion,
   });
   activeWhackAMoleGame.start();
 }
@@ -3463,6 +3607,7 @@ function startWhackAMoleGame(pool, ownerSession = null, renderOwner = null) {
 /** Module-level state for npc battle skill selection to avoid refetch loops */
 let npcBattleSkillState = {
   roomId: null,
+  capabilityOwner: null,
   fetched: false,
   offered: null,
   choosing: false,
@@ -3492,6 +3637,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     : null;
   const payload = capability?.payload || null;
   const roomId = room?.id || room?.type || 'unknown-npcbattle';
+  const capabilityCacheOwner = supportRoomCapabilityCacheOwner(gameState, activeStandardSession);
   const resetNpcBattleSkillRenderState = () => {
     npcBattleSkillState.fetched = false;
     npcBattleSkillState.offered = null;
@@ -3517,9 +3663,13 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   });
 
   // Reset per-room cache when room changes
-  if (npcBattleSkillState.roomId !== roomId) {
+  if (
+    npcBattleSkillState.roomId !== roomId
+    || npcBattleSkillState.capabilityOwner !== capabilityCacheOwner
+  ) {
     npcBattleSkillState = {
       roomId,
+      capabilityOwner: capabilityCacheOwner,
       fetched: false,
       offered: null,
       choosing: false,
@@ -3559,7 +3709,6 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
 
   // Fetch offers once per room
   if (!npcBattleSkillState.fetched) {
-    npcBattleSkillState.fetched = true;
     const fetchRoomId = roomId;
     const fetchCursor = {
       currentRoom: gameState.run?.currentRoom,
@@ -3652,6 +3801,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
 
     npcBattleSkillState.offered = offered;
     npcBattleSkillState.promptTokens = resp?.skillSelectPrompt || null;
+    npcBattleSkillState.fetched = true;
   }
 
   const offers = npcBattleSkillState.offered || [];

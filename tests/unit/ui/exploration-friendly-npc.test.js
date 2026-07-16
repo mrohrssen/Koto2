@@ -110,14 +110,14 @@ describe('renderFriendlyNpc item prompt', () => {
     sceneManagerState.transitioning = false;
   });
 
-  function makePreparedFriendlyState(roomId, currentRoom = 0) {
+  function makePreparedFriendlyState(roomId, currentRoom = 0, variant = roomId) {
     const npc = { id: `npc-${roomId}`, nameEn: `Guide ${roomId}` };
     const item = {
-      id: `item-${roomId}`,
+      id: `item-${variant}`,
       word: '薬',
       reading: 'くすり',
-      nameToken: { text: `Item ${roomId}` },
-      tokens: [{ text: `Request ${roomId}` }],
+      nameToken: { text: `Item ${variant}` },
+      tokens: [{ text: `Request ${variant}` }],
       words: ['薬'],
       effect: { healAllPercent: 0.2 },
     };
@@ -160,7 +160,7 @@ describe('renderFriendlyNpc item prompt', () => {
                 kind: 'friendlyNpc',
                 roomId,
                 npc,
-                greeting: { tokens: [{ text: `Greeting ${roomId}` }], overrides: {} },
+                greeting: { tokens: [{ text: `Greeting ${variant}` }], overrides: {} },
                 offered: [item],
               },
             }],
@@ -354,6 +354,154 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(currentState.room.friendlyNpc.completed, false);
     assert.equal(getExploreSession().isPaused(), false);
     assert.equal(legacyCalls, 0);
+  });
+
+  it('resets same-room friendly offers and choosing lock for a replacement capability', async () => {
+    const roomId = 'friendly-same-room-owner';
+    const ownerA = makePreparedFriendlyState(roomId, 0, 'alpha');
+    let currentState = ownerA.state;
+    let legacyCalls = 0;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => { renderedChoices = null; } },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    await renderFriendlyNpc();
+    const alphaChoices = renderedChoices;
+    dialogueGate = deferred();
+    const oldChoosing = alphaChoices.onSelect(0);
+    for (let i = 0; i < 4 && dialogueCards.length < 2; i += 1) await Promise.resolve();
+    assert.equal(dialogueCards.at(-1)?.speaker, 'You');
+
+    const oldGate = dialogueGate;
+    dialogueGate = null;
+    const ownerB = makePreparedFriendlyState(roomId, 0, 'beta');
+    currentState = ownerB.state;
+    getExploreSession().adoptRunway(ownerB.state.run.exploreRunway);
+    await renderFriendlyNpc();
+    const betaChoices = renderedChoices;
+
+    assert.match(betaChoices.cards[0].title, /beta/);
+    assert.match(dialogueCards.at(-1).tokens[0].text, /beta/);
+
+    oldGate.resolve();
+    await oldChoosing;
+    assert.equal(renderedChoices, betaChoices, 'old continuation must not clear replacement controls');
+
+    await betaChoices.onSelect(0);
+    assert.deepEqual(getExploreSession().snapshot().map(entry => ({
+      kind: entry.kind,
+      itemId: entry.payload.itemId,
+      roomId: entry.roomId,
+    })), [{
+      kind: 'friendlyNpc.choose',
+      itemId: 'item-beta',
+      roomId,
+    }]);
+    assert.equal(legacyCalls, 0);
+  });
+
+  it('restarts an orphaned same-owner legacy friendly offer fetch on rerender', async () => {
+    const room = {
+      id: 'legacy-friendly-overlap',
+      type: 'friendlyNpc',
+      npc: { id: 'legacy-guide', nameEn: 'Guide' },
+      interacted: false,
+      friendlyNpc: { completed: false },
+    };
+    const state = {
+      phase: 'friendlyNpc',
+      room,
+      meta: { tutorialStep: 1 },
+      run: {
+        currentRoom: 0,
+        stats: { startTime: 9201 },
+        rooms: [room],
+        creatureParty: { active: [], reserves: [] },
+      },
+    };
+    const gates = [];
+    let fetchCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => {
+        fetchCalls += 1;
+        const gate = deferred();
+        gates.push(gate);
+        return gate.promise;
+      },
+    });
+
+    const firstRender = renderFriendlyNpc();
+    await Promise.resolve();
+    assert.equal(fetchCalls, 1);
+
+    const secondRender = renderFriendlyNpc();
+    await Promise.resolve();
+    assert.equal(fetchCalls, 2, 'new render must re-own an unresolved cache load');
+
+    const currentItem = {
+      id: 'current-item',
+      word: '薬',
+      reading: 'くすり',
+      nameToken: { text: 'Current item' },
+      tokens: [{ text: 'Current request' }],
+      effect: { healAllPercent: 0.2 },
+    };
+    gates[1].resolve({
+      greeting: { tokens: [{ text: 'Current greeting' }], overrides: {} },
+      offered: [currentItem],
+    });
+    await secondRender;
+    const currentChoices = renderedChoices;
+    assert.match(currentChoices.cards[0].title, /Current/);
+
+    gates[0].resolve({
+      greeting: { tokens: [{ text: 'Old greeting' }], overrides: {} },
+      offered: [{ ...currentItem, id: 'old-item', nameToken: { text: 'Old item' } }],
+    });
+    await firstRender;
+    assert.equal(renderedChoices, currentChoices);
+  });
+
+  it('releases a stale same-owner friendly choosing lock on rerender', async () => {
+    const owner = makePreparedFriendlyState('friendly-benign-rerender');
+    let currentState = owner.state;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    await renderFriendlyNpc();
+    const firstChoices = renderedChoices;
+    dialogueGate = deferred();
+    const staleSelection = firstChoices.onSelect(0);
+    for (let i = 0; i < 4 && dialogueCards.at(-1)?.speaker !== 'You'; i += 1) await Promise.resolve();
+    assert.equal(dialogueCards.at(-1)?.speaker, 'You');
+
+    await renderFriendlyNpc();
+    const currentChoices = renderedChoices;
+    dialogueGate.resolve();
+    await staleSelection;
+    dialogueGate = null;
+    await currentChoices.onSelect(0);
+
+    assert.deepEqual(getExploreSession().snapshot().map(entry => entry.kind), [
+      'friendlyNpc.choose',
+    ]);
   });
 
   it('shows the NPC greeting as a dialogue card before item choices', async () => {

@@ -6,6 +6,7 @@ let renderedChoices = null;
 let renderedButtons = [];
 let dialogueCalls = [];
 let dialogueGate = null;
+let tutorialNarrationPages = ['first Cid line'];
 
 function deferred() {
   let resolve;
@@ -191,7 +192,7 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
 });
 await mock.module('../../../public/js/ui/tutorial-copy.js', {
   namedExports: {
-    getTutorialNarration: () => ['first Cid line'],
+    getTutorialNarration: () => tutorialNarrationPages,
     getFormationNarration: () => '',
     getPostHinonekoReviewNarration: () => [],
     getFusionCoreNarration: () => [],
@@ -222,16 +223,17 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     renderedButtons = [];
     dialogueCalls = [];
     dialogueGate = null;
+    tutorialNarrationPages = ['first Cid line'];
   });
 
-  function makePreparedSkillMasterState(roomId, currentRoom = 0) {
+  function makePreparedSkillMasterState(roomId, currentRoom = 0, variant = roomId) {
     const room = {
       id: roomId,
       type: 'skillMaster',
       interacted: false,
       skillMaster: { completed: false, chosenId: null },
     };
-    const offered = [{ id: 'hpMaster', title: `Skill ${roomId}`, name: `Skill ${roomId}`, desc: 'Prepared skill.' }];
+    const offered = [{ id: 'hpMaster', title: `Skill ${variant}`, name: `Skill ${variant}`, desc: 'Prepared skill.' }];
     const rooms = [];
     rooms[currentRoom] = room;
     return {
@@ -266,7 +268,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
                 kind: 'skillMaster',
                 roomId,
                 offered,
-                skillSelectPrompt: { tokens: [{ text: `Prompt ${roomId}` }], overrides: {} },
+                skillSelectPrompt: { tokens: [{ text: `Prompt ${variant}` }], overrides: {} },
                 completed: false,
                 chosenId: null,
               },
@@ -277,7 +279,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     };
   }
 
-  function makePreparedNpcRewardState(roomId, currentRoom = 0) {
+  function makePreparedNpcRewardState(roomId, currentRoom = 0, variant = roomId) {
     const room = {
       id: roomId,
       type: 'npcBattle',
@@ -285,7 +287,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       npc: { id: `npc-${roomId}`, nameEn: `NPC ${roomId}` },
       npcBattle: { skillSelectionPending: true, rewardResolved: false },
     };
-    const offered = [{ id: 'hpMaster', title: `Reward ${roomId}`, name: `Reward ${roomId}`, desc: 'Prepared reward.' }];
+    const offered = [{ id: 'hpMaster', title: `Reward ${variant}`, name: `Reward ${variant}`, desc: 'Prepared reward.' }];
     const rooms = [];
     rooms[currentRoom] = room;
     return {
@@ -319,7 +321,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
                 lifecycle: 'resolved',
                 rewardPending: true,
                 offered,
-                skillSelectPrompt: { tokens: [{ text: `Reward prompt ${roomId}` }], overrides: {} },
+                skillSelectPrompt: { tokens: [{ text: `Reward prompt ${variant}` }], overrides: {} },
               },
             }],
           },
@@ -538,6 +540,101 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     }
   });
 
+  it('replaces cached skill-master offers and prompt for a new same-room capability', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const roomId = 'skill-same-room-owner';
+    let currentState = makePreparedSkillMasterState(roomId, 0, 'alpha').state;
+    let legacyCalls = 0;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => { legacyCalls += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    try {
+      await renderSkillMaster();
+      assert.match(renderedChoices.cards[0].title, /alpha/);
+
+      currentState = makePreparedSkillMasterState(roomId, 0, 'beta').state;
+      getExploreSession().adoptRunway(currentState.run.exploreRunway);
+      await renderSkillMaster();
+
+      assert.match(renderedChoices.cards[0].title, /beta/);
+      assert.match(dialogueCalls.at(-1).tokens[0].text, /beta/);
+      assert.equal(legacyCalls, 0);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it('restarts an orphaned same-owner legacy skill offer fetch on rerender', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const state = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 1 },
+      run: {
+        currentRoom: 0,
+        stats: { startTime: 9301 },
+        initialSkillPick: { chosenId: null },
+        creatureParty: { active: [], reserves: [] },
+      },
+    };
+    const gates = [];
+    let fetchCalls = 0;
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => {
+        fetchCalls += 1;
+        const gate = deferred();
+        gates.push(gate);
+        return gate.promise;
+      },
+    });
+
+    try {
+      const firstRender = renderSkillMaster();
+      await Promise.resolve();
+      assert.equal(fetchCalls, 1);
+
+      const secondRender = renderSkillMaster();
+      await Promise.resolve();
+      assert.equal(fetchCalls, 2, 'new render must re-own an unresolved cache load');
+
+      gates[1].resolve({
+        offered: [{ id: 'hpMaster', title: 'Current skill', desc: 'Current.' }],
+      });
+      await secondRender;
+      const currentChoices = renderedChoices;
+      assert.match(currentChoices.cards[0].title, /Current/);
+
+      gates[0].resolve({
+        offered: [{ id: 'hpMaster', title: 'Old skill', desc: 'Old.' }],
+      });
+      await firstRender;
+      assert.equal(renderedChoices, currentChoices);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
   it('does not restart Cid entrance narration on same-room rerender', async () => {
     const originalDocument = globalThis.document;
     const actionArea = createElementStub();
@@ -596,6 +693,141 @@ describe('renderSkillMaster tutorial Cid narration', () => {
 
     assert.equal(showNpcSpriteCalls, 1);
     assert.equal(showNarrationCalls, 1);
+  });
+
+  it('continues the same tutorial narration across a benign same-owner rerender', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    tutorialNarrationPages = ['first Cid line', 'second Cid line'];
+    const firstPageGate = deferred();
+    const shownPages = [];
+    let hideNpcSpriteCalls = 0;
+    const state = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 0 },
+      run: {
+        stats: { startTime: 8181 },
+        initialSkillPick: { chosenId: null },
+        creatureParty: { active: [] },
+      },
+    };
+    sceneManagerState.currentScene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      npcSprite: null,
+      async showNpcSprite() { this.npcSprite = {}; },
+      async hideNpcSprite() { hideNpcSpriteCalls += 1; this.npcSprite = null; },
+    };
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
+      scene: {
+        showNarration: async page => {
+          shownPages.push(page);
+          if (page === 'first Cid line') await firstPageGate.promise;
+        },
+      },
+      apiSkillMasterOffers: async () => ({
+        offered: [
+          { id: 'hpMaster', title: 'HP Master', desc: 'More HP.' },
+          { id: 'guard', title: 'Guard', desc: 'Defend.' },
+          { id: 'haste', title: 'Haste', desc: 'Speed up.' },
+        ],
+      }),
+    });
+
+    try {
+      await renderSkillMaster();
+      assert.deepEqual(shownPages, ['first Cid line']);
+      await renderSkillMaster();
+      firstPageGate.resolve();
+      for (let i = 0; i < 6 && hideNpcSpriteCalls === 0; i += 1) await Promise.resolve();
+
+      assert.deepEqual(shownPages, ['first Cid line', 'second Cid line']);
+      assert.equal(hideNpcSpriteCalls, 1);
+    } finally {
+      globalThis.document = originalDocument;
+      sceneManagerState.currentScene = null;
+    }
+  });
+
+  it('does not let stale tutorial narration hide the successor scene NPC', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const narrationGate = deferred();
+    let currentState = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 0 },
+      run: {
+        stats: { startTime: 9191 },
+        initialSkillPick: { chosenId: null },
+        creatureParty: { active: [] },
+      },
+    };
+    const skillScene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      npcSprite: null,
+      async showNpcSprite() { this.npcSprite = {}; },
+      async hideNpcSprite() { this.npcSprite = null; },
+    };
+    let successorHideCalls = 0;
+    const successorScene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      npcSprite: { id: 'successor-npc' },
+      async showNpcSprite() {},
+      async hideNpcSprite() { successorHideCalls += 1; },
+    };
+    sceneManagerState.currentScene = skillScene;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
+      scene: { showNarration: async () => narrationGate.promise },
+      apiSkillMasterOffers: async () => ({
+        offered: [
+          { id: 'hpMaster', title: 'HP Master', desc: 'More HP.' },
+          { id: 'guard', title: 'Guard', desc: 'Defend.' },
+          { id: 'haste', title: 'Haste', desc: 'Speed up.' },
+        ],
+      }),
+    });
+
+    try {
+      await renderSkillMaster();
+      for (let i = 0; i < 4 && skillScene.npcSprite == null; i += 1) await Promise.resolve();
+      assert.ok(skillScene.npcSprite, 'tutorial narration should own the original scene sprite');
+
+      currentState = {
+        phase: 'hub',
+        meta: { tutorialStep: 1 },
+        run: { stats: { startTime: 9191 }, creatureParty: { active: [] } },
+      };
+      sceneManagerState.currentScene = successorScene;
+      narrationGate.resolve();
+      for (let i = 0; i < 4; i += 1) await Promise.resolve();
+
+      assert.equal(successorHideCalls, 0);
+      assert.equal(successorScene.npcSprite.id, 'successor-npc');
+    } finally {
+      globalThis.document = originalDocument;
+      sceneManagerState.currentScene = null;
+    }
   });
 
   it('waits for an in-flight scene transition before spawning Cid', async () => {
@@ -958,6 +1190,64 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     ]);
   });
 
+  it('drops an initial skill response that outlives its legacy render owner', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const chooseGate = deferred();
+    const initialState = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 1 },
+      run: {
+        stats: { startTime: 7001 },
+        initialSkillPick: { chosenId: null },
+        creatureParty: { active: [], reserves: [] },
+      },
+    };
+    let currentState = initialState;
+    let updateUiCalls = 0;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => { updateUiCalls += 1; },
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => ({
+        offered: [{ id: 'hpMaster', title: 'HP Master', name: 'HP Master', desc: 'More HP.' }],
+      }),
+      apiSkillMasterChoose: async () => chooseGate.promise,
+    });
+
+    try {
+      await renderSkillMaster();
+      const choosing = renderedChoices.onSelect(0);
+      await Promise.resolve();
+
+      const successorState = {
+        phase: 'hub',
+        meta: { tutorialStep: 2 },
+        run: { stats: { startTime: 8002 }, creatureParty: { active: [], reserves: [] } },
+      };
+      currentState = successorState;
+      chooseGate.resolve({
+        state: {
+          ...initialState,
+          phase: 'friendlyNpc',
+          run: { ...initialState.run, initialSkillPick: { chosenId: 'hpMaster' } },
+        },
+      });
+      await choosing;
+
+      assert.equal(currentState, successorState);
+      assert.equal(updateUiCalls, 0);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
   it('shows the NPC battle skill select prompt with the standard dialogue card', async () => {
     const originalDocument = globalThis.document;
     const actionArea = createElementStub();
@@ -1243,6 +1533,96 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       assert.equal(currentState.run.partySkills.length, 0);
       assert.equal(getExploreSession().isPaused(), false);
       assert.equal(legacyCalls, 0);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it('replaces cached NPC reward offers and prompt for a new same-room capability', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const roomId = 'npc-same-room-owner';
+    let currentState = makePreparedNpcRewardState(roomId, 0, 'alpha').state;
+    let legacyCalls = 0;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+    });
+
+    try {
+      await renderNpcBattleSkillSelection({
+        fetchOffers: async () => { legacyCalls += 1; return null; },
+      });
+      assert.match(renderedChoices.cards[0].title, /alpha/);
+
+      currentState = makePreparedNpcRewardState(roomId, 0, 'beta').state;
+      getExploreSession().adoptRunway(currentState.run.exploreRunway);
+      await renderNpcBattleSkillSelection({
+        fetchOffers: async () => { legacyCalls += 1; return null; },
+      });
+
+      assert.match(renderedChoices.cards[0].title, /beta/);
+      assert.match(dialogueCalls.at(-1).tokens[0].text, /beta/);
+      assert.equal(legacyCalls, 0);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it('restarts an orphaned same-owner legacy NPC reward fetch on rerender', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    const state = makeNpcRewardState({ currentRoom: 18, rewardResolved: false });
+    state.run.stats = { startTime: 9401 };
+    const gates = [];
+    let fetchCalls = 0;
+    const fetchOffers = async () => {
+      fetchCalls += 1;
+      const gate = deferred();
+      gates.push(gate);
+      return gate.promise;
+    };
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
+      scene: { showNarration: () => {} },
+    });
+
+    try {
+      const firstRender = renderNpcBattleSkillSelection({ fetchOffers });
+      await Promise.resolve();
+      assert.equal(fetchCalls, 1);
+
+      const secondRender = renderNpcBattleSkillSelection({ fetchOffers });
+      await Promise.resolve();
+      assert.equal(fetchCalls, 2, 'new render must re-own an unresolved cache load');
+
+      gates[1].resolve({
+        offered: [{ id: 'hpMaster', title: 'Current reward', desc: 'Current.' }],
+      });
+      await secondRender;
+      const currentChoices = renderedChoices;
+      assert.match(currentChoices.cards[0].title, /Current/);
+
+      gates[0].resolve({
+        offered: [{ id: 'hpMaster', title: 'Old reward', desc: 'Old.' }],
+      });
+      await firstRender;
+      assert.equal(renderedChoices, currentChoices);
     } finally {
       globalThis.document = originalDocument;
     }

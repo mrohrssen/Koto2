@@ -35,6 +35,7 @@ export class WhackAMoleGame {
    * @param {Function} deps.updateUI - Callback to re-render the main UI
    * @param {Function} deps.playSFX - Sound effect player (optional, errors swallowed)
    * @param {Function} deps.isActive - Returns false once the owning room is no longer current
+   * @param {Function} deps.isCompletionOwner - Revalidates ownership after completion changes phase
    */
   constructor(pool, deps) {
     this.pool = pool;
@@ -45,6 +46,11 @@ export class WhackAMoleGame {
     this.updateUI = deps.updateUI;
     this.playSFX = deps.playSFX;
     this.isActive = deps.isActive || (() => true);
+    // Older callers only supplied isActive and may treat the authoritative
+    // completion response's phase change as inactive. Exploration supplies a
+    // strict completion owner; the fallback preserves that legacy contract.
+    this.isCompletionOwner = deps.isCompletionOwner
+      || (result => this.isActive() || Boolean(result?.state));
 
     // Game state
     this.score = 0;
@@ -104,12 +110,12 @@ export class WhackAMoleGame {
 
   // ---- Private methods ----
 
-  cancel() {
+  cancel({ clearUi = true } = {}) {
     this.cancelled = true;
     this.gameOver = true;
     clearTimeout(this.flipTimeout);
     clearInterval(this.timerInterval);
-    this.actions.setContent('');
+    if (clearUi) this.actions.setContent('');
   }
 
   _formatTime(t) {
@@ -364,7 +370,7 @@ export class WhackAMoleGame {
   async _endGame() {
     if (this.cancelled || this.ending) return;
     if (!this.isActive()) {
-      this.cancel();
+      this.cancel({ clearUi: false });
       return;
     }
     this.ending = true;
@@ -382,6 +388,10 @@ export class WhackAMoleGame {
       result = null;
     }
     if (this.cancelled) return;
+    if (!this.isCompletionOwner(result)) {
+      this.cancel({ clearUi: false });
+      return;
+    }
     if (result == null) {
       this.actions.setContent('');
       this.updateUI();
@@ -391,6 +401,11 @@ export class WhackAMoleGame {
     xpGrants = result?.xpGrants || [];
     levelUps = result?.levelUps || [];
     finishDialogue = result?.finishDialogue || null;
+
+    if (!this.isCompletionOwner(result)) {
+      this.cancel({ clearUi: false });
+      return;
+    }
 
     // Tear down fullscreen .wam-container so the ExplorationScene is visible.
     this.actions.setContent('');
@@ -406,6 +421,10 @@ export class WhackAMoleGame {
         audio: finishDialogue.audio,
       });
       if (this.cancelled) return;
+      if (!this.isCompletionOwner(result)) {
+        this.cancel({ clearUi: false });
+        return;
+      }
     }
 
     // Narration 2: system XP line + sprite popups over the player formation.
@@ -433,6 +452,10 @@ export class WhackAMoleGame {
       : tPlain('wamZeroXp');
     await narrationBox.show(xpLine);
     if (this.cancelled) return;
+    if (!this.isCompletionOwner(result)) {
+      this.cancel({ clearUi: false });
+      return;
+    }
 
     // Advance to the next room via the standard exploration path.
     try {
@@ -441,7 +464,7 @@ export class WhackAMoleGame {
     } catch (err) {
       // The high-level proceed owner normally refreshes. If it throws before it
       // can do so, render a fallback state instead of leaving the minigame shell.
-      if (!this.cancelled) this.updateUI();
+      if (!this.cancelled && this.isCompletionOwner(result)) this.updateUI();
     }
   }
 

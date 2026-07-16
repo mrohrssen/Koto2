@@ -49,8 +49,8 @@ describe('optimistic run action integration', () => {
     assert.match(explorationSource, /getExploreSession\(\)\?\.recordRoomAction\('npcBattleSkill\.choose'/);
     assert.match(whackChoiceSource, /session\?\.recordRoomAction\('whackAMole\.complete'/);
     assert.match(whackChoiceSource, /session\?\.recordRoomAction\('whackAMole\.skip'/);
-    assert.match(explorationSource, /async function chooseInitialSkillMasterSkill\(skillId\)/);
-    assert.match(explorationSource, /if \(isInitialSkillPickState\(\)\)[\s\S]*return chooseInitialSkillMasterSkill\(skillId\)/);
+    assert.match(explorationSource, /async function chooseInitialSkillMasterSkill\(skillId, renderOwner = null\)/);
+    assert.match(explorationSource, /if \(isInitialSkillPickState\(\)\)[\s\S]*return chooseInitialSkillMasterSkill\(skillId, renderOwner\)/);
     assert.doesNotMatch(explorationSource, /apiChooseShrineReward\?\.\(rewardType, creatureKey, \{ actionId: pending\.actionId \}\)/);
     assert.doesNotMatch(explorationSource, /apiChooseFriendlyNpcItem\?\.\(item\.id, creatureIndex, \{ actionId: pending\.actionId \}\)/);
     assert.doesNotMatch(explorationSource, /onSkillChosen\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
@@ -290,8 +290,11 @@ describe('optimistic run action integration', () => {
     );
     assert.doesNotMatch(completeSource, /recordRoomAction\('proceed'/);
     assert.doesNotMatch(skipSource, /recordRoomAction\('proceed'/);
-    assert.match(gameWiringSource, /apiCompleteWhackAMole: ownerSession[\s\S]*requireSupportRoomRenderOwner\(renderOwner\)[\s\S]*completeWhackAMoleOptimistically\(score, ownerSession\)/);
-    assert.match(gameWiringSource, /apiProceed: ownerSession[\s\S]*requireSupportRoomRenderOwner\(renderOwner,[\s\S]*proceedWithRevealBuffer\(\.\.\.args\)[\s\S]*proceedWhackAMoleLegacy/);
+    assert.match(gameWiringSource, /const ownsActiveGame =[\s\S]*requireSupportRoomRenderOwner\(renderOwner\)/);
+    assert.match(gameWiringSource, /const ownsCompletion =[\s\S]*requireSupportRoomRenderOwner\(renderOwner, completionOwnerOptions\)/);
+    assert.match(gameWiringSource, /apiCompleteWhackAMole: async score => \{[\s\S]*if \(!ownsActiveGame\(\)\) return null;[\s\S]*completeWhackAMoleOptimistically\(score, ownerSession\)[\s\S]*return ownsCompletion\(\) \? result : null/);
+    assert.match(gameWiringSource, /apiProceed: \(\.\.\.args\) => \{[\s\S]*if \(!ownsCompletion\(\)\) return null;[\s\S]*proceedWithRevealBuffer\(\.\.\.args\)[\s\S]*proceedWhackAMoleLegacy\(renderOwner\)/);
+    assert.match(gameWiringSource, /isCompletionOwner: ownsCompletion/);
     assert.match(renderSource, /const result = await skipWhackAMoleOptimistically\(activeStandardSession\);[\s\S]*?if \(result && requireSupportRoomRenderOwner\(renderOwner,[\s\S]*?await proceedWithRevealBuffer\(\)/);
   });
 

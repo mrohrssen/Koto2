@@ -645,6 +645,77 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(roomTransitionCalls.length, 0);
   });
 
+  it('replaces same-room Whack payload data and cancels the old live game first', async () => {
+    const roomId = 'wam-same-room-owner';
+    const roomA = { id: roomId, type: 'whackAMole', interacted: false };
+    const payloadA = makePreparedWhackPayload(roomId);
+    payloadA.dialogue = { tokens: [{ text: 'Prompt alpha' }], words: [] };
+    payloadA.pool = payloadA.pool.map(entry => ({ ...entry, id: `alpha-${entry.id}` }));
+    let currentState = makeWhackAMoleState(roomA, {
+      activeStandard: true,
+      interactionPayload: payloadA,
+    });
+    let legacyGets = 0;
+    init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiGetWhackAMoleDialogue: async () => { legacyGets += 1; return null; },
+      apiGetWhackAMolePool: async () => { legacyGets += 1; return null; },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[0].onClick();
+    const cancelsBeforeReplacement = whackAMoleCancelCalls;
+
+    const roomB = { id: roomId, type: 'whackAMole', interacted: false };
+    const payloadB = makePreparedWhackPayload(roomId);
+    payloadB.dialogue = { tokens: [{ text: 'Prompt beta' }], words: [] };
+    payloadB.pool = payloadB.pool.map(entry => ({ ...entry, id: `beta-${entry.id}` }));
+    currentState = makeWhackAMoleState(roomB, {
+      activeStandard: true,
+      interactionPayload: payloadB,
+    });
+    getExploreSession().adoptRunway(currentState.run.exploreRunway);
+    await renderWhackAMole();
+
+    assert.equal(whackAMoleCancelCalls, cancelsBeforeReplacement + 1);
+    assert.match(dialogueCalls.at(-1).tokens[0].text, /beta/);
+    await renderedButtons[0].onClick();
+    assert.match(whackAMolePool[0].id, /^beta-/);
+    assert.equal(legacyGets, 0);
+  });
+
+  it('cancels a live Whack game before a benign same-owner rerender repaints controls', async () => {
+    const room = { id: 'wam-same-owner-rerender', type: 'whackAMole', interacted: false };
+    const state = makeWhackAMoleState(room, {
+      activeStandard: true,
+      interactionPayload: makePreparedWhackPayload(room.id),
+    });
+    init({
+      getGameState: () => state,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: () => {} },
+      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[0].onClick();
+    const cancelsBeforeRerender = whackAMoleCancelCalls;
+    assert.equal(whackAMoleStartCalls, 1);
+
+    await renderWhackAMole();
+
+    assert.equal(whackAMoleCancelCalls, cancelsBeforeRerender + 1);
+    assert.equal(whackAMoleStartCalls, 1);
+    assert.equal(renderedButtons.length, 2);
+  });
+
   it('shows the Game Master greeting with the standard dialogue card', async () => {
     const prompt = {
       tokens: [{ base: '始める', text: 'はじめる' }],
@@ -919,6 +990,65 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(proceedCalls, 0);
     assert.equal(currentState.run.currentRoom, 1);
     assert.equal(currentState.room.id, 'after-legacy-skip');
+  });
+
+  it('drops a legacy decline response after navigation changes its render owner', async () => {
+    const room = { id: 'wam-legacy-stale-skip', type: 'whackAMole', interacted: false };
+    const nextRoom = { id: 'after-stale-legacy-skip', type: 'empty' };
+    let currentState = makeWhackAMoleState(room, { nextRoom });
+    currentState.run.stats = { startTime: 7101 };
+    const skipGate = deferred();
+    let updateUiCalls = 0;
+    let adoptedOldState = false;
+    let actionContent = '';
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { adoptedOldState = true; currentState = state; },
+      updateUI: () => { updateUiCalls += 1; },
+      actions: {
+        setContent: html => { actionContent = html; },
+        clear: () => { actionContent = ''; },
+      },
+      scene: { showNarration: async () => {} },
+      apiGetWhackAMoleDialogue: async () => ({ dialogue: null, yesTokens: null, noTokens: null }),
+      apiSkipWhackAMole: async () => skipGate.promise,
+    });
+
+    await renderWhackAMole();
+    const declining = renderedButtons[1].onClick();
+    await Promise.resolve();
+
+    const successor = { id: 'combat-after-stale-skip', type: 'encounter' };
+    const successorState = {
+      phase: 'room_encounter',
+      room: successor,
+      run: {
+        stats: { startTime: 7101 },
+        currentRoom: 1,
+        rooms: [room, successor],
+      },
+    };
+    currentState = successorState;
+    actionContent = 'successor controls';
+    skipGate.resolve({
+      state: {
+        phase: 'room',
+        room: nextRoom,
+        run: {
+          stats: { startTime: 7101 },
+          currentRoom: 1,
+          rooms: [room, nextRoom],
+        },
+      },
+    });
+    await declining;
+
+    assert.equal(currentState, successorState);
+    assert.equal(adoptedOldState, false);
+    assert.equal(actionContent, 'successor controls');
+    assert.equal(updateUiCalls, 0);
+    assert.equal(roomTransitionCalls.length, 0);
   });
 
   it('no-session Yes flow uses legacy dialogue and pool APIs despite stale prepared content', async () => {
