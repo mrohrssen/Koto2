@@ -1,0 +1,205 @@
+import { describe, it, beforeEach, afterEach, mock } from 'node:test';
+import assert from 'node:assert/strict';
+
+class FakeClassList {
+  constructor(initial = []) { this.values = new Set(initial); }
+  add(value) { this.values.add(value); }
+  remove(value) { this.values.delete(value); }
+  contains(value) { return this.values.has(value); }
+}
+
+class FakeElement {
+  constructor({ id = '', tab = null, classes = [] } = {}) {
+    this.id = id;
+    this.dataset = tab ? { tab } : {};
+    this.classList = new FakeClassList(classes);
+    this.listeners = new Map();
+    this.value = '';
+    this.checked = false;
+    this.textContent = '';
+    this.autocomplete = '';
+  }
+  addEventListener(type, handler) { this.listeners.set(type, [...(this.listeners.get(type) || []), handler]); }
+  click() { for (const handler of this.listeners.get('click') || []) handler({}); }
+  keydown(key) { for (const handler of this.listeners.get('keydown') || []) handler({ key }); }
+  prepend() {}
+}
+
+function makeStorage() {
+  const values = new Map();
+  return {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, String(value)),
+    removeItem: key => values.delete(key),
+  };
+}
+
+function makeResponse({ ok = true, body }) {
+  return { ok, json: async () => body };
+}
+
+function createDom() {
+  const loginTab = new FakeElement({ tab: 'login', classes: ['auth-tab', 'active'] });
+  const registerTab = new FakeElement({ tab: 'register', classes: ['auth-tab'] });
+  const elements = new Map([
+    ['auth-screen', new FakeElement({ id: 'auth-screen', classes: ['hidden'] })],
+    ['auth-submit', new FakeElement({ id: 'auth-submit' })],
+    ['auth-ai-consent', new FakeElement({ id: 'auth-ai-consent', classes: ['hidden'] })],
+    ['auth-ai-consent-checkbox', new FakeElement({ id: 'auth-ai-consent-checkbox' })],
+    ['auth-password', new FakeElement({ id: 'auth-password' })],
+    ['auth-username', new FakeElement({ id: 'auth-username' })],
+    ['auth-fields', new FakeElement({ id: 'auth-fields' })],
+    ['auth-error', new FakeElement({ id: 'auth-error', classes: ['hidden'] })],
+  ]);
+  return {
+    loginTab,
+    registerTab,
+    elements,
+    document: {
+      getElementById: id => elements.get(id) || null,
+      querySelectorAll: selector => selector === '.auth-tab' ? [loginTab, registerTab] : [],
+      querySelector: () => null,
+      createElement: () => new FakeElement(),
+      body: new FakeElement(),
+    },
+  };
+}
+
+await mock.module('../../../public/js/analytics.js', {
+  namedExports: {
+    setAnalyticsUser: async () => {},
+    trackEvent: async () => {},
+  },
+});
+
+const auth = await import('../../../public/js/ui/auth.js');
+
+describe('auth UI retained-state reauthentication', { concurrency: false }, () => {
+  let dom;
+  let fetchCalls;
+  let authenticatedUsers;
+
+  beforeEach(() => {
+    globalThis.localStorage = makeStorage();
+    globalThis.sessionStorage = makeStorage();
+    dom = createDom();
+    globalThis.document = dom.document;
+    fetchCalls = [];
+    authenticatedUsers = [];
+    globalThis.fetch = async (url, options = {}) => {
+      fetchCalls.push({ url, options });
+      throw new Error(`unexpected fetch: ${url}`);
+    };
+    auth.logout();
+    auth.init({ onAuthenticated: async user => { authenticatedUsers.push(user); } });
+    dom.loginTab.click();
+  });
+
+  afterEach(() => {
+    auth.logout();
+    delete globalThis.document;
+    delete globalThis.fetch;
+    delete globalThis.localStorage;
+    delete globalThis.sessionStorage;
+  });
+
+  it('captures the initial principal and accepts a same-account login', async () => {
+    globalThis.localStorage.setItem('authToken', 'expired-token');
+    globalThis.fetch = async (url) => {
+      fetchCalls.push({ url });
+      if (url.endsWith('/api/auth/me')) return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+      return makeResponse({ body: { token: 'fresh-token', user: { id: 'user-1', username: 'michi' } } });
+    };
+    assert.equal(await auth.checkAuth(), true);
+    const recovery = auth.requestReauthentication();
+    dom.elements.get('auth-username').value = 'michi';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-submit').click();
+
+    assert.equal(await recovery, true);
+    assert.equal(globalThis.localStorage.getItem('authToken'), 'fresh-token');
+    assert.equal(dom.elements.get('auth-screen').classList.contains('hidden'), true);
+  });
+
+  it('refuses a different account without storing its token or resolving recovery', async () => {
+    globalThis.localStorage.setItem('authToken', 'expired-token');
+    globalThis.fetch = async (url) => {
+      fetchCalls.push({ url });
+      if (url.endsWith('/api/auth/me')) return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+      return makeResponse({ body: { token: 'other-token', user: { id: 'user-2', username: 'other' } } });
+    };
+    await auth.checkAuth();
+    const recovery = auth.requestReauthentication();
+    dom.elements.get('auth-username').value = 'other';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-submit').click();
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(globalThis.localStorage.getItem('authToken'), 'expired-token');
+    assert.equal(dom.elements.get('auth-screen').classList.contains('hidden'), false);
+    assert.match(dom.elements.get('auth-error').textContent, /same account/i);
+    assert.equal(await Promise.race([
+      recovery.then(() => 'resolved'),
+      new Promise(resolve => setImmediate(() => resolve('pending'))),
+    ]), 'pending');
+    assert.equal(auth.requestReauthentication(), recovery);
+  });
+
+  it('refuses registration during reauthentication before issuing a request', async () => {
+    globalThis.localStorage.setItem('authToken', 'expired-token');
+    globalThis.fetch = async (url) => {
+      fetchCalls.push({ url });
+      return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+    };
+    await auth.checkAuth();
+    const recovery = auth.requestReauthentication();
+    dom.registerTab.click();
+    dom.elements.get('auth-username').value = 'new-user';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-ai-consent-checkbox').checked = true;
+    dom.elements.get('auth-submit').click();
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(fetchCalls.length, 1);
+    assert.match(dom.elements.get('auth-error').textContent, /same account/i);
+    assert.equal(await Promise.race([
+      recovery.then(() => 'resolved'),
+      new Promise(resolve => setImmediate(() => resolve('pending'))),
+    ]), 'pending');
+    assert.equal(auth.requestReauthentication(), recovery);
+  });
+
+  it('coalesces repeated recovery requests without replacing the pending resolver', async () => {
+    globalThis.localStorage.setItem('authToken', 'expired-token');
+    globalThis.fetch = async () => makeResponse({ body: { id: 'user-1', username: 'michi' } });
+    await auth.checkAuth();
+
+    const first = auth.requestReauthentication();
+    const second = auth.requestReauthentication();
+
+    assert.equal(second, first);
+  });
+
+  it('logout clears the retained principal while normal login keeps existing behavior', async () => {
+    globalThis.localStorage.setItem('authToken', 'old-token');
+    globalThis.fetch = async (url) => {
+      if (url.endsWith('/api/auth/me')) return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+      return makeResponse({ body: { token: 'normal-token', user: { id: 'user-2', username: 'other' } } });
+    };
+    await auth.checkAuth();
+    auth.logout();
+    const afterLogout = await Promise.race([
+      auth.requestReauthentication(),
+      new Promise(resolve => setImmediate(() => resolve('still-pending'))),
+    ]);
+    assert.equal(afterLogout, false);
+
+    dom.elements.get('auth-username').value = 'other';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-submit').click();
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(globalThis.localStorage.getItem('authToken'), 'normal-token');
+    assert.deepEqual(authenticatedUsers, [{ id: 'user-2', username: 'other' }]);
+  });
+});

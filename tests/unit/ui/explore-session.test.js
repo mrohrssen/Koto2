@@ -879,6 +879,21 @@ test('degraded transport replaces an earlier pause without cancelling its capped
   assert.equal(typeof timers.at(-1).fn, 'function');
 });
 
+test('temporary and warning pauses cannot replace a blocking pause', () => {
+  const pauses = [];
+  const session = createExploreSession({
+    syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
+    onPause: ({ reason }) => pauses.push(reason),
+  });
+
+  session.pause('writerConflict');
+  session.pause('syncPending');
+  session.pause('transportDegraded');
+
+  assert.equal(session.getPauseReason(), 'writerConflict');
+  assert.deepEqual(pauses, ['writerConflict']);
+});
+
 test('same-epoch runway adoption drains an armed retry without discarding pending actions', async () => {
   const scheduler = makeManualScheduler();
   let syncCalls = 0;

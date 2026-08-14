@@ -2,7 +2,16 @@ import { apiUrl } from '../api.js';
 import { setAnalyticsUser, trackEvent } from '../analytics.js';
 
 let currentTab = 'login';
-let reauthenticationResolver = null;
+let authenticatedPrincipalId = null;
+let reauthenticationRequest = null;
+
+const SAME_ACCOUNT_RECOVERY_ERROR = 'Log in to the same account to recover this run. Creating or switching accounts is not allowed.';
+
+function captureAuthenticatedPrincipal(user) {
+  if (typeof user?.id === 'string' && user.id.length > 0) {
+    authenticatedPrincipalId = user.id;
+  }
+}
 
 /**
  * Initialize auth UI event listeners
@@ -61,7 +70,11 @@ export async function checkAuth() {
 
   try {
     const res = await fetch(apiUrl('/api/auth/me'), { headers });
-    if (res.ok) return true;
+    if (res.ok) {
+      const user = await res.json();
+      captureAuthenticatedPrincipal(user);
+      return true;
+    }
     if (token) removeToken();
     return false;
   } catch {
@@ -78,7 +91,9 @@ export async function getCurrentUser() {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) return null;
-    return await res.json();
+    const user = await res.json();
+    captureAuthenticatedPrincipal(user);
+    return user;
   } catch {
     return null;
   }
@@ -94,7 +109,16 @@ export function hideAuthScreen() {
 
 export function requestReauthentication() {
   showAuthScreen();
-  return new Promise(resolve => { reauthenticationResolver = resolve; });
+  if (reauthenticationRequest) return reauthenticationRequest.promise;
+  if (!authenticatedPrincipalId) {
+    showError('Your previous account could not be verified. Log in again from the main sign-in screen.');
+    return Promise.resolve(false);
+  }
+  const principalId = authenticatedPrincipalId;
+  let resolveRequest;
+  const promise = new Promise(resolve => { resolveRequest = resolve; });
+  reauthenticationRequest = { principalId, promise, resolve: resolveRequest };
+  return promise;
 }
 
 export function getToken() {
@@ -103,6 +127,12 @@ export function getToken() {
 
 export function logout() {
   localStorage.removeItem('authToken');
+  authenticatedPrincipalId = null;
+  if (reauthenticationRequest) {
+    const { resolve } = reauthenticationRequest;
+    reauthenticationRequest = null;
+    resolve(false);
+  }
 }
 
 // ---- Internal ----
@@ -116,6 +146,11 @@ function storeToken(token) {
 }
 
 async function handleSubmit(callbacks) {
+  if (reauthenticationRequest && currentTab === 'register') {
+    showError(SAME_ACCOUNT_RECOVERY_ERROR);
+    return;
+  }
+
   const username = document.getElementById('auth-username').value.trim();
   const password = document.getElementById('auth-password').value;
 
@@ -159,16 +194,25 @@ async function handleSubmit(callbacks) {
       return;
     }
 
+    if (
+      reauthenticationRequest
+      && data.user?.id !== reauthenticationRequest.principalId
+    ) {
+      showError(SAME_ACCOUNT_RECOVERY_ERROR);
+      return;
+    }
+
     storeToken(data.token);
+    captureAuthenticatedPrincipal(data.user);
     await setAnalyticsUser(data.user);
     await trackEvent(currentTab === 'login' ? 'koto_login' : 'koto_sign_up', {
       method: 'password'
     });
     hideAuthScreen();
-    if (reauthenticationResolver) {
-      const resolve = reauthenticationResolver;
-      reauthenticationResolver = null;
-      resolve(data.user);
+    if (reauthenticationRequest) {
+      const { resolve } = reauthenticationRequest;
+      reauthenticationRequest = null;
+      resolve(true);
       return;
     }
     if (callbacks.onAuthenticated) {

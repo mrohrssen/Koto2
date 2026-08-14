@@ -365,7 +365,7 @@ function showExploreWriterConflict() {
       label: 'Review latest progress',
       primary: true,
       disabled: typeof adoptExploreSession !== 'function',
-      onClick: async () => { await adoptExploreSession?.(); },
+      onClick: async () => { await reviewExploreWriterConflict(); },
     },
     {
       label: 'Keep this session paused',
@@ -375,10 +375,46 @@ function showExploreWriterConflict() {
   ], { container: actionArea, append: true });
 }
 
+async function reauthenticateAndAdoptExploreSession() {
+  if (typeof reauthenticateExploreSession !== 'function') return false;
+  const reauthenticated = await reauthenticateExploreSession();
+  if (reauthenticated !== true || typeof adoptExploreSession !== 'function') return false;
+  return (await adoptExploreSession()) === true;
+}
+
+async function reviewExploreWriterConflict() {
+  const session = getExploreSession?.();
+  if (!session || session.getPauseReason?.() !== 'writerConflict') return false;
+  if (typeof adoptExploreSession !== 'function') return false;
+  if ((await adoptExploreSession()) !== true) {
+    showExploreWriterConflict();
+    return false;
+  }
+  await session.syncNow?.({ reason: 'writerConflictReview' });
+  return (session.pendingCount?.() ?? 0) === 0 && session.isPaused?.() !== true;
+}
+
 async function runExploreSessionRecovery(reason) {
   const session = getExploreSession?.();
   if (!session) {
     return { recovered: false, retryable: false };
+  }
+
+  const pausedFor = session.getPauseReason?.() || reason;
+  if (pausedFor === 'writerConflict') {
+    return { recovered: false, retryable: false };
+  }
+  if (pausedFor === 'authRequired') {
+    const recoveredIdentity = await reauthenticateAndAdoptExploreSession();
+    if (!recoveredIdentity) {
+      return { recovered: false, retryable: false };
+    }
+    if ((session.pendingCount?.() ?? 0) > 0) {
+      await session.syncNow({ reason: 'authenticatedRecovery' });
+    }
+    const recovered = (session.pendingCount?.() ?? 0) === 0
+      && session.isPaused?.() !== true;
+    return { recovered, retryable: !recovered };
   }
 
   if ((session.pendingCount?.() ?? 0) > 0) {
@@ -389,7 +425,6 @@ async function runExploreSessionRecovery(reason) {
     return { recovered: false, retryable: true };
   }
 
-  const pausedFor = reason || session.getPauseReason?.();
   if (!RUNWAY_RECOVERY_REASONS.has(pausedFor)) {
     return {
       recovered: session.isPaused?.() !== true,
@@ -750,12 +785,7 @@ export function init(callbacks) {
       onCorrection: onExploreSessionCorrection,
       onPause: showExploreSoftPause,
       onResume: hideExploreSoftPause,
-      onAuthRequired: async () => {
-        if (typeof reauthenticateExploreSession !== 'function') return false;
-        await reauthenticateExploreSession();
-        if (typeof adoptExploreSession !== 'function') return false;
-        return (await adoptExploreSession()) === true;
-      },
+      onAuthRequired: reauthenticateAndAdoptExploreSession,
       onWriterConflict: async () => {},
     });
     wireExploreSessionRecoveryDrains();

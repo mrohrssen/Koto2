@@ -1619,13 +1619,20 @@ describe('explore session online stall recovery', () => {
   it('renders writer-conflict choices without a retry and only adopts after an explicit choice', async () => {
     let adopted = 0;
     let keptPaused = 0;
+    let syncCalls = 0;
     initRecoveryHarness({
-      apiSyncExploreSession: async () => ({
-        transport: true,
-        httpStatus: 409,
-        body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' },
-      }),
-      adoptExploreSession: async () => { adopted += 1; },
+      apiSyncExploreSession: async ({ entries }) => {
+        syncCalls += 1;
+        if (syncCalls === 1) {
+          return {
+            transport: true,
+            httpStatus: 409,
+            body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' },
+          };
+        }
+        return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] };
+      },
+      adoptExploreSession: async () => { adopted += 1; return true; },
       keepExploreSessionPaused: async () => { keptPaused += 1; },
     });
     const session = getExploreSession();
@@ -1641,10 +1648,52 @@ describe('explore session online stall recovery', () => {
       'Keep this session paused',
     ]);
     renderedButtons(actionArea)[0].click();
-    await waitFor(() => adopted === 1);
+    await waitFor(() => adopted === 1 && syncCalls === 2 && session.pendingCount() === 0);
     assert.equal(adopted, 1);
     assert.equal(keptPaused, 0);
-    assert.equal(session.pendingCount(), 1);
+    assert.equal(session.isPaused(), false);
+  });
+
+  it('keeps writer conflict inert through online and visible-tab recovery events', async () => {
+    let syncCalls = 0;
+    let adopted = 0;
+    const windowTarget = makeEventTarget();
+    const documentTarget = makeEventTarget();
+    documentTarget.visibilityState = 'visible';
+    initRecoveryHarness({
+      apiSyncExploreSession: async () => {
+        syncCalls += 1;
+        return {
+          transport: true,
+          httpStatus: 409,
+          body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' },
+        };
+      },
+      adoptExploreSession: async () => { adopted += 1; return true; },
+    });
+    wireExploreSessionRecoveryDrains({ windowTarget, documentTarget });
+    const session = getExploreSession();
+    session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
+      acceptedActions: ['friendlyNpc.choose'],
+      actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    })] }));
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+    await session.syncNow();
+
+    windowTarget.dispatch('online');
+    await Promise.resolve();
+    await Promise.resolve();
+    documentTarget.dispatch('visibilitychange');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    assert.equal(syncCalls, 1);
+    assert.equal(adopted, 0);
+    assert.equal(session.getPauseReason(), 'writerConflict');
+    assert.deepEqual(renderedButtons(actionArea).map(button => button.innerHTML), [
+      'Review latest progress',
+      'Keep this session paused',
+    ]);
   });
 
   it('re-authenticates before adoption and does not render a retry for an auth pause', async () => {
@@ -1655,8 +1704,8 @@ describe('explore session online stall recovery', () => {
         httpStatus: 401,
         body: { error: 'expired' },
       }),
-      reauthenticateExploreSession: async () => { events.push('reauthenticate'); },
-      adoptExploreSession: async () => { events.push('adopt'); },
+      reauthenticateExploreSession: async () => { events.push('reauthenticate'); return true; },
+      adoptExploreSession: async () => { events.push('adopt'); return true; },
     });
     const session = getExploreSession();
     session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
@@ -1679,8 +1728,8 @@ describe('explore session online stall recovery', () => {
         httpStatus: 401,
         body: { error: 'expired' },
       }),
-      reauthenticateExploreSession: async () => { events.push('reauthenticate'); },
-      adoptExploreSession: async () => { events.push('adopt'); },
+      reauthenticateExploreSession: async () => { events.push('reauthenticate'); return true; },
+      adoptExploreSession: async () => { events.push('adopt'); return true; },
       refreshRunwayState: async () => getExploreSession().syncNow(),
     });
     const session = getExploreSession();
@@ -1696,5 +1745,60 @@ describe('explore session online stall recovery', () => {
     ]);
     assert.equal(outcome, 'settled');
     assert.deepEqual(events, ['reauthenticate', 'adopt']);
+  });
+
+  it('does not repost failed auth work on online or visibility recovery and drains only after same-principal recovery', async () => {
+    let syncCalls = 0;
+    let reauthCalls = 0;
+    let adoptCalls = 0;
+    let allowRecovery = false;
+    const windowTarget = makeEventTarget();
+    const documentTarget = makeEventTarget();
+    documentTarget.visibilityState = 'visible';
+    initRecoveryHarness({
+      apiSyncExploreSession: async ({ entries }) => {
+        syncCalls += 1;
+        if (syncCalls === 1) {
+          return { transport: true, httpStatus: 401, body: { error: 'expired' } };
+        }
+        return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] };
+      },
+      reauthenticateExploreSession: async () => {
+        reauthCalls += 1;
+        return allowRecovery;
+      },
+      adoptExploreSession: async () => {
+        adoptCalls += 1;
+        return allowRecovery;
+      },
+    });
+    wireExploreSessionRecoveryDrains({ windowTarget, documentTarget });
+    const session = getExploreSession();
+    session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
+      acceptedActions: ['friendlyNpc.choose'],
+      actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    })] }));
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+    await session.syncNow();
+    assert.equal(reauthCalls, 1);
+
+    windowTarget.dispatch('online');
+    await new Promise(resolve => setImmediate(resolve));
+    documentTarget.dispatch('visibilitychange');
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(syncCalls, 1);
+    assert.equal(adoptCalls, 0);
+    assert.equal(session.getPauseReason(), 'authRequired');
+    assert.equal(renderedButtons(actionArea).length, 0);
+
+    allowRecovery = true;
+    const successfulRecovery = triggerExploreSessionRecovery();
+    windowTarget.dispatch('online');
+    await successfulRecovery;
+    await waitFor(() => syncCalls === 2 && session.pendingCount() === 0);
+
+    assert.equal(adoptCalls, 1);
+    assert.equal(session.isPaused(), false);
   });
 });

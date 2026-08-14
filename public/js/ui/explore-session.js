@@ -1,4 +1,5 @@
 import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
+import { PAUSE_REASONS } from '../../../src/shared/explore/pause-reasons.js';
 
 export const EXPLORE_SESSION_HARD_CAP = 50;
 export const EXPLORE_SESSION_RESUME_AT = 40;
@@ -176,6 +177,10 @@ export function createExploreSession({
 
   function enterPause(reason) {
     if (paused && pauseReason === reason) return;
+    const severityRank = { temporary: 0, warning: 1, blocking: 2 };
+    const currentSeverity = severityRank[PAUSE_REASONS[pauseReason]?.severity] ?? 0;
+    const nextSeverity = severityRank[PAUSE_REASONS[reason]?.severity] ?? 0;
+    if (paused && nextSeverity < currentSeverity) return;
     paused = true;
     pauseReason = reason;
     notify(onPause, { pendingCount: log.length, reason });
