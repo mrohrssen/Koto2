@@ -7,6 +7,7 @@ import http from 'http';
 export function createApiClient(port) {
   const baseUrl = `http://127.0.0.1:${port}`;
   let authToken = null;
+  let authenticatedUser = null;
 
   async function request(method, path, body) {
     return new Promise((resolve, reject) => {
@@ -51,13 +52,19 @@ export function createApiClient(port) {
     /** Set auth token for subsequent requests */
     setToken(token) { authToken = token; },
 
+    /** Read the authenticated user identity without exposing the bearer token. */
+    getAuthenticatedUser() { return authenticatedUser; },
+
     /** Register + login, store token for subsequent requests */
     async loginAsNewUser(username = 'test-user', password = 'test-pass-123') {
       await request('POST', '/api/auth/register', {
         username, password, inviteCode: 'neo-tokyo-friends', aiDataSharingConsent: true
       });
       const res = await request('POST', '/api/auth/login', { username, password });
-      if (res.body?.token) authToken = res.body.token;
+      if (res.body?.token) {
+        authToken = res.body.token;
+        authenticatedUser = res.body.user || null;
+      }
       return res;
     }
   };
