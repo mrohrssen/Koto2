@@ -2,6 +2,7 @@ import { apiUrl } from '../api.js';
 import { setAnalyticsUser, trackEvent } from '../analytics.js';
 
 let currentTab = 'login';
+let reauthenticationResolver = null;
 
 /**
  * Initialize auth UI event listeners
@@ -91,6 +92,11 @@ export function hideAuthScreen() {
   document.getElementById('auth-screen').classList.add('hidden');
 }
 
+export function requestReauthentication() {
+  showAuthScreen();
+  return new Promise(resolve => { reauthenticationResolver = resolve; });
+}
+
 export function getToken() {
   return localStorage.getItem('authToken');
 }
@@ -159,6 +165,12 @@ async function handleSubmit(callbacks) {
       method: 'password'
     });
     hideAuthScreen();
+    if (reauthenticationResolver) {
+      const resolve = reauthenticationResolver;
+      reauthenticationResolver = null;
+      resolve(data.user);
+      return;
+    }
     if (callbacks.onAuthenticated) {
       await callbacks.onAuthenticated(data.user);
     }

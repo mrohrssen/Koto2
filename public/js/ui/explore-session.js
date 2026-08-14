@@ -104,7 +104,7 @@ export function createExploreSession({
   onCorrection = () => {},
   onPause = () => {},
   onResume = () => {},
-  onAuthRequired = async () => {},
+  onAuthRequired = async () => false,
   onWriterConflict = async () => {},
   schedule = defaultSchedule,
   cancel = id => clearTimeout(id),
@@ -174,7 +174,7 @@ export function createExploreSession({
   }
 
   function enterPause(reason) {
-    if (paused) return;
+    if (paused && pauseReason === reason) return;
     paused = true;
     pauseReason = reason;
     notify(onPause, { pendingCount: log.length, reason });
@@ -231,6 +231,10 @@ export function createExploreSession({
       syncing = false;
       attempts = 0;
       forceDrainRequested = false;
+    }
+
+    if (!fromSync && !sessionBoundary && retryTimer != null && log.length > 0) {
+      void syncNow();
     }
 
     // Adopting a refreshed runway is a recovery moment for a paused session whose
@@ -447,7 +451,8 @@ export function createExploreSession({
       if (outcome === 'authRequired') {
         enterPause('authRequired');
         try {
-          await onAuthRequired();
+          const recovered = await onAuthRequired();
+          if (recovered === true) scheduleDrain(0);
         } catch (error) {
           console.error('[ExploreSession] authentication recovery failed', error);
         }

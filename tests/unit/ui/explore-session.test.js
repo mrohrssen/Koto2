@@ -858,6 +858,85 @@ test('indeterminate sync responses stay scheduled through degraded transport and
   assert.equal(session.pendingCount(), 1);
 });
 
+test('degraded transport replaces an earlier pause without cancelling its capped retry', async () => {
+  const timers = [];
+  const session = createExploreSession({
+    syncRequest: async () => ({ transport: true, httpStatus: 200, body: {} }),
+    schedule: (fn, delay) => {
+      timers.push({ fn, delay });
+      return timers.length - 1;
+    },
+    cancel: id => { if (timers[id]) timers[id].fn = null; },
+  });
+  session.adoptRunway(makeRunway());
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  session.pause('dependency');
+
+  for (let attempt = 0; attempt < 12; attempt += 1) await session.syncNow();
+
+  assert.equal(session.getPauseReason(), 'transportDegraded');
+  assert.equal(timers.at(-1).delay, 30_000);
+  assert.equal(typeof timers.at(-1).fn, 'function');
+});
+
+test('same-epoch runway adoption drains an armed retry without discarding pending actions', async () => {
+  const scheduler = makeManualScheduler();
+  let syncCalls = 0;
+  const session = createExploreSession({
+    syncRequest: async ({ entries }) => {
+      syncCalls += 1;
+      if (syncCalls === 1) return { transport: true, httpStatus: 200, body: {} };
+      return okResponse(entries.at(-1).seq);
+    },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  const runway = makeRunway({ sessionEpoch: 'ese_adopt_retry111' });
+  session.adoptRunway(runway);
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  await scheduler.fire();
+
+  assert.equal(session.pendingCount(), 1);
+  assert.equal(scheduler.delays()[0], 500);
+  session.adoptRunway({ ...runway, preparedRooms: runway.preparedRooms.map(room => ({ ...room })) });
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(syncCalls, 2);
+  assert.equal(session.pendingCount(), 0);
+});
+
+test('auth recovery re-authenticates before adopting the retained pending session', async () => {
+  const events = [];
+  const session = createExploreSession({
+    syncRequest: async () => ({ transport: true, httpStatus: 401, body: { error: 'expired' } }),
+    onAuthRequired: async () => { events.push('reauthenticate'); },
+  });
+  session.adoptRunway(makeRunway());
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  await session.syncNow();
+
+  assert.deepEqual(events, ['reauthenticate']);
+  assert.equal(session.getPauseReason(), 'authRequired');
+  assert.equal(session.pendingCount(), 1);
+});
+
+test('completed auth recovery schedules a fresh drain after adoption', async () => {
+  const scheduler = makeManualScheduler();
+  const session = createExploreSession({
+    syncRequest: async () => ({ transport: true, httpStatus: 401, body: { error: 'expired' } }),
+    onAuthRequired: async () => true,
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  await session.syncNow();
+
+  assert.equal(session.pendingCount(), 1);
+  assert.equal(scheduler.delays().at(-1), 0);
+});
+
 test('corrected response clears the log, notifies, and adopts response runway', async () => {
   const scheduler = makeManualScheduler();
   const corrections = [];

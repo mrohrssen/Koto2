@@ -159,6 +159,7 @@ describe('api network hardening', () => {
 
   it('preserves Explore transport status and JSON parse failures for recovery', async () => {
     const api = await import('../../public/js/api.js');
+    globalThis.localStorage.setItem('authToken', 'still-owned-by-reauth-flow');
     globalThis.fetch = mock.fn(async () => jsonResponse({ error: 'expired' }, 401));
     const auth = await api.syncExploreSession({
       sessionEpoch: 'ese_1111111111111111',
@@ -170,7 +171,8 @@ describe('api network hardening', () => {
       body: { error: 'expired' },
       parseError: null,
     });
-    assert.equal(globalThis.window.location.href, '/');
+    assert.equal(globalThis.window.location.href, '', 'Explore transport leaves re-authentication to the session recovery flow');
+    assert.equal(globalThis.localStorage.getItem('authToken'), 'still-owned-by-reauth-flow');
 
     globalThis.fetch = mock.fn(async () => ({
       ok: true,

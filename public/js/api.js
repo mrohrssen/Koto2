@@ -934,12 +934,6 @@ async function syncExploreSession({ sessionEpoch, entries, timeoutMs = DEFAULT_A
       parseError = error;
     }
 
-    if (response.status === 401 && !hasRedirectedFor401) {
-      hasRedirectedFor401 = true;
-      localStorage.removeItem('authToken');
-      sessionStorage.setItem('sessionExpiredMsg', 'Session expired, please log in again');
-      window.location.href = '/';
-    }
     return { transport: true, httpStatus: response.status, body, parseError };
   } catch (error) {
     if (isConnectionFailure(error)) onApiFailure();

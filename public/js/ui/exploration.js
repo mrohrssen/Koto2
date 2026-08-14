@@ -97,6 +97,9 @@ let exploreSessionVisibilityDrainTarget = null;
 // adoptSession → /state?adoptSession=1, epoch preserved) to recover an online
 // stall.
 let refreshRunwayState = null;
+let reauthenticateExploreSession = null;
+let adoptExploreSession = null;
+let takeOverExploreSession = null;
 const RUNWAY_RECOVERY_REASONS = new Set([
   'noPreparedRoom',
   'currentRoomNotReady',
@@ -317,6 +320,10 @@ function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
   // the nested notification, so one pause produces one narration card.
   if (exploreSoftPauseDispatching) return;
   const session = getExploreSession?.();
+  if (reason === 'writerConflict') {
+    showExploreWriterConflict();
+    return;
+  }
   if (session?.isPaused?.() !== true) {
     exploreSoftPauseDispatching = true;
     try {
@@ -336,15 +343,34 @@ function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
     { autoDismiss: 1800 }
   );
   const actionArea = globalThis.document?.getElementById?.('action-area');
-  if (actionArea && session?.pendingCount?.() > 0) {
+  if (actionArea && session?.pendingCount?.() > 0 && reason !== 'authRequired') {
     actionArea.innerHTML = `<p class="explore-sync-pause-copy">${EXPLORE_SPOTTY_COPY}</p>`;
     renderButtons([{
       label: 'Retry now',
       primary: true,
-      onClick: () => { void session.retryNow?.(); },
+      onClick: () => session.retryNow?.(),
     }], { container: actionArea, append: true });
   }
-  void triggerExploreSessionRecovery(reason);
+  if (reason !== 'transportDegraded' && reason !== 'authRequired') {
+    void triggerExploreSessionRecovery(reason);
+  }
+}
+
+function showExploreWriterConflict() {
+  const actionArea = globalThis.document?.getElementById?.('action-area');
+  if (!actionArea) return;
+  actionArea.innerHTML = '<p class="explore-sync-pause-copy">This run is open on another device. Choose which session should continue.</p>';
+  renderButtons([
+    {
+      label: 'Use latest progress',
+      primary: true,
+      onClick: async () => { await (adoptExploreSession || refreshRunwayState)?.(); },
+    },
+    {
+      label: 'Take over this run',
+      onClick: async () => { await takeOverExploreSession?.(); },
+    },
+  ], { container: actionArea, append: true });
 }
 
 async function runExploreSessionRecovery(reason) {
@@ -668,6 +694,9 @@ export function init(callbacks) {
   reconcileCorrectedCombat = callbacks.reconcileCorrectedCombat;
   waitForCombatPlaybackIdle = callbacks.waitForCombatPlaybackIdle || (async () => {});
   refreshRunwayState = callbacks.refreshRunwayState;
+  reauthenticateExploreSession = callbacks.reauthenticateExploreSession;
+  adoptExploreSession = callbacks.adoptExploreSession;
+  takeOverExploreSession = callbacks.takeOverExploreSession;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;
   apiSelectArea = callbacks.apiSelectArea;
   apiReturnToHub = callbacks.apiReturnToHub;
@@ -719,8 +748,14 @@ export function init(callbacks) {
       onCorrection: onExploreSessionCorrection,
       onPause: showExploreSoftPause,
       onResume: hideExploreSoftPause,
-      onAuthRequired: async () => { await refreshRunwayState?.(); },
-      onWriterConflict: async () => { await refreshRunwayState?.(); },
+      onAuthRequired: async () => {
+        if (typeof reauthenticateExploreSession !== 'function') return false;
+        await reauthenticateExploreSession();
+        if (typeof refreshRunwayState !== 'function') return false;
+        await refreshRunwayState();
+        return true;
+      },
+      onWriterConflict: async () => {},
     });
     wireExploreSessionRecoveryDrains();
   }

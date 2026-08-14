@@ -2438,6 +2438,8 @@ async function initGame() {
     // rebuilds the runway server-side WITHOUT rotating the epoch, then adopts it
     // into the session when the pending log is empty (see loadGameState).
     refreshRunwayState: () => loadGameState({ adoptSession: true }),
+    reauthenticateExploreSession: () => auth.requestReauthentication(),
+    adoptExploreSession: () => loadGameState({ adoptSession: true }),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {
       const result = await apiSelectArea(areaId);

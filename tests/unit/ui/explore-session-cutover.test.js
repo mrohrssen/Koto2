@@ -53,7 +53,16 @@ await mock.module('../../../public/js/ui/room-transition.js', {
   },
 });
 await mock.module('../../../public/js/ui/ui-components.js', {
-  namedExports: { renderButtons: () => {}, renderChoices: () => {} },
+  namedExports: {
+    renderButtons: (buttons, { container } = {}) => {
+      const target = container || actionArea;
+      target.renderedButtons = buttons.map(button => ({
+        textContent: button.label,
+        click: () => button.onClick?.(),
+      }));
+    },
+    renderChoices: () => {},
+  },
 });
 await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
   namedExports: { showNpcDialogueCard: async () => {} },
@@ -1298,6 +1307,9 @@ describe('explore session online stall recovery', () => {
 
   function initRecoveryHarness({
     refreshRunwayState,
+    reauthenticateExploreSession,
+    adoptExploreSession,
+    takeOverExploreSession,
     apiSyncExploreSession = async () => ({
       status: 'ok',
       confirmedThroughSeq: 0,
@@ -1316,6 +1328,9 @@ describe('explore session online stall recovery', () => {
       apiProceed: async () => null,
       apiSyncExploreSession,
       refreshRunwayState,
+      reauthenticateExploreSession,
+      adoptExploreSession,
+      takeOverExploreSession,
     });
   }
 
@@ -1535,5 +1550,87 @@ describe('explore session online stall recovery', () => {
       globalThis.setTimeout = originalSetTimeout;
       globalThis.clearTimeout = originalClearTimeout;
     }
+  });
+
+  it('renders truthful retry controls and drains pending work when Retry now is clicked', async () => {
+    let syncCalls = 0;
+    initRecoveryHarness({
+      apiSyncExploreSession: async ({ entries }) => {
+        syncCalls += 1;
+        if (syncCalls <= 12) return { transport: true, httpStatus: 200, body: {} };
+        return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] };
+      },
+    });
+    const session = getExploreSession();
+    session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
+      acceptedActions: ['friendlyNpc.choose'],
+      actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    })] }));
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+
+    for (let attempt = 0; attempt < 12; attempt += 1) await session.syncNow();
+
+    assert.match(actionArea.innerHTML, /Unsynced progress can be lost if you reload/);
+    const retryButton = actionArea.renderedButtons.find(button => button.textContent === 'Retry now');
+    assert.ok(retryButton, 'transport degradation renders an English Retry now control');
+    const pendingBeforeClick = session.pendingCount();
+    await retryButton.click();
+    assert.equal(syncCalls, 13);
+    assert.equal(pendingBeforeClick, 1);
+    assert.equal(session.pendingCount(), 0);
+  });
+
+  it('renders writer-conflict choices without a retry and only adopts after an explicit choice', async () => {
+    let adopted = 0;
+    let takeover = 0;
+    initRecoveryHarness({
+      apiSyncExploreSession: async () => ({
+        transport: true,
+        httpStatus: 409,
+        body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' },
+      }),
+      adoptExploreSession: async () => { adopted += 1; },
+      takeOverExploreSession: async () => { takeover += 1; },
+    });
+    const session = getExploreSession();
+    session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
+      acceptedActions: ['friendlyNpc.choose'],
+      actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    })] }));
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+    await session.syncNow();
+
+    assert.deepEqual(actionArea.renderedButtons.map(button => button.textContent), [
+      'Use latest progress',
+      'Take over this run',
+    ]);
+    await actionArea.renderedButtons[0].click();
+    assert.equal(adopted, 1);
+    assert.equal(takeover, 0);
+    assert.equal(session.pendingCount(), 1);
+  });
+
+  it('re-authenticates before adoption and does not render a retry for an auth pause', async () => {
+    const events = [];
+    initRecoveryHarness({
+      apiSyncExploreSession: async () => ({
+        transport: true,
+        httpStatus: 401,
+        body: { error: 'expired' },
+      }),
+      reauthenticateExploreSession: async () => { events.push('reauthenticate'); },
+      refreshRunwayState: async () => { events.push('adopt'); },
+    });
+    const session = getExploreSession();
+    session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
+      acceptedActions: ['friendlyNpc.choose'],
+      actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    })] }));
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+    await session.syncNow();
+
+    assert.deepEqual(events, ['reauthenticate', 'adopt']);
+    assert.equal(actionArea.renderedButtons, undefined);
+    assert.equal(session.pendingCount(), 1);
   });
 });
