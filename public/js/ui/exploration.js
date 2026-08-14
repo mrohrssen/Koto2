@@ -99,7 +99,7 @@ let exploreSessionVisibilityDrainTarget = null;
 let refreshRunwayState = null;
 let reauthenticateExploreSession = null;
 let adoptExploreSession = null;
-let takeOverExploreSession = null;
+let keepExploreSessionPaused = null;
 const RUNWAY_RECOVERY_REASONS = new Set([
   'noPreparedRoom',
   'currentRoomNotReady',
@@ -359,16 +359,18 @@ function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
 function showExploreWriterConflict() {
   const actionArea = globalThis.document?.getElementById?.('action-area');
   if (!actionArea) return;
-  actionArea.innerHTML = '<p class="explore-sync-pause-copy">This run is open on another device. Choose which session should continue.</p>';
+  actionArea.innerHTML = '<p class="explore-sync-pause-copy">This run is open on another device. Review its latest progress before continuing here.</p>';
   renderButtons([
     {
-      label: 'Use latest progress',
+      label: 'Review latest progress',
       primary: true,
-      onClick: async () => { await (adoptExploreSession || refreshRunwayState)?.(); },
+      disabled: typeof adoptExploreSession !== 'function',
+      onClick: async () => { await adoptExploreSession?.(); },
     },
     {
-      label: 'Take over this run',
-      onClick: async () => { await takeOverExploreSession?.(); },
+      label: 'Keep this session paused',
+      disabled: typeof keepExploreSessionPaused !== 'function',
+      onClick: async () => { await keepExploreSessionPaused?.(); },
     },
   ], { container: actionArea, append: true });
 }
@@ -696,7 +698,7 @@ export function init(callbacks) {
   refreshRunwayState = callbacks.refreshRunwayState;
   reauthenticateExploreSession = callbacks.reauthenticateExploreSession;
   adoptExploreSession = callbacks.adoptExploreSession;
-  takeOverExploreSession = callbacks.takeOverExploreSession;
+  keepExploreSessionPaused = callbacks.keepExploreSessionPaused;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;
   apiSelectArea = callbacks.apiSelectArea;
   apiReturnToHub = callbacks.apiReturnToHub;
@@ -751,8 +753,8 @@ export function init(callbacks) {
       onAuthRequired: async () => {
         if (typeof reauthenticateExploreSession !== 'function') return false;
         await reauthenticateExploreSession();
-        if (typeof refreshRunwayState !== 'function') return false;
-        await refreshRunwayState();
+        if (typeof adoptExploreSession !== 'function') return false;
+        await adoptExploreSession();
         return true;
       },
       onWriterConflict: async () => {},

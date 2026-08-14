@@ -4,8 +4,56 @@ import assert from 'node:assert/strict';
 const transitionCalls = [];
 let actionArea = null;
 
+class FakeElement {
+  constructor(tagName = 'div') {
+    this.tagName = tagName.toLowerCase();
+    this.children = [];
+    this.listeners = new Map();
+    this.className = '';
+    this.disabled = false;
+    this._innerHTML = '';
+  }
+
+  set innerHTML(value) {
+    this._innerHTML = value;
+    this.children = [];
+  }
+
+  get innerHTML() { return this._innerHTML; }
+
+  appendChild(child) {
+    this.children.push(child);
+    return child;
+  }
+
+  addEventListener(type, handler) {
+    this.listeners.set(type, [...(this.listeners.get(type) || []), handler]);
+  }
+
+  click() {
+    for (const handler of this.listeners.get('click') || []) handler();
+  }
+}
+
+function createActionArea(initial = '') {
+  const area = new FakeElement('div');
+  area.innerHTML = initial;
+  return area;
+}
+
+function renderedButtons(root) {
+  const result = [];
+  const visit = node => {
+    if (node.tagName === 'button') result.push(node);
+    for (const child of node.children || []) visit(child);
+  };
+  visit(root);
+  return result;
+}
+
 globalThis.document = {
   getElementById: id => (id === 'action-area' ? actionArea : null),
+  createElement: tagName => new FakeElement(tagName),
 };
 
 await mock.module('../../../public/js/scenes/scene-manager.js', {
@@ -50,18 +98,6 @@ await mock.module('../../../public/js/ui/room-transition.js', {
     playRoomTransition: async (state, opts) => {
       transitionCalls.push({ state, opts });
     },
-  },
-});
-await mock.module('../../../public/js/ui/ui-components.js', {
-  namedExports: {
-    renderButtons: (buttons, { container } = {}) => {
-      const target = container || actionArea;
-      target.renderedButtons = buttons.map(button => ({
-        textContent: button.label,
-        click: () => button.onClick?.(),
-      }));
-    },
-    renderChoices: () => {},
   },
 });
 await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
@@ -233,7 +269,7 @@ async function waitFor(predicate) {
 describe('explore session proceed cutover', () => {
   beforeEach(() => {
     transitionCalls.length = 0;
-    actionArea = { innerHTML: 'stale action area' };
+    actionArea = createActionArea('stale action area');
     resetExploreSession();
   });
 
@@ -1298,7 +1334,7 @@ describe('explore session proceed cutover', () => {
 // pull a rebuilt runway server-side. Failed refreshes retry on bounded delays.
 describe('explore session online stall recovery', () => {
   beforeEach(() => {
-    actionArea = { innerHTML: '' };
+    actionArea = createActionArea();
     resetExploreSession();
   });
   afterEach(() => {
@@ -1309,7 +1345,7 @@ describe('explore session online stall recovery', () => {
     refreshRunwayState,
     reauthenticateExploreSession,
     adoptExploreSession,
-    takeOverExploreSession,
+    keepExploreSessionPaused,
     apiSyncExploreSession = async () => ({
       status: 'ok',
       confirmedThroughSeq: 0,
@@ -1330,7 +1366,7 @@ describe('explore session online stall recovery', () => {
       refreshRunwayState,
       reauthenticateExploreSession,
       adoptExploreSession,
-      takeOverExploreSession,
+      keepExploreSessionPaused,
     });
   }
 
@@ -1571,18 +1607,18 @@ describe('explore session online stall recovery', () => {
     for (let attempt = 0; attempt < 12; attempt += 1) await session.syncNow();
 
     assert.match(actionArea.innerHTML, /Unsynced progress can be lost if you reload/);
-    const retryButton = actionArea.renderedButtons.find(button => button.textContent === 'Retry now');
+    const retryButton = renderedButtons(actionArea).find(button => button.innerHTML === 'Retry now');
     assert.ok(retryButton, 'transport degradation renders an English Retry now control');
     const pendingBeforeClick = session.pendingCount();
-    await retryButton.click();
-    assert.equal(syncCalls, 13);
+    retryButton.click();
+    await waitFor(() => syncCalls === 13 && session.pendingCount() === 0);
     assert.equal(pendingBeforeClick, 1);
     assert.equal(session.pendingCount(), 0);
   });
 
   it('renders writer-conflict choices without a retry and only adopts after an explicit choice', async () => {
     let adopted = 0;
-    let takeover = 0;
+    let keptPaused = 0;
     initRecoveryHarness({
       apiSyncExploreSession: async () => ({
         transport: true,
@@ -1590,7 +1626,7 @@ describe('explore session online stall recovery', () => {
         body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' },
       }),
       adoptExploreSession: async () => { adopted += 1; },
-      takeOverExploreSession: async () => { takeover += 1; },
+      keepExploreSessionPaused: async () => { keptPaused += 1; },
     });
     const session = getExploreSession();
     session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
@@ -1600,13 +1636,14 @@ describe('explore session online stall recovery', () => {
     session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
     await session.syncNow();
 
-    assert.deepEqual(actionArea.renderedButtons.map(button => button.textContent), [
-      'Use latest progress',
-      'Take over this run',
+    assert.deepEqual(renderedButtons(actionArea).map(button => button.innerHTML), [
+      'Review latest progress',
+      'Keep this session paused',
     ]);
-    await actionArea.renderedButtons[0].click();
+    renderedButtons(actionArea)[0].click();
+    await waitFor(() => adopted === 1);
     assert.equal(adopted, 1);
-    assert.equal(takeover, 0);
+    assert.equal(keptPaused, 0);
     assert.equal(session.pendingCount(), 1);
   });
 
@@ -1619,7 +1656,7 @@ describe('explore session online stall recovery', () => {
         body: { error: 'expired' },
       }),
       reauthenticateExploreSession: async () => { events.push('reauthenticate'); },
-      refreshRunwayState: async () => { events.push('adopt'); },
+      adoptExploreSession: async () => { events.push('adopt'); },
     });
     const session = getExploreSession();
     session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
@@ -1630,7 +1667,34 @@ describe('explore session online stall recovery', () => {
     await session.syncNow();
 
     assert.deepEqual(events, ['reauthenticate', 'adopt']);
-    assert.equal(actionArea.renderedButtons, undefined);
+    assert.equal(renderedButtons(actionArea).length, 0);
     assert.equal(session.pendingCount(), 1);
+  });
+
+  it('uses the non-draining adoption path after re-authentication', async () => {
+    const events = [];
+    initRecoveryHarness({
+      apiSyncExploreSession: async () => ({
+        transport: true,
+        httpStatus: 401,
+        body: { error: 'expired' },
+      }),
+      reauthenticateExploreSession: async () => { events.push('reauthenticate'); },
+      adoptExploreSession: async () => { events.push('adopt'); },
+      refreshRunwayState: async () => getExploreSession().syncNow(),
+    });
+    const session = getExploreSession();
+    session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
+      acceptedActions: ['friendlyNpc.choose'],
+      actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    })] }));
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+
+    const outcome = await Promise.race([
+      session.syncNow().then(() => 'settled'),
+      new Promise(resolve => setTimeout(() => resolve('timed-out'), 20)),
+    ]);
+    assert.equal(outcome, 'settled');
+    assert.deepEqual(events, ['reauthenticate', 'adopt']);
   });
 });

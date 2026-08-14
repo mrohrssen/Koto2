@@ -1071,6 +1071,14 @@ test('reset abandons in-flight responses', async () => {
   assert.equal(checkpoints.length, 0);
 });
 
+test('exposes the adopted session epoch for safe recovery adoption', () => {
+  const session = createExploreSession({ syncRequest: async () => okResponse(0) });
+
+  session.adoptRunway(makeRunway({ sessionEpoch: 'ese_recovery_epoch11' }));
+
+  assert.equal(session.getSessionEpoch(), 'ese_recovery_epoch11');
+});
+
 test('new runway generation abandons in-flight responses and clears old pending log', async () => {
   const scheduler = makeManualScheduler();
   let release;

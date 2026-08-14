@@ -939,6 +939,31 @@ async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSe
   return data;
 }
 
+// Auth and writer recovery run from inside an active Explore drain. This path
+// intentionally bypasses drainExploreSessionBeforeStateFetch: awaiting syncNow
+// there would await the drain that is awaiting this recovery callback. It adopts
+// only the authoritative runway, preserving optimistic state and the pending log
+// until the controller schedules its fresh post-recovery drain.
+async function loadExploreSessionRecoveryState() {
+  const session = getExploreSession?.();
+  const token = captureGameStateFetchToken(session);
+  const data = await apiGetGameState({ adoptSession: true });
+  if (!isGameStateFetchCurrent(token, getExploreSession?.())) return null;
+  if (isTransientGameStateFailure(data) || isGameStateErrorResponse(data)) return null;
+  const nextRunway = data?.run?.exploreRunway;
+  // The adoptSession endpoint keeps this epoch stable. Treat a missing or changed
+  // epoch as uncertain instead of calling adoptRunway(), whose normal boundary
+  // behavior clears a log that belongs to the previous session.
+  if (session && (session.pendingCount?.() ?? 0) > 0 && (
+    !nextRunway?.sessionEpoch
+    || nextRunway.sessionEpoch !== session.getSessionEpoch?.()
+  )) return null;
+  if (data?.player && session && nextRunway) {
+    session.adoptRunway?.(nextRunway);
+  }
+  return data;
+}
+
 async function loadGameState({ adoptSession = false } = {}) {
   const data = await apiGetGameStateAfterExploreDrain('stateFetch', { adoptSession });
   // Fetch skipped because explore-session progress is still pending (see above):
@@ -2439,7 +2464,8 @@ async function initGame() {
     // into the session when the pending log is empty (see loadGameState).
     refreshRunwayState: () => loadGameState({ adoptSession: true }),
     reauthenticateExploreSession: () => auth.requestReauthentication(),
-    adoptExploreSession: () => loadGameState({ adoptSession: true }),
+    adoptExploreSession: () => loadExploreSessionRecoveryState(),
+    keepExploreSessionPaused: () => scene.showToast('This session will remain paused until you review the other device.', 3000),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {
       const result = await apiSelectArea(areaId);

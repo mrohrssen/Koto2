@@ -566,6 +566,7 @@ export function createExploreSession({
     snapshot: () => log.map(entry => cloneValue(entry)),
     isPaused,
     getPauseReason,
+    getSessionEpoch: () => sessionEpoch,
     getLocalRevision,
     getCorrectionRevision,
     consumeResultOnce,
