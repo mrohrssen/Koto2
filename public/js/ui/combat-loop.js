@@ -810,6 +810,18 @@ function clearCombatPendingFlag(pendingFlag) {
   else playerAttackPending = false;
 }
 
+function releaseCombatToAuthoritativeRecovery({
+  session,
+  owner,
+  pendingFlag,
+} = {}) {
+  if (!owner || !ownsCurrentExploreCombat(session, owner)) return false;
+  clearCombatPendingFlag(pendingFlag);
+  combatActive = false;
+  exploreCombatPlaybackRecovery = { session, owner };
+  return true;
+}
+
 function handleCreatureTurnFailure({
   label,
   error,
@@ -1051,6 +1063,7 @@ async function runSessionCreatureCombatTurn({
   turnTiming,
   playback,
   pendingFlag = 'player',
+  restartMoveSelection = startMoveSelection,
   exploreOwnerContext = null,
 } = {}) {
   const optimistic = buildSessionCreatureCombatTurn(actionType, moveChoices);
@@ -1088,7 +1101,17 @@ async function runSessionCreatureCombatTurn({
     predictedHash: optimistic.envelope.predictedHash,
   });
   if (recorded?.accepted !== true) {
-    clearCombatPendingFlag(pendingFlag);
+    if (!releaseCombatToAuthoritativeRecovery({
+      session,
+      owner: capturedOwner,
+      pendingFlag,
+    })) {
+      clearCombatPendingFlag(pendingFlag);
+      await recoverFromNullCombatPost(actionType, {
+        restartSelection: restartMoveSelection,
+      });
+      return STALE_EXPLORE_COMBAT_OWNER;
+    }
     return true;
   }
   // recordRoomAction itself advances the session revision. Capture only after
@@ -1120,19 +1143,17 @@ async function runSessionCreatureCombatTurn({
       // owned. A ready checkpoint may adopt immediately after token release,
       // so complete owner-specific cleanup below before that point. A stale
       // combat must never pause its successor.
-      if (!ownsCurrentExploreCombat(session, capturedOwner)) throw error;
       const tagged = tagAcceptedExploreCombatPlaybackFailure(error);
       // A ready drain resumes before the outer catch can run. Release this
       // turn's input ownership and mark the failed local loop inactive while
       // the playback token still fences adoption; onResume/updateUI can then
       // restart the loop from the authoritative checkpoint instead of leaving
       // a half-played UI active or clearing a successor combat's input lock.
-      clearCombatPendingFlag(pendingFlag);
-      combatActive = false;
-      exploreCombatPlaybackRecovery = {
+      if (!releaseCombatToAuthoritativeRecovery({
         session,
-        owner: { ...capturedOwner },
-      };
+        owner: capturedOwner,
+        pendingFlag,
+      })) throw error;
       session?.pause?.('combatPlaybackFailed');
       throw tagged;
     }
@@ -1208,6 +1229,7 @@ async function runOptimisticCreatureCombatTurn({
         turnTiming,
         playback,
         pendingFlag,
+        restartMoveSelection,
         exploreOwnerContext,
       });
       if (handled) {

@@ -183,6 +183,89 @@ function installBlockingAttackCard() {
   };
 }
 
+async function runRejectedSessionCombatTurn(actionType, pendingFlag) {
+  resetExploreSession();
+  const state = combatState(`combat-${actionType}`, 0, 100);
+  const harness = initCombatHarness(state);
+  const session = configureExploreSession({
+    syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: null, results: [] }),
+    schedule: () => null,
+    cancel: () => {},
+  });
+  session.adoptRunway(runway(0, `combat-${actionType}`));
+  session.recordRoomAction = () => ({
+    accepted: false,
+    reason: 'hardCap',
+    pendingCount: 50,
+  });
+  combatLoop.__combatNetworkTest.setCombatActive(true);
+  combatLoop.__combatNetworkTest.setPendingFlags({
+    player: pendingFlag === 'player',
+    enemy: pendingFlag === 'enemy',
+  });
+  let playbackCount = 0;
+  let moveSelectionRendered = false;
+
+  await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+    actionType,
+    moveChoices: actionType === 'attack'
+      ? [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }]
+      : [],
+    turnTiming: {
+      actionType,
+      startedAt: 0,
+      animationStartedAt: null,
+      requestMs: null,
+      logged: false,
+    },
+    pendingFlag,
+    playback: async () => { playbackCount += 1; },
+    startMoveSelection: () => { moveSelectionRendered = true; },
+    stopCombatLoop: () => {},
+  });
+
+  return {
+    harness,
+    playbackCount,
+    pendingFlagAfter: combatLoop.__combatNetworkTest.getPendingFlags()[pendingFlag],
+    recoveryState: combatLoop.getExploreCombatPlaybackRecoveryState(),
+    recoveryConsumed: combatLoop.consumeExploreCombatPlaybackRecovery(),
+    moveSelectionRendered,
+  };
+}
+
+test('rejected attack append releases its input lock to owner-checked authoritative recovery', async () => {
+  try {
+    const result = await runRejectedSessionCombatTurn('attack', 'player');
+
+    assert.equal(result.playbackCount, 0);
+    assert.equal(result.pendingFlagAfter, false);
+    assert.equal(result.recoveryState, 'ready');
+    assert.equal(result.recoveryConsumed, true);
+    assert.equal(result.moveSelectionRendered, false,
+      'the local prediction must not redraw before the authoritative recovery handler runs');
+  } finally {
+    combatLoop.cleanupCombat();
+    resetExploreSession();
+  }
+});
+
+test('rejected defend append releases its input lock to owner-checked authoritative recovery', async () => {
+  try {
+    const result = await runRejectedSessionCombatTurn('defend', 'enemy');
+
+    assert.equal(result.playbackCount, 0);
+    assert.equal(result.pendingFlagAfter, false);
+    assert.equal(result.recoveryState, 'ready');
+    assert.equal(result.recoveryConsumed, true);
+    assert.equal(result.moveSelectionRendered, false,
+      'the local prediction must not redraw before the authoritative recovery handler runs');
+  } finally {
+    combatLoop.cleanupCombat();
+    resetExploreSession();
+  }
+});
+
 test('response adoption does not self-deadlock inside non-playback animation work', async () => {
   const session = createExploreSession({
     syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: 1, results: [] }),

@@ -6,7 +6,7 @@
  * manages global game state, and coordinates interactions between subsystems.
  * This is the entry point loaded by game.html.
  *
- * KEY EXPORTS: None (entry point module)
+ * KEY EXPORTS: updateGameState(), updateGameContent() (behavioral test seams)
  *
  * KEY FUNCTIONS:
  * - updateUI(): Refreshes all UI components based on current game state
@@ -278,7 +278,7 @@ if (typeof window !== 'undefined') {
   window.__gameState = gameState;
 }
 
-function updateGameState(newState) {
+export function updateGameState(newState) {
   console.log('[DEBUG] updateGameState called. phase:', newState.phase, 'pendingBranch:', newState.run?.pendingBranch, 'currentRoom:', newState.run?.currentRoom);
   gameState = newState;
   store.set('gameState', gameState);
@@ -684,7 +684,7 @@ function updatePlayerHP() {
   // Player HP display is now handled by individual creature HP bars
 }
 
-function updateGameContent() {
+export function updateGameContent() {
   switch (gameState.phase) {
     case 'no_save':
       actions.clear();

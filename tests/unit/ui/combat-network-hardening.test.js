@@ -78,6 +78,10 @@ globalThis.cancelAnimationFrame = id => clearImmediate(id);
 const combatLoop = await import('../../../public/js/ui/combat-loop.js');
 const { clearSceneManager, setSceneManager } = await import('../../../public/js/scenes/scene-manager.js');
 const {
+  configureExploreSession,
+  resetExploreSession,
+} = await import('../../../public/js/ui/explore-session.js');
+const {
   configureKanjiKombatSession,
   getKanjiKombatSession,
   resetKanjiKombatSession,
@@ -108,6 +112,7 @@ describe('combat network hardening', () => {
     localStorage.clear();
     console.log = () => {};
     resetKanjiKombatSession();
+    resetExploreSession();
     initCombatLoopTestDefaults();
     combatLoop.__combatNetworkTest.setCreatureCombatApi(null);
     combatLoop.__combatNetworkTest.setSyncIndicatorDelayMs(500);
@@ -117,6 +122,7 @@ describe('combat network hardening', () => {
     console.log = originalConsoleLog;
     console.warn = originalConsoleWarn;
     resetKanjiKombatSession();
+    resetExploreSession();
     clearSceneManager();
   });
 
@@ -741,6 +747,115 @@ describe('combat network hardening', () => {
     assert.equal(recovery.recovered, true);
     assert.equal(combatCallCount, 1);
     assert.equal(stateFetchCount, 1);
+  });
+
+  it('refreshes authoritative combat when a rejected append has lost its captured owner', async () => {
+    const move = {
+      id: 'poke', name: '突く', nameEn: 'Poke', reading: 'つく', element: 'neutral',
+      category: 'damage', target: 'single_enemy', power: 1, mpCost: 0, accuracy: 100,
+    };
+    const ally = {
+      id: 'hi', uid: 'ally-hi', name: '火', nameEn: 'Fire', reading: 'ひ', element: 'fire',
+      level: 3, attack: 10, defense: 5, hp: 100, maxHp: 100, mp: 10, maxMp: 10,
+      moves: [move],
+    };
+    const enemy = {
+      ...ally,
+      id: 'mizu', uid: 'enemy-mizu', name: '水', nameEn: 'Water', reading: 'みず',
+      element: 'water', moves: [{ ...move, id: 'tap', power: 0 }],
+    };
+    const room = { id: 'room-0', type: 'encounter' };
+    const runway = {
+      sessionEpoch: 'ese_rejected_owner',
+      currentRoom: 0,
+      roomActionSeq: 1,
+      preparedRooms: [{
+        index: 0,
+        roomId: room.id,
+        actionSeq: 1,
+        room,
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['partyStats'] },
+        dependencies: ['partyStats'],
+        offlineReady: true,
+        interactionPayload: { combatId: 'combat-a' },
+      }],
+    };
+    const makeState = combatId => ({
+      phase: 'combat',
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        rooms: [room],
+        exploreRunway: runway,
+        partySkills: [],
+        itemBuffs: { xpMultiplier: 1, xpBalanceStacks: 0 },
+        crestMults: {},
+        creatureParty: { active: [ally], reserves: [] },
+      },
+      combat: {
+        active: true,
+        isCreatureCombat: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 0,
+        optimistic: {
+          combatId,
+          stateVersion: 0,
+          nextTurnSeed: 'seed-a',
+          turnSeeds: ['seed-a', 'seed-b'],
+        },
+      },
+    });
+    let currentState = makeState('combat-a');
+    const authoritativeState = makeState('combat-b');
+    let fetchCount = 0;
+    let moveSelectionRendered = false;
+    const session = configureExploreSession({
+      syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: null, results: [] }),
+      schedule: () => null,
+      cancel: () => {},
+    });
+    session.adoptRunway(runway);
+    session.recordRoomAction = () => {
+      currentState = authoritativeState;
+      return { accepted: false, reason: 'hardCap', pendingCount: 50 };
+    };
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: state => { currentState = state; },
+      fetchServerState: async ({ adoptSession }) => {
+        assert.equal(adoptSession, true);
+        fetchCount += 1;
+        return authoritativeState;
+      },
+    });
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => {
+      throw new Error('legacy verify must not run');
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ enemy: true });
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'defend',
+      moveChoices: [],
+      turnTiming: {},
+      pendingFlag: 'enemy',
+      playback: async () => { throw new Error('rejected append must not play'); },
+      startMoveSelection: () => { moveSelectionRendered = true; },
+      stopCombatLoop: () => {},
+    });
+
+    assert.equal(handled, true);
+    assert.equal(fetchCount, 1);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().enemy, false);
+    assert.equal(combatLoop.getExploreCombatPlaybackRecoveryState(), 'none');
+    assert.equal(combatLoop.consumeExploreCombatPlaybackRecovery(), false);
+    assert.equal(currentState.combat.optimistic.combatId, 'combat-b');
+    assert.equal(moveSelectionRendered, true);
   });
 
   it('session cap blocks a Kanji Kombat answer when the log is at the hard cap', async () => {
