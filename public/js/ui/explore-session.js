@@ -1,7 +1,9 @@
+import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
+
 export const EXPLORE_SESSION_HARD_CAP = 50;
 export const EXPLORE_SESSION_RESUME_AT = 40;
 export const EXPLORE_SYNC_DEBOUNCE_MS = 300;
-export const EXPLORE_SYNC_RETRY_DELAYS_MS = [500, 1000, 2000, 4000, 8000, 15000];
+export const EXPLORE_SYNC_RETRY_DELAYS_MS = [500, 1000, 2000, 4000, 8000, 15000, 30000];
 
 function defaultSchedule(fn, delay) {
   const timer = setTimeout(fn, delay);
@@ -102,6 +104,8 @@ export function createExploreSession({
   onCorrection = () => {},
   onPause = () => {},
   onResume = () => {},
+  onAuthRequired = async () => {},
+  onWriterConflict = async () => {},
   schedule = defaultSchedule,
   cancel = id => clearTimeout(id),
 } = {}) {
@@ -126,6 +130,7 @@ export function createExploreSession({
   let correctionRevision = 0;
   let handledResultActionIds = new Set();
   let actionNonce = createSessionNonce();
+  let expectedProtocolVersion = 1;
 
   function pendingCount() { return log.length; }
   function isPaused() { return paused; }
@@ -203,6 +208,7 @@ export function createExploreSession({
     const sessionBoundary = !fromSync && epochChanged;
 
     runway = cloneValue(nextRunway) ?? null;
+    if (runway?.protocolVersion === 2) expectedProtocolVersion = 2;
     sessionEpoch = nextEpoch;
     const rooms = preparedRoomsFor(runway);
     const firstRoomIndex = roomIndexFor(rooms[0]);
@@ -424,8 +430,44 @@ export function createExploreSession({
     const snapshotMaxSeq = entries.reduce((max, entry) => Math.max(max, entry.seq), 0);
 
     try {
-      const response = await syncRequest({ sessionEpoch, entries });
+      const rawResponse = await syncRequest({ sessionEpoch, entries });
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
+
+      const isTransportEnvelope = rawResponse?.transport === true;
+      const transport = isTransportEnvelope
+        ? rawResponse
+        : { httpStatus: 200, body: rawResponse };
+      const outcome = isTransportEnvelope
+        ? classifyExploreTransport({ expectedProtocolVersion, ...transport })
+        : (rawResponse?.status === 'ok' || rawResponse?.status === 'corrected'
+          ? 'settled'
+          : 'indeterminate');
+      const response = transport.body;
+
+      if (outcome === 'authRequired') {
+        enterPause('authRequired');
+        try {
+          await onAuthRequired();
+        } catch (error) {
+          console.error('[ExploreSession] authentication recovery failed', error);
+        }
+        return { ok: false };
+      }
+      if (outcome === 'conflict') {
+        enterPause('writerConflict');
+        try {
+          await onWriterConflict(response);
+        } catch (error) {
+          console.error('[ExploreSession] writer-conflict recovery failed', error);
+        }
+        return { ok: false };
+      }
+      if (outcome !== 'settled') {
+        scheduleRetry();
+        if (attempts >= 12) enterPause('transportDegraded');
+        return { ok: false };
+      }
+      if (response?.protocolVersion === 2) expectedProtocolVersion = 2;
 
       // Fence captured continuations as soon as a non-committing correction is
       // known. Combat playback may still be holding response adoption; waiting
@@ -472,14 +514,6 @@ export function createExploreSession({
         notify(onCheckpoint, response, { logEmpty: log.length === 0 });
         maybeResumeAfterDrain();
         return { ok: true, appendedAfterSnapshot };
-      } else if (
-        response?.transient === false
-        || (response && typeof response === 'object' && !response?.error)
-      ) {
-        enterPause('syncRejected');
-        return { ok: false, permanent: true };
-      } else {
-        throw new Error(response?.error || 'explore session sync failed');
       }
     } catch {
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
@@ -491,7 +525,6 @@ export function createExploreSession({
   function syncNow() {
     cancelDebounceTimer();
     cancelRetryTimer();
-    attempts = 0;
     return drain({ force: true });
   }
 
@@ -513,6 +546,7 @@ export function createExploreSession({
     forceDrainRequested = false;
     handledResultActionIds = new Set();
     actionNonce = createSessionNonce();
+    expectedProtocolVersion = 1;
   }
 
   return {
@@ -520,6 +554,7 @@ export function createExploreSession({
     currentPreparedRoom,
     recordRoomAction,
     syncNow,
+    retryNow: syncNow,
     drain,
     reset,
     pendingCount,

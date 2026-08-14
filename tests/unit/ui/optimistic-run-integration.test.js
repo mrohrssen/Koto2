@@ -91,9 +91,10 @@ describe('optimistic run action integration', () => {
   });
 
   it('uses shared spotty-sync copy for rejected explore session actions', () => {
-    assert.match(explorationSource, /const EXPLORE_SPOTTY_COPY = 'Connection is spotty\. Your progress will sync when you reconnect\.'/);
+    assert.match(explorationSource, /const EXPLORE_SPOTTY_COPY = 'Connection is spotty\. Unsynced progress can be lost if you reload\.'/);
     assert.match(explorationSource, /function showExploreSoftPause/);
     assert.match(explorationSource, /onPause: showExploreSoftPause/);
+    assert.match(explorationSource, /label: 'Retry now'/);
     assert.doesNotMatch(explorationSource, /function isCurrentPendingRunAction|function reconcilePendingRunAction|function rollbackPendingRunAction/);
   });
 

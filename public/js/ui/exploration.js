@@ -150,7 +150,7 @@ async function resetSceneForInitialRoomEntry(state, { isActive = () => true } = 
   hideEnemy();
   return true;
 }
-const EXPLORE_SPOTTY_COPY = 'Connection is spotty. Your progress will sync when you reconnect.';
+const EXPLORE_SPOTTY_COPY = 'Connection is spotty. Unsynced progress can be lost if you reload.';
 
 function applyExploreSessionRunway(response) {
   if (!response || !Object.hasOwn(response, 'exploreRunway')) return;
@@ -335,23 +335,26 @@ function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
     `${EXPLORE_SPOTTY_COPY}${detail}`,
     { autoDismiss: 1800 }
   );
+  const actionArea = globalThis.document?.getElementById?.('action-area');
+  if (actionArea && session?.pendingCount?.() > 0) {
+    actionArea.innerHTML = `<p class="explore-sync-pause-copy">${EXPLORE_SPOTTY_COPY}</p>`;
+    renderButtons([{
+      label: 'Retry now',
+      primary: true,
+      onClick: () => { void session.retryNow?.(); },
+    }], { container: actionArea, append: true });
+  }
   void triggerExploreSessionRecovery(reason);
 }
 
 async function runExploreSessionRecovery(reason) {
   const session = getExploreSession?.();
-  if (
-    !session
-    || globalThis.navigator?.onLine === false
-  ) {
+  if (!session) {
     return { recovered: false, retryable: false };
   }
 
   if ((session.pendingCount?.() ?? 0) > 0) {
     await session.syncNow({ reason: 'onlineRecovery' });
-  }
-  if (session.getPauseReason?.() === 'syncRejected') {
-    return { recovered: false, retryable: false };
   }
   if ((session.pendingCount?.() ?? 0) > 0) {
     session.pause?.('syncPending');
@@ -716,6 +719,8 @@ export function init(callbacks) {
       onCorrection: onExploreSessionCorrection,
       onPause: showExploreSoftPause,
       onResume: hideExploreSoftPause,
+      onAuthRequired: async () => { await refreshRunwayState?.(); },
+      onWriterConflict: async () => { await refreshRunwayState?.(); },
     });
     wireExploreSessionRecoveryDrains();
   }

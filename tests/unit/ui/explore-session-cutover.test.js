@@ -1451,7 +1451,7 @@ describe('explore session online stall recovery', () => {
     }
   });
 
-  it('cancels an armed retry when an explicit recovery is permanently rejected', async () => {
+  it('keeps an armed retry when an explicit recovery remains indeterminate', async () => {
     const originalSetTimeout = globalThis.setTimeout;
     const originalClearTimeout = globalThis.clearTimeout;
     const timers = [];
@@ -1512,8 +1512,8 @@ describe('explore session online stall recovery', () => {
         }).accepted,
         true,
       );
-      const permanentOutcome = await triggerExploreSessionRecovery();
-      assert.deepEqual(permanentOutcome, { recovered: false, retryable: false });
+      const indeterminateOutcome = await triggerExploreSessionRecovery();
+      assert.deepEqual(indeterminateOutcome, { recovered: false, retryable: true });
       assert.equal(syncCalls, 1);
       assert.equal(getExploreSession().pendingCount(), 1);
 
@@ -1521,14 +1521,14 @@ describe('explore session online stall recovery', () => {
         recoveryTimer.fn();
         await triggerExploreSessionRecovery();
       }
-      assert.equal(recoveryTimer.cancelled, true);
-      assert.equal(syncCalls, 1, 'the stale retry must not issue another sync');
-      assert.equal(refreshCalls, 1, 'the stale retry must not issue another refresh');
+      assert.equal(recoveryTimer.cancelled, false);
+      assert.equal(syncCalls, 2, 'the scheduled retry must keep attempting sync');
+      assert.equal(refreshCalls, 1, 'pending sync does not refresh the runway');
 
       allowSync = true;
       const laterExplicitOutcome = await triggerExploreSessionRecovery();
       assert.deepEqual(laterExplicitOutcome, { recovered: true, retryable: false });
-      assert.equal(syncCalls, 2, 'a later explicit recovery signal may retry once');
+      assert.equal(syncCalls, 3, 'a later explicit recovery signal may retry once');
       assert.equal(getExploreSession().pendingCount(), 0);
       assert.equal(getExploreSession().isPaused(), false);
     } finally {

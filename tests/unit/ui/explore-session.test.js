@@ -130,7 +130,7 @@ test('exports explore session contract constants', () => {
   assert.equal(EXPLORE_SESSION_HARD_CAP, 50);
   assert.equal(EXPLORE_SESSION_RESUME_AT, 40);
   assert.equal(EXPLORE_SYNC_DEBOUNCE_MS, 300);
-  assert.deepEqual(EXPLORE_SYNC_RETRY_DELAYS_MS, [500, 1000, 2000, 4000, 8000, 15000]);
+  assert.deepEqual(EXPLORE_SYNC_RETRY_DELAYS_MS, [500, 1000, 2000, 4000, 8000, 15000, 30000]);
 });
 
 test('records actions with room identity and predicted effects', () => {
@@ -826,48 +826,36 @@ test('network failure retries with backoff and keeps the log', async () => {
   assert.equal(scheduler.delays()[0], EXPLORE_SYNC_RETRY_DELAYS_MS[1]);
 });
 
-test('permanent and malformed sync responses pause without retry while corrections still apply', async () => {
-  for (const response of [
-    { error: 'forbidden', httpStatus: 403, transient: false },
-    { unexpected: 'malformed 2xx body' },
-  ]) {
-    const scheduler = makeManualScheduler();
-    const session = createExploreSession({
-      syncRequest: async () => response,
-      schedule: scheduler.schedule,
-      cancel: scheduler.cancel,
-    });
-    session.adoptRunway(makeRunway());
-    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
-
-    await session.syncNow();
-
-    assert.equal(session.pendingCount(), 1);
-    assert.equal(session.getPauseReason(), 'syncRejected');
-    assert.equal(scheduler.delays().includes(500), false);
-  }
-
-  let correctionCalls = 0;
-  const correctedSession = createExploreSession({
-    syncRequest: async () => ({
-      status: 'corrected',
-      error: 'HTTP 409',
-      httpStatus: 409,
-      transient: false,
-      confirmedThroughSeq: null,
-      rejectedSeq: 1,
-      reason: 'server_correction',
-      results: [],
-      exploreRunway: makeRunway(),
-    }),
-    onCorrection: () => { correctionCalls += 1; },
+test('indeterminate sync responses stay scheduled through degraded transport and retry now drains immediately', async () => {
+  const timers = [];
+  let syncCalls = 0;
+  const session = createExploreSession({
+    syncRequest: async () => {
+      syncCalls += 1;
+      return { transport: true, httpStatus: 200, body: { unexpected: 'malformed 2xx body' } };
+    },
+    schedule: (fn, delay) => {
+      timers.push({ fn, delay });
+      return timers.length - 1;
+    },
+    cancel: id => { if (timers[id]) timers[id].fn = null; },
   });
-  correctedSession.adoptRunway(makeRunway());
-  correctedSession.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
-  await correctedSession.syncNow();
-  assert.equal(correctionCalls, 1);
-  assert.equal(correctedSession.pendingCount(), 0);
-  assert.notEqual(correctedSession.getPauseReason(), 'syncRejected');
+  session.adoptRunway(makeRunway());
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+
+  for (let attempt = 1; attempt <= 100; attempt += 1) {
+    await session.syncNow();
+    const timer = timers.at(-1);
+    assert.equal(typeof timer.fn, 'function', `attempt ${attempt} remains scheduled`);
+    if ([12, 13, 100].includes(attempt)) assert.equal(timer.delay, 30_000);
+  }
+  assert.equal(session.pendingCount(), 1);
+  assert.equal(session.getPauseReason(), 'transportDegraded');
+
+  const callsBeforeRetry = syncCalls;
+  await session.retryNow();
+  assert.equal(syncCalls, callsBeforeRetry + 1);
+  assert.equal(session.pendingCount(), 1);
 });
 
 test('corrected response clears the log, notifies, and adopts response runway', async () => {

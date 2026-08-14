@@ -915,20 +915,45 @@ async function syncKanjiKombatSession({ sessionEpoch, entries }) {
   });
 }
 
-async function syncExploreSession({ sessionEpoch, entries }) {
-  const response = await apiCall(
-    '/explore/sync',
-    'POST',
-    { sessionEpoch, entries },
-    null,
-    {
-      bypassLoadingGate: true,
-      returnErrorBody: true,
-      classifyHttpErrors: true,
-      requireObjectResponse: true,
-    },
-  );
-  return response || { error: 'network_unavailable', transient: true };
+async function syncExploreSession({ sessionEpoch, entries, timeoutMs = DEFAULT_API_TIMEOUT_MS }) {
+  const controller = new AbortController();
+  const timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  try {
+    const response = await fetch(`${PLATFORM.apiBase}/api/game/explore/sync`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ sessionEpoch, entries }),
+      signal: controller.signal,
+    });
+    onApiSuccess();
+    let body = null;
+    let parseError = null;
+    try {
+      body = await response.json();
+    } catch (error) {
+      parseError = error;
+    }
+
+    if (response.status === 401 && !hasRedirectedFor401) {
+      hasRedirectedFor401 = true;
+      localStorage.removeItem('authToken');
+      sessionStorage.setItem('sessionExpiredMsg', 'Session expired, please log in again');
+      window.location.href = '/';
+    }
+    return { transport: true, httpStatus: response.status, body, parseError };
+  } catch (error) {
+    if (isConnectionFailure(error)) onApiFailure();
+    return {
+      transport: true,
+      httpStatus: 0,
+      body: null,
+      parseError: null,
+      networkError: error?.name === 'AbortError' ? null : error,
+      aborted: error?.name === 'AbortError',
+    };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 }
 
 async function getKanjiKombatLeaderboard(period = '24h') {

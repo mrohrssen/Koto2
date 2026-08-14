@@ -151,31 +151,69 @@ describe('api network hardening', () => {
       sessionEpoch: 'ese_1111111111111111',
       entries: [{}],
     });
-    assert.equal(correction.status, 'corrected');
+    assert.equal(correction.transport, true);
     assert.equal(correction.httpStatus, 409);
-    assert.equal(correction.transient, false);
+    assert.equal(correction.body.status, 'corrected');
+    assert.equal(correction.body.reason, 'server_correction');
   });
 
-  it('returns permanent auth and malformed-2xx Explore sync responses', async () => {
+  it('preserves Explore transport status and JSON parse failures for recovery', async () => {
     const api = await import('../../public/js/api.js');
     globalThis.fetch = mock.fn(async () => jsonResponse({ error: 'expired' }, 401));
     const auth = await api.syncExploreSession({
       sessionEpoch: 'ese_1111111111111111',
       entries: [{}],
     });
-    assert.equal(auth.httpStatus, 401);
-    assert.equal(auth.transient, false);
+    assert.deepEqual(auth, {
+      transport: true,
+      httpStatus: 401,
+      body: { error: 'expired' },
+      parseError: null,
+    });
     assert.equal(globalThis.window.location.href, '/');
 
-    globalThis.fetch = mock.fn(async () => jsonResponse(null, 200));
+    globalThis.fetch = mock.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => { throw new SyntaxError('Unexpected token <'); },
+    }));
     const malformed = await api.syncExploreSession({
       sessionEpoch: 'ese_1111111111111111',
       entries: [{}],
     });
-    assert.deepEqual(malformed, {
-      error: 'invalid_response',
-      httpStatus: 200,
-      transient: false,
+    assert.equal(malformed.transport, true);
+    assert.equal(malformed.httpStatus, 200);
+    assert.equal(malformed.body, null);
+    assert.ok(malformed.parseError instanceof SyntaxError);
+  });
+
+  it('retains Explore network and abort faults as transport outcomes', async () => {
+    const api = await import('../../public/js/api.js');
+    globalThis.fetch = mock.fn(async () => { throw new TypeError('lost'); });
+    const network = await api.syncExploreSession({ sessionEpoch: 'ese_1111111111111111', entries: [{}] });
+    assert.equal(network.transport, true);
+    assert.equal(network.httpStatus, 0);
+    assert.ok(network.networkError instanceof TypeError);
+
+    globalThis.fetch = mock.fn((_url, options) => new Promise((_resolve, reject) => {
+      options.signal.addEventListener('abort', () => {
+        const error = new Error('aborted');
+        error.name = 'AbortError';
+        reject(error);
+      });
+    }));
+    const aborted = await api.syncExploreSession({
+      sessionEpoch: 'ese_1111111111111111',
+      entries: [{}],
+      timeoutMs: 1,
+    });
+    assert.deepEqual(aborted, {
+      transport: true,
+      httpStatus: 0,
+      body: null,
+      parseError: null,
+      networkError: null,
+      aborted: true,
     });
   });
 
