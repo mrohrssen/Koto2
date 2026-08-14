@@ -858,6 +858,137 @@ describe('combat network hardening', () => {
     assert.equal(moveSelectionRendered, true);
   });
 
+  it('discards a delayed missing-owner refresh after a newer combat is adopted', async () => {
+    const move = {
+      id: 'poke', name: '突く', nameEn: 'Poke', reading: 'つく', element: 'neutral',
+      category: 'damage', target: 'single_enemy', power: 1, mpCost: 0, accuracy: 100,
+    };
+    const ally = {
+      id: 'hi', uid: 'ally-hi', name: '火', nameEn: 'Fire', reading: 'ひ', element: 'fire',
+      level: 3, attack: 10, defense: 5, hp: 100, maxHp: 100, mp: 10, maxMp: 10,
+      moves: [move],
+    };
+    const enemy = {
+      ...ally,
+      id: 'mizu', uid: 'enemy-mizu', name: '水', nameEn: 'Water', reading: 'みず',
+      element: 'water', moves: [{ ...move, id: 'tap', power: 0 }],
+    };
+    const room = { id: 'room-0', type: 'encounter' };
+    const makeRunway = combatId => ({
+      sessionEpoch: 'ese_delayed_owner',
+      currentRoom: 0,
+      roomActionSeq: 1,
+      preparedRooms: [{
+        index: 0,
+        roomId: room.id,
+        actionSeq: 1,
+        room,
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['partyStats'] },
+        dependencies: ['partyStats'],
+        offlineReady: true,
+        interactionPayload: { combatId },
+      }],
+    });
+    const makeState = combatId => ({
+      phase: 'combat',
+      room,
+      run: {
+        active: true,
+        mode: 'standard',
+        currentRoom: 0,
+        rooms: [room],
+        exploreRunway: makeRunway(combatId),
+        partySkills: [],
+        itemBuffs: { xpMultiplier: 1, xpBalanceStacks: 0 },
+        crestMults: {},
+        creatureParty: { active: [ally], reserves: [] },
+      },
+      combat: {
+        active: true,
+        isCreatureCombat: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 0,
+        optimistic: {
+          combatId,
+          stateVersion: 0,
+          nextTurnSeed: 'seed-a',
+          turnSeeds: ['seed-a', 'seed-b'],
+        },
+      },
+    });
+    const stateA = makeState('combat-a');
+    const stateB = makeState('combat-b');
+    const stateC = makeState('combat-c');
+    let currentState = stateA;
+    let updateCount = 0;
+    let sceneSyncCount = 0;
+    let moveSelectionCount = 0;
+    let releaseFetch;
+    let markFetchStarted;
+    const fetchStarted = new Promise(resolveStarted => { markFetchStarted = resolveStarted; });
+    const delayedFetch = new Promise(resolveFetch => { releaseFetch = resolveFetch; });
+    const session = configureExploreSession({
+      syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: null, results: [] }),
+      schedule: () => null,
+      cancel: () => {},
+    });
+    session.adoptRunway(makeRunway('combat-a'));
+    session.recordRoomAction = () => {
+      currentState = stateB;
+      session.adoptRunway(makeRunway('combat-b'));
+      return { accepted: false, reason: 'hardCap', pendingCount: 50 };
+    };
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: state => {
+        updateCount += 1;
+        currentState = state;
+      },
+      fetchServerState: async ({ adoptSession }) => {
+        assert.equal(adoptSession, true);
+        markFetchStarted();
+        return delayedFetch;
+      },
+    });
+    setSceneManager({
+      transitioning: false,
+      currentScene: {
+        disposed: false,
+        _exiting: false,
+        syncCreatures: async () => { sceneSyncCount += 1; },
+      },
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ enemy: true });
+
+    const turn = combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'defend',
+      moveChoices: [],
+      turnTiming: {},
+      pendingFlag: 'enemy',
+      playback: async () => { throw new Error('rejected append must not play'); },
+      startMoveSelection: () => { moveSelectionCount += 1; },
+      stopCombatLoop: () => {},
+    });
+    await fetchStarted;
+
+    currentState = stateC;
+    session.adoptRunway(makeRunway('combat-c'));
+    releaseFetch(stateB);
+    const handled = await turn;
+
+    assert.equal(handled, true);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().enemy, false);
+    assert.equal(currentState.combat.optimistic.combatId, 'combat-c');
+    assert.equal(updateCount, 0, 'the stale B response must not update shared game state');
+    assert.equal(sceneSyncCount, 0, 'the stale B response must not mutate the current scene');
+    assert.equal(moveSelectionCount, 0, 'the stale B response must not unlock combat C');
+    assert.equal(combatLoop.getExploreCombatPlaybackRecoveryState(), 'none');
+  });
+
   it('session cap blocks a Kanji Kombat answer when the log is at the hard cap', async () => {
     // Configure a never-resolving sync so the log fills without draining.
     configureKanjiKombatSession({

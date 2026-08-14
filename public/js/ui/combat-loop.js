@@ -61,6 +61,10 @@ import {
 import { backfillPartyLearnset } from '../../../src/shared/combat/learnset-backfill.js';
 import { getKanjiKombatSession } from './kanji-kombat-session.js';
 import { getExploreSession } from './explore-session.js';
+import {
+  captureExploreRecoveryToken,
+  isExploreRecoveryCurrent,
+} from './game-state-adoption.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -492,9 +496,21 @@ async function recoverFromNullCombatPost(actionType, options = {}) {
     return { recovered: false, outcome: 'recovery_failed', combatActive };
   }
 
+  const isCurrent = typeof options.isCurrent === 'function'
+    ? options.isCurrent
+    : () => true;
+  const superseded = () => ({
+    recovered: false,
+    outcome: 'recovery_superseded',
+    combatActive,
+  });
+  if (!isCurrent()) return superseded();
   const merged = mergeAuthoritativeCombatState(getGameState(), { state: fetchedState });
+  if (!isCurrent()) return superseded();
   updateGameState(merged);
+  if (!isCurrent()) return superseded();
   await syncCombatSceneToState(merged);
+  if (!isCurrent()) return superseded();
   return finishRecoveredCombatState(merged, actionType, 'null_post_state_recovered', options);
 }
 
@@ -625,6 +641,26 @@ function sameCorrectedCombatOwner(left, right) {
   return hasRoomIdentity
     && left?.roomIndex === right?.roomIndex
     && left?.roomId === right?.roomId;
+}
+
+function captureCombatRecoveryCurrentness(session) {
+  const state = getGameState();
+  return {
+    explore: captureExploreRecoveryToken(session),
+    owner: capturedCombatCleanupOwner(state),
+    state,
+  };
+}
+
+function isCombatRecoveryCurrent(token) {
+  if (!isExploreRecoveryCurrent(token?.explore, getExploreSession?.())) return false;
+  const owner = token?.owner;
+  const hasKnownOwner = owner?.combatId != null
+    || owner?.roomIndex != null
+    || owner?.roomId != null;
+  return hasKnownOwner
+    ? ownsCombatCleanupContinuation(owner)
+    : getGameState() === token?.state;
 }
 
 /**
@@ -1107,8 +1143,10 @@ async function runSessionCreatureCombatTurn({
       pendingFlag,
     })) {
       clearCombatPendingFlag(pendingFlag);
+      const recoveryCurrentness = captureCombatRecoveryCurrentness(session);
       await recoverFromNullCombatPost(actionType, {
         restartSelection: restartMoveSelection,
+        isCurrent: () => isCombatRecoveryCurrent(recoveryCurrentness),
       });
       return STALE_EXPLORE_COMBAT_OWNER;
     }

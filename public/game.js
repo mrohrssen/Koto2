@@ -534,6 +534,15 @@ function updateStatusBar() {
 }
 
 const combatRecoveryGate = createCombatRecoveryGate();
+const defaultCombatRecoveryStarter = options => combatLoopUI.startCombatLoop(options);
+let combatRecoveryStarter = defaultCombatRecoveryStarter;
+
+export function setCombatRecoveryStarter(starter = null) {
+  combatRecoveryStarter = typeof starter === 'function'
+    ? starter
+    : defaultCombatRecoveryStarter;
+}
+
 let postCombatShopRecoveryDone = false;
 
 function showNpcDialogueRecoveryRetry(retry) {
@@ -793,7 +802,7 @@ export function updateGameContent() {
           playbackRecoveryHeld,
         })) {
           combatRecoveryGate.markDone(gameState);
-          combatLoopUI.startCombatLoop({ recovery: true });
+          combatRecoveryStarter({ recovery: true });
         }
       }
       break;

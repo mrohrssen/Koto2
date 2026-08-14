@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-globalThis.window = { __intentLog: null };
+globalThis.window = {
+  __intentLog: null,
+  location: { hostname: 'localhost' },
+  addEventListener: () => {},
+};
 globalThis.document = {
   getElementById: () => null,
   querySelector: () => null,
@@ -23,6 +27,7 @@ globalThis.requestAnimationFrame = callback => setImmediate(() => callback(Date.
 globalThis.cancelAnimationFrame = id => clearImmediate(id);
 
 const combatLoop = await import('../../../public/js/ui/combat-loop.js');
+const game = await import('../../../public/game.js');
 const {
   configureExploreSession,
   createExploreSession,
@@ -198,13 +203,26 @@ async function runRejectedSessionCombatTurn(actionType, pendingFlag) {
     reason: 'hardCap',
     pendingCount: 50,
   });
-  combatLoop.__combatNetworkTest.setCombatActive(true);
+  assert.equal(typeof game.setCombatRecoveryStarter, 'function');
+  let recoveryStarts = 0;
+  let moveSelectionRendered = false;
+  game.setCombatRecoveryStarter(() => {
+    recoveryStarts += 1;
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    moveSelectionRendered = true;
+  });
+  game.updateGameState(state);
+  combatLoop.__combatNetworkTest.setCombatActive(false);
+  game.updateGameContent();
+  assert.equal(recoveryStarts, 1,
+    'ordinary page-reload recovery must consume the combat owner gate first');
+
   combatLoop.__combatNetworkTest.setPendingFlags({
     player: pendingFlag === 'player',
     enemy: pendingFlag === 'enemy',
   });
   let playbackCount = 0;
-  let moveSelectionRendered = false;
+  moveSelectionRendered = false;
 
   await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
     actionType,
@@ -220,47 +238,60 @@ async function runRejectedSessionCombatTurn(actionType, pendingFlag) {
     },
     pendingFlag,
     playback: async () => { playbackCount += 1; },
-    startMoveSelection: () => { moveSelectionRendered = true; },
+    startMoveSelection: () => {
+      throw new Error('the optimistic turn must not redraw outside the game phase handler');
+    },
     stopCombatLoop: () => {},
   });
 
+  const recoveryStateBeforeHandler = combatLoop.getExploreCombatPlaybackRecoveryState();
+  game.updateGameContent();
+  const recoveryStateAfterHandler = combatLoop.getExploreCombatPlaybackRecoveryState();
+
   return {
-    harness,
     playbackCount,
     pendingFlagAfter: combatLoop.__combatNetworkTest.getPendingFlags()[pendingFlag],
-    recoveryState: combatLoop.getExploreCombatPlaybackRecoveryState(),
-    recoveryConsumed: combatLoop.consumeExploreCombatPlaybackRecovery(),
+    recoveryStateBeforeHandler,
+    recoveryStateAfterHandler,
+    permitStillConsumable: combatLoop.consumeExploreCombatPlaybackRecovery(),
+    recoveryStarts,
     moveSelectionRendered,
   };
 }
 
-test('rejected attack append releases its input lock to owner-checked authoritative recovery', async () => {
+test('rejected attack append reaches move selection through the real game combat phase handler', async () => {
   try {
     const result = await runRejectedSessionCombatTurn('attack', 'player');
 
     assert.equal(result.playbackCount, 0);
     assert.equal(result.pendingFlagAfter, false);
-    assert.equal(result.recoveryState, 'ready');
-    assert.equal(result.recoveryConsumed, true);
-    assert.equal(result.moveSelectionRendered, false,
-      'the local prediction must not redraw before the authoritative recovery handler runs');
+    assert.equal(result.recoveryStateBeforeHandler, 'ready');
+    assert.equal(result.recoveryStateAfterHandler, 'none');
+    assert.equal(result.permitStillConsumable, false);
+    assert.equal(result.recoveryStarts, 2,
+      'the real permit must bypass the already-consumed page-reload gate');
+    assert.equal(result.moveSelectionRendered, true);
   } finally {
+    game.setCombatRecoveryStarter?.(null);
     combatLoop.cleanupCombat();
     resetExploreSession();
   }
 });
 
-test('rejected defend append releases its input lock to owner-checked authoritative recovery', async () => {
+test('rejected defend append reaches move selection through the real game combat phase handler', async () => {
   try {
     const result = await runRejectedSessionCombatTurn('defend', 'enemy');
 
     assert.equal(result.playbackCount, 0);
     assert.equal(result.pendingFlagAfter, false);
-    assert.equal(result.recoveryState, 'ready');
-    assert.equal(result.recoveryConsumed, true);
-    assert.equal(result.moveSelectionRendered, false,
-      'the local prediction must not redraw before the authoritative recovery handler runs');
+    assert.equal(result.recoveryStateBeforeHandler, 'ready');
+    assert.equal(result.recoveryStateAfterHandler, 'none');
+    assert.equal(result.permitStillConsumable, false);
+    assert.equal(result.recoveryStarts, 2,
+      'the real permit must bypass the already-consumed page-reload gate');
+    assert.equal(result.moveSelectionRendered, true);
   } finally {
+    game.setCombatRecoveryStarter?.(null);
     combatLoop.cleanupCombat();
     resetExploreSession();
   }
