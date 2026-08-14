@@ -47,6 +47,41 @@ describe('grammar-matcher', () => {
     assert.ok(!ids('犬がいる。').includes('n5-te-iru-progressive'));
   });
 
+  it('matches 的 across supported analyses without matching lexical nouns', () => {
+    const cases = [
+      { name: 'split suffix', tokens: tokenized('彼は論理的に話す。'), expected: true },
+      { name: 'fused 形状詞', tokens: tokenized('静的なページを作る。'), expected: true },
+      { name: 'fused 名詞 / 形状詞可能', tokens: tokenized('日本的な雰囲気がある。'), expected: true },
+      { name: '目的 with particle に', tokens: tokenized('目的に進む。'), expected: false },
+      { name: '多目的 with particle に', tokens: tokenized('多目的に使う。'), expected: false },
+      { name: '標的 with particle に', tokens: tokenized('標的にする。'), expected: false },
+      {
+        name: 'the lexical noun 的 with particle に',
+        tokens: [
+          { surface: '的', pos0: '名詞', pos2: '形状詞可能' },
+          { surface: 'に', baseForm: 'に', pos0: '助詞' },
+        ],
+        expected: false,
+      },
+      {
+        name: 'a non-形状詞可能 noun with copular に',
+        tokens: [
+          { surface: '目的', pos0: '名詞', pos2: '一般' },
+          { surface: 'に', baseForm: 'だ', pos0: '助動詞' },
+        ],
+        expected: false,
+      },
+    ];
+
+    for (const { name, tokens, expected } of cases) {
+      const matched = findGrammarMatches(tokens, {
+        catalog: loadGrammarCatalog(),
+        matchers: loadGrammarMatchers(),
+      }).some(match => match.grammarId === 'n3-l02-15');
+      assert.equal(matched, expected, name);
+    }
+  });
+
   it('supports optional matcher tokens for reusable particle families', () => {
     const catalog = [{
       id: 'test-topic-with-optional-suffix',

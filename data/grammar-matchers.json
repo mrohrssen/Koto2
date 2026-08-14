@@ -25927,6 +25927,40 @@
     ]
   },
   {
+    "grammarId": "n3-l02-15",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surfaceSuffix": "的",
+        "pos0": "名詞",
+        "pos2": "形状詞可能"
+      },
+      {
+        "surfaceOneOf": [
+          "な",
+          "に"
+        ],
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surface": "的"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "grammarId": "n3-l02-18",
     "type": "token-sequence",
     "priority": 5,
