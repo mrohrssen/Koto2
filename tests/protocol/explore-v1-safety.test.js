@@ -41,12 +41,13 @@ describe('Explore V1 protocol safety', { concurrency: false }, () => {
 
     const oracle = await driver.readOracle();
     assert.equal(oracle.pendingCount, 0);
-    assert.deepEqual(oracle.requestedActionIds.slice(0, 2), [
+    assert.deepEqual(oracle.requestedActionIds, [
       choose.entry.actionId,
       choose.entry.actionId,
     ]);
     assert.deepEqual(oracle.committedRecordedActionIds, [choose.entry.actionId]);
     assert.deepEqual(oracle.silentDeletedActionIds, []);
+    assert.equal(oracle.duplicateGameEffects, 0);
     assert.equal(oracle.missingGameEffects, 0);
     assert.equal(oracle.correctedSyncsUnderPureTransport, 0);
   });
@@ -59,12 +60,13 @@ describe('Explore V1 protocol safety', { concurrency: false }, () => {
 
     const oracle = await driver.readOracle();
     assert.equal(oracle.pendingCount, 0);
-    assert.deepEqual(oracle.requestedActionIds.slice(0, 2), [
+    assert.deepEqual(oracle.requestedActionIds, [
       choose.entry.actionId,
       choose.entry.actionId,
     ]);
     assert.deepEqual(oracle.committedRecordedActionIds, [choose.entry.actionId]);
     assert.deepEqual(oracle.silentDeletedActionIds, []);
+    assert.equal(oracle.duplicateGameEffects, 0);
     assert.equal(oracle.missingGameEffects, 0);
     assert.equal(oracle.correctedSyncsUnderPureTransport, 0);
   });
@@ -99,17 +101,69 @@ describe('Explore V1 protocol safety', { concurrency: false }, () => {
     const proceed = driver.recordProceed();
     await driver.flush();
 
-    const oracle = await driver.readOracle();
     assert.equal(choose.accepted, true);
-    assert.equal(blockedProceed.accepted, false);
-    assert.equal(blockedProceed.reason, 'dependency');
     assert.equal(proceed.accepted, true);
-    assert.ok(oracle.observedPauseReasons.includes('dependency'));
-    assert.equal(oracle.unrecoverablePauses, 0);
-    assert.equal(oracle.pendingCount, 0);
-    assert.equal(oracle.duplicateGameEffects, 0);
-    assert.equal(oracle.missingGameEffects, 0);
+    const actionNotAccepted = driver.session.recordRoomAction('not-a-real-action', {});
+
+    const state = await driver.client.getState();
+    assert.equal(state.status, 200);
+    driver.session.adoptRunway(state.body.run.exploreRunway);
+
+    const room = driver.session.currentPreparedRoom();
+    const itemId = room?.interactionPayload?.offered?.[0]?.id;
+    assert.ok(itemId, 'hard-cap stimulus requires a real friendly NPC offer');
+    const hardCapResults = Array.from({ length: 50 }, () => (
+      driver.session.recordRoomAction('friendlyNpc.choose', {
+        itemId,
+        targetCreatureIndex: 0,
+      })
+    ));
+    assert.equal(hardCapResults.every(result => result.accepted), true);
+    const hardCapBlocked = driver.session.recordRoomAction('friendlyNpc.choose', {
+      itemId,
+      targetCreatureIndex: 0,
+    });
+
+    driver.session.reset();
+    const noPreparedRoom = driver.session.recordRoomAction('proceed', {});
+
+    const pauseCases = [
+      { expected: 'dependency', accepted: blockedProceed.accepted, actual: blockedProceed.reason },
+      { expected: 'actionNotAccepted', accepted: actionNotAccepted.accepted, actual: actionNotAccepted.reason },
+      { expected: 'hardCap', accepted: hardCapBlocked.accepted, actual: hardCapBlocked.reason },
+      { expected: 'noPreparedRoom', accepted: noPreparedRoom.accepted, actual: noPreparedRoom.reason },
+    ];
+    for (const pauseCase of pauseCases) {
+      assert.equal(pauseCase.accepted, false, `${pauseCase.expected} must block input`);
+      assert.equal(pauseCase.actual, pauseCase.expected);
+    }
+
+    const pauseOracle = await driver.readOracle();
+    assert.deepEqual([...new Set(pauseOracle.observedPauseReasons)].sort(), [
+      'actionNotAccepted',
+      'dependency',
+      'hardCap',
+      'noPreparedRoom',
+    ]);
+    assert.equal(
+      pauseOracle.observedPausePolicies.length,
+      pauseOracle.observedPauseReasons.length,
+    );
+    for (const observed of pauseOracle.observedPausePolicies) {
+      assert.ok(observed.policy, `${observed.reason} must have a mapped policy`);
+      assert.equal(
+        observed.policy.automaticRecovery === true || observed.policy.manualRecovery === true,
+        true,
+        `${observed.reason} must permit an automatic or manual recovery action`,
+      );
+      assert.ok(observed.policy.resumeWhen, `${observed.reason} must define when play resumes`);
+    }
+    assert.deepEqual(pauseOracle.pausePolicyViolations, []);
+    assert.equal(pauseOracle.unrecoverablePauses, 0);
+    assert.equal(pauseOracle.pendingCount, 0);
+    assert.equal(pauseOracle.duplicateGameEffects, 0);
+    assert.equal(pauseOracle.missingGameEffects, 0);
     assert.equal(afterDelayedChoose, 425);
-    assert.ok(oracle.replayedActionIds.includes(proceed.entry.actionId));
+    assert.ok(pauseOracle.replayedActionIds.includes(proceed.entry.actionId));
   });
 });

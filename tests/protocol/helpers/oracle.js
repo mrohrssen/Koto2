@@ -67,6 +67,16 @@ export async function readProtocolOracle({
   const appliedChoiceEffects = choiceEffectSample
     ? choiceEffectSample.itemsCollected - initialItemsCollected
     : 0;
+  const observedPausePolicies = pauses.map(event => ({
+    reason: event.reason,
+    policy: pauseReasonInfo(event.reason),
+  }));
+  const pausePolicyViolations = observedPausePolicies.filter(({ policy }) => (
+    !policy
+    || (policy.automaticRecovery !== true && policy.manualRecovery !== true)
+    || typeof policy.resumeWhen !== 'string'
+    || policy.resumeWhen.length === 0
+  ));
 
   return {
     recordedActionIds,
@@ -80,7 +90,9 @@ export async function readProtocolOracle({
     duplicateExternalEffects: 0,
     correctedSyncsUnderPureTransport: corrections.length,
     observedPauseReasons: pauses.map(event => event.reason),
-    unrecoverablePauses: pauses.filter(event => !pauseReasonInfo(event.reason)).length,
+    observedPausePolicies,
+    pausePolicyViolations,
+    unrecoverablePauses: pausePolicyViolations.length,
     serverRoomAdvance: (stateResponse.body.run?.currentRoom ?? initialRoom) - initialRoom,
     serverState: stateResponse.body,
   };
