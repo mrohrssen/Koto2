@@ -127,6 +127,7 @@ export function createExploreSession({
   let pauseReason = null;
   let generation = 0;
   let localRevision = 0;
+  let runwayRevision = 0;
   let correctionRevision = 0;
   let handledResultActionIds = new Set();
   let actionNonce = createSessionNonce();
@@ -201,6 +202,7 @@ export function createExploreSession({
     nextRunway,
     { fromSync = false, deferResume = false } = {},
   ) {
+    runwayRevision += 1;
     const previousEpoch = sessionEpoch;
     const nextEpoch = nextRunway?.sessionEpoch ?? null;
     const epochChanged = Boolean(previousEpoch)
@@ -536,6 +538,7 @@ export function createExploreSession({
   function reset() {
     generation += 1;
     localRevision += 1;
+    runwayRevision += 1;
     activeDrainToken += 1;
     activeDrainPromise = null;
     clearTimers();
@@ -567,6 +570,8 @@ export function createExploreSession({
     isPaused,
     getPauseReason,
     getSessionEpoch: () => sessionEpoch,
+    getGeneration: () => generation,
+    getRunwayRevision: () => runwayRevision,
     getLocalRevision,
     getCorrectionRevision,
     consumeResultOnce,

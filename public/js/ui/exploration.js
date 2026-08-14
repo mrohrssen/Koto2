@@ -754,8 +754,7 @@ export function init(callbacks) {
         if (typeof reauthenticateExploreSession !== 'function') return false;
         await reauthenticateExploreSession();
         if (typeof adoptExploreSession !== 'function') return false;
-        await adoptExploreSession();
-        return true;
+        return (await adoptExploreSession()) === true;
       },
       onWriterConflict: async () => {},
     });

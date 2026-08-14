@@ -87,6 +87,7 @@ import {
   isGameStateErrorResponse,
   isGameStateFetchCurrent,
 } from './js/ui/game-state-adoption.js';
+import { adoptExploreSessionRecoveryState } from './js/ui/explore-session-recovery.js';
 import { buildLocalCombatFromStart } from '../src/shared/combat/local-combat-start.js';
 import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
@@ -945,23 +946,13 @@ async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSe
 // only the authoritative runway, preserving optimistic state and the pending log
 // until the controller schedules its fresh post-recovery drain.
 async function loadExploreSessionRecoveryState() {
-  const session = getExploreSession?.();
-  const token = captureGameStateFetchToken(session);
-  const data = await apiGetGameState({ adoptSession: true });
-  if (!isGameStateFetchCurrent(token, getExploreSession?.())) return null;
-  if (isTransientGameStateFailure(data) || isGameStateErrorResponse(data)) return null;
-  const nextRunway = data?.run?.exploreRunway;
-  // The adoptSession endpoint keeps this epoch stable. Treat a missing or changed
-  // epoch as uncertain instead of calling adoptRunway(), whose normal boundary
-  // behavior clears a log that belongs to the previous session.
-  if (session && (session.pendingCount?.() ?? 0) > 0 && (
-    !nextRunway?.sessionEpoch
-    || nextRunway.sessionEpoch !== session.getSessionEpoch?.()
-  )) return null;
-  if (data?.player && session && nextRunway) {
-    session.adoptRunway?.(nextRunway);
-  }
-  return data;
+  return adoptExploreSessionRecoveryState({
+    getSession: () => getExploreSession?.(),
+    fetchState: apiGetGameState,
+    isUsableState: data => !isTransientGameStateFailure(data)
+      && !isGameStateErrorResponse(data)
+      && Boolean(data?.player),
+  });
 }
 
 async function loadGameState({ adoptSession = false } = {}) {
