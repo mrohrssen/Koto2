@@ -1,3 +1,5 @@
+import { makeExploreTransport } from '../../helpers/explore-sync-transport.js';
+
 function cloneValue(value) {
   if (value === undefined) return undefined;
   return structuredClone(value);
@@ -22,14 +24,13 @@ export function createFaultLink({ client, scheduler, path = '/api/game/explore/s
     const operation = operations.shift() || { type: 'pass' };
 
     if (operation.type === 'dropBeforeRequest') {
-      return { transport: true, networkError: new Error('request dropped before server') };
+      return makeExploreTransport({ networkError: new Error('request dropped before server') });
     }
     if (operation.type === 'respond') {
-      return {
-        transport: true,
+      return makeExploreTransport({
         httpStatus: operation.response.status,
         body: cloneValue(operation.response.body),
-      };
+      });
     }
     if (operation.type === 'delay') {
       await scheduler.wait(operation.ms);
@@ -37,13 +38,13 @@ export function createFaultLink({ client, scheduler, path = '/api/game/explore/s
 
     const response = await send(payload);
     if (operation.type === 'dropResponseAfterCommit') {
-      return { transport: true, networkError: new Error('response dropped after server commit') };
+      return makeExploreTransport({ networkError: new Error('response dropped after server commit') });
     }
     if (operation.type === 'duplicate') {
       const replay = await send(payload);
-      return { transport: true, httpStatus: replay.status, body: replay.body };
+      return makeExploreTransport({ httpStatus: replay.status, body: replay.body });
     }
-    return { transport: true, httpStatus: response.status, body: response.body };
+    return makeExploreTransport({ httpStatus: response.status, body: response.body });
   }
 
   const link = {

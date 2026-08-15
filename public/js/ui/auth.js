@@ -1,8 +1,8 @@
+import { apiUrl } from '../api.js';
 import {
-  apiUrl,
   bindExploreSyncAuthPrincipal,
   clearExploreSyncAuthPrincipal,
-} from '../api.js';
+} from '../explore-sync-auth-binding.js';
 import { setAnalyticsUser, trackEvent } from '../analytics.js';
 
 let currentTab = 'login';

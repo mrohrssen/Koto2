@@ -154,6 +154,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     let authRequiredCalls = 0;
     const session = createExploreSession({
       syncRequest: api.syncExploreSession,
+      isAuthBindingCurrent: api.isExploreSyncResponseAuthCurrent,
       onAuthRequired: async () => { authRequiredCalls += 1; return false; },
     });
     session.adoptRunway(makeExploreRunway());
@@ -247,6 +248,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
 
     const session = createExploreSession({
       syncRequest: api.syncExploreSession,
+      isAuthBindingCurrent: api.isExploreSyncResponseAuthCurrent,
       onAuthRequired: async () => false,
     });
     session.adoptRunway(makeExploreRunway());
@@ -309,6 +311,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
       let authRequiredCalls = 0;
       const session = createExploreSession({
         syncRequest: api.syncExploreSession,
+        isAuthBindingCurrent: api.isExploreSyncResponseAuthCurrent,
         onAuthRequired: async () => { authRequiredCalls += 1; return false; },
       });
       session.adoptRunway(makeExploreRunway());
@@ -388,7 +391,10 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
       sentHeaders.push(options.headers);
       return makeResponse({ body: { status: 'ok', confirmedThroughSeq: 1, results: [] } });
     };
-    const session = createExploreSession({ syncRequest: api.syncExploreSession });
+    const session = createExploreSession({
+      syncRequest: api.syncExploreSession,
+      isAuthBindingCurrent: api.isExploreSyncResponseAuthCurrent,
+    });
     session.adoptRunway(makeExploreRunway());
     assert.equal(session.recordRoomAction('friendlyNpc.choose', {
       itemId: 'field-tonic',

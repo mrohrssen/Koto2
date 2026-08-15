@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { EXPLORE_TRANSPORT_KEYS, makeExploreTransport } from '../helpers/explore-sync-transport.js';
 
 const originalFetch = globalThis.fetch;
 const originalWindow = globalThis.window;
@@ -22,6 +23,16 @@ function jsonResponse(body, status = 200) {
     status,
     json: async () => body,
   };
+}
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(nextResolve => { resolve = nextResolve; });
+  return { promise, resolve };
+}
+
+function assertExploreTransportShape(result) {
+  assert.deepEqual(Object.keys(result).sort(), [...EXPLORE_TRANSPORT_KEYS].sort());
 }
 
 beforeEach(async () => {
@@ -169,16 +180,22 @@ describe('api network hardening', () => {
       principalId: 'api-network-user',
       token: 'still-owned-by-reauth-flow',
     });
+    const authRevision = api.captureExploreSyncAuthLease().authRevision;
     globalThis.fetch = mock.fn(async () => jsonResponse({ error: 'expired' }, 401));
     const auth = await api.syncExploreSession({
       sessionEpoch: 'ese_1111111111111111',
       entries: [{}],
     });
+    assertExploreTransportShape(auth);
     assert.deepEqual(auth, {
       transport: true,
       httpStatus: 401,
       body: { error: 'expired' },
       parseError: null,
+      networkError: null,
+      aborted: false,
+      clientAuthMismatch: false,
+      authRevision,
     });
     assert.equal(globalThis.window.location.href, '', 'Explore transport leaves re-authentication to the session recovery flow');
     assert.equal(globalThis.localStorage.getItem('authToken'), 'still-owned-by-reauth-flow');
@@ -196,10 +213,12 @@ describe('api network hardening', () => {
     assert.equal(malformed.httpStatus, 200);
     assert.equal(malformed.body, null);
     assert.ok(malformed.parseError instanceof SyntaxError);
+    assert.equal(malformed.authRevision, authRevision);
   });
 
   it('retains Explore network and abort faults as transport outcomes', async () => {
     const api = await import('../../public/js/api.js');
+    const authRevision = api.captureExploreSyncAuthLease().authRevision;
     globalThis.fetch = mock.fn(async () => { throw new TypeError('lost'); });
     const network = await api.syncExploreSession({ sessionEpoch: 'ese_1111111111111111', entries: [{}] });
     assert.equal(network.transport, true);
@@ -218,8 +237,8 @@ describe('api network hardening', () => {
     const aborted = await api.syncExploreSession({
       sessionEpoch: 'ese_1111111111111111',
       entries: [{}],
-      timeoutMs: 1,
-    });
+    }, { timeoutMs: 1 });
+    assertExploreTransportShape(aborted);
     assert.deepEqual(aborted, {
       transport: true,
       httpStatus: 0,
@@ -227,9 +246,130 @@ describe('api network hardening', () => {
       parseError: null,
       networkError: null,
       aborted: true,
+      clientAuthMismatch: false,
+      authRevision,
     });
     assert.equal(api.isExploreSyncResponseAuthCurrent(aborted), true,
       'same-principal abort outcomes must remain eligible for transport retry');
+  });
+
+  it('returns the complete Explore envelope for JSON, server, parse, network, abort, and auth-mismatch paths', async () => {
+    const api = await import('../../public/js/api.js');
+    const payload = { sessionEpoch: 'ese_1111111111111111', entries: [{}] };
+    const authRevision = api.captureExploreSyncAuthLease().authRevision;
+
+    globalThis.fetch = async () => jsonResponse({ status: 'ok', confirmedThroughSeq: 1, results: [] });
+    const success = await api.syncExploreSession(payload);
+
+    globalThis.fetch = async () => jsonResponse({ error: 'expired' }, 401);
+    const serverAuth = await api.syncExploreSession(payload);
+
+    globalThis.fetch = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => { throw new SyntaxError('Unexpected token <'); },
+    });
+    const parseFailure = await api.syncExploreSession(payload);
+
+    globalThis.fetch = async () => { throw new TypeError('lost'); };
+    const networkFailure = await api.syncExploreSession(payload);
+
+    globalThis.fetch = (_url, options) => new Promise((_resolve, reject) => {
+      options.signal.addEventListener('abort', () => {
+        const error = new Error('aborted');
+        error.name = 'AbortError';
+        reject(error);
+      });
+    });
+    const abort = await api.syncExploreSession(payload, { timeoutMs: 1 });
+
+    globalThis.localStorage.setItem('authToken', 'different-token');
+    const mismatch = await api.syncExploreSession(payload);
+
+    assertExploreTransportShape(makeExploreTransport({ httpStatus: 418, body: { error: 'fixture' } }));
+    for (const result of [success, serverAuth, parseFailure, networkFailure, abort, mismatch]) {
+      assertExploreTransportShape(result);
+    }
+    assert.equal(success.httpStatus, 200);
+    assert.equal(success.authRevision, authRevision);
+    assert.equal(serverAuth.httpStatus, 401);
+    assert.equal(serverAuth.authRevision, authRevision);
+    assert.ok(parseFailure.parseError instanceof SyntaxError);
+    assert.ok(networkFailure.networkError instanceof TypeError);
+    assert.equal(abort.aborted, true);
+    assert.equal(parseFailure.authRevision, authRevision);
+    assert.equal(networkFailure.authRevision, authRevision);
+    assert.equal(abort.authRevision, authRevision);
+    assert.deepEqual(mismatch, {
+      transport: true,
+      httpStatus: 0,
+      body: null,
+      parseError: null,
+      networkError: null,
+      aborted: false,
+      clientAuthMismatch: true,
+      authRevision,
+    });
+  });
+
+  it('reports auth changes before fetch, during fetch, and during JSON parsing as client mismatches', async () => {
+    const api = await import('../../public/js/api.js');
+    const payload = { sessionEpoch: 'ese_1111111111111111', entries: [{}] };
+
+    const beforeFetchRevision = api.captureExploreSyncAuthLease().authRevision;
+    globalThis.localStorage.setItem('authToken', 'before-fetch-token');
+    const beforeFetch = await api.syncExploreSession(payload);
+    assert.equal(beforeFetch.clientAuthMismatch, true);
+    assert.equal(beforeFetch.httpStatus, 0);
+    assert.equal(beforeFetch.authRevision, beforeFetchRevision);
+
+    globalThis.localStorage.setItem('authToken', 'during-fetch-token');
+    api.bindExploreSyncAuthPrincipal({ principalId: 'api-network-user', token: 'during-fetch-token' });
+    const duringFetchRevision = api.captureExploreSyncAuthLease().authRevision;
+    const fetchStarted = deferred();
+    const fetchResponse = deferred();
+    globalThis.fetch = async () => {
+      fetchStarted.resolve();
+      return fetchResponse.promise;
+    };
+    const duringFetchPromise = api.syncExploreSession(payload);
+    await fetchStarted.promise;
+    globalThis.localStorage.setItem('authToken', 'after-fetch-start-token');
+    fetchResponse.resolve(jsonResponse({ status: 'ok', confirmedThroughSeq: 1, results: [] }));
+    const duringFetch = await duringFetchPromise;
+    assert.equal(duringFetch.clientAuthMismatch, true);
+    assert.equal(duringFetch.body, null);
+    assert.equal(duringFetch.authRevision, duringFetchRevision);
+
+    globalThis.localStorage.setItem('authToken', 'during-parse-token');
+    api.bindExploreSyncAuthPrincipal({ principalId: 'api-network-user', token: 'during-parse-token' });
+    const duringParseRevision = api.captureExploreSyncAuthLease().authRevision;
+    const parseStarted = deferred();
+    const parsedBody = deferred();
+    globalThis.fetch = async () => ({
+      ok: true,
+      status: 200,
+      json: () => {
+        parseStarted.resolve();
+        return parsedBody.promise;
+      },
+    });
+    const duringParsePromise = api.syncExploreSession(payload);
+    await parseStarted.promise;
+    globalThis.localStorage.setItem('authToken', 'after-parse-start-token');
+    parsedBody.resolve({ status: 'ok', confirmedThroughSeq: 1, results: [] });
+    const duringParse = await duringParsePromise;
+    assert.equal(duringParse.clientAuthMismatch, true);
+    assert.equal(duringParse.body, null);
+    assert.equal(duringParse.authRevision, duringParseRevision);
+
+    for (const result of [beforeFetch, duringFetch, duringParse]) {
+      assertExploreTransportShape(result);
+      assert.equal(result.httpStatus, 0);
+      assert.equal(result.clientAuthMismatch, true);
+      assert.equal(result.body, null);
+      assert.ok(Number.isInteger(result.authRevision));
+    }
   });
 
   it('does not retry creature combat cycle when the POST fails', async () => {
