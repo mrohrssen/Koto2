@@ -11,6 +11,7 @@ import {
   EXPLORE_SYNC_DEBOUNCE_MS,
   EXPLORE_SYNC_RETRY_DELAYS_MS,
 } from '../../../public/js/ui/explore-session.js';
+import { FenceSuperseded } from '../../../public/js/async-ownership-fence.js';
 import {
   predictedEffectsForAction,
   roomDependenciesForType,
@@ -1163,14 +1164,6 @@ test('reset abandons in-flight responses', async () => {
   assert.equal(checkpoints.length, 0);
 });
 
-test('exposes the adopted session epoch for safe recovery adoption', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(0) });
-
-  session.adoptRunway(makeRunway({ sessionEpoch: 'ese_recovery_epoch11' }));
-
-  assert.equal(session.getSessionEpoch(), 'ese_recovery_epoch11');
-});
-
 test('new runway generation abandons in-flight responses and clears old pending log', async () => {
   const scheduler = makeManualScheduler();
   let release;
@@ -1496,4 +1489,73 @@ test('correction callback sees corrected runway before resume', async () => {
     ['correction', 99, true],
     ['resume', 99, false],
   ]);
+});
+
+test('empty session fence rejects append then drain during a GET', async () => {
+  let releaseFetch;
+  const fetchGate = new Promise(resolve => { releaseFetch = resolve; });
+  const session = createExploreSession({
+    syncRequest: async ({ entries }) => okResponse(entries.at(-1).seq),
+    schedule: () => 0,
+    cancel: () => {},
+  });
+  session.adoptRunway(makeRunway());
+  const capture = session.captureFence({ pending: 'empty' });
+  const request = capture.fence.step('fetch state', () => fetchGate);
+
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'tonic' }).accepted, true);
+  await session.syncNow();
+  assert.equal(session.pendingCount(), 0, 'the stream drained back to empty');
+  releaseFetch({ player: { id: 'player_1' } });
+
+  await assert.rejects(request, FenceSuperseded);
+});
+
+test('empty session fence rejects same-epoch adoption, pause change, reset, and replacement', () => {
+  const assertStale = mutate => {
+    const session = createExploreSession({ syncRequest: async () => okResponse(0) });
+    session.adoptRunway(makeRunway());
+    const capture = session.captureFence({ pending: 'empty' });
+    mutate(session);
+    assert.equal(capture.fence.isCurrent(), false);
+  };
+
+  assertStale(session => session.adoptRunway(makeRunway({ roomActionSeq: 8 })));
+  assertStale(session => session.pause('currentRoomNotReady'));
+  assertStale(session => session.reset());
+
+  const active = configureExploreSession({ syncRequest: async () => okResponse(0) });
+  active.adoptRunway(makeRunway());
+  const capture = active.captureFence({ pending: 'empty' });
+  configureExploreSession({ syncRequest: async () => okResponse(0) });
+  assert.equal(capture.fence.isCurrent(), false);
+  resetExploreSession();
+});
+
+test('preserve fence rejects any pending-stream change', () => {
+  const session = createExploreSession({ syncRequest: async () => okResponse(0) });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' }).accepted, true);
+  const capture = session.captureFence({ pending: 'preserve' });
+
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'second' }).accepted, true);
+
+  assert.equal(capture.fence.isCurrent(), false);
+});
+
+test('declared same-epoch runway adoption advances without self-superseding', async () => {
+  const session = createExploreSession({ syncRequest: async () => okResponse(0) });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
+  const before = session.snapshot();
+  const capture = session.captureFence({ pending: 'preserve' });
+  const nextRunway = makeRunway({
+    preparedRooms: [preparedRoom(0, { actionSeq: 11, acceptedActions: ['friendlyNpc.choose'] })],
+  });
+
+  capture.fence.commit('adopt recovery runway', capture.expectRunwayAdoption(nextRunway));
+
+  assert.deepEqual(session.snapshot(), before);
+  assert.equal(session.currentPreparedRoom().actionSeq, 11);
+  assert.equal(await capture.fence.step('continue recovery', () => Promise.resolve('continued')), 'continued');
 });

@@ -83,10 +83,9 @@ import * as settings from './js/settings.js';
 import * as explorationUI from './js/ui/exploration.js';
 import { getExploreSession, runWithStableExploreSession } from './js/ui/explore-session.js';
 import {
-  captureGameStateFetchToken,
   isGameStateErrorResponse,
-  isGameStateFetchCurrent,
 } from './js/ui/game-state-adoption.js';
+import { FenceSuperseded } from './js/async-ownership-fence.js';
 import { adoptExploreSessionRecoveryState } from './js/ui/explore-session-recovery.js';
 import { buildLocalCombatFromStart } from '../src/shared/combat/local-combat-start.js';
 import * as economyUI from './js/ui/economy.js';
@@ -944,10 +943,21 @@ async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSe
   const session = getExploreSession?.();
   if (session && (session.pendingCount?.() ?? 0) > 0) return null;
 
-  const token = captureGameStateFetchToken(session);
-  const data = await apiGetGameState({ adoptSession });
-  if (!isGameStateFetchCurrent(token, getExploreSession?.())) return null;
-  return data;
+  const capture = session?.captureFence?.({
+    pending: 'empty',
+    leases: [{
+      label: 'active Explore session',
+      isCurrent: () => getExploreSession?.() === session,
+    }],
+  });
+  try {
+    return capture
+      ? await capture.fence.step('fetch game state', () => apiGetGameState({ adoptSession }))
+      : await apiGetGameState({ adoptSession });
+  } catch (error) {
+    if (error instanceof FenceSuperseded) return null;
+    throw error;
+  }
 }
 
 // Auth and writer recovery run from inside an active Explore drain. This path

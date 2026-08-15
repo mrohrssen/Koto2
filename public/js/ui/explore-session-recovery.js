@@ -1,7 +1,4 @@
-import {
-  captureExploreRecoveryToken,
-  isExploreRecoveryCurrent,
-} from './game-state-adoption.js';
+import { FenceSuperseded } from '../async-ownership-fence.js';
 
 // This direct state-adoption path is only for callbacks invoked by Explore
 // recovery itself. Calling the ordinary state loader here would await the drain
@@ -14,18 +11,32 @@ export async function adoptExploreSessionRecoveryState({
 } = {}) {
   const session = getSession?.();
   if (!session || typeof fetchState !== 'function') return false;
-  const token = captureExploreRecoveryToken(session);
+  const capture = session.captureFence?.({
+    pending: 'preserve',
+    leases: [{
+      label: 'active Explore session',
+      isCurrent: () => getSession?.() === session,
+    }],
+  });
+  if (!capture) return false;
   let data;
   try {
-    data = await fetchState({ adoptSession: true });
-  } catch {
+    data = await capture.fence.step(
+      'fetch Explore recovery state',
+      () => fetchState({ adoptSession: true }),
+    );
+  } catch (error) {
+    if (error instanceof FenceSuperseded) return false;
     return false;
   }
-  if (!isExploreRecoveryCurrent(token, getSession?.())) return false;
   if (!isUsableState(data)) return false;
 
   const nextRunway = data?.run?.exploreRunway;
-  if (!nextRunway?.sessionEpoch || nextRunway.sessionEpoch !== token.sessionEpoch) return false;
-  session.adoptRunway?.(nextRunway);
-  return true;
+  try {
+    capture.fence.commit('adopt Explore recovery runway', capture.expectRunwayAdoption(nextRunway));
+    return true;
+  } catch (error) {
+    if (error instanceof FenceSuperseded) return false;
+    return false;
+  }
 }

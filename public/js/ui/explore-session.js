@@ -1,5 +1,6 @@
 import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
 import { PAUSE_REASONS } from '../../../src/shared/explore/pause-reasons.js';
+import { createAsyncOwnershipFence } from '../async-ownership-fence.js';
 
 export const EXPLORE_SESSION_HARD_CAP = 50;
 export const EXPLORE_SESSION_RESUME_AT = 40;
@@ -18,6 +19,16 @@ function cloneValue(value) {
     return structuredClone(value);
   }
   return JSON.parse(JSON.stringify(value));
+}
+
+function sameValue(left, right) {
+  if (Object.is(left, right)) return true;
+  if (!left || !right || typeof left !== 'object' || typeof right !== 'object') return false;
+  if (Array.isArray(left) !== Array.isArray(right)) return false;
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  return leftKeys.length === rightKeys.length
+    && leftKeys.every(key => Object.hasOwn(right, key) && sameValue(left[key], right[key]));
 }
 
 function notify(callback, ...args) {
@@ -128,8 +139,9 @@ export function createExploreSession({
   let paused = false;
   let pauseReason = null;
   let generation = 0;
+  let ownershipRevision = 0;
+  let sessionLifetime = 0;
   let localRevision = 0;
-  let runwayRevision = 0;
   let correctionRevision = 0;
   let handledResultActionIds = new Set();
   let actionNonce = createSessionNonce();
@@ -140,6 +152,20 @@ export function createExploreSession({
   function getPauseReason() { return pauseReason; }
   function getLocalRevision() { return localRevision; }
   function getCorrectionRevision() { return correctionRevision; }
+
+  let completingOwnershipTransaction = false;
+
+  function completeOwnershipTransaction(mutator) {
+    if (completingOwnershipTransaction) return mutator();
+    completingOwnershipTransaction = true;
+    try {
+      const result = mutator();
+      ownershipRevision += 1;
+      return result;
+    } finally {
+      completingOwnershipTransaction = false;
+    }
+  }
 
   function consumeResultOnce(actionId) {
     if (typeof actionId !== 'string' || actionId.length === 0) return true;
@@ -182,17 +208,21 @@ export function createExploreSession({
     const currentSeverity = severityRank[PAUSE_REASONS[pauseReason]?.severity] ?? 0;
     const nextSeverity = severityRank[PAUSE_REASONS[reason]?.severity] ?? 0;
     if (paused && nextSeverity < currentSeverity) return;
-    paused = true;
-    pauseReason = reason;
-    notify(onPause, { pendingCount: log.length, reason });
+    completeOwnershipTransaction(() => {
+      paused = true;
+      pauseReason = reason;
+      notify(onPause, { pendingCount: log.length, reason });
+    });
   }
 
   function resumeIfPaused() {
     if (!paused) return;
-    paused = false;
-    const reason = pauseReason;
-    pauseReason = null;
-    notify(onResume, { pendingCount: log.length, reason });
+    completeOwnershipTransaction(() => {
+      paused = false;
+      const reason = pauseReason;
+      pauseReason = null;
+      notify(onResume, { pendingCount: log.length, reason });
+    });
   }
 
   function maybeResumeAfterDrain() {
@@ -204,11 +234,10 @@ export function createExploreSession({
     if (log.length === 0) resumeIfPaused();
   }
 
-  function adoptRunwayInternal(
+  function adoptRunwayState(
     nextRunway,
     { fromSync = false, deferResume = false } = {},
   ) {
-    runwayRevision += 1;
     const previousEpoch = sessionEpoch;
     const nextEpoch = nextRunway?.sessionEpoch ?? null;
     const epochChanged = Boolean(previousEpoch)
@@ -255,6 +284,10 @@ export function createExploreSession({
     if (!deferResume) maybeResumeAfterDrain();
 
     return runway;
+  }
+
+  function adoptRunwayInternal(nextRunway, options) {
+    return completeOwnershipTransaction(() => adoptRunwayState(nextRunway, options));
   }
 
   function adoptRunway(nextRunway) {
@@ -407,19 +440,21 @@ export function createExploreSession({
     }
 
     const entry = buildEntry(kind, payload, preparedRoom);
-    log.push(entry);
-    localRevision += 1;
+    completeOwnershipTransaction(() => {
+      log.push(entry);
+      localRevision += 1;
 
-    if (kind === 'proceed') {
-      localCurrentRoom = roomIndexFor(nextRoom);
-    }
+      if (kind === 'proceed') {
+        localCurrentRoom = roomIndexFor(nextRoom);
+      }
 
-    // Pause on a self-intersecting proceed's own effects (see above). Entering pause
-    // here first makes the hardCap enterPause below a no-op (enterPause early-returns
-    // while paused); the hardCap resume threshold still governs once this lifts.
-    if (pauseSelfEffectsAfterQueue) enterPause('dependency');
+      // Pause on a self-intersecting proceed's own effects (see above). Entering pause
+      // here first makes the hardCap enterPause below a no-op (enterPause early-returns
+      // while paused); the hardCap resume threshold still governs once this lifts.
+      if (pauseSelfEffectsAfterQueue) enterPause('dependency');
 
-    if (log.length >= EXPLORE_SESSION_HARD_CAP) enterPause('hardCap');
+      if (log.length >= EXPLORE_SESSION_HARD_CAP) enterPause('hardCap');
+    });
     scheduleDrain(EXPLORE_SYNC_DEBOUNCE_MS);
 
     return { accepted: true, pendingCount: log.length, entry: cloneValue(entry) };
@@ -494,7 +529,11 @@ export function createExploreSession({
         return { ok: false };
       }
       if (response?.protocolVersion === 2) {
-        expectedProtocolVersion = 2;
+        if (expectedProtocolVersion !== 2) {
+          completeOwnershipTransaction(() => {
+            expectedProtocolVersion = 2;
+          });
+        }
         scheduleRetry();
         if (attempts >= 12) enterPause('transportDegraded');
         return { ok: false };
@@ -504,7 +543,11 @@ export function createExploreSession({
       // known. Combat playback may still be holding response adoption; waiting
       // until after that hold creates a race where the rejected local turn can
       // publish during the handoff.
-      if (response?.status === 'corrected') correctionRevision += 1;
+      if (response?.status === 'corrected') {
+        completeOwnershipTransaction(() => {
+          correctionRevision += 1;
+        });
+      }
 
       // A combat checkpoint may arrive while the predicted turn is still
       // animating. Wait before changing either the ordered log or runway owner;
@@ -520,7 +563,7 @@ export function createExploreSession({
         log = [];
         attempts = 0;
         if (Object.hasOwn(response, 'exploreRunway')) {
-          adoptRunwayInternal(response.exploreRunway, {
+          adoptRunwayState(response.exploreRunway, {
             fromSync: true,
             deferResume: true,
           });
@@ -529,22 +572,25 @@ export function createExploreSession({
         maybeResumeAfterDrain();
         return { ok: true, appendedAfterSnapshot: false };
       } else if (response?.status === 'ok') {
-        attempts = 0;
-        const confirmed = Number.isInteger(response.confirmedThroughSeq)
-          ? response.confirmedThroughSeq
-          : -1;
-        log = log.filter(entry => entry.seq > confirmed);
-        const appendedAfterSnapshot = log.some(
-          entry => entry.seq > snapshotMaxSeq,
-        );
-        if (Object.hasOwn(response, 'exploreRunway')) {
-          adoptRunwayInternal(response.exploreRunway, {
-            fromSync: true,
-            deferResume: true,
-          });
-        }
-        notify(onCheckpoint, response, { logEmpty: log.length === 0 });
-        maybeResumeAfterDrain();
+        let appendedAfterSnapshot = false;
+        completeOwnershipTransaction(() => {
+          attempts = 0;
+          const confirmed = Number.isInteger(response.confirmedThroughSeq)
+            ? response.confirmedThroughSeq
+            : -1;
+          log = log.filter(entry => entry.seq > confirmed);
+          appendedAfterSnapshot = log.some(
+            entry => entry.seq > snapshotMaxSeq,
+          );
+          if (Object.hasOwn(response, 'exploreRunway')) {
+            adoptRunwayState(response.exploreRunway, {
+              fromSync: true,
+              deferResume: true,
+            });
+          }
+          notify(onCheckpoint, response, { logEmpty: log.length === 0 });
+          maybeResumeAfterDrain();
+        });
         return { ok: true, appendedAfterSnapshot };
       }
     } catch {
@@ -561,25 +607,83 @@ export function createExploreSession({
   }
 
   function reset() {
-    generation += 1;
-    localRevision += 1;
-    runwayRevision += 1;
-    activeDrainToken += 1;
-    activeDrainPromise = null;
-    clearTimers();
-    runway = null;
-    sessionEpoch = null;
-    localCurrentRoom = null;
-    log = [];
-    nextSeq = 1;
-    syncing = false;
-    attempts = 0;
-    paused = false;
-    pauseReason = null;
-    forceDrainRequested = false;
-    handledResultActionIds = new Set();
-    actionNonce = createSessionNonce();
-    expectedProtocolVersion = 1;
+    completeOwnershipTransaction(() => {
+      generation += 1;
+      sessionLifetime += 1;
+      localRevision += 1;
+      activeDrainToken += 1;
+      activeDrainPromise = null;
+      clearTimers();
+      runway = null;
+      sessionEpoch = null;
+      localCurrentRoom = null;
+      log = [];
+      nextSeq = 1;
+      syncing = false;
+      attempts = 0;
+      paused = false;
+      pauseReason = null;
+      forceDrainRequested = false;
+      handledResultActionIds = new Set();
+      actionNonce = createSessionNonce();
+      expectedProtocolVersion = 1;
+    });
+  }
+
+  function captureFence({ pending, leases = [] } = {}) {
+    if (pending !== 'empty' && pending !== 'preserve') {
+      throw new Error("captureFence pending must be 'empty' or 'preserve'");
+    }
+    if (!Array.isArray(leases)) throw new Error('captureFence leases must be an array');
+    if (pending === 'empty' && log.length !== 0) {
+      throw new Error('cannot capture an empty Explore fence with pending work');
+    }
+
+    let expectedOwnershipRevision = ownershipRevision;
+    let expectedLifetime = sessionLifetime;
+    const capturedEpoch = sessionEpoch;
+    const capturedPending = pending === 'preserve' ? cloneValue(log) : null;
+    const sessionLease = {
+      label: 'Explore session',
+      isCurrent: () => (
+        ownershipRevision === expectedOwnershipRevision
+        && sessionLifetime === expectedLifetime
+      ),
+    };
+    const fence = createAsyncOwnershipFence([sessionLease, ...leases]);
+
+    function expectRunwayAdoption(nextRunway) {
+      const requestedRunway = cloneValue(nextRunway);
+      const requestedEpoch = nextRunway?.sessionEpoch ?? null;
+      return {
+        apply: () => {
+          if (
+            pending !== 'preserve'
+            || requestedEpoch !== capturedEpoch
+            || !sameValue(log, capturedPending)
+          ) {
+            throw new Error('recovery runway adoption no longer owns this Explore session');
+          }
+          return completeOwnershipTransaction(() => adoptRunwayState(nextRunway));
+        },
+        transitions: [{
+          lease: sessionLease,
+          verify: () => (
+            ownershipRevision === expectedOwnershipRevision + 1
+            && sessionLifetime === expectedLifetime
+            && sessionEpoch === requestedEpoch
+            && sameValue(runway, requestedRunway)
+            && sameValue(log, capturedPending)
+          ),
+          advance: () => {
+            expectedOwnershipRevision = ownershipRevision;
+            expectedLifetime = sessionLifetime;
+          },
+        }],
+      };
+    }
+
+    return { fence, sessionLease, expectRunwayAdoption };
   }
 
   return {
@@ -594,13 +698,11 @@ export function createExploreSession({
     snapshot: () => log.map(entry => cloneValue(entry)),
     isPaused,
     getPauseReason,
-    getSessionEpoch: () => sessionEpoch,
-    getGeneration: () => generation,
-    getRunwayRevision: () => runwayRevision,
     getLocalRevision,
     getCorrectionRevision,
     consumeResultOnce,
     pause: enterPause,
+    captureFence,
   };
 }
 
@@ -622,7 +724,8 @@ export function resetExploreSession() {
 }
 
 export async function runWithStableExploreSession(session, action, { reason = 'legacyAction' } = {}) {
-  const revision = session?.getLocalRevision?.() ?? 0;
+  const localRevision = session?.getLocalRevision?.() ?? 0;
+  const wasActiveSession = activeSession === session;
   try {
     if ((session?.pendingCount?.() ?? 0) > 0) {
       await session.syncNow?.({ reason });
@@ -633,9 +736,22 @@ export async function runWithStableExploreSession(session, action, { reason = 'l
   if (
     (session?.pendingCount?.() ?? 0) > 0
     || session?.isPaused?.() === true
-    || (session?.getLocalRevision?.() ?? revision) !== revision
+    || (session?.getLocalRevision?.() ?? localRevision) !== localRevision
   ) {
     return { executed: false, result: null };
   }
-  return { executed: true, result: await action() };
+  const capture = session?.captureFence?.({
+    pending: 'empty',
+    leases: wasActiveSession ? [{
+      label: 'active Explore session',
+      isCurrent: () => activeSession === session,
+    }] : [],
+  });
+  if (!capture) return { executed: false, result: null };
+  try {
+    return { executed: true, result: await capture.fence.step('run legacy Explore action', action) };
+  } catch (error) {
+    if (error?.name === 'FenceSuperseded') return { executed: false, result: null };
+    throw error;
+  }
 }

@@ -123,3 +123,34 @@ test('does not execute a compatibility action when the local revision changes du
   assert.equal(session.pendingCount(), 0);
   assert.equal(legacyCalls, 0, 'the changed local stream must fence the compatibility API');
 });
+
+test('legacy session action uses the shared ownership fence after active-session replacement', async () => {
+  let releaseSync;
+  let markSyncStarted;
+  const syncStarted = new Promise(resolve => { markSyncStarted = resolve; });
+  const syncGate = new Promise(resolve => { releaseSync = resolve; });
+  const session = exploreSessionApi.configureExploreSession({
+    syncRequest: async ({ entries }) => {
+      markSyncStarted();
+      await syncGate;
+      return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] };
+    },
+    schedule: () => 0,
+    cancel: () => {},
+  });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'old' }).accepted, true);
+  let callbackCalls = 0;
+
+  const outcomePromise = exploreSessionApi.runWithStableExploreSession(
+    session,
+    async () => { callbackCalls += 1; return 'should-not-run'; },
+  );
+  await syncStarted;
+  exploreSessionApi.configureExploreSession({ syncRequest: async () => ({ status: 'ok' }) });
+  releaseSync();
+
+  assert.deepEqual(await outcomePromise, { executed: false, result: null });
+  assert.equal(callbackCalls, 0);
+  exploreSessionApi.resetExploreSession();
+});

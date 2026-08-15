@@ -61,10 +61,6 @@ import {
 import { backfillPartyLearnset } from '../../../src/shared/combat/learnset-backfill.js';
 import { getKanjiKombatSession } from './kanji-kombat-session.js';
 import { getExploreSession } from './explore-session.js';
-import {
-  captureExploreRecoveryToken,
-  isExploreRecoveryCurrent,
-} from './game-state-adoption.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -646,14 +642,24 @@ function sameCorrectedCombatOwner(left, right) {
 function captureCombatRecoveryCurrentness(session) {
   const state = getGameState();
   return {
-    explore: captureExploreRecoveryToken(session),
+    explore: session?.captureFence?.({
+      pending: 'preserve',
+      leases: [{
+        label: 'active Explore session',
+        isCurrent: () => getExploreSession?.() === session,
+      }],
+    }) || null,
     owner: capturedCombatCleanupOwner(state),
     state,
   };
 }
 
 function isCombatRecoveryCurrent(token) {
-  if (!isExploreRecoveryCurrent(token?.explore, getExploreSession?.())) return false;
+  if (token?.explore) {
+    if (token.explore.fence.isCurrent() !== true) return false;
+  } else if (getExploreSession?.() != null) {
+    return false;
+  }
   const owner = token?.owner;
   const hasKnownOwner = owner?.combatId != null
     || owner?.roomIndex != null
