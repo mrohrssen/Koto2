@@ -525,6 +525,27 @@ function normalizeRecoveryResult(result) {
   return { ...result, combatActive };
 }
 
+function preservesRecoveryInputOwnership(recovery) {
+  return recovery?.outcome === 'recovery_handoff'
+    || recovery?.outcome === 'recovery_superseded'
+    || recovery?.outcome === 'recovery_scene_unavailable';
+}
+
+function isCompletedCoordinatorRecovery(recovery, recoveryCapture) {
+  if (!recoveryCapture) return false;
+  return recovery?.outcome === 'null_post_state_recovered'
+    || recovery?.outcome === 'stale_error_state_recovered'
+    || preservesRecoveryInputOwnership(recovery);
+}
+
+function commitOptimisticRecoveryState(recoveryCapture, state) {
+  if (!recoveryCapture || !combatRecoveryCoordinator) {
+    updateGameState(state);
+    return;
+  }
+  combatRecoveryCoordinator.commitLocalState(recoveryCapture, state);
+}
+
 async function recoverNonExploreCombatErrorState(result, actionType, options) {
   if (!result?.state) return { recovered: false, outcome: 'recovery_failed', combatActive };
   const merged = mergeAuthoritativeCombatState(getGameState(), result);
@@ -553,6 +574,16 @@ async function recoverNonExploreNullCombatPost(actionType, options) {
 }
 
 async function recoverFromCombatErrorState(result, actionType, options = {}) {
+  if (options.recoveryCapture && combatRecoveryCoordinator) {
+    if (!result?.state) return { recovered: false, outcome: 'recovery_failed', combatActive };
+    return normalizeRecoveryResult(await combatRecoveryCoordinator.recover({
+      actionType,
+      capturedOwner: options.capturedOwner || recoveryOwnerFromState(),
+      authoritativeState: result.state,
+      capture: options.recoveryCapture,
+      finalizeOptions: options,
+    }));
+  }
   if (!getActiveStandardExploreSession() || !combatRecoveryCoordinator) {
     return recoverNonExploreCombatErrorState(result, actionType, options);
   }
@@ -569,6 +600,17 @@ async function recoverFromCombatErrorState(result, actionType, options = {}) {
 }
 
 async function recoverFromNullCombatPost(actionType, options = {}) {
+  if (options.recoveryCapture && combatRecoveryCoordinator) {
+    if (typeof apiGetGameState !== 'function') {
+      return { recovered: false, outcome: 'recovery_failed', combatActive };
+    }
+    return normalizeRecoveryResult(await combatRecoveryCoordinator.recover({
+      actionType,
+      capturedOwner: options.capturedOwner || recoveryOwnerFromState(),
+      capture: options.recoveryCapture,
+      finalizeOptions: options,
+    }));
+  }
   if (!getActiveStandardExploreSession() || !combatRecoveryCoordinator) {
     return recoverNonExploreNullCombatPost(actionType, options);
   }
@@ -588,9 +630,14 @@ async function handleOptimisticCombatVerification(
   recoveryActionType = 'attack',
   recoveryCapture = null,
   capturedOwner = null,
+  recoveryOptions = {},
 ) {
   if (!verification) {
-    return recoverFromNullCombatPost(recoveryActionType, { recoveryCapture, capturedOwner });
+    return recoverFromNullCombatPost(recoveryActionType, {
+      ...recoveryOptions,
+      recoveryCapture,
+      capturedOwner,
+    });
   }
 
   if (verification.status === 'accepted') {
@@ -616,12 +663,23 @@ async function handleOptimisticCombatVerification(
   if (verification.status === 'corrected') {
     const authoritativeState = verification.authoritativeState || verification.state;
     if (authoritativeState) {
+      if (recoveryCapture || getActiveStandardExploreSession()) {
+        return recoverFromCombatErrorState(
+          { state: authoritativeState },
+          recoveryActionType,
+          { ...recoveryOptions, recoveryCapture, capturedOwner },
+        );
+      }
       updateGameState(authoritativeState);
       await syncCombatSceneToState(authoritativeState);
       updateUI?.();
       return { recovered: true, outcome: verification.reason || 'optimistic_corrected', combatActive };
     }
-    return recoverFromNullCombatPost(recoveryActionType, { recoveryCapture, capturedOwner });
+    return recoverFromNullCombatPost(recoveryActionType, {
+      ...recoveryOptions,
+      recoveryCapture,
+      capturedOwner,
+    });
   }
 
   return { recovered: false, outcome: 'unexpected_optimistic_status', combatActive };
@@ -1370,7 +1428,9 @@ async function runOptimisticCreatureCombatTurn({
   const verificationPromise = verifyCreatureCombatCycle(optimistic.envelope)
     .then(result => ({ result }), error => ({ error }));
   markCombatAnimationStart(turnTiming, requestStartedAt);
-  await playback(optimistic.localTranscript);
+  await playback(optimistic.localTranscript, {
+    commitState: state => commitOptimisticRecoveryState(recoveryCapture, state),
+  });
 
   const verification = await verificationPromise;
   if (verification.error) throw verification.error;
@@ -1380,7 +1440,11 @@ async function runOptimisticCreatureCombatTurn({
     recoveryActionType,
     recoveryCapture,
     capturedRecoveryOwner,
+    { restartSelection: restartMoveSelection },
   );
+  if (isCompletedCoordinatorRecovery(recovery, recoveryCapture)) {
+    return true;
+  }
   if (recovery && recovery.recovered === false) {
     throw new Error('Combat sync failed');
   }
@@ -2470,12 +2534,13 @@ export async function executePlayerAttack() {
   });
 }
 
-function syncFinalState(result, { isCurrent } = {}) {
+function syncFinalState(result, { isCurrent, commitState } = {}) {
   if (typeof isCurrent === 'function' && !isCurrent()) return false;
   const gs = getGameState();
   const updates = mergeAuthoritativeCombatState(gs, result);
   if (updates === gs) return true;
-  updateGameState(updates);
+  if (typeof commitState === 'function') commitState(updates);
+  else updateGameState(updates);
 
   // Keep formation popup data in sync with latest HP
   if (result.creatureParty?.active && updateCreatureRowData) {
@@ -2768,6 +2833,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
     deferNextSelection = false,
     isPlaybackCurrent = () => true,
     canFinalizePlaybackState = () => true,
+    commitState = null,
   } = options;
   const _log = getLog();
 
@@ -2775,7 +2841,9 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
 
   if (result.state) {
     if (!isPlaybackCurrent() || !canFinalizePlaybackState()) return;
-    updateGameState(mergeAuthoritativeCombatState(getGameState(), result));
+    const mergedState = mergeAuthoritativeCombatState(getGameState(), result);
+    if (typeof commitState === 'function') commitState(mergedState);
+    else updateGameState(mergedState);
   }
 
   if (logMoveIntent && _log) {
@@ -2927,6 +2995,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
   if (result.befriendQuizTriggered && result.befriendQuiz) {
     if (!syncFinalState(result, {
       isCurrent: () => isPlaybackCurrent() && canFinalizePlaybackState(),
+      commitState,
     })) return;
     playerAttackPending = false;
     await befriend.renderBefriendQuiz(result.befriendQuiz, result);
@@ -2970,6 +3039,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
 
   if (!syncFinalState(result, {
     isCurrent: () => isPlaybackCurrent() && canFinalizePlaybackState(),
+    commitState,
   })) return;
   if (result.nextWave) {
     await playKanjiKombatNextWaveTransition(result);
@@ -3079,12 +3149,13 @@ async function executeCreatureMovesTurn(choices, options = {}) {
             pendingFlag: 'player',
             playback: typeof options.playback === 'function'
               ? options.playback
-              : (localTranscript, { isCurrent, canFinalizeState } = {}) => playCreatureCombatResult(localTranscript, turnTiming, {
+              : (localTranscript, { isCurrent, canFinalizeState, commitState } = {}) => playCreatureCombatResult(localTranscript, turnTiming, {
                   choices,
                   logMoveIntent: false,
                   deferNextSelection: true,
                   isPlaybackCurrent: isCurrent,
                   canFinalizePlaybackState: canFinalizeState,
+                  commitState,
                 }),
             exploreOwnerContext: options.exploreOwnerContext,
           });
@@ -3116,6 +3187,7 @@ async function executeCreatureMovesTurn(choices, options = {}) {
           recoveryCapture,
         });
         logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
+        if (preservesRecoveryInputOwnership(recovery)) return;
         if (recovery.recovered) return;
         throw new Error('Combat sync failed');
       }
@@ -3127,6 +3199,7 @@ async function executeCreatureMovesTurn(choices, options = {}) {
             recoveryCapture,
           });
           logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
+          if (preservesRecoveryInputOwnership(recovery)) return;
           if (recovery.recovered) return;
         }
         if (result.error === 'No active combat') {
@@ -3174,6 +3247,7 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
     deferNextSelection = false,
     isPlaybackCurrent = () => true,
     canFinalizePlaybackState = () => true,
+    commitState = null,
   } = options;
 
   if (!isPlaybackCurrent()) return;
@@ -3233,6 +3307,7 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
   // Sync authoritative state from server
   if (!syncFinalState(result, {
     isCurrent: () => isPlaybackCurrent() && canFinalizePlaybackState(),
+    commitState,
   })) return;
 
   // --- Intent Log: check UI consistency after defend animations ---
@@ -3303,10 +3378,11 @@ async function executeCreatureDefendThenPause({
         pendingFlag: 'enemy',
         playback: typeof playback === 'function'
           ? playback
-          : (localTranscript, { isCurrent, canFinalizeState } = {}) => playCreatureDefendResult(localTranscript, turnTiming, {
-              deferNextSelection: true,
-              isPlaybackCurrent: isCurrent,
-              canFinalizePlaybackState: canFinalizeState,
+          : (localTranscript, { isCurrent, canFinalizeState, commitState } = {}) => playCreatureDefendResult(localTranscript, turnTiming, {
+            deferNextSelection: true,
+            isPlaybackCurrent: isCurrent,
+            canFinalizePlaybackState: canFinalizeState,
+            commitState,
             }),
         exploreOwnerContext,
       });
@@ -3325,6 +3401,7 @@ async function executeCreatureDefendThenPause({
           recoveryCapture,
         });
         logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
+        if (preservesRecoveryInputOwnership(recovery)) return;
         if (recovery.recovered) return;
         throw new Error('Combat sync failed');
       }
@@ -3337,6 +3414,7 @@ async function executeCreatureDefendThenPause({
             recoveryCapture,
           });
           logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
+          if (preservesRecoveryInputOwnership(recovery)) return;
           if (recovery.recovered) return;
         }
         if (result.error === 'No active combat') {

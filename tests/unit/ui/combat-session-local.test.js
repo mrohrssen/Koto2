@@ -102,6 +102,19 @@ function combatant(overrides = {}) {
   };
 }
 
+function settledExploreTransport(body, httpStatus = 200) {
+  return {
+    transport: true,
+    httpStatus,
+    body,
+    parseError: null,
+    networkError: null,
+    aborted: false,
+    clientAuthMismatch: false,
+    authRevision: 0,
+  };
+}
+
 // A combat state with a live turn-seed chain (length > 1 → session mode eligible).
 function sessionCombatState({ enemyHp = 100, turnSeeds = ['seed-a', 'seed-b', 'seed-c'] } = {}) {
   const ally = combatant();
@@ -471,13 +484,13 @@ describe('explore-session local combat turns', () => {
       syncRequest: async ({ entries }) => {
         events.push('sync-ready');
         markResponseReady();
-        return {
+        return settledExploreTransport({
           status: 'ok',
           confirmedThroughSeq: entries.at(-1).seq,
           results: [],
           state: authoritativeState,
           exploreRunway: runway,
-        };
+        });
       },
       beforeResponseAdoption: async () => {
         events.push('adoption-wait');
@@ -649,12 +662,15 @@ describe('explore-session local combat turns', () => {
     fakeSession = createExploreSession({
       syncRequest: async () => {
         markResponseReady();
-        return {
+        return settledExploreTransport({
           status: 'corrected',
           reason: 'authoritative_successor',
+          confirmedThroughSeq: null,
+          rejectedSeq: 1,
+          results: [],
           state: combatB,
           exploreRunway: runwayB,
-        };
+        });
       },
       beforeResponseAdoption: async () => {
         markAdoptionWaiting();
@@ -834,9 +850,12 @@ describe('explore-session local combat turns', () => {
         sessionEpoch: correction.sessionEpoch,
       };
       fakeSession = createExploreSession({
-        syncRequest: async () => ({
+        syncRequest: async () => settledExploreTransport({
           status: 'corrected',
           reason: correction.reason,
+          confirmedThroughSeq: null,
+          rejectedSeq: 1,
+          results: [],
           state: authoritativeState,
           exploreRunway: correctedRunway,
         }),
@@ -1191,12 +1210,15 @@ describe('explore-session local combat turns', () => {
     fakeSession = createExploreSession({
       syncRequest: async () => {
         markResponseReady();
-        return {
+        return settledExploreTransport({
           status: 'corrected',
           reason: 'session_epoch_mismatch',
+          confirmedThroughSeq: null,
+          rejectedSeq: 1,
+          results: [],
           state: authoritativeState,
           exploreRunway: correctedRunway,
-        };
+        });
       },
       beforeResponseAdoption: async () => {
         markAdoptionWaiting();

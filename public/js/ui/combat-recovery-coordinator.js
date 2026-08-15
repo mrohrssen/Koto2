@@ -119,5 +119,18 @@ export function createCombatRecoveryCoordinator({
     }
   }
 
-  return { capture, recover };
+  function commitLocalState(recovery, nextState) {
+    if (!recovery?.fence || !recovery?.stateLease || !recovery?.combatLease) {
+      throw new FenceContractViolation('optimistic combat state commit requires a recovery capture');
+    }
+    const nextOwner = getCombatOwner(nextState);
+    return recovery.fence.commit(
+      'commit optimistic local combat state',
+      recovery.stateLease.expectReplacement(nextState, {
+        transitions: [recovery.combatLease.expectTransition(nextOwner)],
+      }),
+    );
+  }
+
+  return { capture, recover, commitLocalState };
 }

@@ -143,6 +143,7 @@ describe('ExplorationScene.syncCreatures', () => {
     const app = makeFakeApp();
     const scene = new ExplorationScene(app);
     await scene.enter({ roomId: 'room-1', allies: [] });
+    const formationBeforeSync = scene.formation.lastFormationInput.player;
 
     const completed = await scene.syncCreatures({
       allies: [{ uid: 'stale-player', id: 'a' }],
@@ -152,7 +153,7 @@ describe('ExplorationScene.syncCreatures', () => {
     assert.equal(completed, false);
     assert.equal(scene.formation.creatureSprites.player.size, 0);
     assert.equal(scene.spritesByUid.size, 0);
-    assert.equal(scene.formation.lastFormationInput.player, null);
+    assert.strictEqual(scene.formation.lastFormationInput.player, formationBeforeSync);
     scene.exit();
   });
 

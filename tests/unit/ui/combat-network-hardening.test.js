@@ -117,6 +117,81 @@ function installRecoveryScene() {
   });
 }
 
+function makeLegacyExploreCombatState(combatId = 'combat-a') {
+  const move = {
+    id: 'tap', name: '触る', nameEn: 'Tap', reading: 'さわる', element: 'neutral',
+    category: 'damage', target: 'single_enemy', power: 1, mpCost: 0, accuracy: 100,
+  };
+  const ally = {
+    id: 'hi', uid: `ally-${combatId}`, name: '火', nameEn: 'Fire', reading: 'ひ', element: 'fire',
+    level: 3, attack: 10, defense: 5, dex: 10, hp: 100, maxHp: 100, mp: 10, maxMp: 10,
+    moves: [move],
+  };
+  const enemy = {
+    id: 'mizu', uid: `enemy-${combatId}`, name: '水', nameEn: 'Water', reading: 'みず', element: 'water',
+    level: 1, attack: 1, defense: 1, dex: 0, hp: 100, maxHp: 100, mp: 0, maxMp: 0,
+    moves: [{ ...move, id: 'enemy-tap', power: 0 }],
+  };
+  const room = { id: `room-${combatId}`, type: 'encounter' };
+  return {
+    phase: 'combat',
+    room,
+    combat: {
+      active: true,
+      isCreatureCombat: true,
+      allies: [ally],
+      enemies: [enemy],
+      actionCursor: { side: 'ally', index: 0, opening: false },
+      actionCount: 0,
+      optimistic: { combatId, stateVersion: 0, nextTurnSeed: 'seed-a', turnSeeds: ['seed-a'] },
+    },
+    run: {
+      active: true,
+      mode: 'standard',
+      currentRoom: 0,
+      rooms: [room],
+      partySkills: [],
+      itemBuffs: { xpMultiplier: 1, xpBalanceStacks: 0 },
+      crestMults: {},
+      creatureParty: { active: [ally], reserves: [] },
+    },
+  };
+}
+
+function adoptLegacyExploreCombatRunway(combatId, state) {
+  const session = configureExploreSession({
+    syncRequest: async () => ({
+      transport: true,
+      httpStatus: 200,
+      body: { status: 'ok', confirmedThroughSeq: 0, results: [] },
+      parseError: null,
+      networkError: null,
+      aborted: false,
+      clientAuthMismatch: false,
+      authRevision: 0,
+    }),
+    schedule: () => null,
+    cancel: () => {},
+  });
+  session.adoptRunway({
+    sessionEpoch: `ese-${combatId}`,
+    currentRoom: 0,
+    roomActionSeq: 0,
+    preparedRooms: [{
+      index: 0,
+      roomId: state.room.id,
+      room: state.room,
+      actionSeq: 0,
+      acceptedActions: ['combat.cycle'],
+      actionEffects: { 'combat.cycle': ['combatState', 'partyStats'] },
+      dependencies: ['combatState', 'partyStats'],
+      offlineReady: true,
+      interactionPayload: { combatId },
+    }],
+  });
+  return session;
+}
+
 describe('combat network hardening', () => {
   beforeEach(() => {
     actionArea = createActionArea();
@@ -342,22 +417,22 @@ describe('combat network hardening', () => {
     );
     assert.match(
       combatLoopSource,
-      /playback: typeof options\.playback === 'function'[\s\S]*?: \(localTranscript, \{ isCurrent, canFinalizeState \} = \{\}\) => playCreatureCombatResult[\s\S]*?isPlaybackCurrent: isCurrent,[\s\S]*?canFinalizePlaybackState: canFinalizeState/,
+      /playback: typeof options\.playback === 'function'[\s\S]*?: \(localTranscript, \{ isCurrent, canFinalizeState, commitState \} = \{\}\) => playCreatureCombatResult[\s\S]*?isPlaybackCurrent: isCurrent,[\s\S]*?canFinalizePlaybackState: canFinalizeState,[\s\S]*?commitState/,
       'attack playback must receive the captured Explore combat owner guard',
     );
     assert.match(
       combatLoopSource,
-      /playback: typeof playback === 'function'[\s\S]*?: \(localTranscript, \{ isCurrent, canFinalizeState \} = \{\}\) => playCreatureDefendResult[\s\S]*?isPlaybackCurrent: isCurrent,[\s\S]*?canFinalizePlaybackState: canFinalizeState/,
+      /playback: typeof playback === 'function'[\s\S]*?: \(localTranscript, \{ isCurrent, canFinalizeState, commitState \} = \{\}\) => playCreatureDefendResult[\s\S]*?isPlaybackCurrent: isCurrent,[\s\S]*?canFinalizePlaybackState: canFinalizeState,[\s\S]*?commitState/,
       'defend playback must receive the captured Explore combat owner guard',
     );
     assert.match(
       combatLoopSource,
-      /async function playCreatureCombatResult[\s\S]*?syncFinalState\(result, \{\s*isCurrent: \(\) => isPlaybackCurrent\(\) && canFinalizePlaybackState\(\),\s*\}\)/,
+      /async function playCreatureCombatResult[\s\S]*?syncFinalState\(result, \{\s*isCurrent: \(\) => isPlaybackCurrent\(\) && canFinalizePlaybackState\(\),\s*commitState,\s*\}\)/,
       'attack playback finalization must fail closed after combat ownership changes',
     );
     assert.match(
       combatLoopSource,
-      /async function playCreatureDefendResult[\s\S]*?syncFinalState\(result, \{\s*isCurrent: \(\) => isPlaybackCurrent\(\) && canFinalizePlaybackState\(\),\s*\}\)/,
+      /async function playCreatureDefendResult[\s\S]*?syncFinalState\(result, \{\s*isCurrent: \(\) => isPlaybackCurrent\(\) && canFinalizePlaybackState\(\),\s*commitState,\s*\}\)/,
       'defend playback finalization must fail closed after combat ownership changes',
     );
   });
@@ -2682,6 +2757,298 @@ describe('combat network hardening', () => {
       isCurrent: undefined,
     });
     assert.equal(syncCalls[0].isCurrent(), true);
+  });
+
+  it('does not let a corrected optimistic verifier overwrite a replacement Explore combat', async () => {
+    const stateA = makeLegacyExploreCombatState('combat-a');
+    const stateB = makeLegacyExploreCombatState('combat-b');
+    let currentState = stateA;
+    let updateCount = 0;
+    let selectionRestarts = 0;
+    let resolveVerification;
+    let verifyStarted = false;
+    const verificationStarted = new Promise(resolve => { resolveVerification = resolve; });
+    adoptLegacyExploreCombatRunway('combat-a', stateA);
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: state => {
+        updateCount += 1;
+        currentState = state;
+      },
+    });
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(() => {
+      verifyStarted = true;
+      return verificationStarted;
+    });
+    installRecoveryScene();
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+
+    const turn = combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+      turnTiming: {},
+      playback: async () => {},
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    });
+    await waitForCondition(() => verifyStarted, 'optimistic verification must start before replacing A');
+
+    currentState = stateB;
+    adoptLegacyExploreCombatRunway('combat-b', stateB);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+    resolveVerification({ status: 'corrected', authoritativeState: stateA });
+
+    assert.equal(await turn, true);
+    assert.equal(currentState.combat.optimistic.combatId, 'combat-b');
+    assert.equal(updateCount, 0);
+    assert.equal(selectionRestarts, 0);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true);
+  });
+
+  it('does not let a corrected optimistic verifier overwrite a non-Explore successor after its session disappears', async () => {
+    const stateA = makeLegacyExploreCombatState('combat-a');
+    const successor = makeLegacyExploreCombatState('combat-b');
+    successor.run = { ...successor.run, active: false, mode: 'kanjiKombat' };
+    let currentState = stateA;
+    let updateCount = 0;
+    let selectionRestarts = 0;
+    let resolveVerification;
+    let verifyStarted = false;
+    const verificationStarted = new Promise(resolve => { resolveVerification = resolve; });
+    adoptLegacyExploreCombatRunway('combat-a', stateA);
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: state => {
+        updateCount += 1;
+        currentState = state;
+      },
+    });
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(() => {
+      verifyStarted = true;
+      return verificationStarted;
+    });
+    installRecoveryScene();
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const turn = combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+      turnTiming: {},
+      playback: async () => {},
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    });
+    await waitForCondition(() => verifyStarted, 'optimistic verification must start before removing Explore');
+
+    currentState = successor;
+    resetExploreSession();
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+    resolveVerification({ status: 'corrected', authoritativeState: stateA });
+
+    assert.equal(await turn, true);
+    assert.strictEqual(currentState, successor);
+    assert.equal(updateCount, 0);
+    assert.equal(selectionRestarts, 0);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true);
+  });
+
+  it('leaves successor input untouched when a corrected optimistic verifier hands off to combat B', async () => {
+    const stateA = makeLegacyExploreCombatState('combat-a');
+    const stateB = makeLegacyExploreCombatState('combat-b');
+    let currentState = stateA;
+    let sceneSyncCount = 0;
+    let selectionRestarts = 0;
+    adoptLegacyExploreCombatRunway('combat-a', stateA);
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: state => { currentState = state; },
+    });
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => ({
+      status: 'corrected',
+      authoritativeState: stateB,
+    }));
+    setSceneManager({
+      transitioning: false,
+      currentScene: {
+        disposed: false,
+        _exiting: false,
+        syncCreatures: async () => { sceneSyncCount += 1; return true; },
+      },
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+
+    assert.equal(await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+      turnTiming: {},
+      playback: async () => {},
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    }), true);
+
+    assert.equal(currentState.combat.optimistic.combatId, 'combat-b');
+    assert.equal(sceneSyncCount, 0);
+    assert.equal(selectionRestarts, 0);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true);
+  });
+
+  it('finalizes a same-owner corrected optimistic verifier exactly once', async () => {
+    const state = makeLegacyExploreCombatState('combat-a');
+    const corrected = structuredClone(state);
+    corrected.combat.enemies[0].hp = 91;
+    let currentState = state;
+    let updateCount = 0;
+    let sceneSyncCount = 0;
+    let selectionRestarts = 0;
+    adoptLegacyExploreCombatRunway('combat-a', state);
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: next => {
+        updateCount += 1;
+        currentState = next;
+      },
+    });
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => ({
+      status: 'corrected',
+      authoritativeState: corrected,
+    }));
+    setSceneManager({
+      transitioning: false,
+      currentScene: {
+        disposed: false,
+        _exiting: false,
+        syncCreatures: async () => { sceneSyncCount += 1; return true; },
+      },
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    combatLoop.__combatNetworkTest.setPendingFlags({ player: true });
+
+    assert.equal(await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+      turnTiming: {},
+      playback: async () => {},
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    }), true);
+
+    assert.equal(currentState.combat.enemies[0].hp, 91);
+    assert.equal(updateCount, 1);
+    assert.equal(sceneSyncCount, 1);
+    assert.equal(selectionRestarts, 1);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, false);
+  });
+
+  it('advances the request-start recovery lease through an intentional optimistic playback state commit', async () => {
+    const state = makeLegacyExploreCombatState('combat-a');
+    const corrected = structuredClone(state);
+    corrected.combat.enemies[0].hp = 88;
+    let currentState = state;
+    let updateCount = 0;
+    let selectionRestarts = 0;
+    adoptLegacyExploreCombatRunway('combat-a', state);
+    combatLoop.init({
+      getGameState: () => currentState,
+      updateGameState: next => { currentState = next; },
+      updateUI: () => {},
+      settings: { getApiKeys: () => ({}) },
+      narration: {},
+      characterUI: { updateEnemyHPAtIndex: () => {}, updateEnemyHPBar: () => {} },
+      getEnemyDialogueActive: () => false,
+      delay: () => Promise.resolve(),
+    });
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: next => {
+        updateCount += 1;
+        currentState = next;
+      },
+    });
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => ({
+      status: 'corrected',
+      authoritativeState: corrected,
+    }));
+    installRecoveryScene();
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    assert.equal(await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+      turnTiming: {},
+      playback: async (localTranscript, { commitState }) => {
+        assert.equal(typeof commitState, 'function');
+        assert.equal(combatLoop.__combatNetworkTest.syncFinalState(localTranscript, { commitState }), true);
+      },
+      startMoveSelection: () => { selectionRestarts += 1; },
+      stopCombatLoop: () => {},
+    }), true);
+
+    assert.equal(currentState.combat.enemies[0].hp, 88);
+    assert.equal(updateCount, 2, 'one declared local commit plus one authoritative correction');
+    assert.equal(selectionRestarts, 1);
+  });
+
+  it('leaves Explore input owned when null or error recovery cannot synchronize the scene', async () => {
+    for (const result of [null, { error: 'temporary failure', state: makeLegacyExploreCombatState('combat-a') }]) {
+      const state = makeLegacyExploreCombatState('combat-a');
+      let currentState = state;
+      let selectionRestarts = 0;
+      adoptLegacyExploreCombatRunway('combat-a', state);
+      combatLoop.__combatNetworkTest.setStateAccessors({
+        get: () => currentState,
+        update: next => { currentState = next; },
+        fetchServerState: async () => makeLegacyExploreCombatState('combat-a'),
+      });
+      clearSceneManager();
+      combatLoop.__combatNetworkTest.setCombatActive(true);
+
+      await combatLoop.__combatNetworkTest.executeCreatureMovesTurn(
+        [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+        {
+          request: async () => result,
+          restartMoveSelection: () => { selectionRestarts += 1; },
+          reportError: () => { throw new Error('scene-unavailable recovery must not fall through to generic cleanup'); },
+        },
+      );
+
+      assert.equal(selectionRestarts, 0);
+      assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true);
+    }
+  });
+
+  it('leaves successor input untouched when an error-state recovery is superseded', async () => {
+    const stateA = makeLegacyExploreCombatState('combat-a');
+    const stateB = makeLegacyExploreCombatState('combat-b');
+    let currentState = stateA;
+    let selectionRestarts = 0;
+    let resolveRequest;
+    const requestStarted = new Promise(resolve => { resolveRequest = resolve; });
+    adoptLegacyExploreCombatRunway('combat-a', stateA);
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: next => { currentState = next; },
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const turn = combatLoop.__combatNetworkTest.executeCreatureMovesTurn(
+      [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+      {
+        request: () => requestStarted,
+        restartMoveSelection: () => { selectionRestarts += 1; },
+        reportError: () => { throw new Error('superseded recovery must not fall through to generic cleanup'); },
+      },
+    );
+    await Promise.resolve();
+    currentState = stateB;
+    adoptLegacyExploreCombatRunway('combat-b', stateB);
+    resolveRequest({ error: 'temporary failure', state: stateA });
+
+    await turn;
+    assert.strictEqual(currentState, stateB);
+    assert.equal(selectionRestarts, 0);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true);
   });
 
   it('stops pending optimistic combat end after accepted terminal verification without restarting selection', async () => {
