@@ -133,6 +133,18 @@ test('invalid descriptor and broken postconditions stop later work', async () =>
     () => missingFieldsFence.commit('missing-fields'),
     FenceContractViolation,
   );
+  assert.equal(missingFieldsFence.isCurrent(), false);
+  await assert.rejects(
+    () => missingFieldsFence.step('after-missing-fields', async () => 'never'),
+    FenceContractViolation,
+  );
+
+  const nullDescriptorFence = createAsyncOwnershipFence([]);
+  assert.throws(
+    () => nullDescriptorFence.commit('null-descriptor', null),
+    FenceContractViolation,
+  );
+  assert.equal(nullDescriptorFence.isCurrent(), false);
 
   const asyncLease = createRevisionLease('session');
   const asyncFence = createAsyncOwnershipFence([asyncLease.lease]);
@@ -141,6 +153,11 @@ test('invalid descriptor and broken postconditions stop later work', async () =>
       apply: () => Promise.resolve(),
       transitions: [],
     }),
+    FenceContractViolation,
+  );
+  assert.equal(asyncFence.isCurrent(), false);
+  await assert.rejects(
+    () => asyncFence.step('after-async-apply', async () => 'never'),
     FenceContractViolation,
   );
 
@@ -152,6 +169,7 @@ test('invalid descriptor and broken postconditions stop later work', async () =>
     }),
     FenceContractViolation,
   );
+  assert.equal(omittedFunctionsFence.isCurrent(), false);
 
   const duplicateFence = createAsyncOwnershipFence([asyncLease.lease]);
   assert.throws(
@@ -164,6 +182,11 @@ test('invalid descriptor and broken postconditions stop later work', async () =>
     }),
     FenceContractViolation,
   );
+  assert.equal(duplicateFence.isCurrent(), false);
+  await assert.rejects(
+    () => duplicateFence.step('after-duplicate-transition', async () => 'never'),
+    FenceContractViolation,
+  );
 
   const uncapturedLease = { label: 'uncaptured', isCurrent: () => true };
   const uncapturedFence = createAsyncOwnershipFence([asyncLease.lease]);
@@ -174,6 +197,7 @@ test('invalid descriptor and broken postconditions stop later work', async () =>
     }),
     FenceContractViolation,
   );
+  assert.equal(uncapturedFence.isCurrent(), false);
 
   const wrongRevision = createRevisionLease('session');
   const wrongRevisionFence = createAsyncOwnershipFence([wrongRevision.lease]);
@@ -193,7 +217,7 @@ test('invalid descriptor and broken postconditions stop later work', async () =>
 
   await assert.rejects(
     () => wrongRevisionFence.step('after-wrong-revision', async () => 'never'),
-    FenceSuperseded,
+    FenceContractViolation,
   );
 
   const wrongStateRevision = createRevisionLease('session');
@@ -223,7 +247,7 @@ test('invalid descriptor and broken postconditions stop later work', async () =>
 
   await assert.rejects(
     () => wrongStateFence.step('after-wrong-state', async () => 'never'),
-    FenceSuperseded,
+    FenceContractViolation,
   );
 
   const undeclaredMutation = createRevisionLease('session');
@@ -246,6 +270,58 @@ test('invalid descriptor and broken postconditions stop later work', async () =>
 
   await assert.rejects(
     () => undeclaredFence.step('after-undeclared-mutation', async () => 'never'),
-    FenceSuperseded,
+    FenceContractViolation,
+  );
+});
+
+test('thrown verify and advance poison the fence with FenceContractViolation', async () => {
+  const verifyLease = createRevisionLease('session');
+  const verifyFence = createAsyncOwnershipFence([verifyLease.lease]);
+  const verifyError = new Error('verify exploded');
+
+  assert.throws(
+    () => verifyFence.commit('verify-throws', {
+      apply() {
+        verifyLease.setActualRevision(2);
+      },
+      transitions: [{
+        lease: verifyLease.lease,
+        verify: () => {
+          throw verifyError;
+        },
+        advance: () => verifyLease.advanceExpectedRevision(2),
+      }],
+    }),
+    FenceContractViolation,
+  );
+  assert.equal(verifyFence.isCurrent(), false);
+  await assert.rejects(
+    () => verifyFence.step('after-verify-throws', async () => 'never'),
+    FenceContractViolation,
+  );
+
+  const advanceLease = createRevisionLease('session');
+  const advanceFence = createAsyncOwnershipFence([advanceLease.lease]);
+  const advanceError = new Error('advance exploded');
+
+  assert.throws(
+    () => advanceFence.commit('advance-throws', {
+      apply() {
+        advanceLease.setActualRevision(2);
+      },
+      transitions: [{
+        lease: advanceLease.lease,
+        verify: () => advanceLease.getActualRevision() === 2,
+        advance: () => {
+          throw advanceError;
+        },
+      }],
+    }),
+    FenceContractViolation,
+  );
+  assert.equal(advanceFence.isCurrent(), false);
+  await assert.rejects(
+    () => advanceFence.step('after-advance-throws', async () => 'never'),
+    FenceContractViolation,
   );
 });
