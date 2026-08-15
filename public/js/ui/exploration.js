@@ -43,6 +43,7 @@ import {
   getNextRoom,
 } from './room-reveal-buffer.js';
 import { configureExploreSession, getExploreSession } from './explore-session.js';
+import { createExploreSessionPauseController } from './explore-session-pause-controller.js';
 import {
   applyPartySkillChoice,
   syncPartySkillHpBonuses,
@@ -91,28 +92,12 @@ let finishCombatLoop = null;
 let resumeSessionCombatBefriendQuiz = null;
 let reconcileCorrectedCombat = null;
 let waitForCombatPlaybackIdle = async () => {};
-let exploreSessionOnlineDrainTarget = null;
-let exploreSessionVisibilityDrainTarget = null;
 // Injected in init(): pulls a rebuilt runway server-side (loadGameState with
 // adoptSession → /state?adoptSession=1, epoch preserved) to recover an online
 // stall.
 let refreshRunwayState = null;
-let reauthenticateExploreSession = null;
-let adoptExploreSession = null;
-let keepExploreSessionPaused = null;
-const RUNWAY_RECOVERY_REASONS = new Set([
-  'noPreparedRoom',
-  'currentRoomNotReady',
-  'nextRoomNotReady',
-  'runwayExhausted',
-  'missingPayload',
-  'actionNotAccepted',
-]);
-const RUNWAY_RECOVERY_RETRY_MS = [500, 1000, 2000, 4000, 8000, 15000];
-let runwayRecoveryPromise = null;
-let runwayRecoveryTimer = null;
-let runwayRecoveryAttempt = 0;
-let exploreSoftPauseDispatching = false;
+let reviewAuthoritativeState = null;
+let exploreSessionPauseController = null;
 let supportRoomRenderGeneration = 0;
 
 function isInitialSkillPickState(state = getGameState?.()) {
@@ -153,7 +138,6 @@ async function resetSceneForInitialRoomEntry(state, { isActive = () => true } = 
   hideEnemy();
   return true;
 }
-const EXPLORE_SPOTTY_COPY = 'Connection is spotty. Unsynced progress can be lost if you reload.';
 
 function applyExploreSessionRunway(response) {
   if (!response || !Object.hasOwn(response, 'exploreRunway')) return;
@@ -320,220 +304,20 @@ function onExploreSessionCorrection(response) {
   updateUI();
 }
 
-function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
-  // Calling session.pause invokes this same function through onPause. Let the
-  // outer call retain its detailed missing-capability copy while suppressing
-  // the nested notification, so one pause produces one narration card.
-  if (exploreSoftPauseDispatching) return;
-  const session = getExploreSession?.();
-  if (reason === 'writerConflict') {
-    showExploreWriterConflict();
-    return;
-  }
-  if (session?.isPaused?.() !== true) {
-    exploreSoftPauseDispatching = true;
-    try {
-      session?.pause?.(reason || 'missingPayload');
-    } finally {
-      exploreSoftPauseDispatching = false;
-    }
-  }
-  const missingDetails = Array.isArray(missingPayloadReasons)
-    ? missingPayloadReasons.filter(Boolean)
-    : [];
-  const detail = missingDetails.length > 0
-    ? ` Waiting for ${missingDetails.join(', ')}.`
-    : '';
-  sceneModule?.showNarration?.(
-    `${EXPLORE_SPOTTY_COPY}${detail}`,
-    { autoDismiss: 1800 }
-  );
-  const actionArea = globalThis.document?.getElementById?.('action-area');
-  if (actionArea && session?.pendingCount?.() > 0 && reason !== 'authRequired') {
-    actionArea.innerHTML = `<p class="explore-sync-pause-copy">${EXPLORE_SPOTTY_COPY}</p>`;
-    renderButtons([{
-      label: 'Retry now',
-      primary: true,
-      onClick: () => session.retryNow?.(),
-    }], { container: actionArea, append: true });
-  }
-  if (reason !== 'transportDegraded') {
-    void triggerExploreSessionRecovery(reason);
-  }
+function handleExploreSessionPause(pauseAttempt = {}) {
+  exploreSessionPauseController?.handlePause(pauseAttempt);
 }
 
-function showExploreWriterConflict() {
+function renderExploreSessionPauseNarration(text) {
+  sceneModule?.showNarration?.(text, { autoDismiss: 1800 });
+}
+
+function renderExploreSessionPauseActions({ message, actions: pauseActions }) {
   const actionArea = globalThis.document?.getElementById?.('action-area');
   if (!actionArea) return;
-  actionArea.innerHTML = '<p class="explore-sync-pause-copy">This run is open on another device. Review its latest progress before continuing here.</p>';
-  renderButtons([
-    {
-      label: 'Review latest progress',
-      primary: true,
-      disabled: typeof adoptExploreSession !== 'function',
-      onClick: async () => { await reviewExploreWriterConflict(); },
-    },
-    {
-      label: 'Keep this session paused',
-      disabled: typeof keepExploreSessionPaused !== 'function',
-      onClick: async () => { await keepExploreSessionPaused?.(); },
-    },
-  ], { container: actionArea, append: true });
-}
-
-async function reauthenticateAndAdoptExploreSession(expectedSession) {
-  if (typeof reauthenticateExploreSession !== 'function') return false;
-  const reauthenticated = await reauthenticateExploreSession();
-  if (
-    reauthenticated !== true
-    || getExploreSession?.() !== expectedSession
-    || typeof adoptExploreSession !== 'function'
-  ) return false;
-  return (await adoptExploreSession(expectedSession)) === true;
-}
-
-async function reviewExploreWriterConflict() {
-  const session = getExploreSession?.();
-  if (!session || session.getPauseReason?.() !== 'writerConflict') return false;
-  if (typeof adoptExploreSession !== 'function') return false;
-  if ((await adoptExploreSession()) !== true) {
-    showExploreWriterConflict();
-    return false;
-  }
-  await session.syncNow?.({ reason: 'writerConflictReview' });
-  return (session.pendingCount?.() ?? 0) === 0 && session.isPaused?.() !== true;
-}
-
-async function runExploreSessionRecovery(reason) {
-  const session = getExploreSession?.();
-  if (!session) {
-    return { recovered: false, retryable: false };
-  }
-
-  const pausedFor = session.getPauseReason?.() || reason;
-  if (pausedFor === 'writerConflict') {
-    return { recovered: false, retryable: false };
-  }
-  if (pausedFor === 'authRequired') {
-    const recoveredIdentity = await reauthenticateAndAdoptExploreSession(session);
-    if (!recoveredIdentity) {
-      return { recovered: false, retryable: false };
-    }
-    // Adoption may replace the session or supersede the auth pause. Only the
-    // same captured session may lift its exact auth pause and redeliver work.
-    if (
-      getExploreSession?.() !== session
-      || session.resolvePause?.('authRequired') !== true
-    ) {
-      return { recovered: false, retryable: false };
-    }
-    // onPause runs inside the failed drain. Yield before explicitly draining so
-    // this recovery never awaits the in-flight drain that raised the pause.
-    await Promise.resolve();
-    if (getExploreSession?.() !== session) {
-      return { recovered: false, retryable: false };
-    }
-    if ((session.pendingCount?.() ?? 0) > 0) {
-      await session.syncNow({ reason: 'authenticatedRecovery' });
-    }
-    const recovered = (session.pendingCount?.() ?? 0) === 0
-      && session.isPaused?.() !== true;
-    return { recovered, retryable: !recovered };
-  }
-
-  if ((session.pendingCount?.() ?? 0) > 0) {
-    await session.syncNow({ reason: 'onlineRecovery' });
-  }
-  if ((session.pendingCount?.() ?? 0) > 0) {
-    session.pause?.('syncPending');
-    return { recovered: false, retryable: true };
-  }
-
-  if (!RUNWAY_RECOVERY_REASONS.has(pausedFor)) {
-    return {
-      recovered: session.isPaused?.() !== true,
-      retryable: false,
-    };
-  }
-  if (typeof refreshRunwayState !== 'function') {
-    return { recovered: false, retryable: false };
-  }
-
-  const revision = session.getLocalRevision?.() ?? 0;
-  await refreshRunwayState();
-  const recovered = (session.getLocalRevision?.() ?? revision) === revision
-    && (session.pendingCount?.() ?? 0) === 0
-    && session.isPaused?.() !== true;
-  return { recovered, retryable: !recovered };
-}
-
-function scheduleExploreSessionRecovery() {
-  if (runwayRecoveryTimer) return;
-  const index = Math.min(
-    runwayRecoveryAttempt,
-    RUNWAY_RECOVERY_RETRY_MS.length - 1,
-  );
-  const delay = RUNWAY_RECOVERY_RETRY_MS[index];
-  runwayRecoveryAttempt += 1;
-  runwayRecoveryTimer = setTimeout(() => {
-    runwayRecoveryTimer = null;
-    void triggerExploreSessionRecovery();
-  }, delay);
-}
-
-export function triggerExploreSessionRecovery(reason) {
-  if (runwayRecoveryPromise) return runwayRecoveryPromise;
-  runwayRecoveryPromise = Promise.resolve()
-    .then(() => runExploreSessionRecovery(reason))
-    .catch(() => ({ recovered: false, retryable: true }))
-    .then(outcome => {
-      if (outcome.recovered) {
-        runwayRecoveryAttempt = 0;
-        if (runwayRecoveryTimer) clearTimeout(runwayRecoveryTimer);
-        runwayRecoveryTimer = null;
-        updateUI?.();
-      } else if (outcome.retryable) {
-        scheduleExploreSessionRecovery();
-      } else {
-        if (runwayRecoveryTimer) clearTimeout(runwayRecoveryTimer);
-        runwayRecoveryTimer = null;
-      }
-      return outcome;
-    })
-    .finally(() => { runwayRecoveryPromise = null; });
-  return runwayRecoveryPromise;
-}
-
-function hideExploreSoftPause() {
-  updateUI?.();
-}
-
-export function wireExploreSessionRecoveryDrains({
-  windowTarget = globalThis.window,
-  documentTarget = globalThis.document,
-} = {}) {
-  if (
-    windowTarget
-    && exploreSessionOnlineDrainTarget !== windowTarget
-    && typeof windowTarget.addEventListener === 'function'
-  ) {
-    exploreSessionOnlineDrainTarget = windowTarget;
-    windowTarget.addEventListener('online', () => {
-      void triggerExploreSessionRecovery();
-    });
-  }
-
-  if (
-    documentTarget
-    && exploreSessionVisibilityDrainTarget !== documentTarget
-    && typeof documentTarget.addEventListener === 'function'
-  ) {
-    exploreSessionVisibilityDrainTarget = documentTarget;
-    documentTarget.addEventListener('visibilitychange', () => {
-      if (documentTarget.visibilityState !== 'hidden') {
-        void triggerExploreSessionRecovery();
-      }
-    });
+  actionArea.innerHTML = `<p class="explore-sync-pause-copy">${message}</p>`;
+  if (pauseActions.length > 0) {
+    renderButtons(pauseActions, { container: actionArea, append: true });
   }
 }
 
@@ -585,7 +369,7 @@ async function completeWordDiscoveryOptimistically({ learnedWords = [], session 
   if (session) {
     completionResult = session.recordRoomAction('wordDiscovery.complete', { learnedWords });
     if (!completionResult?.accepted) {
-      showExploreSoftPause({ reason: completionResult?.reason || 'missingPayload' });
+      handleExploreSessionPause({ reason: completionResult?.reason || 'missingPayload' });
       return null;
     }
   } else {
@@ -595,8 +379,8 @@ async function completeWordDiscoveryOptimistically({ learnedWords = [], session 
         throw new Error(completionResult?.error || 'No response from word discovery completion API');
       }
       if (completionResult.state) updateGameState(completionResult.state);
-    } catch {
-      showExploreSoftPause({ reason: 'missingPayload' });
+  } catch {
+    handleExploreSessionPause({ reason: 'missingPayload' });
       return null;
     }
   }
@@ -755,9 +539,7 @@ export function init(callbacks) {
   reconcileCorrectedCombat = callbacks.reconcileCorrectedCombat;
   waitForCombatPlaybackIdle = callbacks.waitForCombatPlaybackIdle || (async () => {});
   refreshRunwayState = callbacks.refreshRunwayState;
-  reauthenticateExploreSession = callbacks.reauthenticateExploreSession;
-  adoptExploreSession = callbacks.adoptExploreSession;
-  keepExploreSessionPaused = callbacks.keepExploreSessionPaused;
+  reviewAuthoritativeState = callbacks.reviewAuthoritativeState;
   apiGetAreaOptions = callbacks.apiGetAreaOptions;
   apiSelectArea = callbacks.apiSelectArea;
   apiReturnToHub = callbacks.apiReturnToHub;
@@ -801,6 +583,19 @@ export function init(callbacks) {
   apiSkipCampfire = callbacks.apiSkipCampfire;
   apiTutorialAdvance = callbacks.apiTutorialAdvance;
   showAdventureReport = callbacks.showAdventureReport;
+  exploreSessionPauseController?.dispose();
+  exploreSessionPauseController = createExploreSessionPauseController({
+    getSession: () => getExploreSession?.(),
+    refreshRunwayState,
+    reviewAuthoritativeState,
+    renderNarration: renderExploreSessionPauseNarration,
+    renderActions: renderExploreSessionPauseActions,
+    showToast: (message, duration) => sceneModule?.showToast?.(message, duration),
+    schedule: (callback, delay) => setTimeout(callback, delay),
+    cancel: timer => clearTimeout(timer),
+    windowTarget: globalThis.window,
+    documentTarget: globalThis.document,
+  });
   if (typeof callbacks.apiSyncExploreSession === 'function') {
     configureExploreSession({
       syncRequest: callbacks.apiSyncExploreSession,
@@ -808,12 +603,9 @@ export function init(callbacks) {
       beforeResponseAdoption: () => waitForCombatPlaybackIdle(),
       onCheckpoint: onExploreSessionCheckpoint,
       onCorrection: onExploreSessionCorrection,
-      onPause: showExploreSoftPause,
-      onResume: hideExploreSoftPause,
-      onAuthRequired: reauthenticateAndAdoptExploreSession,
-      onWriterConflict: async () => {},
+      onPause: exploreSessionPauseController.handlePause,
+      onResume: () => updateUI?.(),
     });
-    wireExploreSessionRecoveryDrains();
   }
   campfireUI.init({
     apiGetCampfire,
@@ -1429,13 +1221,13 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
       return { status: 'queued', actionId: sessionResult.entry.actionId };
     }
     if (sessionResult && !sessionResult.accepted) {
-      showExploreSoftPause({ reason: sessionResult.reason });
+      handleExploreSessionPause({ reason: sessionResult.reason });
       return null;
     }
 
     try {
       if (!await flushPendingSessionBeforeLegacyProceed(session)) {
-        showExploreSoftPause({
+        handleExploreSessionPause({
           reason: session?.getPauseReason?.() || 'syncPending',
         });
         return null;
@@ -1459,13 +1251,13 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
       }
       return result || null;
     } catch {
-      showExploreSoftPause();
+      handleExploreSessionPause();
       return null;
     }
   }
 
   if (!await flushPendingSessionBeforeLegacyProceed(session)) {
-    showExploreSoftPause({
+    handleExploreSessionPause({
       reason: session?.getPauseReason?.() || 'syncPending',
     });
     return null;
@@ -1817,7 +1609,7 @@ async function chooseShrineReward(rewardType, creatureKey, renderOwner) {
     const queued = getExploreSession()?.recordRoomAction('shrine.choose', { rewardType, creatureKey });
     if (!queued?.accepted) {
       shrineState.choosing = false;
-      showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+      handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
       renderShrine();
       return;
     }
@@ -1834,7 +1626,7 @@ async function chooseShrineReward(rewardType, creatureKey, renderOwner) {
   } catch {
     shrineState.choosing = false;
     actions.clear();
-    showExploreSoftPause();
+    handleExploreSessionPause();
     renderShrine();
   }
 }
@@ -1942,7 +1734,7 @@ export async function renderWordDiscovery() {
   const session = getActiveStandardExploreSession(gameState);
   if (session?.isPaused?.() === true) {
     clearWordDiscoveryPlayableUi();
-    showExploreSoftPause({ reason: 'missingPayload' });
+    handleExploreSessionPause({ reason: 'missingPayload' });
     return;
   }
   session?.adoptRunway(gameState?.run?.exploreRunway || null);
@@ -1958,7 +1750,7 @@ export async function renderWordDiscovery() {
     if (session.isPaused?.() !== true) {
       session.pause?.('missingPayload');
     } else {
-      showExploreSoftPause({
+      handleExploreSessionPause({
         reason: 'missingPayload',
         missingPayloadReasons: sessionPayload.missingPayloadReasons,
       });
@@ -2108,7 +1900,7 @@ export async function renderWordDiscovery() {
         reviewIndex: currentIndex,
       });
       if (!queued?.accepted) {
-        showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+        handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
         return;
       }
     } else {
@@ -2120,7 +1912,7 @@ export async function renderWordDiscovery() {
         if (reviewResult.state) updateGameState(reviewResult.state);
         bootstrapClient.applyKnownWordReviewMembership?.(currentWord.word, reviewResult);
       } catch {
-        showExploreSoftPause({ reason: 'missingPayload' });
+        handleExploreSessionPause({ reason: 'missingPayload' });
         return;
       }
     }
@@ -2273,7 +2065,7 @@ function rejectExploreRoomCapability(capability, resetState = null) {
   resetState?.();
   actions.clear?.();
   if (!actions.clear) actions.setContent('');
-  showExploreSoftPause({
+  handleExploreSessionPause({
     reason: 'missingPayload',
     missingPayloadReasons: capability?.missingPayloadReasons || [],
   });
@@ -2415,9 +2207,9 @@ async function completeSpeedReviewRoomOptimistically(
   let completionResult;
   if (sessionOwned) {
     completionResult = getExploreSession()?.recordRoomAction('speedReview.complete', { roomId: room?.id });
-    if (!completionResult?.accepted) {
-      showExploreSoftPause({ reason: completionResult?.reason || 'missingPayload' });
-      if (throwOnFailure) throw new Error(EXPLORE_SPOTTY_COPY);
+  if (!completionResult?.accepted) {
+      handleExploreSessionPause({ reason: completionResult?.reason || 'missingPayload' });
+      if (throwOnFailure) throw new Error('Explore session action could not be queued');
       return null;
     }
   } else {
@@ -2503,7 +2295,7 @@ export async function renderSpeedReviewRoom() {
       ?? Math.max(0, Number(startResult.reviewedCards) || 0);
     if (!Number.isInteger(reviewedCards) || reviewedCards > snapshotWords.length) {
       speedReviewRoomLaunchState.roomId = null;
-      if (session) showExploreSoftPause({ reason: 'missingPayload' });
+      if (session) handleExploreSessionPause({ reason: 'missingPayload' });
       return;
     }
     const remainingWords = snapshotWords.slice(reviewedCards);
@@ -2537,8 +2329,8 @@ export async function renderSpeedReviewRoom() {
               commitIndex: absoluteCommitIndex,
             });
             if (!queued?.accepted) {
-              showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
-              throw new Error(EXPLORE_SPOTTY_COPY);
+              handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
+              throw new Error('Explore session action could not be queued');
             }
             return queued;
           }
@@ -2667,8 +2459,8 @@ async function completeWhackAMoleOptimistically(score, session = getExploreSessi
   if (!session || session !== getExploreSession()) return null;
   const queued = session?.recordRoomAction('whackAMole.complete', { score });
   if (!queued?.accepted) {
-    if (session?.isPaused?.() !== true) {
-      showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+  if (session?.isPaused?.() !== true) {
+      handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
     }
     return null;
   }
@@ -2683,8 +2475,8 @@ async function skipWhackAMoleOptimistically(session = getExploreSession()) {
   if (!session || session !== getExploreSession()) return null;
   const queued = session?.recordRoomAction('whackAMole.skip', {});
   if (!queued?.accepted) {
-    if (session?.isPaused?.() !== true) {
-      showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+  if (session?.isPaused?.() !== true) {
+      handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
     }
     return null;
   }
@@ -2732,8 +2524,8 @@ async function skipWhackAMoleLegacy(renderOwner = null) {
       renderOwner,
     );
   } catch {
-    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return null;
-    showExploreSoftPause();
+  if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return null;
+    handleExploreSessionPause();
     return null;
   }
 }
@@ -2752,8 +2544,8 @@ async function proceedWhackAMoleLegacy(renderOwner = null) {
       ownerOptions,
     );
   } catch {
-    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner, ownerOptions)) return null;
-    showExploreSoftPause();
+  if (renderOwner && !requireSupportRoomRenderOwner(renderOwner, ownerOptions)) return null;
+    handleExploreSessionPause();
     return null;
   }
 }
@@ -2828,7 +2620,7 @@ export async function renderWhackAMole() {
     resetWhackAMoleRenderState();
     actions.clear?.();
     if (!actions.clear) actions.setContent('');
-    showExploreSoftPause({
+    handleExploreSessionPause({
       reason: 'missingPayload',
       missingPayloadReasons: capability.missingPayloadReasons,
     });
@@ -3242,7 +3034,7 @@ async function chooseSkillMasterSkill(skillId, renderOwner = null) {
 
   const queued = getExploreSession()?.recordRoomAction('skillMaster.choose', { skillId });
   if (!queued?.accepted) {
-    showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+    handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
     renderSkillMaster();
     return false;
   }
@@ -3272,7 +3064,7 @@ async function chooseInitialSkillMasterSkill(skillId, renderOwner = null) {
   } catch (err) {
     if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return false;
     console.error('[SkillMaster] Failed to choose initial skill:', err);
-    showExploreSoftPause();
+    handleExploreSessionPause();
     renderSkillMaster();
     return false;
   }
@@ -3295,7 +3087,7 @@ async function chooseInitialSkillMasterSkill(skillId, renderOwner = null) {
   }
 
   if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return false;
-  showExploreSoftPause();
+  handleExploreSessionPause();
   renderSkillMaster();
   return false;
 }
@@ -3636,7 +3428,7 @@ export async function renderFriendlyNpc() {
         });
         if (!queued?.accepted) {
           friendlyNpcState.choosing = false;
-          showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+          handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
           renderFriendlyNpc();
           return;
         }
@@ -3883,7 +3675,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       if (!resp.state) {
         npcBattleSkillState.fetched = false;
         npcBattleSkillState.offered = null;
-        showExploreSoftPause({ reason: 'missingPayload' });
+        handleExploreSessionPause({ reason: 'missingPayload' });
         return;
       }
       npcBattleSkillState.choosing = true;
@@ -3901,7 +3693,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     if (!Array.isArray(offered) || offered.length === 0) {
       npcBattleSkillState.fetched = false;
       npcBattleSkillState.offered = null;
-      showExploreSoftPause({ reason: 'missingPayload' });
+      handleExploreSessionPause({ reason: 'missingPayload' });
       return;
     }
 
@@ -3955,7 +3747,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       const queued = getExploreSession()?.recordRoomAction('npcBattleSkill.choose', { skillId });
       if (!queued?.accepted) {
         npcBattleSkillState.choosing = false;
-        showExploreSoftPause({ reason: queued?.reason || 'missingPayload' });
+        handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
         renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
         return;
       }

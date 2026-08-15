@@ -87,7 +87,6 @@ import {
   isGameStateErrorResponse,
 } from './js/ui/game-state-adoption.js';
 import { FenceSuperseded } from './js/async-ownership-fence.js';
-import { adoptExploreSessionRecoveryState } from './js/ui/explore-session-recovery.js';
 import { buildLocalCombatFromStart } from '../src/shared/combat/local-combat-start.js';
 import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
@@ -953,35 +952,37 @@ async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSe
   }
 }
 
-// Auth and writer recovery run from inside an active Explore drain. This path
-// intentionally bypasses drainExploreSessionBeforeStateFetch: awaiting syncNow
-// there would await the drain that is awaiting this recovery callback. It adopts
-// only the authoritative runway, preserving optimistic state and the pending log
-// until the controller schedules its fresh post-recovery drain.
-async function loadExploreSessionRecoveryState(expectedSession) {
-  return adoptExploreSessionRecoveryState({
-    expectedSession,
-    getSession: () => getExploreSession?.(),
-    fetchState: apiGetGameState,
-    isUsableState: data => !isTransientGameStateFailure(data)
-      && !isGameStateErrorResponse(data)
-      && Boolean(data?.player),
-  });
-}
-
-async function loadGameState({ adoptSession = false } = {}) {
-  const data = await apiGetGameStateAfterExploreDrain('stateFetch', { adoptSession });
+async function loadGameState({ adoptSession = false, capture = null } = {}) {
+  // Pause-controller refreshes already captured an empty/preserve Explore fence.
+  // Fetch and runway adoption must use that exact fence so a disposed controller
+  // cannot mutate a successor after this await.
+  let data;
+  if (capture) {
+    try {
+      data = await capture.fence.step(
+        'fetch Explore pause recovery state',
+        () => apiGetGameState({ adoptSession }),
+      );
+    } catch (error) {
+      if (error instanceof FenceSuperseded) return null;
+      throw error;
+    }
+  } else {
+    data = await apiGetGameStateAfterExploreDrain('stateFetch', { adoptSession });
+  }
   // Fetch skipped because explore-session progress is still pending (see above):
   // keep the current optimistic client state; the drain will reconcile it under
   // the unrotated epoch. Not a failure — do not toast.
-  if (data === null) return gameState;
+  if (data === null) return capture ? false : gameState;
   if (isTransientGameStateFailure(data) || isGameStateErrorResponse(data)) {
+    if (capture) return false;
     scene.showToast?.('Connection is slow. Retrying...', 3000);
     return null;
   }
 
+  if (capture && !data?.player) return false;
+
   if (data.player) {
-    updateGameState(data);
     // GET /api/game/state (inside apiGetGameStateAfterExploreDrain above) rebuilds
     // the explore runway server-side. On a BARE fetch (boot/reload) it also ROTATES
     // the session epoch; in-session fetches pass adoptSession and keep the epoch.
@@ -994,9 +995,22 @@ async function loadGameState({ adoptSession = false } = {}) {
     // leave them and let their next sync reconcile the epoch via a `corrected`
     // response instead of silently discarding queued progress.
     const _session = getExploreSession?.();
-    if (_session && (_session.pendingCount?.() ?? 0) === 0) {
+    if (capture) {
+      try {
+        capture.fence.commit(
+          'adopt Explore pause recovery runway',
+          capture.expectRunwayAdoption(data.run?.exploreRunway || null),
+        );
+      } catch (error) {
+        if (error instanceof FenceSuperseded) return false;
+        throw error;
+      }
+    } else if (_session && (_session.pendingCount?.() ?? 0) === 0) {
       _session.adoptRunway?.(data.run?.exploreRunway || null);
     }
+    // The captured commit rechecks lifecycle/session ownership immediately
+    // before this synchronous state/display mutation.
+    updateGameState(data);
     const allCreatureIds = [
       ...(data.creatureParty?.active || []),
       ...(data.creatureParty?.reserves || []),
@@ -1015,7 +1029,7 @@ async function loadGameState({ adoptSession = false } = {}) {
       phase: data.phase || 'no_save'
     });
   }
-  return data;
+  return capture ? true : data;
 }
 
 async function claimDailyCrystalBonus() {
@@ -2467,10 +2481,8 @@ async function initGame() {
     // can clear) by pulling a rebuilt runway. adoptSession → /state?adoptSession=1
     // rebuilds the runway server-side WITHOUT rotating the epoch, then adopts it
     // into the session when the pending log is empty (see loadGameState).
-    refreshRunwayState: () => loadGameState({ adoptSession: true }),
-    reauthenticateExploreSession: () => auth.requestReauthentication(),
-    adoptExploreSession: expectedSession => loadExploreSessionRecoveryState(expectedSession),
-    keepExploreSessionPaused: () => scene.showToast('This session will remain paused until you review the other device.', 3000),
+    refreshRunwayState: ({ capture }) => loadGameState({ adoptSession: true, capture }),
+    reviewAuthoritativeState: ({ capture }) => loadGameState({ adoptSession: true, capture }),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {
       const result = await apiSelectArea(areaId);

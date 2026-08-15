@@ -216,7 +216,7 @@ function legacyOnlySupportRunway() {
 function initCutoverHarness({
   initialState,
   apiProceed = async () => null,
-  apiSyncExploreSession = async () => ({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
+  apiSyncExploreSession = async () => completeTransport({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
   waitForCombatPlaybackIdle = async () => {},
   reconcileCorrectedCombat = () => false,
   onUpdateUI = () => {},
@@ -247,7 +247,12 @@ function initCutoverHarness({
     },
     waitForCombatPlaybackIdle,
     apiProceed,
-    apiSyncExploreSession,
+    apiSyncExploreSession: async payload => {
+      const response = await apiSyncExploreSession(payload);
+      return response?.transport === true
+        ? response
+        : completeTransport({ protocolVersion: 1, ...response });
+    },
   });
   return {
     get currentState() { return currentState; },
