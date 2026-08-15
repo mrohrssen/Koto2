@@ -661,7 +661,7 @@ export function createExploreSession({
     let expectedOwnershipRevision = ownershipRevision;
     let expectedLifetime = sessionLifetime;
     const capturedEpoch = sessionEpoch;
-    const capturedPending = pending === 'preserve' ? cloneValue(log) : null;
+    const capturedPending = cloneValue(log);
     const sessionLease = {
       label: 'Explore session',
       isCurrent: () => (
@@ -677,8 +677,7 @@ export function createExploreSession({
       return {
         apply: () => {
           if (
-            pending !== 'preserve'
-            || requestedEpoch !== capturedEpoch
+            requestedEpoch !== capturedEpoch
             || !sameValue(log, capturedPending)
           ) {
             throw new Error('recovery runway adoption no longer owns this Explore session');

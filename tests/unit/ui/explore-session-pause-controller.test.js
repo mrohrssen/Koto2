@@ -45,7 +45,7 @@ function createSession({ reason = null, pending = 0 } = {}) {
     retryNow: async () => {},
     captureFence(options) {
       captureFenceCalls.push(options);
-      return { marker: 'preserved-capture' };
+      return { marker: 'preserved-capture', fence: { isCurrent: () => true } };
     },
     setReason(nextReason) { currentReason = nextReason; },
     setPending(nextPending) { currentPending = nextPending; },
@@ -131,6 +131,17 @@ describe('Explore session pause controller', () => {
     controller.dispose();
   });
 
+  it('attempts missingPayload when a pause caller supplies no reason', () => {
+    const session = createSession({ pending: 1 });
+    const { controller, narrations } = harness({ session });
+
+    controller.handlePause();
+
+    assert.equal(session.getPauseReason(), 'missingPayload');
+    assert.equal(narrations.at(-1), 'Syncing your progress. Please wait…');
+    controller.dispose();
+  });
+
   it('reviews writer progress with the supplied preserved capture without reposting or resuming', async () => {
     const session = createSession({ reason: 'writerConflict', pending: 2 });
     const captures = [];
@@ -144,7 +155,7 @@ describe('Explore session pause controller', () => {
 
     assert.equal(session.captureFenceCalls[0].pending, 'preserve');
     assert.equal(typeof session.captureFenceCalls[0].leases[0].isCurrent, 'function');
-    assert.deepEqual(captures, [{ marker: 'preserved-capture' }]);
+    assert.deepEqual(captures, [{ marker: 'preserved-capture', fence: { isCurrent: captures[0]?.fence?.isCurrent } }]);
     assert.equal(session.pendingCount(), 2);
     assert.equal(session.getPauseReason(), 'writerConflict');
     controller.dispose();

@@ -34,6 +34,7 @@ export function createExploreSessionPauseController({
   let recoveryTimer = null;
   let recoveryAttempt = 0;
   let pauseDispatching = false;
+  let reviewPromise = null;
 
   const isCurrent = (revision, session) => (
     !disposed
@@ -119,10 +120,11 @@ export function createExploreSessionPauseController({
     if (!session) return;
 
     if (pauseDispatching) return;
-    if (pauseAttempt?.reason) {
+    const attemptedReason = pauseAttempt?.reason || 'missingPayload';
+    if (attemptedReason) {
       pauseDispatching = true;
       try {
-        session.pause?.(pauseAttempt.reason);
+        session.pause?.(attemptedReason);
       } finally {
         pauseDispatching = false;
       }
@@ -195,32 +197,36 @@ export function createExploreSessionPauseController({
   }
 
   async function reviewLatestProgress() {
+    if (reviewPromise) return reviewPromise;
     const session = getSession?.();
     if (!session || session.getPauseReason?.() !== 'writerConflict') return false;
     const revision = lifecycleRevision;
-    let capture;
-    try {
-      capture = session.captureFence?.({
-        pending: 'preserve',
-        leases: [{
-          label: 'Explore pause controller',
-          isCurrent: () => isCurrent(revision, session),
-        }],
-      });
-      if (!capture) return false;
-      if ((await reviewAuthoritativeState?.({ capture })) !== true) {
-        throw new Error('authoritative review was not adopted');
+    reviewPromise = (async () => {
+      let capture;
+      try {
+        capture = session.captureFence?.({
+          pending: 'preserve',
+          leases: [{
+            label: 'Explore pause controller',
+            isCurrent: () => isCurrent(revision, session),
+          }],
+        });
+        if (!capture) return false;
+        if ((await reviewAuthoritativeState?.({ capture })) !== true) {
+          throw new Error('authoritative review was not adopted');
+        }
+      } catch {
+        if (capture?.fence?.isCurrent?.() === true && isCurrent(revision, session)) {
+          showToast?.('Unable to load the latest progress. Please try again.');
+          renderAuthoritativePause();
+        }
+        return false;
       }
-    } catch {
-      if (isCurrent(revision, session)) {
-        showToast?.('Unable to load the latest progress. Please try again.');
-        renderAuthoritativePause();
-      }
-      return false;
-    }
-    if (!isCurrent(revision, session)) return false;
-    renderAuthoritativePause();
-    return true;
+      if (capture?.fence?.isCurrent?.() !== true || !isCurrent(revision, session)) return false;
+      renderAuthoritativePause();
+      return true;
+    })().finally(() => { reviewPromise = null; });
+    return reviewPromise;
   }
 
   const onOnline = () => { void triggerRecovery(); };
