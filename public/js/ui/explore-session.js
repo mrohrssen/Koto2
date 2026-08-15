@@ -238,6 +238,11 @@ export function createExploreSession({
 
   function maybeResumeAfterDrain() {
     if (!paused) return;
+    if (
+      pauseReason === 'authRequired'
+      || pauseReason === 'writerConflict'
+      || pauseReason === 'unsupportedProtocol'
+    ) return;
     if (pauseReason === 'hardCap') {
       if (log.length <= EXPLORE_SESSION_RESUME_AT) resumeIfPaused();
       return;
@@ -671,7 +676,7 @@ export function createExploreSession({
     };
     const fence = createAsyncOwnershipFence([sessionLease, ...leases]);
 
-    function expectRunwayAdoption(nextRunway) {
+    function expectRunwayAdoption(nextRunway, { deferResume = false } = {}) {
       const requestedRunway = cloneValue(nextRunway);
       const requestedEpoch = nextRunway?.sessionEpoch ?? null;
       return {
@@ -682,7 +687,7 @@ export function createExploreSession({
           ) {
             throw new Error('recovery runway adoption no longer owns this Explore session');
           }
-          return completeOwnershipTransaction(() => adoptRunwayState(nextRunway));
+          return completeOwnershipTransaction(() => adoptRunwayState(nextRunway, { deferResume }));
         },
         transitions: [{
           lease: sessionLease,

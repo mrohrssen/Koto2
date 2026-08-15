@@ -1974,6 +1974,30 @@ test('empty capture adopts a same-epoch runway only while its exact empty owners
   assert.equal(capture.fence.isCurrent(), false);
 });
 
+test('deferred preserve-capture runway adoption cannot resume an empty writer conflict', () => {
+  let resumes = 0;
+  const session = createExploreSession({
+    syncRequest: async () => syncOkResponse(0),
+    onResume: () => { resumes += 1; },
+  });
+  session.adoptRunway(makeRunway());
+  session.pause('writerConflict');
+  const capture = session.captureFence({ pending: 'preserve' });
+  const refreshed = makeRunway({
+    preparedRooms: [preparedRoom(0, { actionSeq: 15, acceptedActions: ['friendlyNpc.choose'] })],
+  });
+
+  capture.fence.commit(
+    'adopt deferred writer review runway',
+    capture.expectRunwayAdoption(refreshed, { deferResume: true }),
+  );
+
+  assert.equal(session.isPaused(), true);
+  assert.equal(session.getPauseReason(), 'writerConflict');
+  assert.deepEqual(session.snapshot(), []);
+  assert.equal(resumes, 0);
+});
+
 test('a preserve fence captured during correction playback goes stale at correction commit', async () => {
   let releasePlayback;
   let markPlaybackStarted;

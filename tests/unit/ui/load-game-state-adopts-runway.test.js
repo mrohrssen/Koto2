@@ -62,6 +62,24 @@ test('loadGameState adopts the fresh explore runway after fetching rotated serve
   );
 });
 
+test('captured pause recovery defers resume until authoritative game state is installed', () => {
+  const loadGameStateSource = sourceBetween(
+    gameSrc,
+    'async function loadGameState(',
+    'async function claimDailyCrystalBonus',
+  );
+  const deferredAdoptionIndex = loadGameStateSource.indexOf('deferResume: true');
+  const commitIndex = loadGameStateSource.indexOf("'adopt Explore pause recovery runway'");
+  const updateStateIndex = loadGameStateSource.indexOf('updateGameState(data)');
+
+  assert.ok(deferredAdoptionIndex >= 0, 'captured recovery runway adoption must defer automatic session resume');
+  assert.ok(commitIndex >= 0 && updateStateIndex >= 0, 'captured adoption and state installation must both exist');
+  assert.ok(
+    commitIndex < updateStateIndex,
+    'the fenced runway ownership commit must precede state installation while its resume remains deferred',
+  );
+});
+
 /**
  * Combat-tier cutover invariant (explore subway): the epoch-rotating GET /state
  * fetch must be SKIPPED while the explore session still has pending entries.
@@ -85,10 +103,9 @@ test('apiGetGameStateAfterExploreDrain skips the epoch-rotating /state fetch whi
 
   const pendingGuardIndex = drainFetchSource.indexOf('pendingCount');
   const returnNullIndex = drainFetchSource.indexOf('return null');
-  const captureTokenIndex = drainFetchSource.indexOf('captureGameStateFetchToken(session)');
-  const fetchIndex = drainFetchSource.indexOf('await apiGetGameState(');
-  const currentGuardIndex = drainFetchSource.indexOf('isGameStateFetchCurrent(');
-  const returnDataIndex = drainFetchSource.indexOf('return data');
+  const captureTokenIndex = drainFetchSource.indexOf('captureGameStateFetchFence(session');
+  const fetchIndex = drainFetchSource.indexOf('apiGetGameState({ adoptSession })');
+  const fencedStepIndex = drainFetchSource.indexOf("capture.fence.step('fetch game state'");
 
   assert.ok(
     pendingGuardIndex >= 0,
@@ -97,8 +114,7 @@ test('apiGetGameStateAfterExploreDrain skips the epoch-rotating /state fetch whi
   assert.ok(returnNullIndex >= 0, 'it must return null (skip the fetch) when entries remain pending');
   assert.ok(captureTokenIndex >= 0, 'it must capture the live session before fetching /state');
   assert.ok(fetchIndex >= 0, 'it still fetches /state when the log is clear');
-  assert.ok(currentGuardIndex >= 0, 'it must reject a stale response before adoption');
-  assert.ok(returnDataIndex >= 0, 'it returns only a response that passed the stale-response guard');
+  assert.ok(fencedStepIndex >= 0, 'it must reject a stale response through the captured ownership fence');
   assert.ok(
     pendingGuardIndex < captureTokenIndex && returnNullIndex < captureTokenIndex,
     'the pending-entries guard + null return must come BEFORE the /state fetch — otherwise /state '
@@ -106,10 +122,9 @@ test('apiGetGameStateAfterExploreDrain skips the epoch-rotating /state fetch whi
     + 'session_epoch_mismatch',
   );
   assert.ok(
-    captureTokenIndex < fetchIndex
-      && fetchIndex < currentGuardIndex
-      && currentGuardIndex < returnDataIndex,
-    'the wrapper must capture the token, fetch, reject stale responses, then return in that order',
+    captureTokenIndex < fencedStepIndex
+      && fencedStepIndex < fetchIndex,
+    'the wrapper must capture the session, enter the fenced fetch step, and reject stale responses',
   );
 
   // loadGameState must treat the skipped fetch (null) as "keep current state", not a failure.
@@ -217,7 +232,7 @@ test('in-session state fetches pass the adoptSession signal; boot stays bare', (
   );
   assert.match(
     recoveryInitSource,
-    /loadGameState\(\{\s*adoptSession:\s*true\s*\}\)/,
+    /loadGameState\(\{\s*adoptSession:\s*true\s*,\s*capture\s*\}\)/,
     'empty-log runway recovery is in-session and must preserve the epoch',
   );
 

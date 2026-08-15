@@ -68,6 +68,15 @@ export function createExploreSessionPauseController({
     return { session, reason: session?.getPauseReason?.() || null };
   }
 
+  function hasCurrentEmptyRunwayRecovery(capture, revision, session) {
+    return (
+      isCurrent(revision, session)
+      && capture?.fence?.isCurrent?.() === true
+      && (session.pendingCount?.() ?? 0) === 0
+      && EMPTY_RUNWAY_REASONS.has(session.getPauseReason?.())
+    );
+  }
+
   function renderAuthoritativePause() {
     const { session, reason } = currentPause();
     if (!session || !reason) return;
@@ -176,22 +185,24 @@ export function createExploreSessionPauseController({
 
     recoveryPromise = Promise.resolve()
       .then(() => refreshRunwayState?.({ capture }))
-      .then(() => {
-        if (!isCurrent(revision, session)) return false;
+      .then(result => {
+        if (!hasCurrentEmptyRunwayRecovery(capture, revision, session)) return false;
         const stillPausedFor = session.getPauseReason?.();
-        const stillEmpty = (session.pendingCount?.() ?? 0) === 0;
-        if (stillEmpty && EMPTY_RUNWAY_REASONS.has(stillPausedFor)) {
+        if (result === true && session.resolvePause?.(stillPausedFor) === true) {
+          recoveryAttempt = 0;
+          cancelRecoveryTimer();
+          return true;
+        }
+        if (result !== true) {
           scheduleRecovery(session, revision);
           renderAuthoritativePause();
-          return false;
         }
-        recoveryAttempt = 0;
-        cancelRecoveryTimer();
-        return true;
+        return false;
       })
       .catch(() => {
-        if (!isCurrent(revision, session)) return false;
+        if (!hasCurrentEmptyRunwayRecovery(capture, revision, session)) return false;
         scheduleRecovery(session, revision);
+        renderAuthoritativePause();
         return false;
       })
       .finally(() => { recoveryPromise = null; });

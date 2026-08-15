@@ -43,6 +43,15 @@ function createSession({ reason = null, pending = 0 } = {}) {
       return false;
     },
     retryNow: async () => {},
+    resolvePause(expectedReason) {
+      if (
+        currentReason !== expectedReason
+        || expectedReason === 'writerConflict'
+        || expectedReason === 'unsupportedProtocol'
+      ) return false;
+      currentReason = null;
+      return true;
+    },
     captureFence(options) {
       captureFenceCalls.push(options);
       return { marker: 'preserved-capture', fence: { isCurrent: () => true } };
@@ -209,6 +218,69 @@ describe('Explore session pause controller', () => {
     controller.dispose();
   });
 
+  it('resolves an exact empty runway pause only after its refresh has installed authoritative state', async () => {
+    const events = [];
+    const session = createSession({ reason: 'nextRoomNotReady', pending: 0 });
+    const resolvePause = session.resolvePause;
+    session.resolvePause = reason => {
+      events.push('resume/UI');
+      return resolvePause(reason);
+    };
+    const { controller } = harness({
+      session,
+      refreshRunwayState: async () => {
+        events.push('adopt/state');
+        return true;
+      },
+    });
+
+    await controller.triggerRecovery();
+
+    assert.deepEqual(events, ['adopt/state', 'resume/UI']);
+    assert.equal(session.isPaused(), false);
+    controller.dispose();
+  });
+
+  it('does not retry, render, or resolve when refresh promotes an empty pause to auth', async () => {
+    const session = createSession({ reason: 'nextRoomNotReady', pending: 0 });
+    const { controller, timers, narrations, actions } = harness({
+      session,
+      refreshRunwayState: async () => {
+        session.setReason('authRequired');
+        throw new Error('auth took ownership');
+      },
+    });
+
+    await controller.triggerRecovery();
+
+    assert.equal(session.getPauseReason(), 'authRequired');
+    assert.deepEqual(timers, []);
+    assert.deepEqual(narrations, []);
+    assert.deepEqual(actions, []);
+    controller.dispose();
+  });
+
+  it('does not resolve, render, or retry after a same-session capture is superseded during refresh', async () => {
+    let captureCurrent = true;
+    const session = createSession({ reason: 'nextRoomNotReady', pending: 0 });
+    session.captureFence = () => ({ fence: { isCurrent: () => captureCurrent } });
+    const { controller, timers, narrations, actions } = harness({
+      session,
+      refreshRunwayState: async () => {
+        captureCurrent = false;
+        return true;
+      },
+    });
+
+    await controller.triggerRecovery();
+
+    assert.equal(session.getPauseReason(), 'nextRoomNotReady');
+    assert.deepEqual(timers, []);
+    assert.deepEqual(narrations, []);
+    assert.deepEqual(actions, []);
+    controller.dispose();
+  });
+
   it('uses no controller timer for pending work and ratchets empty-runway refresh delays through the cap', async () => {
     const pending = harness({ session: createSession({ reason: 'transportDegraded', pending: 1 }) });
     pending.controller.handlePause();
@@ -276,5 +348,25 @@ describe('Explore session pause controller', () => {
     assert.deepEqual(cancels, [armedTimer]);
     assert.equal(refreshCalls, 1);
     assert.equal(narrations.length, narrationCountBeforeDispose);
+  });
+
+  it('ignores a real in-flight refresh completion after disposal', async () => {
+    const refresh = deferred();
+    const session = createSession({ reason: 'nextRoomNotReady', pending: 0 });
+    const { controller, timers, narrations, actions } = harness({
+      session,
+      refreshRunwayState: async () => refresh.promise,
+    });
+
+    const recovery = controller.triggerRecovery();
+    await Promise.resolve();
+    controller.dispose();
+    refresh.resolve(true);
+    await recovery;
+
+    assert.equal(session.getPauseReason(), 'nextRoomNotReady');
+    assert.deepEqual(timers, []);
+    assert.deepEqual(narrations, []);
+    assert.deepEqual(actions, []);
   });
 });

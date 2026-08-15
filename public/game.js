@@ -999,7 +999,7 @@ async function loadGameState({ adoptSession = false, capture = null } = {}) {
       try {
         capture.fence.commit(
           'adopt Explore pause recovery runway',
-          capture.expectRunwayAdoption(data.run?.exploreRunway || null),
+          capture.expectRunwayAdoption(data.run?.exploreRunway || null, { deferResume: true }),
         );
       } catch (error) {
         if (error instanceof FenceSuperseded) return false;
