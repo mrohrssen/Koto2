@@ -283,6 +283,123 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     assert.equal(session.pendingCount(), 0);
   });
 
+  for (const {
+    operation,
+    invoke,
+    expectedResult,
+  } of [
+    {
+      operation: 'checkAuth',
+      invoke: () => auth.checkAuth(),
+      expectedResult: false,
+    },
+    {
+      operation: 'getCurrentUser',
+      invoke: () => auth.getCurrentUser(),
+      expectedResult: null,
+    },
+  ]) {
+    it(`${operation} refuses a different verified principal without transferring retained Explore work`, async () => {
+      globalThis.localStorage.setItem('authToken', 'token-a');
+      globalThis.fetch = async () => makeResponse({
+        body: { id: 'user-1', username: 'michi' },
+      });
+      assert.equal(await auth.checkAuth(), true);
+
+      let authRequiredCalls = 0;
+      const session = createExploreSession({
+        syncRequest: api.syncExploreSession,
+        onAuthRequired: async () => { authRequiredCalls += 1; return false; },
+      });
+      session.adoptRunway(makeExploreRunway());
+      assert.equal(session.recordRoomAction('friendlyNpc.choose', {
+        itemId: 'field-tonic',
+      }).accepted, true);
+      const exactPendingLog = session.snapshot();
+
+      globalThis.localStorage.setItem('authToken', 'token-b');
+      globalThis.fetch = async () => makeResponse({
+        body: { id: 'user-2', username: 'other' },
+      });
+      const genericResult = await invoke();
+
+      const exploreHeaders = [];
+      globalThis.fetch = async (_url, options) => {
+        exploreHeaders.push(options.headers);
+        return makeResponse({ body: { status: 'ok', confirmedThroughSeq: 1, results: [] } });
+      };
+      await session.syncNow();
+
+      assert.deepEqual({
+        genericResult,
+        exploreHeaders,
+        authRequiredCalls,
+        pauseReason: session.getPauseReason(),
+        pendingLog: session.snapshot(),
+      }, {
+        genericResult: expectedResult,
+        exploreHeaders: [],
+        authRequiredCalls: 1,
+        pauseReason: 'authRequired',
+        pendingLog: exactPendingLog,
+      });
+    });
+  }
+
+  it('rejects a different-principal login before storing its token without an active reauthentication request', async () => {
+    globalThis.localStorage.setItem('authToken', 'token-a');
+    globalThis.fetch = async () => makeResponse({
+      body: { id: 'user-1', username: 'michi' },
+    });
+    assert.equal(await auth.checkAuth(), true);
+
+    globalThis.fetch = async url => {
+      assert.match(url, /\/api\/auth\/login$/);
+      return makeResponse({
+        body: { token: 'token-b', user: { id: 'user-2', username: 'other' } },
+      });
+    };
+    dom.elements.get('auth-username').value = 'other';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-submit').click();
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(globalThis.localStorage.getItem('authToken'), 'token-a');
+    assert.match(dom.elements.get('auth-error').textContent, /same account/i);
+    assert.deepEqual(authenticatedUsers, []);
+  });
+
+  it('allows a different principal to bind and drain only after explicit logout clears retained ownership', async () => {
+    globalThis.localStorage.setItem('authToken', 'token-a');
+    globalThis.fetch = async () => makeResponse({
+      body: { id: 'user-1', username: 'michi' },
+    });
+    assert.equal(await auth.checkAuth(), true);
+
+    auth.logout();
+    globalThis.localStorage.setItem('authToken', 'token-b');
+    globalThis.fetch = async () => makeResponse({
+      body: { id: 'user-2', username: 'other' },
+    });
+    assert.equal(await auth.checkAuth(), true);
+
+    const sentHeaders = [];
+    globalThis.fetch = async (_url, options) => {
+      sentHeaders.push(options.headers);
+      return makeResponse({ body: { status: 'ok', confirmedThroughSeq: 1, results: [] } });
+    };
+    const session = createExploreSession({ syncRequest: api.syncExploreSession });
+    session.adoptRunway(makeExploreRunway());
+    assert.equal(session.recordRoomAction('friendlyNpc.choose', {
+      itemId: 'field-tonic',
+    }).accepted, true);
+    await session.syncNow();
+
+    assert.equal(sentHeaders.length, 1);
+    assert.equal(sentHeaders[0].Authorization, 'Bearer token-b');
+    assert.equal(session.pendingCount(), 0);
+  });
+
   it('refuses a different account without storing its token or resolving recovery', async () => {
     globalThis.localStorage.setItem('authToken', 'expired-token');
     globalThis.fetch = async (url) => {

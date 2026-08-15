@@ -11,10 +11,17 @@ let reauthenticationRequest = null;
 
 const SAME_ACCOUNT_RECOVERY_ERROR = 'Log in to the same account to recover this run. Creating or switching accounts is not allowed.';
 
+function canAdoptAuthenticatedPrincipal(user) {
+  return typeof user?.id === 'string'
+    && user.id.length > 0
+    && (!authenticatedPrincipalId || authenticatedPrincipalId === user.id);
+}
+
 function captureAuthenticatedPrincipal(user, token) {
-  if (typeof user?.id !== 'string' || user.id.length === 0) return;
+  if (!canAdoptAuthenticatedPrincipal(user)) return false;
   authenticatedPrincipalId = user.id;
   bindExploreSyncAuthPrincipal({ principalId: user.id, token });
+  return true;
 }
 
 /**
@@ -76,8 +83,7 @@ export async function checkAuth() {
     const res = await fetch(apiUrl('/api/auth/me'), { headers });
     if (res.ok) {
       const user = await res.json();
-      captureAuthenticatedPrincipal(user, token);
-      return true;
+      return captureAuthenticatedPrincipal(user, token);
     }
     if (token) removeToken();
     return false;
@@ -96,7 +102,7 @@ export async function getCurrentUser() {
     });
     if (!res.ok) return null;
     const user = await res.json();
-    captureAuthenticatedPrincipal(user, token);
+    if (!captureAuthenticatedPrincipal(user, token)) return null;
     return user;
   } catch {
     return null;
@@ -201,8 +207,11 @@ async function handleSubmit(callbacks) {
     }
 
     if (
-      reauthenticationRequest
-      && data.user?.id !== reauthenticationRequest.principalId
+      !canAdoptAuthenticatedPrincipal(data.user)
+      || (
+        reauthenticationRequest
+        && data.user?.id !== reauthenticationRequest.principalId
+      )
     ) {
       showError(SAME_ACCOUNT_RECOVERY_ERROR);
       return;
