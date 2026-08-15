@@ -106,6 +106,17 @@ function initCombatLoopTestDefaults() {
   });
 }
 
+function installRecoveryScene() {
+  setSceneManager({
+    transitioning: false,
+    currentScene: {
+      disposed: false,
+      _exiting: false,
+      syncCreatures: async ({ isCurrent = () => true }) => isCurrent(),
+    },
+  });
+}
+
 describe('combat network hardening', () => {
   beforeEach(() => {
     actionArea = createActionArea();
@@ -113,6 +124,7 @@ describe('combat network hardening', () => {
     console.log = () => {};
     resetKanjiKombatSession();
     resetExploreSession();
+    configureExploreSession({ syncRequest: async () => ({}) });
     initCombatLoopTestDefaults();
     combatLoop.__combatNetworkTest.setCreatureCombatApi(null);
     combatLoop.__combatNetworkTest.setSyncIndicatorDelayMs(500);
@@ -554,10 +566,10 @@ describe('combat network hardening', () => {
     assert.equal(typeof timingLog[1].requestMs, 'number');
   });
 
-  it('recovers attack errors by merging authoritative state and restarting selection', () => {
+  it('recovers attack errors by merging authoritative state and restarting selection', async () => {
     const updates = [];
     let restartCount = 0;
-    const currentState = {
+    let currentState = {
       phase: 'combat',
       combat: {
         active: true,
@@ -575,10 +587,12 @@ describe('combat network hardening', () => {
     };
     combatLoop.__combatNetworkTest.setStateAccessors({
       get: () => currentState,
-      update: state => updates.push(state),
+      update: state => { updates.push(state); currentState = state; },
     });
+    installRecoveryScene();
+    combatLoop.__combatNetworkTest.setCombatActive(true);
 
-    const result = combatLoop.__combatNetworkTest.recoverFromCombatErrorState(
+    const result = await combatLoop.__combatNetworkTest.recoverFromCombatErrorState(
       { error: 'Submitted move does not match current action cursor', state: authoritativeState },
       'attack',
       { restartSelection: () => { restartCount += 1; } }
@@ -594,10 +608,10 @@ describe('combat network hardening', () => {
     assert.equal(restartCount, 1);
   });
 
-  it('recovers defend errors by merging authoritative state and restarting selection', () => {
+  it('recovers defend errors by merging authoritative state and restarting selection', async () => {
     const updates = [];
     let restartCount = 0;
-    const currentState = {
+    let currentState = {
       phase: 'combat',
       combat: {
         active: true,
@@ -615,10 +629,12 @@ describe('combat network hardening', () => {
     };
     combatLoop.__combatNetworkTest.setStateAccessors({
       get: () => currentState,
-      update: state => updates.push(state),
+      update: state => { updates.push(state); currentState = state; },
     });
+    installRecoveryScene();
+    combatLoop.__combatNetworkTest.setCombatActive(true);
 
-    const result = combatLoop.__combatNetworkTest.recoverFromCombatErrorState(
+    const result = await combatLoop.__combatNetworkTest.recoverFromCombatErrorState(
       { error: 'Submitted move does not match current action cursor', state: authoritativeState },
       'defend',
       { restartSelection: () => { restartCount += 1; } }
@@ -638,7 +654,7 @@ describe('combat network hardening', () => {
     const updates = [];
     let fetchCount = 0;
     let restartCount = 0;
-    const currentState = {
+    let currentState = {
       phase: 'combat',
       combat: {
         active: true,
@@ -656,12 +672,14 @@ describe('combat network hardening', () => {
     };
     combatLoop.__combatNetworkTest.setStateAccessors({
       get: () => currentState,
-      update: state => updates.push(state),
+      update: state => { updates.push(state); currentState = state; },
       fetchServerState: async () => {
         fetchCount += 1;
         return fetchedState;
       },
     });
+    installRecoveryScene();
+    combatLoop.__combatNetworkTest.setCombatActive(true);
 
     const result = await combatLoop.__combatNetworkTest.recoverFromNullCombatPost('attack', {
       restartSelection: () => { restartCount += 1; },
@@ -681,14 +699,16 @@ describe('combat network hardening', () => {
   it('does not recover a null combat POST when server state fetch is transient', async () => {
     let fetchCount = 0;
     let updateCount = 0;
+    let currentState = { phase: 'combat', combat: { active: true } };
     combatLoop.__combatNetworkTest.setStateAccessors({
-      get: () => ({ phase: 'combat', combat: { active: true } }),
+      get: () => currentState,
       update: () => { updateCount += 1; },
       fetchServerState: async () => {
         fetchCount += 1;
         return { error: 'network_unavailable', transient: true };
       },
     });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
 
     const result = await combatLoop.__combatNetworkTest.recoverFromNullCombatPost('attack');
 
@@ -701,6 +721,37 @@ describe('combat network hardening', () => {
     assert.equal(updateCount, 0);
   });
 
+  it('fails closed when standard Explore recovery was not captured before the request', async () => {
+    let fetchCount = 0;
+    let updateCount = 0;
+    const room = { id: 'room-0' };
+    const currentState = {
+      phase: 'combat',
+      room,
+      run: { active: true, mode: 'standard', currentRoom: 0, rooms: [room] },
+      combat: { active: true, optimistic: { combatId: 'combat-a' } },
+    };
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: () => { updateCount += 1; },
+      fetchServerState: async () => {
+        fetchCount += 1;
+        return currentState;
+      },
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const result = await combatLoop.__combatNetworkTest.recoverFromNullCombatPost('attack');
+
+    assert.deepEqual(result, {
+      recovered: false,
+      outcome: 'recovery_failed',
+      combatActive: true,
+    });
+    assert.equal(fetchCount, 0);
+    assert.equal(updateCount, 0);
+  });
+
   it('does not fetch server state for healthy combat requests', async () => {
     let fetchCount = 0;
     combatLoop.__combatNetworkTest.setCreatureCombatApi(async () => ({ ok: true }));
@@ -710,6 +761,8 @@ describe('combat network hardening', () => {
         return { phase: 'combat' };
       },
     });
+    installRecoveryScene();
+    combatLoop.__combatNetworkTest.setCombatActive(true);
 
     const result = await combatLoop.__combatNetworkTest.runCreatureCombatRequest('attack', []);
 
@@ -724,9 +777,10 @@ describe('combat network hardening', () => {
       combatCallCount += 1;
       return null;
     });
+    let currentState = { phase: 'combat', combat: { active: true } };
     combatLoop.__combatNetworkTest.setStateAccessors({
-      get: () => ({ phase: 'combat', combat: { active: true } }),
-      update: () => {},
+      get: () => currentState,
+      update: state => { currentState = state; },
       fetchServerState: async () => {
         stateFetchCount += 1;
         return {
@@ -738,6 +792,8 @@ describe('combat network hardening', () => {
         };
       },
     });
+    installRecoveryScene();
+    combatLoop.__combatNetworkTest.setCombatActive(true);
 
     await combatLoop.__combatNetworkTest.runCreatureCombatRequest('attack', []);
     const recovery = await combatLoop.__combatNetworkTest.recoverFromNullCombatPost('attack', {
@@ -749,7 +805,7 @@ describe('combat network hardening', () => {
     assert.equal(stateFetchCount, 1);
   });
 
-  it('refreshes authoritative combat when a rejected append has lost its captured owner', async () => {
+  it('does not refresh or restart a successor after a rejected append replaces its captured owner', async () => {
     const move = {
       id: 'poke', name: '突く', nameEn: 'Poke', reading: 'つく', element: 'neutral',
       category: 'damage', target: 'single_enemy', power: 1, mpCost: 0, accuracy: 100,
@@ -836,6 +892,7 @@ describe('combat network hardening', () => {
     combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => {
       throw new Error('legacy verify must not run');
     });
+    installRecoveryScene();
     combatLoop.__combatNetworkTest.setCombatActive(true);
     combatLoop.__combatNetworkTest.setPendingFlags({ enemy: true });
 
@@ -850,15 +907,15 @@ describe('combat network hardening', () => {
     });
 
     assert.equal(handled, true);
-    assert.equal(fetchCount, 1);
+    assert.equal(fetchCount, 0);
     assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().enemy, false);
     assert.equal(combatLoop.getExploreCombatPlaybackRecoveryState(), 'none');
     assert.equal(combatLoop.consumeExploreCombatPlaybackRecovery(), false);
     assert.equal(currentState.combat.optimistic.combatId, 'combat-b');
-    assert.equal(moveSelectionRendered, true);
+    assert.equal(moveSelectionRendered, false);
   });
 
-  it('discards a delayed missing-owner refresh after a newer combat is adopted', async () => {
+  it('does not fetch a recovery response after session replacement supersedes the rejected owner', async () => {
     const move = {
       id: 'poke', name: '突く', nameEn: 'Poke', reading: 'つく', element: 'neutral',
       category: 'damage', target: 'single_enemy', power: 1, mpCost: 0, accuracy: 100,
@@ -921,15 +978,11 @@ describe('combat network hardening', () => {
     });
     const stateA = makeState('combat-a');
     const stateB = makeState('combat-b');
-    const stateC = makeState('combat-c');
     let currentState = stateA;
     let updateCount = 0;
     let sceneSyncCount = 0;
     let moveSelectionCount = 0;
-    let releaseFetch;
-    let markFetchStarted;
-    const fetchStarted = new Promise(resolveStarted => { markFetchStarted = resolveStarted; });
-    const delayedFetch = new Promise(resolveFetch => { releaseFetch = resolveFetch; });
+    let fetchCount = 0;
     const session = configureExploreSession({
       syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: null, results: [] }),
       schedule: () => null,
@@ -949,8 +1002,8 @@ describe('combat network hardening', () => {
       },
       fetchServerState: async ({ adoptSession }) => {
         assert.equal(adoptSession, true);
-        markFetchStarted();
-        return delayedFetch;
+        fetchCount += 1;
+        return stateB;
       },
     });
     setSceneManager({
@@ -973,19 +1026,15 @@ describe('combat network hardening', () => {
       startMoveSelection: () => { moveSelectionCount += 1; },
       stopCombatLoop: () => {},
     });
-    await fetchStarted;
-
-    currentState = stateC;
-    session.adoptRunway(makeRunway('combat-c'));
-    releaseFetch(stateB);
     const handled = await turn;
 
     assert.equal(handled, true);
     assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().enemy, false);
-    assert.equal(currentState.combat.optimistic.combatId, 'combat-c');
-    assert.equal(updateCount, 0, 'the stale B response must not update shared game state');
-    assert.equal(sceneSyncCount, 0, 'the stale B response must not mutate the current scene');
-    assert.equal(moveSelectionCount, 0, 'the stale B response must not unlock combat C');
+    assert.equal(currentState.combat.optimistic.combatId, 'combat-b');
+    assert.equal(fetchCount, 0, 'a superseded owner must not fetch recovery state');
+    assert.equal(updateCount, 0, 'the superseded recovery must not update shared game state');
+    assert.equal(sceneSyncCount, 0, 'the superseded recovery must not mutate the current scene');
+    assert.equal(moveSelectionCount, 0, 'the superseded recovery must not unlock combat B');
     assert.equal(combatLoop.getExploreCombatPlaybackRecoveryState(), 'none');
   });
 
@@ -2623,11 +2672,16 @@ describe('combat network hardening', () => {
     assert.equal(updates.length, 1);
     assert.deepEqual(updates[0].combat.enemies, [authoritativeEnemy]);
     assert.equal(syncCalls.length, 1);
-    assert.deepEqual(syncCalls[0], {
+    assert.deepEqual({
+      ...syncCalls[0],
+      isCurrent: undefined,
+    }, {
       allies: [ally],
       enemies: [authoritativeEnemy],
       initial: false,
+      isCurrent: undefined,
     });
+    assert.equal(syncCalls[0].isCurrent(), true);
   });
 
   it('stops pending optimistic combat end after accepted terminal verification without restarting selection', async () => {

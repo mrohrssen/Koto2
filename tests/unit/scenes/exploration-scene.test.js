@@ -139,6 +139,35 @@ function makeFakeApp() {
 
 
 describe('ExplorationScene.syncCreatures', () => {
+  it('returns false without touching formation state when recovery currentness is already stale', async () => {
+    const app = makeFakeApp();
+    const scene = new ExplorationScene(app);
+    await scene.enter({ roomId: 'room-1', allies: [] });
+
+    const completed = await scene.syncCreatures({
+      allies: [{ uid: 'stale-player', id: 'a' }],
+      isCurrent: () => false,
+    });
+
+    assert.equal(completed, false);
+    assert.equal(scene.formation.creatureSprites.player.size, 0);
+    assert.equal(scene.spritesByUid.size, 0);
+    assert.equal(scene.formation.lastFormationInput.player, null);
+    scene.exit();
+  });
+
+  it('keeps ordinary callers current when isCurrent is omitted', async () => {
+    const app = makeFakeApp();
+    const scene = new ExplorationScene(app);
+    await scene.enter({ roomId: 'room-1', allies: [] });
+
+    const completed = await scene.syncCreatures({ allies: [{ uid: 'default-player', id: 'a' }] });
+
+    assert.equal(completed, true);
+    assert.ok(scene.spritesByUid.has('default-player'));
+    scene.exit();
+  });
+
   it('spawns player sprites on initial sync', async () => {
     const app = makeFakeApp();
     const scene = new ExplorationScene(app);

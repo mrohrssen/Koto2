@@ -132,10 +132,39 @@ function sessionCombatState({ enemyHp = 100, turnSeeds = ['seed-a', 'seed-b', 's
 
 function initHarness(initialState, { setCombatAnimationActive, updateUI = () => {} } = {}) {
   let state = initialState;
+  let stateRevision = 0;
   const updates = [];
+  const applyState = next => {
+    state = next;
+    stateRevision += 1;
+    updates.push(next);
+  };
+  const captureGameStateLease = () => {
+    let capturedState = state;
+    let capturedRevision = stateRevision;
+    const lease = {
+      label: 'game state',
+      isCurrent: () => state === capturedState && stateRevision === capturedRevision,
+      expectReplacement(merged, { transitions = [] } = {}) {
+        return {
+          apply: () => applyState(merged),
+          transitions: [{
+            lease,
+            verify: () => state === merged && stateRevision === capturedRevision + 1,
+            advance: () => {
+              capturedState = state;
+              capturedRevision = stateRevision;
+            },
+          }, ...transitions],
+        };
+      },
+    };
+    return lease;
+  };
   combatLoop.init({
     getGameState: () => state,
-    updateGameState: next => { state = next; updates.push(next); },
+    updateGameState: applyState,
+    captureGameStateLease,
     updateUI,
     settings: { getApiKeys: () => ({}) },
     narration: {},
@@ -150,7 +179,7 @@ function initHarness(initialState, { setCombatAnimationActive, updateUI = () => 
   // Route state accessors used by the network-test surface too.
   combatLoop.__combatNetworkTest.setStateAccessors({
     get: () => state,
-    update: next => { state = next; updates.push(next); },
+    update: applyState,
   });
   return {
     get state() { return state; },

@@ -48,6 +48,7 @@ import {
   shouldSkipAttackRecord
 } from './combat-ui-utils.js';
 import { mergeAuthoritativeCombatState } from './combat-state-sync.js';
+import { createCombatRecoveryCoordinator } from './combat-recovery-coordinator.js';
 import {
   buildOptimisticCombatTurn,
   buildOptimisticKanjiKombatAnswer,
@@ -195,6 +196,7 @@ let exploreCombatPlaybackRecovery = null;
 // Callback references (set during init)
 let getGameState = null;
 let updateGameState = null;
+let captureGameStateLease = null;
 let updateUI = null;
 let settings = null;
 let narration = null;
@@ -224,6 +226,7 @@ let apiRespondNpcDialogue = null;
 let showNpcSprite = null;
 let hideNpcSprite = null;
 let updateCreatureRowData = null;
+let combatRecoveryCoordinator = null;
 
 // Utility
 let delay = null;
@@ -415,7 +418,8 @@ function resetCombatRecoveryPendingFlag(actionType) {
   }
 }
 
-async function syncCombatSceneToState(state, { initial = false } = {}) {
+async function syncCombatSceneToState(state, { initial = false, isCurrent = () => true } = {}) {
+  if (!isCurrent()) return false;
   let mgr = null;
   try {
     mgr = getSceneManager();
@@ -428,12 +432,15 @@ async function syncCombatSceneToState(state, { initial = false } = {}) {
   if (typeof scene.syncCreatures !== 'function') return false;
 
   try {
-    await scene.syncCreatures({
+    const synced = await scene.syncCreatures({
       allies: state?.combat?.allies || state?.run?.creatureParty?.active || [],
       enemies: state?.combat?.enemies || [],
       initial,
+      isCurrent,
     });
-    return true;
+    if (!isCurrent()) return false;
+    if (mgr?.transitioning || mgr?.currentScene !== scene || scene.disposed || scene._exiting) return false;
+    return synced === true;
   } catch (error) {
     if (!(error instanceof SceneDisposedError)) {
       console.error('[CombatLoop] failed to sync combat scene after state recovery', error);
@@ -460,59 +467,130 @@ function finishRecoveredCombatState(mergedState, actionType, outcome, options = 
   };
 }
 
-function recoverFromCombatErrorState(result, actionType, options = {}) {
-  if (!result?.state) {
-    return { recovered: false, outcome: 'recovery_failed', combatActive };
-  }
+function recoveryOwnerFromState(state = getGameState()) {
+  const room = liveExploreRoomContext(state);
+  return {
+    combatId: state?.combat?.id ?? state?.combat?.combatId ?? state?.combat?.optimistic?.combatId ?? null,
+    roomIndex: room.roomIndex,
+    roomId: room.roomId,
+  };
+}
 
+function captureCombatOwnerLease(capturedOwner) {
+  let expected = { ...capturedOwner };
+  const sameOwner = (left, right) => (
+    left.combatId === right.combatId
+    && left.roomIndex === right.roomIndex
+    && left.roomId === right.roomId
+  );
+  const lease = {
+    label: 'combat owner',
+    isCurrent: () => sameOwner(recoveryOwnerFromState(), expected),
+    expectTransition(nextOwner) {
+      return {
+        lease,
+        verify: () => sameOwner(recoveryOwnerFromState(), nextOwner),
+        advance: () => { expected = { ...nextOwner }; },
+      };
+    },
+  };
+  return lease;
+}
+
+function captureStandardExploreRecovery(capturedOwner = recoveryOwnerFromState()) {
+  if (!getActiveStandardExploreSession() || !combatRecoveryCoordinator) return null;
+  return combatRecoveryCoordinator.capture(capturedOwner);
+}
+
+function configureCombatRecoveryCoordinator() {
+  combatRecoveryCoordinator = typeof captureGameStateLease === 'function'
+    ? createCombatRecoveryCoordinator({
+      getExploreSession,
+      getState: () => getGameState(),
+      captureGameStateLease: () => captureGameStateLease(),
+      captureCombatOwnerLease,
+      mergeAuthoritativeCombatState,
+      fetchAuthoritativeState: options => apiGetGameState(options),
+      syncScene: syncCombatSceneToState,
+      finalizeRecoveredCombat: (state, actionType, outcome, options) => (
+        finishRecoveredCombatState(state, actionType, outcome, options || {})
+      ),
+      isUsableRecoveredState,
+      getCombatOwner: recoveryOwnerFromState,
+    })
+    : null;
+}
+
+function normalizeRecoveryResult(result) {
+  return { ...result, combatActive };
+}
+
+async function recoverNonExploreCombatErrorState(result, actionType, options) {
+  if (!result?.state) return { recovered: false, outcome: 'recovery_failed', combatActive };
   const merged = mergeAuthoritativeCombatState(getGameState(), result);
   updateGameState(merged);
   void syncCombatSceneToState(merged);
   return finishRecoveredCombatState(merged, actionType, 'stale_error_state_recovered', options);
 }
 
-async function recoverFromNullCombatPost(actionType, options = {}) {
+async function recoverNonExploreNullCombatPost(actionType, options) {
   if (typeof apiGetGameState !== 'function') {
     return { recovered: false, outcome: 'recovery_failed', combatActive };
   }
-
-  let fetchedState = null;
   try {
-    // In-session recovery fetch (active combat inside a live explore run):
-    // adoptSession preserves the explore session epoch — a bare GET /state
-    // would rotate it and strand any offline-queued session entries as
-    // session_epoch_mismatch corrections. Rotation is reload-only.
-    fetchedState = await apiGetGameState({ adoptSession: true });
+    const fetchedState = await apiGetGameState({ adoptSession: true });
+    if (!isUsableRecoveredState(fetchedState)) {
+      return { recovered: false, outcome: 'recovery_failed', combatActive };
+    }
+    const merged = mergeAuthoritativeCombatState(getGameState(), { state: fetchedState });
+    updateGameState(merged);
+    await syncCombatSceneToState(merged);
+    return finishRecoveredCombatState(merged, actionType, 'null_post_state_recovered', options);
   } catch (error) {
     console.warn('[CombatLoop] Combat recovery state fetch failed:', error?.message || error);
     return { recovered: false, outcome: 'recovery_failed', combatActive };
   }
-
-  if (!isUsableRecoveredState(fetchedState)) {
-    return { recovered: false, outcome: 'recovery_failed', combatActive };
-  }
-
-  const isCurrent = typeof options.isCurrent === 'function'
-    ? options.isCurrent
-    : () => true;
-  const superseded = () => ({
-    recovered: false,
-    outcome: 'recovery_superseded',
-    combatActive,
-  });
-  if (!isCurrent()) return superseded();
-  const merged = mergeAuthoritativeCombatState(getGameState(), { state: fetchedState });
-  if (!isCurrent()) return superseded();
-  updateGameState(merged);
-  if (!isCurrent()) return superseded();
-  await syncCombatSceneToState(merged);
-  if (!isCurrent()) return superseded();
-  return finishRecoveredCombatState(merged, actionType, 'null_post_state_recovered', options);
 }
 
-async function handleOptimisticCombatVerification(verification, recoveryActionType = 'attack') {
+async function recoverFromCombatErrorState(result, actionType, options = {}) {
+  if (!getActiveStandardExploreSession() || !combatRecoveryCoordinator) {
+    return recoverNonExploreCombatErrorState(result, actionType, options);
+  }
+  if (!result?.state) return { recovered: false, outcome: 'recovery_failed', combatActive };
+  const capture = options.recoveryCapture;
+  if (!capture) return { recovered: false, outcome: 'recovery_failed', combatActive };
+  return normalizeRecoveryResult(await combatRecoveryCoordinator.recover({
+    actionType,
+    capturedOwner: options.capturedOwner || recoveryOwnerFromState(),
+    authoritativeState: result.state,
+    capture,
+    finalizeOptions: options,
+  }));
+}
+
+async function recoverFromNullCombatPost(actionType, options = {}) {
+  if (!getActiveStandardExploreSession() || !combatRecoveryCoordinator) {
+    return recoverNonExploreNullCombatPost(actionType, options);
+  }
+  if (typeof apiGetGameState !== 'function') return { recovered: false, outcome: 'recovery_failed', combatActive };
+  const capture = options.recoveryCapture;
+  if (!capture) return { recovered: false, outcome: 'recovery_failed', combatActive };
+  return normalizeRecoveryResult(await combatRecoveryCoordinator.recover({
+    actionType,
+    capturedOwner: options.capturedOwner || recoveryOwnerFromState(),
+    capture,
+    finalizeOptions: options,
+  }));
+}
+
+async function handleOptimisticCombatVerification(
+  verification,
+  recoveryActionType = 'attack',
+  recoveryCapture = null,
+  capturedOwner = null,
+) {
   if (!verification) {
-    return recoverFromNullCombatPost(recoveryActionType);
+    return recoverFromNullCombatPost(recoveryActionType, { recoveryCapture, capturedOwner });
   }
 
   if (verification.status === 'accepted') {
@@ -543,7 +621,7 @@ async function handleOptimisticCombatVerification(verification, recoveryActionTy
       updateUI?.();
       return { recovered: true, outcome: verification.reason || 'optimistic_corrected', combatActive };
     }
-    return recoverFromNullCombatPost(recoveryActionType);
+    return recoverFromNullCombatPost(recoveryActionType, { recoveryCapture, capturedOwner });
   }
 
   return { recovered: false, outcome: 'unexpected_optimistic_status', combatActive };
@@ -637,36 +715,6 @@ function sameCorrectedCombatOwner(left, right) {
   return hasRoomIdentity
     && left?.roomIndex === right?.roomIndex
     && left?.roomId === right?.roomId;
-}
-
-function captureCombatRecoveryCurrentness(session) {
-  const state = getGameState();
-  return {
-    explore: session?.captureFence?.({
-      pending: 'preserve',
-      leases: [{
-        label: 'active Explore session',
-        isCurrent: () => getExploreSession?.() === session,
-      }],
-    }) || null,
-    owner: capturedCombatCleanupOwner(state),
-    state,
-  };
-}
-
-function isCombatRecoveryCurrent(token) {
-  if (token?.explore) {
-    if (token.explore.fence.isCurrent() !== true) return false;
-  } else if (getExploreSession?.() != null) {
-    return false;
-  }
-  const owner = token?.owner;
-  const hasKnownOwner = owner?.combatId != null
-    || owner?.roomIndex != null
-    || owner?.roomId != null;
-  return hasKnownOwner
-    ? ownsCombatCleanupContinuation(owner)
-    : getGameState() === token?.state;
 }
 
 /**
@@ -1126,6 +1174,12 @@ async function runSessionCreatureCombatTurn({
     clearCombatPendingFlag(pendingFlag);
     return STALE_EXPLORE_COMBAT_OWNER;
   }
+  // A rejected append needs an authoritative GET. Capture before asking the
+  // session to record so a reentrant correction/replacement cannot turn the
+  // successor combat into this old turn's recovery owner. A successful append
+  // intentionally invalidates this capture and never uses it.
+  const rejectedAppendRecoveryCapture = captureStandardExploreRecovery(recoveryOwnerFromState());
+  const rejectedAppendRecoveryOwner = recoveryOwnerFromState();
   const baseOptimistic = getGameState()?.combat?.optimistic;
   const capturedProgress = {
     baseVersion: optimistic.envelope?.stateVersion,
@@ -1149,10 +1203,10 @@ async function runSessionCreatureCombatTurn({
       pendingFlag,
     })) {
       clearCombatPendingFlag(pendingFlag);
-      const recoveryCurrentness = captureCombatRecoveryCurrentness(session);
       await recoverFromNullCombatPost(actionType, {
         restartSelection: restartMoveSelection,
-        isCurrent: () => isCombatRecoveryCurrent(recoveryCurrentness),
+        capturedOwner: rejectedAppendRecoveryOwner,
+        recoveryCapture: rejectedAppendRecoveryCapture,
       });
       return STALE_EXPLORE_COMBAT_OWNER;
     }
@@ -1311,6 +1365,8 @@ async function runOptimisticCreatureCombatTurn({
 
   const hasPendingCombatEnd = !!optimistic.localTranscript?.pendingCombatEnd;
   const requestStartedAt = performance.now();
+  const capturedRecoveryOwner = recoveryOwnerFromState();
+  const recoveryCapture = captureStandardExploreRecovery(capturedRecoveryOwner);
   const verificationPromise = verifyCreatureCombatCycle(optimistic.envelope)
     .then(result => ({ result }), error => ({ error }));
   markCombatAnimationStart(turnTiming, requestStartedAt);
@@ -1319,7 +1375,12 @@ async function runOptimisticCreatureCombatTurn({
   const verification = await verificationPromise;
   if (verification.error) throw verification.error;
   const result = verification.result;
-  const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
+  const recovery = await handleOptimisticCombatVerification(
+    result,
+    recoveryActionType,
+    recoveryCapture,
+    capturedRecoveryOwner,
+  );
   if (recovery && recovery.recovered === false) {
     throw new Error('Combat sync failed');
   }
@@ -1552,8 +1613,36 @@ export const __combatNetworkTest = {
   },
   setStateAccessors({ get, update, fetchServerState } = {}) {
     getGameState = typeof get === 'function' ? get : getGameState;
-    updateGameState = typeof update === 'function' ? update : updateGameState;
+    const updateState = typeof update === 'function' ? update : updateGameState;
+    let testStateRevision = 0;
+    updateGameState = state => {
+      updateState(state);
+      testStateRevision += 1;
+    };
+    captureGameStateLease = () => {
+      let capturedState = getGameState();
+      let capturedRevision = testStateRevision;
+      const lease = {
+        label: 'game state',
+        isCurrent: () => getGameState() === capturedState && testStateRevision === capturedRevision,
+        expectReplacement(merged, { transitions = [] } = {}) {
+          return {
+            apply: () => updateGameState(merged),
+            transitions: [{
+              lease,
+              verify: () => getGameState() === merged && testStateRevision === capturedRevision + 1,
+              advance: () => {
+                capturedState = getGameState();
+                capturedRevision = testStateRevision;
+              },
+            }, ...transitions],
+          };
+        },
+      };
+      return lease;
+    };
     apiGetGameState = typeof fetchServerState === 'function' ? fetchServerState : apiGetGameState;
+    configureCombatRecoveryCoordinator();
   },
   resetPendingFlags() {
     playerAttackPending = false;
@@ -1632,6 +1721,7 @@ function getCombatEnemies() {
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
+  captureGameStateLease = callbacks.captureGameStateLease || null;
   updateUI = callbacks.updateUI;
   settings = callbacks.settings;
   narration = callbacks.narration;
@@ -1663,6 +1753,8 @@ export function init(callbacks) {
   showNpcSprite = callbacks.showNpcSprite;
   hideNpcSprite = callbacks.hideNpcSprite;
   updateCreatureRowData = callbacks.updateCreatureRowData;
+
+  configureCombatRecoveryCoordinator();
 
   // Initialize extracted befriend module with coordinator deps
   befriend.init({
@@ -3011,13 +3103,18 @@ async function executeCreatureMovesTurn(choices, options = {}) {
         if (_kkSession && !_kkSession.canConsumePrompt()) return false;
       }
 
+      const capturedRecoveryOwner = recoveryOwnerFromState();
+      const recoveryCapture = captureStandardExploreRecovery(capturedRecoveryOwner);
       const requestStartedAt = performance.now();
       const result = options.request
         ? await options.request()
         : await runCreatureCombatRequest('attack', choices);
       markCombatAnimationStart(turnTiming, requestStartedAt);
       if (!result) {
-        const recovery = await recoverFromNullCombatPost(recoveryActionType);
+        const recovery = await recoverFromNullCombatPost(recoveryActionType, {
+          capturedOwner: capturedRecoveryOwner,
+          recoveryCapture,
+        });
         logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
         if (recovery.recovered) return;
         throw new Error('Combat sync failed');
@@ -3025,7 +3122,10 @@ async function executeCreatureMovesTurn(choices, options = {}) {
 
       if (result.error) {
         if (result.state) {
-          const recovery = recoverFromCombatErrorState(result, recoveryActionType);
+          const recovery = await recoverFromCombatErrorState(result, recoveryActionType, {
+            capturedOwner: capturedRecoveryOwner,
+            recoveryCapture,
+          });
           logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
           if (recovery.recovered) return;
         }
@@ -3214,11 +3314,16 @@ async function executeCreatureDefendThenPause({
         return;
       }
 
+      const capturedRecoveryOwner = recoveryOwnerFromState();
+      const recoveryCapture = captureStandardExploreRecovery(capturedRecoveryOwner);
       const requestStartedAt = performance.now();
       const result = await runCreatureCombatRequest('defend', []);
       markCombatAnimationStart(turnTiming, requestStartedAt);
       if (!result) {
-        const recovery = await recoverFromNullCombatPost('defend');
+        const recovery = await recoverFromNullCombatPost('defend', {
+          capturedOwner: capturedRecoveryOwner,
+          recoveryCapture,
+        });
         logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
         if (recovery.recovered) return;
         throw new Error('Combat sync failed');
@@ -3227,7 +3332,10 @@ async function executeCreatureDefendThenPause({
 
       if (result.error) {
         if (result.state) {
-          const recovery = recoverFromCombatErrorState(result, 'defend');
+          const recovery = await recoverFromCombatErrorState(result, 'defend', {
+            capturedOwner: capturedRecoveryOwner,
+            recoveryCapture,
+          });
           logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
           if (recovery.recovered) return;
         }

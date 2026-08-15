@@ -125,18 +125,23 @@ export class ExplorationScene extends Scene {
    * side; callers may pass { enemies: [...] } for API parity with
    * BattleScene.syncCreatures — it's ignored.
    */
-  async syncCreatures({ allies = [], initial = false } = {}) {
+  async syncCreatures({ allies = [], initial = false, isCurrent = () => true } = {}) {
+    if (!isCurrent() || this.disposed || this._exiting) return false;
     this._guard('syncCreatures');
-    await this._diff('player', allies, initial);
+    if (!await this._diff('player', allies, initial, isCurrent)) return false;
+    return isCurrent() && !this.disposed && !this._exiting;
   }
 
-  async _diff(side, creatures, _initial) {
+  async _diff(side, creatures, _initial, isCurrent = () => true) {
+    const sceneIsCurrent = () => isCurrent() && !this.disposed && !this._exiting;
+    if (!sceneIsCurrent()) return false;
     this._guard('_diff');
     const incomingUids = new Set(creatures.map(c => c.uid));
     const sideMap = this.formation.creatureSprites[side];
 
     // Remove sprites for uids no longer present.
     for (const uid of [...sideMap.keys()]) {
+      if (!sceneIsCurrent()) return false;
       if (!incomingUids.has(uid)) {
         removeFormationSprite(this.formation, side, uid);
         this.spritesByUid.delete(uid);
@@ -155,21 +160,36 @@ export class ExplorationScene extends Scene {
     const total = creatures.length;
     const spawnPromises = [];
     for (let i = 0; i < total; i++) {
+      if (!sceneIsCurrent()) return false;
       const c = creatures[i];
       const slotI = slotFor(i, total);
-      const opts = { slotI, isBoss: false, skipEnter: true };
+      const opts = { slotI, isBoss: false, skipEnter: true, isCurrent: sceneIsCurrent };
       if (sideMap.has(c.uid)) {
+        if (!sceneIsCurrent()) return false;
         updateFormationSprite(this.formation, side, c, i, opts);
       } else {
         spawnPromises.push(
           spawnFormationSprite(this.formation, side, c, i, opts)
-            .then(sprite => { if (sprite) this.spritesByUid.set(c.uid, sprite); })
-            .catch(err => { console.error(`[ExplorationScene] spawn failed for ${side}[${i}] uid=${c.uid}:`, err); })
+            .then(sprite => {
+              if (!sprite) return;
+              if (!sceneIsCurrent()) {
+                if (sideMap.get(c.uid) === sprite) removeFormationSprite(this.formation, side, c.uid);
+                return;
+              }
+              this.spritesByUid.set(c.uid, sprite);
+            })
+            .catch(err => {
+              if (sceneIsCurrent()) {
+                console.error(`[ExplorationScene] spawn failed for ${side}[${i}] uid=${c.uid}:`, err);
+              }
+            })
         );
       }
     }
     await Promise.all(spawnPromises);
+    if (!sceneIsCurrent()) return false;
 
     this.formation.lastFormationInput[side] = { creatures, opts: { isBoss: false } };
+    return true;
   }
 }

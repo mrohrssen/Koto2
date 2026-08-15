@@ -92,19 +92,25 @@ export class BattleScene extends Scene {
    * arrays. Spawns new sprites for unseen uids, updates in-place for known
    * uids, and removes sprites whose uid no longer appears.
    */
-  async syncCreatures({ allies = [], enemies = [], initial = false } = {}) {
+  async syncCreatures({ allies = [], enemies = [], initial = false, isCurrent = () => true } = {}) {
+    if (!isCurrent() || this.disposed || this._exiting) return false;
     this._guard('syncCreatures');
-    await this._diff('player', allies, initial);
-    await this._diff('enemy', enemies, initial);
+    if (!await this._diff('player', allies, initial, isCurrent)) return false;
+    if (!isCurrent() || this.disposed || this._exiting) return false;
+    if (!await this._diff('enemy', enemies, initial, isCurrent)) return false;
+    return isCurrent() && !this.disposed && !this._exiting;
   }
 
-  async _diff(side, creatures, _initial) {
+  async _diff(side, creatures, _initial, isCurrent = () => true) {
+    const sceneIsCurrent = () => isCurrent() && !this.disposed && !this._exiting;
+    if (!sceneIsCurrent()) return false;
     this._guard('_diff');
     const incomingUids = new Set(creatures.map(c => c.uid));
     const sideMap = this.formation.creatureSprites[side];
 
     // Remove sprites for uids no longer present.
     for (const uid of [...sideMap.keys()]) {
+      if (!sceneIsCurrent()) return false;
       if (!incomingUids.has(uid)) {
         removeFormationSprite(this.formation, side, uid);
         this.spritesByUid.delete(uid);
@@ -133,23 +139,38 @@ export class BattleScene extends Scene {
     const total = creatures.length;
     const spawnPromises = [];
     for (let i = 0; i < total; i++) {
+      if (!sceneIsCurrent()) return false;
       const c = creatures[i];
       const slotI = slotFor(i, total);
-      const opts = { slotI, isBoss, skipEnter };
+      const opts = { slotI, isBoss, skipEnter, isCurrent: sceneIsCurrent };
       if (sideMap.has(c.uid)) {
+        if (!sceneIsCurrent()) return false;
         updateFormationSprite(this.formation, side, c, i, opts);
       } else {
         spawnPromises.push(
           spawnFormationSprite(this.formation, side, c, i, opts)
-            .then(sprite => { if (sprite) this.spritesByUid.set(c.uid, sprite); })
-            .catch(err => { console.error(`[BattleScene] spawn failed for ${side}[${i}] uid=${c.uid}:`, err); })
+            .then(sprite => {
+              if (!sprite) return;
+              if (!sceneIsCurrent()) {
+                if (sideMap.get(c.uid) === sprite) removeFormationSprite(this.formation, side, c.uid);
+                return;
+              }
+              this.spritesByUid.set(c.uid, sprite);
+            })
+            .catch(err => {
+              if (sceneIsCurrent()) {
+                console.error(`[BattleScene] spawn failed for ${side}[${i}] uid=${c.uid}:`, err);
+              }
+            })
         );
       }
     }
     await Promise.all(spawnPromises);
+    if (!sceneIsCurrent()) return false;
 
     // Track the last input so legacy-style (side, index) lookups via scene ctx
     // continue to work. Mirrors the default-ctx shape { creatures, opts }.
     this.formation.lastFormationInput[side] = { creatures, opts: { isBoss } };
+    return true;
   }
 }

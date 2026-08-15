@@ -273,6 +273,7 @@ let gameState = {
   combat: null,
   phase: 'no_save'
 };
+let gameStateRevision = 0;
 
 store.set('gameState', gameState);
 if (typeof window !== 'undefined') {
@@ -282,6 +283,7 @@ if (typeof window !== 'undefined') {
 export function updateGameState(newState) {
   console.log('[DEBUG] updateGameState called. phase:', newState.phase, 'pendingBranch:', newState.run?.pendingBranch, 'currentRoom:', newState.run?.currentRoom);
   gameState = newState;
+  gameStateRevision += 1;
   store.set('gameState', gameState);
   // Test seam: expose the live client state so automated harnesses can read
   // phase / room / runway WITHOUT fetching GET /api/game/state (which rotates
@@ -292,6 +294,29 @@ export function updateGameState(newState) {
   }
   setCrashContext(gameState);
   updateCurrentUserProperties(gameState);
+}
+
+function captureGameStateLease() {
+  let capturedState = gameState;
+  let capturedRevision = gameStateRevision;
+  const lease = {
+    label: 'game state',
+    isCurrent: () => gameState === capturedState && gameStateRevision === capturedRevision,
+    expectReplacement(merged, { transitions = [] } = {}) {
+      return {
+        apply: () => updateGameState(merged),
+        transitions: [{
+          lease,
+          verify: () => gameState === merged && gameStateRevision === capturedRevision + 1,
+          advance: () => {
+            capturedState = gameState;
+            capturedRevision = gameStateRevision;
+          },
+        }, ...transitions],
+      };
+    },
+  };
+  return lease;
 }
 
 // Enemy dialogue state
@@ -2653,6 +2678,7 @@ async function initGame() {
   combatLoopUI.init({
     getGameState: () => gameState,
     updateGameState,
+    captureGameStateLease,
     updateUI,
     settings,
     narration: { showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },

@@ -505,6 +505,8 @@ async function loadCreatureBaseTexture(creature) {
  * @returns {Promise<Sprite|null>} the mounted sprite, or null if no app/container
  */
 export async function spawnFormationSprite(ctx, side, creature, index, opts = {}) {
+  const isCurrent = typeof opts.isCurrent === 'function' ? opts.isCurrent : () => true;
+  if (!isCurrent()) return null;
   if (ctx.scene && !creature?.uid) {
     throw new Error(
       `spawnFormationSprite: creature.uid is required when ctx is scene-owned (got ${JSON.stringify({ side, index, id: creature?.id })})`
@@ -535,6 +537,7 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   try {
     if (manifestEntry) {
       animatedState = await createAnimatedCreatureState(manifestEntry);
+      if (!isCurrent()) return null;
       texture = (shouldEnterWithWalk ? animatedState.textures.walk?.[0] : null)
         || animatedState.textures.idle?.[0]
         || animatedState.textures.walk?.[0]
@@ -548,6 +551,7 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
 
   if (!texture) {
     texture = await loadCreatureBaseTexture(creature);
+    if (!isCurrent()) return null;
   }
 
   const sprite = new Sprite(texture);
@@ -611,6 +615,11 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   _drawShadow(shadow, shadowSpec);
   shadow.x = targetX;
   shadow.y = _shadowYForSprite(sprite, spriteSize);
+  if (!isCurrent()) {
+    shadow.destroy({ children: true, texture: false });
+    sprite.destroy({ children: true, texture: false });
+    return null;
+  }
   container.addChild(shadow);
   sprite._shadow = shadow;
 
@@ -632,11 +641,11 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   ctx.creatureSprites[side].set(key, sprite);
   if (!manifestSnapshot) {
     loadCreatureAnimationManifest().then(async manifest => {
-      if (!sprite.parent) return;
+      if (!isCurrent() || !sprite.parent || sprite._destroyed || sprite.destroyed || ctx.scene?.disposed || ctx.scene?._exiting) return;
       const entry = getAnimatedCreatureEntry(manifest, creature.id);
       if (!entry || sprite._animatedCreature) return;
       const state = await createAnimatedCreatureState(entry);
-      if (!sprite.parent) return;
+      if (!isCurrent() || !sprite.parent || sprite._destroyed || sprite.destroyed || ctx.scene?.disposed || ctx.scene?._exiting) return;
       const initialTexture = state.textures.idle?.[0] || state.textures.walk?.[0];
       if (initialTexture) {
         sprite.texture = initialTexture;

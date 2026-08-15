@@ -380,6 +380,39 @@ describe('updateFormationSprite uid contract', () => {
 });
 
 describe('spawnFormationSprite parallel spawns (CRIT-1 regression)', () => {
+  it('discards a sprite when currentness flips while its texture is loading', async () => {
+    const formations = new FakeContainer();
+    const scene = {
+      layers: { formations },
+      addContainer: (c /* container */, _parent) => c,
+    };
+    const ctx = createFormationContext(scene);
+    let releaseTexture;
+    let current = true;
+    const originalLoad = FakeAssets._loadImpl;
+    FakeAssets._loadImpl = () => new Promise(resolve => { releaseTexture = resolve; });
+
+    try {
+      const spawning = spawnFormationSprite(
+        ctx,
+        'player',
+        { uid: 'stale-texture', id: 'a' },
+        0,
+        { isCurrent: () => current },
+      );
+      await Promise.resolve();
+      current = false;
+      releaseTexture({ width: 60, height: 60, source: {} });
+
+      const sprite = await spawning;
+      assert.equal(sprite, null);
+      assert.equal(ctx.creatureSprites.player.size, 0);
+      assert.equal(ctx.playerContainer.children.length, 0);
+    } finally {
+      FakeAssets._loadImpl = originalLoad;
+    }
+  });
+
   it('N parallel spawns all populate the Map (no self-cancellation)', async () => {
     const formations = new FakeContainer();
     const scene = {
@@ -764,6 +797,21 @@ describe('updateFormationSprite repositioning (IMP-4)', () => {
 });
 
 describe('BattleScene._diff lifecycle', () => {
+  it('keeps ordinary BattleScene callers current when isCurrent is omitted', async () => {
+    const app = makeFakeApp();
+    const scene = new BattleScene(app);
+    const completed = await scene.syncCreatures({
+      allies: [{ uid: 'default-ally', id: 'a' }],
+      enemies: [{ uid: 'default-enemy', id: 'b' }],
+      initial: true,
+    });
+
+    assert.equal(completed, true);
+    assert.ok(scene.spritesByUid.has('default-ally'));
+    assert.ok(scene.spritesByUid.has('default-enemy'));
+    scene.exit();
+  });
+
   it('removes sprites for uids that leave the party', async () => {
     const app = makeFakeApp();
     const scene = new BattleScene(app);
