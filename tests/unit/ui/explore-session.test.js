@@ -10,6 +10,7 @@ import {
   EXPLORE_SESSION_RESUME_AT,
   EXPLORE_SYNC_DEBOUNCE_MS,
   EXPLORE_SYNC_RETRY_DELAYS_MS,
+  EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS,
 } from '../../../public/js/ui/explore-session.js';
 import { FenceSuperseded } from '../../../public/js/async-ownership-fence.js';
 import {
@@ -34,6 +35,7 @@ function makeManualScheduler() {
       }
     },
     delays: () => timers.map(timer => timer.delay),
+    activeDelays: () => timers.filter(timer => timer.fn).map(timer => timer.delay),
   };
 }
 
@@ -122,6 +124,24 @@ function okResponse(confirmedThroughSeq, overrides = {}) {
   return { status: 'ok', confirmedThroughSeq, results: [], ...overrides };
 }
 
+function transport(body, overrides = {}) {
+  return {
+    transport: true,
+    httpStatus: 200,
+    body,
+    parseError: null,
+    networkError: null,
+    aborted: false,
+    clientAuthMismatch: false,
+    authRevision: 0,
+    ...overrides,
+  };
+}
+
+function syncOkResponse(confirmedThroughSeq, overrides = {}) {
+  return transport(okResponse(confirmedThroughSeq, overrides));
+}
+
 function assertExploreActionId(actionId, seq) {
   assert.match(actionId, /^run_es_[a-z0-9]+_[0-9]{8}$/);
   assert.equal(actionId.endsWith(String(seq).padStart(8, '0')), true);
@@ -132,10 +152,11 @@ test('exports explore session contract constants', () => {
   assert.equal(EXPLORE_SESSION_RESUME_AT, 40);
   assert.equal(EXPLORE_SYNC_DEBOUNCE_MS, 300);
   assert.deepEqual(EXPLORE_SYNC_RETRY_DELAYS_MS, [500, 1000, 2000, 4000, 8000, 15000, 30000]);
+  assert.equal(EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS, 12);
 });
 
 test('records actions with room identity and predicted effects', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
   session.adoptRunway(makeRunway());
 
   const result = session.recordRoomAction('friendlyNpc.choose', {
@@ -166,7 +187,7 @@ test('fails closed when the current prepared room omits offline readiness', () =
     actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
   });
   delete room.offlineReady;
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
   session.adoptRunway(makeRunway({ preparedRooms: [room] }));
 
   const result = session.recordRoomAction('friendlyNpc.choose', { itemId: 'iron-charm' });
@@ -182,7 +203,7 @@ test('fails closed when the current prepared room omits offline readiness', () =
 });
 
 test('fails closed instead of falling back to the first room when the runway cursor is missing', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
   session.adoptRunway(makeRunway({
     currentRoom: 4,
     preparedRooms: [preparedRoom(3, {
@@ -205,7 +226,7 @@ test('fails closed instead of falling back to the first room when the runway cur
 });
 
 test('uses the first prepared room as the initial cursor only when the runway omits a cursor', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
   session.adoptRunway({
     sessionEpoch: 'ese_1212121212121212',
     roomActionSeq: 12,
@@ -226,7 +247,7 @@ test('serializes checkpoint adoption until active combat playback is idle', asyn
     preparedRooms: [preparedRoom(1, { actionSeq: 8 })],
   });
   const session = createExploreSession({
-    syncRequest: async () => okResponse(1, { exploreRunway: nextRunway }),
+    syncRequest: async () => syncOkResponse(1, { exploreRunway: nextRunway }),
     beforeResponseAdoption: () => playbackIdle,
     onCheckpoint: response => checkpoints.push(response),
   });
@@ -252,7 +273,7 @@ test('serializes checkpoint adoption until active combat playback is idle', asyn
 });
 
 test('action ids include a session nonce and rotate when seq resets', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
   session.adoptRunway(makeRunway());
   const first = session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' }).entry.actionId;
   assertExploreActionId(first, 1);
@@ -263,7 +284,7 @@ test('action ids include a session nonce and rotate when seq resets', () => {
   assertExploreActionId(afterReset, 1);
   assert.notEqual(afterReset, first);
 
-  const configured = configureExploreSession({ syncRequest: async () => okResponse(1) });
+  const configured = configureExploreSession({ syncRequest: async () => syncOkResponse(1) });
   configured.adoptRunway(makeRunway());
   const configuredId = configured.recordRoomAction('friendlyNpc.choose', { itemId: 'configured' }).entry.actionId;
   assertExploreActionId(configuredId, 1);
@@ -272,7 +293,7 @@ test('action ids include a session nonce and rotate when seq resets', () => {
 });
 
 test('local proceed advances to next prepared room and uses next actionSeq', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(2) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(2) });
   session.adoptRunway(makeRunway({
     preparedRooms: [
       preparedRoom(0, { actionSeq: 7, acceptedActions: ['proceed'], actionEffects: { proceed: [] } }),
@@ -299,7 +320,7 @@ test('local proceed advances to next prepared room and uses next actionSeq', () 
 test('dependency pause keeps local room when unsynced effects intersect next dependencies', () => {
   const pauses = [];
   const session = createExploreSession({
-    syncRequest: async () => okResponse(2),
+    syncRequest: async () => syncOkResponse(2),
     onPause: detail => pauses.push(detail),
   });
   session.adoptRunway(makeRunway({
@@ -342,7 +363,7 @@ test('dealer sell pauses before a friendly NPC until the changed roster is autho
 
   const pauses = [];
   const session = createExploreSession({
-    syncRequest: async () => okResponse(1),
+    syncRequest: async () => syncOkResponse(1),
     onPause: detail => pauses.push(detail),
   });
   session.adoptRunway(makeRunway({
@@ -388,7 +409,7 @@ test('shrine.choose pending pauses the proceed INTO a combat room (transcript_mi
 
   const pauses = [];
   const session = createExploreSession({
-    syncRequest: async () => okResponse(2),
+    syncRequest: async () => syncOkResponse(2),
     onPause: detail => pauses.push(detail),
   });
   session.adoptRunway(makeRunway({
@@ -435,7 +456,7 @@ test('proceed with self-intersecting effects queues and pauses instead of reject
   // lifts the pause once the log empties (see the drain-resume test below).
   const pauses = [];
   const session = createExploreSession({
-    syncRequest: async () => okResponse(1),
+    syncRequest: async () => syncOkResponse(1),
     onPause: detail => pauses.push(detail),
   });
   session.adoptRunway(makeRunway({
@@ -491,7 +512,7 @@ test('a self-intersecting proceed pause lifts after the drain lands it, then the
   const scheduler = makeManualScheduler();
   const resumes = [];
   const session = createExploreSession({
-    syncRequest: async payload => okResponse(payload.entries.at(-1).seq),
+    syncRequest: async payload => syncOkResponse(payload.entries.at(-1).seq),
     onResume: detail => resumes.push(detail),
     schedule: scheduler.schedule,
     cancel: scheduler.cancel,
@@ -542,7 +563,7 @@ test('a self-intersecting proceed pause lifts after the drain lands it, then the
 test('proceed rejects before logging when runway is exhausted', () => {
   const pauses = [];
   const session = createExploreSession({
-    syncRequest: async () => okResponse(1),
+    syncRequest: async () => syncOkResponse(1),
     onPause: detail => pauses.push(detail),
   });
   session.adoptRunway(makeRunway({
@@ -570,7 +591,7 @@ test('proceed rejects before logging when runway is exhausted', () => {
 test('proceed rejects before logging when next prepared room is not ready', () => {
   const pauses = [];
   const session = createExploreSession({
-    syncRequest: async () => okResponse(1),
+    syncRequest: async () => syncOkResponse(1),
     onPause: detail => pauses.push(detail),
   });
   session.adoptRunway(makeRunway({
@@ -605,7 +626,7 @@ test('hard cap pauses, rejects overflow, and resumes after pending count drops t
   const scheduler = makeManualScheduler();
   const events = [];
   const session = createExploreSession({
-    syncRequest: async () => okResponse(EXPLORE_SESSION_HARD_CAP - EXPLORE_SESSION_RESUME_AT),
+    syncRequest: async () => syncOkResponse(EXPLORE_SESSION_HARD_CAP - EXPLORE_SESSION_RESUME_AT),
     onPause: detail => events.push(['pause', detail]),
     onResume: detail => events.push(['resume', detail]),
     schedule: scheduler.schedule,
@@ -640,7 +661,7 @@ test('hard cap pauses, rejects overflow, and resumes after pending count drops t
 });
 
 test('recordRoomAction rejects actions not accepted by the current prepared room', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
   session.adoptRunway(makeRunway());
 
   const rejected = session.recordRoomAction('dealer.buy', { creatureId: 'mizu' });
@@ -661,7 +682,7 @@ test('sync batches entries with sessionEpoch and adopts checkpoint runway', asyn
   const session = createExploreSession({
     syncRequest: async payload => {
       calls.push(payload);
-      return okResponse(payload.entries.at(-1).seq, { exploreRunway: refreshedRunway });
+      return syncOkResponse(payload.entries.at(-1).seq, { exploreRunway: refreshedRunway });
     },
     onCheckpoint: response => checkpoints.push(response),
     schedule: scheduler.schedule,
@@ -687,7 +708,7 @@ test('syncNow immediately drains pending entries without firing the scheduler', 
   const session = createExploreSession({
     syncRequest: async payload => {
       calls.push(payload);
-      return okResponse(payload.entries.at(-1).seq);
+      return syncOkResponse(payload.entries.at(-1).seq);
     },
     schedule: scheduler.schedule,
     cancel: scheduler.cancel,
@@ -714,9 +735,9 @@ test('syncNow during an in-flight sync waits and drains entries appended during 
       calls.push(payload);
       if (calls.length === 1) {
         await firstGate;
-        return okResponse(1);
+        return syncOkResponse(1);
       }
-      return okResponse(payload.entries.at(-1).seq);
+      return syncOkResponse(payload.entries.at(-1).seq);
     },
     schedule: scheduler.schedule,
     cancel: scheduler.cancel,
@@ -776,11 +797,11 @@ test('checkpoint adoption preserves optimistic cursor from remaining pending pro
       calls.push(payload);
       if (calls.length === 1) {
         await firstGate;
-        return okResponse(1, { exploreRunway: checkpointRunway });
+        return syncOkResponse(1, { exploreRunway: checkpointRunway });
       }
       secondStarted();
       await secondGate;
-      return okResponse(2, { exploreRunway: finalRunway });
+      return syncOkResponse(2, { exploreRunway: finalRunway });
     },
     schedule: scheduler.schedule,
     cancel: scheduler.cancel,
@@ -827,13 +848,38 @@ test('network failure retries with backoff and keeps the log', async () => {
   assert.equal(scheduler.delays()[0], EXPLORE_SYNC_RETRY_DELAYS_MS[1]);
 });
 
+test('thrown sync requests share the named degradation threshold and preserve the log', async () => {
+  const scheduler = makeManualScheduler();
+  let requests = 0;
+  const session = createExploreSession({
+    syncRequest: async () => {
+      requests += 1;
+      throw new Error('offline');
+    },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  const exactPendingLog = session.snapshot();
+
+  for (let attempt = 0; attempt < EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS; attempt += 1) {
+    await session.syncNow();
+  }
+
+  assert.equal(requests, EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS);
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.equal(session.getPauseReason(), 'transportDegraded');
+  assert.deepEqual(scheduler.activeDelays(), [30_000]);
+});
+
 test('indeterminate sync responses stay scheduled through degraded transport and retry now drains immediately', async () => {
   const timers = [];
   let syncCalls = 0;
   const session = createExploreSession({
     syncRequest: async () => {
       syncCalls += 1;
-      return { transport: true, httpStatus: 200, body: { unexpected: 'malformed 2xx body' } };
+      return transport({ unexpected: 'malformed 2xx body' });
     },
     schedule: (fn, delay) => {
       timers.push({ fn, delay });
@@ -862,7 +908,7 @@ test('indeterminate sync responses stay scheduled through degraded transport and
 test('degraded transport replaces an earlier pause without cancelling its capped retry', async () => {
   const timers = [];
   const session = createExploreSession({
-    syncRequest: async () => ({ transport: true, httpStatus: 200, body: {} }),
+    syncRequest: async () => transport({}),
     schedule: (fn, delay) => {
       timers.push({ fn, delay });
       return timers.length - 1;
@@ -883,7 +929,7 @@ test('degraded transport replaces an earlier pause without cancelling its capped
 test('temporary and warning pauses cannot replace a blocking pause', () => {
   const pauses = [];
   const session = createExploreSession({
-    syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
+    syncRequest: async () => syncOkResponse(0),
     onPause: ({ reason }) => pauses.push(reason),
   });
 
@@ -901,8 +947,8 @@ test('same-epoch runway adoption drains an armed retry without discarding pendin
   const session = createExploreSession({
     syncRequest: async ({ entries }) => {
       syncCalls += 1;
-      if (syncCalls === 1) return { transport: true, httpStatus: 200, body: {} };
-      return okResponse(entries.at(-1).seq);
+      if (syncCalls === 1) return transport({});
+      return syncOkResponse(entries.at(-1).seq);
     },
     schedule: scheduler.schedule,
     cancel: scheduler.cancel,
@@ -922,113 +968,170 @@ test('same-epoch runway adoption drains an armed retry without discarding pendin
   assert.equal(session.pendingCount(), 0);
 });
 
-test('auth recovery re-authenticates before adopting the retained pending session', async () => {
-  const events = [];
+test('auth pauses through onPause without invoking retired session recovery callbacks', async () => {
+  const pauses = [];
+  let authRequiredCalls = 0;
   const session = createExploreSession({
-    syncRequest: async () => ({ transport: true, httpStatus: 401, body: { error: 'expired' } }),
-    onAuthRequired: async () => { events.push('reauthenticate'); },
+    syncRequest: async () => transport({ error: 'expired' }, { httpStatus: 401 }),
+    onPause: detail => pauses.push(detail),
+    onAuthRequired: async () => { authRequiredCalls += 1; return true; },
   });
   session.adoptRunway(makeRunway());
   session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  const exactPendingLog = session.snapshot();
   await session.syncNow();
 
-  assert.deepEqual(events, ['reauthenticate']);
+  assert.equal(authRequiredCalls, 0);
+  assert.deepEqual(pauses.map(({ reason }) => reason), ['authRequired']);
   assert.equal(session.getPauseReason(), 'authRequired');
-  assert.equal(session.pendingCount(), 1);
+  assert.deepEqual(session.snapshot(), exactPendingLog);
 });
 
-test('completed auth recovery schedules a fresh drain after adoption', async () => {
+test('auth pause retains exact pending work and schedules no session retry', async () => {
   const scheduler = makeManualScheduler();
   const session = createExploreSession({
-    syncRequest: async () => ({ transport: true, httpStatus: 401, body: { error: 'expired' } }),
-    onAuthRequired: async () => true,
+    syncRequest: async () => transport({ error: 'expired' }, { httpStatus: 401 }),
     schedule: scheduler.schedule,
     cancel: scheduler.cancel,
   });
   session.adoptRunway(makeRunway());
   session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  const exactPendingLog = session.snapshot();
   await session.syncNow();
 
-  assert.equal(session.pendingCount(), 1);
-  assert.equal(scheduler.delays().at(-1), 0);
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.deepEqual(scheduler.activeDelays(), []);
 });
 
 for (const status of ['ok', 'corrected']) {
-  test(`minimal V2 ${status} response preserves the V1 log and promotes retries without V1 adoption`, async () => {
+  test(`unsupported V2 ${status} pauses immediately and blocks all later reposts`, async () => {
     const scheduler = makeManualScheduler();
     const checkpoints = [];
     const corrections = [];
-    const adoptionWaits = [];
-    let releaseFirstRequest;
-    const firstRequestGate = new Promise(resolve => { releaseFirstRequest = resolve; });
+    const pauses = [];
     let syncCalls = 0;
-    const replacementRunway = makeRunway({
-      sessionEpoch: 'ese_v2_replacement11',
-      currentRoom: 1,
-      preparedRooms: [preparedRoom(1, { actionSeq: 99 })],
-    });
     const session = createExploreSession({
       syncRequest: async () => {
         syncCalls += 1;
         if (syncCalls === 1) {
-          await firstRequestGate;
-          return {
-            transport: true,
-            httpStatus: 200,
-            body: {
-              protocolVersion: 2,
-              status,
-              runId: 'run-v2-cutover',
-              appliedThroughSeq: 2,
-              nextExpectedSeq: 3,
-              results: [],
-              exploreRunway: replacementRunway,
-            },
-          };
+          return transport({
+            protocolVersion: 2,
+            status,
+            runId: 'run-v2-cutover',
+            appliedThroughSeq: 2,
+            nextExpectedSeq: 3,
+            results: [],
+          });
         }
-        return {
-          transport: true,
-          httpStatus: 200,
-          body: okResponse(2, { exploreRunway: replacementRunway }),
-        };
+        return transport(okResponse(2));
       },
-      beforeResponseAdoption: async response => { adoptionWaits.push(response.status); },
       onCheckpoint: response => checkpoints.push(response),
       onCorrection: response => corrections.push(response),
+      onPause: detail => pauses.push(detail),
       schedule: scheduler.schedule,
       cancel: scheduler.cancel,
     });
     session.adoptRunway(makeRunway());
 
     assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' }).accepted, true);
-    const firstDrain = session.syncNow();
-    assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'second' }).accepted, true);
     const exactPendingLog = session.snapshot();
-    releaseFirstRequest();
-    await firstDrain;
+    await session.syncNow();
 
     assert.deepEqual(session.snapshot(), exactPendingLog);
     assert.equal(syncCalls, 1, 'V2 must not immediately repost through the V1 success loop');
-    assert.deepEqual(adoptionWaits, []);
     assert.deepEqual(checkpoints, []);
     assert.deepEqual(corrections, []);
     assert.equal(session.currentPreparedRoom()?.index, 0);
-    assert.equal(scheduler.delays().at(-1), EXPLORE_SYNC_RETRY_DELAYS_MS[0]);
-    assert.ok(scheduler.delays().at(-1) > 0);
+    assert.equal(session.getPauseReason(), 'unsupportedProtocol');
+    assert.deepEqual(pauses.map(({ reason }) => reason), ['unsupportedProtocol']);
+    assert.deepEqual(scheduler.activeDelays(), []);
 
-    await scheduler.fire();
+    await session.syncNow();
 
-    assert.equal(syncCalls, 2);
+    assert.equal(syncCalls, 1);
     assert.deepEqual(session.snapshot(), exactPendingLog,
-      'a V1-shaped response after V2 promotion must be indeterminate');
-    assert.deepEqual(adoptionWaits, []);
+      'the terminal compatibility pause retains its exact pending log');
     assert.deepEqual(checkpoints, []);
     assert.deepEqual(corrections, []);
     assert.equal(session.currentPreparedRoom()?.index, 0);
-    assert.deepEqual(scheduler.delays(), [EXPLORE_SYNC_RETRY_DELAYS_MS[1]]);
-    assert.ok(scheduler.delays()[0] > 0);
+    assert.deepEqual(scheduler.activeDelays(), []);
   });
 }
+
+test('V2 conflict promotes the ratchet and blocks all later reposts', async () => {
+  const scheduler = makeManualScheduler();
+  const checkpoints = [];
+  let writerConflictCalls = 0;
+  let syncCalls = 0;
+  const session = createExploreSession({
+    syncRequest: async () => {
+      syncCalls += 1;
+      return syncCalls === 1
+        ? transport({ protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' }, { httpStatus: 409 })
+        : transport(okResponse(1));
+    },
+    onCheckpoint: response => checkpoints.push(response),
+    onWriterConflict: () => { writerConflictCalls += 1; },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
+  const exactPendingLog = session.snapshot();
+
+  await session.syncNow();
+  assert.equal(session.getPauseReason(), 'writerConflict');
+  assert.equal(writerConflictCalls, 0);
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.deepEqual(scheduler.activeDelays(), []);
+
+  await session.syncNow();
+  assert.equal(syncCalls, 1);
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.deepEqual(checkpoints, []);
+  assert.deepEqual(scheduler.activeDelays(), []);
+});
+
+test('equal-priority pauses do not replace or notify, and resolvePause requires the exact reason', () => {
+  const pauses = [];
+  const resumes = [];
+  const session = createExploreSession({
+    syncRequest: async () => transport(okResponse(0)),
+    onPause: detail => pauses.push(detail.reason),
+    onResume: detail => resumes.push(detail.reason),
+  });
+
+  session.pause('dependency');
+  session.pause('hardCap');
+  session.pause('dependency');
+  session.pause('transportDegraded');
+  assert.deepEqual(pauses, ['dependency', 'transportDegraded']);
+  assert.equal(session.getPauseReason(), 'transportDegraded');
+  assert.equal(session.resolvePause('dependency'), false);
+  assert.equal(session.getPauseReason(), 'transportDegraded');
+  assert.equal(session.resolvePause('transportDegraded'), true);
+  assert.equal(session.isPaused(), false);
+  assert.deepEqual(resumes, ['transportDegraded']);
+});
+
+test('auth and writer conflict orderings preserve the authoritative owner', () => {
+  const pauses = [];
+  const session = createExploreSession({
+    syncRequest: async () => transport(okResponse(0)),
+    onPause: detail => pauses.push(detail.reason),
+  });
+
+  session.pause('writerConflict');
+  session.pause('authRequired');
+  session.pause('writerConflict');
+  assert.equal(session.getPauseReason(), 'authRequired');
+  assert.equal(session.resolvePause('authRequired'), true);
+  session.pause('writerConflict');
+  session.pause('unsupportedProtocol');
+  session.pause('authRequired');
+  assert.equal(session.getPauseReason(), 'unsupportedProtocol');
+  assert.deepEqual(pauses, ['writerConflict', 'authRequired', 'writerConflict', 'unsupportedProtocol']);
+});
 
 test('corrected response clears the log, notifies, and adopts response runway', async () => {
   const scheduler = makeManualScheduler();
@@ -1039,10 +1142,12 @@ test('corrected response clears the log, notifies, and adopts response runway', 
     preparedRooms: [preparedRoom(1, { actionSeq: 12 })],
   });
   const session = createExploreSession({
-    syncRequest: async () => ({
+    syncRequest: async () => transport({
       status: 'corrected',
       reason: 'room_index_mismatch',
       confirmedThroughSeq: null,
+      rejectedSeq: 1,
+      results: [],
       exploreRunway: correctedRunway,
     }),
     onCorrection: response => corrections.push(response),
@@ -1063,10 +1168,12 @@ test('corrected response clears the log, notifies, and adopts response runway', 
 test('same-epoch correction advances its continuation revision without faking local work', async () => {
   const runway = makeRunway({ sessionEpoch: 'ese_same_epoch_correction' });
   const session = createExploreSession({
-    syncRequest: async () => ({
+    syncRequest: async () => transport({
       status: 'corrected',
       reason: 'transcript_mismatch',
       confirmedThroughSeq: null,
+      rejectedSeq: 1,
+      results: [],
       exploreRunway: runway,
     }),
     schedule: () => null,
@@ -1090,10 +1197,12 @@ test('corrected response with null exploreRunway clears stale prepared room', as
   const scheduler = makeManualScheduler();
   const corrections = [];
   const session = createExploreSession({
-    syncRequest: async () => ({
+    syncRequest: async () => transport({
       status: 'corrected',
       reason: 'run_inactive',
       confirmedThroughSeq: null,
+      rejectedSeq: 1,
+      results: [],
       exploreRunway: null,
     }),
     onCorrection: response => corrections.push(response),
@@ -1115,7 +1224,7 @@ test('ok response with null exploreRunway clears stale prepared room after confi
   const scheduler = makeManualScheduler();
   const checkpoints = [];
   const session = createExploreSession({
-    syncRequest: async payload => okResponse(payload.entries.at(-1).seq, { exploreRunway: null }),
+    syncRequest: async payload => syncOkResponse(payload.entries.at(-1).seq, { exploreRunway: null }),
     onCheckpoint: response => checkpoints.push(response),
     schedule: scheduler.schedule,
     cancel: scheduler.cancel,
@@ -1138,7 +1247,7 @@ test('reset abandons in-flight responses', async () => {
   const session = createExploreSession({
     syncRequest: async () => {
       await gate;
-      return okResponse(1);
+      return syncOkResponse(1);
     },
     onCheckpoint: response => checkpoints.push(response),
     schedule: scheduler.schedule,
@@ -1172,7 +1281,7 @@ test('new runway generation abandons in-flight responses and clears old pending 
   const session = createExploreSession({
     syncRequest: async () => {
       await gate;
-      return okResponse(1);
+      return syncOkResponse(1);
     },
     onCheckpoint: response => checkpoints.push(response),
     schedule: scheduler.schedule,
@@ -1211,7 +1320,7 @@ test('inactive runway adoption invalidates in-flight responses from a live epoch
   const session = createExploreSession({
     syncRequest: async () => {
       await gate;
-      return okResponse(1, { exploreRunway: staleRunway });
+      return syncOkResponse(1, { exploreRunway: staleRunway });
     },
     onCheckpoint: response => checkpoints.push(response),
     onCorrection: response => corrections.push(response),
@@ -1255,7 +1364,7 @@ test('inactive runway adoption invalidates in-flight responses from a live epoch
 test('XP completion checkpoints before proceed into combat', async () => {
   const scheduler = makeManualScheduler();
   const session = createExploreSession({
-    syncRequest: async ({ entries }) => okResponse(entries.at(-1).seq, {
+    syncRequest: async ({ entries }) => syncOkResponse(entries.at(-1).seq, {
       exploreRunway: whackThenCombatRunway({ completed: true }),
     }),
     schedule: scheduler.schedule,
@@ -1281,14 +1390,14 @@ test('XP completion checkpoints before proceed into combat', async () => {
 });
 
 test('singleton lifecycle: configure / get / reset', () => {
-  const session1 = configureExploreSession({ syncRequest: async () => okResponse(1) });
+  const session1 = configureExploreSession({ syncRequest: async () => syncOkResponse(1) });
   assert.ok(session1);
   assert.equal(getExploreSession(), session1);
 
   session1.adoptRunway(makeRunway());
   session1.recordRoomAction('friendlyNpc.choose', { itemId: 'iron-charm' });
 
-  const session2 = configureExploreSession({ syncRequest: async () => okResponse(1) });
+  const session2 = configureExploreSession({ syncRequest: async () => syncOkResponse(1) });
   assert.notEqual(session1, session2);
   assert.equal(getExploreSession(), session2);
   assert.equal(session1.pendingCount(), 0);
@@ -1306,7 +1415,7 @@ test('singleton lifecycle: configure / get / reset', () => {
 // the proceed is accepted.
 test('adopting a refreshed same-epoch runway resumes a session paused on an empty log', () => {
   const EPOCH = 'ese_resume11111111';
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
 
   // Room 0 can proceed; room 1 exists but is NOT offline-ready yet.
   session.adoptRunway({
@@ -1345,7 +1454,7 @@ test('adopting a refreshed same-epoch runway resumes a session paused on an empt
 });
 
 test('exposes pause reason and a monotonic local revision', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
   session.adoptRunway(makeRunway());
   const r0 = session.getLocalRevision();
 
@@ -1363,7 +1472,7 @@ test('exposes pause reason and a monotonic local revision', () => {
 });
 
 test('consumes each returned action result once per session epoch', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(1) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
   session.adoptRunway(makeRunway());
 
   assert.equal(session.consumeResultOnce('run_es_result_1'), true);
@@ -1378,7 +1487,7 @@ test('a sync-delivered epoch change rotates result consumption and revision', as
     sessionEpoch: 'ese_3333333333333333',
   });
   const session = createExploreSession({
-    syncRequest: async () => okResponse(1, {
+    syncRequest: async () => syncOkResponse(1, {
       exploreRunway: nextEpochRunway,
     }),
   });
@@ -1408,7 +1517,7 @@ test('sync callbacks see the response runway before a paused session resumes', a
   });
   let session;
   session = createExploreSession({
-    syncRequest: async () => okResponse(1, { exploreRunway: refreshed }),
+    syncRequest: async () => syncOkResponse(1, { exploreRunway: refreshed }),
     onCheckpoint: () => events.push([
       'checkpoint',
       session.currentPreparedRoom()?.actionSeq,
@@ -1451,7 +1560,7 @@ test('correction callback sees corrected runway before resume', async () => {
   });
   let session;
   session = createExploreSession({
-    syncRequest: async () => ({
+    syncRequest: async () => transport({
       status: 'corrected',
       confirmedThroughSeq: null,
       rejectedSeq: 1,
@@ -1495,7 +1604,7 @@ test('empty session fence rejects append then drain during a GET', async () => {
   let releaseFetch;
   const fetchGate = new Promise(resolve => { releaseFetch = resolve; });
   const session = createExploreSession({
-    syncRequest: async ({ entries }) => okResponse(entries.at(-1).seq),
+    syncRequest: async ({ entries }) => syncOkResponse(entries.at(-1).seq),
     schedule: () => 0,
     cancel: () => {},
   });
@@ -1513,7 +1622,7 @@ test('empty session fence rejects append then drain during a GET', async () => {
 
 test('empty session fence rejects same-epoch adoption, pause change, reset, and replacement', () => {
   const assertStale = mutate => {
-    const session = createExploreSession({ syncRequest: async () => okResponse(0) });
+    const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
     session.adoptRunway(makeRunway());
     const capture = session.captureFence({ pending: 'empty' });
     mutate(session);
@@ -1524,16 +1633,16 @@ test('empty session fence rejects same-epoch adoption, pause change, reset, and 
   assertStale(session => session.pause('currentRoomNotReady'));
   assertStale(session => session.reset());
 
-  const active = configureExploreSession({ syncRequest: async () => okResponse(0) });
+  const active = configureExploreSession({ syncRequest: async () => syncOkResponse(0) });
   active.adoptRunway(makeRunway());
   const capture = active.captureFence({ pending: 'empty' });
-  configureExploreSession({ syncRequest: async () => okResponse(0) });
+  configureExploreSession({ syncRequest: async () => syncOkResponse(0) });
   assert.equal(capture.fence.isCurrent(), false);
   resetExploreSession();
 });
 
 test('preserve fence rejects any pending-stream change', () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(0) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
   session.adoptRunway(makeRunway());
   assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' }).accepted, true);
   const capture = session.captureFence({ pending: 'preserve' });
@@ -1544,7 +1653,7 @@ test('preserve fence rejects any pending-stream change', () => {
 });
 
 test('declared same-epoch runway adoption advances without self-superseding', async () => {
-  const session = createExploreSession({ syncRequest: async () => okResponse(0) });
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
   session.adoptRunway(makeRunway());
   assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
   const before = session.snapshot();
@@ -1569,7 +1678,7 @@ test('a preserve fence captured during correction playback goes stale at correct
     preparedRooms: [preparedRoom(0, { actionSeq: 13, acceptedActions: ['friendlyNpc.choose'] })],
   });
   const session = createExploreSession({
-    syncRequest: async () => ({
+    syncRequest: async () => transport({
       status: 'corrected',
       confirmedThroughSeq: null,
       rejectedSeq: 1,

@@ -2,23 +2,44 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
-import { PAUSE_REASONS } from '../../../src/shared/explore/pause-reasons.js';
+import {
+  PAUSE_REASONS,
+  pausePriority,
+  shouldReplacePauseReason,
+} from '../../../src/shared/explore/pause-reasons.js';
 
-test('classifies the strict Explore transport envelope', () => {
+function transport(overrides = {}) {
+  return {
+    transport: true,
+    httpStatus: 0,
+    body: null,
+    parseError: null,
+    networkError: null,
+    aborted: false,
+    clientAuthMismatch: false,
+    authRevision: 0,
+    ...overrides,
+  };
+}
+
+test('classifies strict V1, unsupported V2, conflict, auth, and indeterminate envelopes', () => {
   const cases = [
-    [{ networkError: new TypeError('lost') }, 'indeterminate'],
-    [{ aborted: true }, 'indeterminate'],
-    [{ httpStatus: 429, body: { error: 'slow' } }, 'indeterminate'],
-    [{ httpStatus: 503, body: { error: 'down' } }, 'indeterminate'],
-    [{ httpStatus: 200, parseError: new Error('html') }, 'indeterminate'],
-    [{ httpStatus: 200, body: {} }, 'indeterminate'],
-    [{ httpStatus: 401, body: { error: 'expired' } }, 'authRequired'],
-    [{ httpStatus: 200, expectedProtocolVersion: 1, body: { status: 'ok', confirmedThroughSeq: 1, results: [] } }, 'settled'],
-    [{ httpStatus: 200, expectedProtocolVersion: 1, body: { status: 'corrected', confirmedThroughSeq: 0, rejectedSeq: 1, results: [] } }, 'settled'],
-    [{ httpStatus: 409, expectedProtocolVersion: 1, body: { status: 'corrected', confirmedThroughSeq: null, rejectedSeq: 1, results: [] } }, 'settled'],
-    [{ httpStatus: 200, body: { protocolVersion: 2, status: 'ok', runId: 'r', appliedThroughSeq: 1, nextExpectedSeq: 2, results: [] } }, 'settled'],
-    [{ httpStatus: 200, body: { protocolVersion: 2, status: 'corrected', runId: 'r', appliedThroughSeq: 0, nextExpectedSeq: 1, results: [] } }, 'settled'],
-    [{ httpStatus: 409, body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' } }, 'conflict'],
+    [transport({ networkError: new TypeError('lost') }), 'indeterminate'],
+    [transport({ aborted: true }), 'indeterminate'],
+    [transport({ httpStatus: 429, body: { error: 'slow' } }), 'indeterminate'],
+    [transport({ httpStatus: 503, body: { error: 'down' } }), 'indeterminate'],
+    [transport({ httpStatus: 200, parseError: new Error('html') }), 'indeterminate'],
+    [transport({ httpStatus: 200, body: {} }), 'indeterminate'],
+    [transport({ httpStatus: 401, body: { error: 'expired' } }), 'authRequired'],
+    [transport({ clientAuthMismatch: true }), 'authRequired'],
+    [transport({ httpStatus: 200, expectedProtocolVersion: 1, body: { status: 'ok', confirmedThroughSeq: 1, results: [] } }), 'v1Settled'],
+    [transport({ httpStatus: 200, expectedProtocolVersion: 1, body: { status: 'corrected', confirmedThroughSeq: 0, rejectedSeq: 1, results: [] } }), 'v1Settled'],
+    [transport({ httpStatus: 409, expectedProtocolVersion: 1, body: { status: 'corrected', confirmedThroughSeq: null, rejectedSeq: 1, results: [] } }), 'v1Settled'],
+    [transport({ httpStatus: 200, body: { protocolVersion: 2, status: 'ok', runId: 'r', appliedThroughSeq: 1, nextExpectedSeq: 2, results: [] } }), 'unsupportedProtocol'],
+    [transport({ httpStatus: 200, body: { protocolVersion: 2, status: 'corrected', runId: 'r', appliedThroughSeq: 0, nextExpectedSeq: 1, results: [] } }), 'unsupportedProtocol'],
+    [transport({ httpStatus: 409, body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' } }), 'conflict'],
+    [{ httpStatus: 200, body: { status: 'ok', confirmedThroughSeq: 1, results: [] } }, 'indeterminate'],
+    [transport({ httpStatus: 200, body: { status: 'ok', confirmedThroughSeq: 1 } }), 'indeterminate'],
   ];
 
   for (const [input, expected] of cases) {
@@ -27,27 +48,49 @@ test('classifies the strict Explore transport envelope', () => {
 });
 
 test('does not accept a V1 envelope after a run speaks V2', () => {
-  assert.equal(classifyExploreTransport({
+  assert.equal(classifyExploreTransport(transport({
     expectedProtocolVersion: 2,
     httpStatus: 200,
     body: { status: 'ok', confirmedThroughSeq: 1, results: [] },
-  }), 'indeterminate');
+  })), 'indeterminate');
 });
 
-test('every Explore pause reason is recoverable and documented', () => {
+test('rejects transport envelopes missing even one required Task 3 field', () => {
+  const incomplete = transport({
+    httpStatus: 200,
+    body: { status: 'ok', confirmedThroughSeq: 1, results: [] },
+  });
+  delete incomplete.authRevision;
+
+  assert.equal(classifyExploreTransport(incomplete), 'indeterminate');
+});
+
+test('pause reasons expose only authoritative severity and replacement priority', () => {
   const requiredReasons = [
     'dependency', 'syncPending', 'noPreparedRoom', 'currentRoomNotReady',
     'nextRoomNotReady', 'runwayExhausted', 'missingPayload', 'actionNotAccepted',
-    'hardCap', 'combatPlaybackFailed', 'transportDegraded', 'authRequired',
-    'storageUnavailable', 'writerConflict',
+    'hardCap', 'combatPlaybackFailed', 'transportDegraded', 'writerConflict',
+    'authRequired', 'unsupportedProtocol',
   ];
 
   for (const reason of requiredReasons) {
     const policy = PAUSE_REASONS[reason];
     assert.ok(policy, `${reason} must be defined`);
-    assert.equal(typeof policy.resumeWhen, 'string', `${reason} needs a resume condition`);
-    assert.ok(policy.resumeWhen.length > 0, `${reason} needs a resume condition`);
-    assert.ok(policy.automaticRecovery || policy.manualRecovery, `${reason} needs recovery`);
+    assert.deepEqual(Object.keys(policy).sort(), ['priority', 'severity']);
+    assert.equal(typeof policy.priority, 'number');
     assert.ok(Object.isFrozen(policy), `${reason} policy must be frozen`);
   }
+  assert.equal(PAUSE_REASONS.storageUnavailable, undefined);
+});
+
+test('pause priority only permits strictly higher authoritative reasons', () => {
+  assert.equal(pausePriority('dependency'), 10);
+  assert.equal(pausePriority('transportDegraded'), 20);
+  assert.equal(pausePriority('writerConflict'), 30);
+  assert.equal(pausePriority('authRequired'), 40);
+  assert.equal(pausePriority('unsupportedProtocol'), 50);
+  assert.equal(shouldReplacePauseReason('dependency', 'hardCap'), false);
+  assert.equal(shouldReplacePauseReason('writerConflict', 'writerConflict'), false);
+  assert.equal(shouldReplacePauseReason('writerConflict', 'authRequired'), true);
+  assert.equal(shouldReplacePauseReason('unsupportedProtocol', 'authRequired'), false);
 });

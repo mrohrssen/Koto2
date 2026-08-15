@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import * as exploreSessionApi from '../../../public/js/ui/explore-session.js';
+import { makeExploreTransport } from '../../helpers/explore-sync-transport.js';
 
 function makeRunway() {
   return {
@@ -22,11 +23,11 @@ function makeRunway() {
 
 function makeSession(overrides = {}) {
   const session = exploreSessionApi.createExploreSession({
-    syncRequest: overrides.syncRequest || (async () => ({
+    syncRequest: overrides.syncRequest || (async () => makeExploreTransport({ httpStatus: 200, body: {
       status: 'ok',
       confirmedThroughSeq: 0,
       results: [],
-    })),
+    } })),
     schedule: overrides.schedule || (() => 0),
     cancel: () => {},
   });
@@ -60,11 +61,11 @@ test('drains pending Explore entries before executing a compatibility action', a
   const session = makeSession({
     syncRequest: async ({ entries }) => {
       syncCalls += 1;
-      return {
+      return makeExploreTransport({ httpStatus: 200, body: {
         status: 'ok',
         confirmedThroughSeq: entries.at(-1).seq,
         results: [],
-      };
+      } });
     },
   });
   assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
@@ -98,11 +99,11 @@ test('does not execute a compatibility action when the local revision changes du
         markFirstSyncStarted();
         await firstSyncGate;
       }
-      return {
+      return makeExploreTransport({ httpStatus: 200, body: {
         status: 'ok',
         confirmedThroughSeq: entries.at(-1).seq,
         results: [],
-      };
+      } });
     },
   });
   assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
@@ -133,7 +134,9 @@ test('legacy session action uses the shared ownership fence after active-session
     syncRequest: async ({ entries }) => {
       markSyncStarted();
       await syncGate;
-      return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] };
+      return makeExploreTransport({ httpStatus: 200, body: {
+        status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [],
+      } });
     },
     schedule: () => 0,
     cancel: () => {},
@@ -147,7 +150,11 @@ test('legacy session action uses the shared ownership fence after active-session
     async () => { callbackCalls += 1; return 'should-not-run'; },
   );
   await syncStarted;
-  exploreSessionApi.configureExploreSession({ syncRequest: async () => ({ status: 'ok' }) });
+  exploreSessionApi.configureExploreSession({
+    syncRequest: async () => makeExploreTransport({ httpStatus: 200,
+      body: { status: 'ok', confirmedThroughSeq: 0, results: [] },
+    }),
+  });
   releaseSync();
 
   assert.deepEqual(await outcomePromise, { executed: false, result: null });

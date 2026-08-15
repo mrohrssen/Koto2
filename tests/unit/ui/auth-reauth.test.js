@@ -170,7 +170,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     await session.syncNow();
 
     assert.equal(exploreFetches, 0);
-    assert.equal(authRequiredCalls, 1);
+    assert.equal(authRequiredCalls, 0, 'session-level auth orchestration is retired');
     assert.equal(session.getPauseReason(), 'authRequired');
     assert.deepEqual(session.snapshot(), exactPendingLog);
   });
@@ -233,7 +233,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
 
     assert.deepEqual(session.snapshot(), exactPendingLog);
     assert.equal(session.getPauseReason(), 'authRequired');
-    assert.equal(authRequiredCalls, 1);
+    assert.equal(authRequiredCalls, 0, 'session-level auth orchestration is retired');
     assert.deepEqual(callbacks, []);
     assert.equal(session.currentPreparedRoom()?.index, 0);
   });
@@ -342,7 +342,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
       }, {
         genericResult: expectedResult,
         exploreHeaders: [],
-        authRequiredCalls: 1,
+        authRequiredCalls: 0,
         pauseReason: 'authRequired',
         pendingLog: exactPendingLog,
       });

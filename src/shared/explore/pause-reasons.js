@@ -1,20 +1,36 @@
+const PRIORITY = Object.freeze({
+  temporary: 10,
+  warning: 20,
+  writerConflict: 30,
+  authRequired: 40,
+  unsupportedProtocol: 50,
+});
+
 const RECOVERABLE_REASONS = {
-  dependency: { severity: 'temporary', automaticRecovery: true, manualRecovery: false, resumeWhen: 'dependent actions settle' },
-  syncPending: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'pending actions settle' },
-  noPreparedRoom: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'a prepared runway arrives' },
-  currentRoomNotReady: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'the current room is offline-ready' },
-  nextRoomNotReady: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'the next room is offline-ready' },
-  runwayExhausted: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'the runway is refreshed' },
-  missingPayload: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'the required payload arrives' },
-  actionNotAccepted: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'the runway accepts the action' },
-  hardCap: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'pending actions drop below the cap' },
-  combatPlaybackFailed: { severity: 'temporary', automaticRecovery: true, manualRecovery: true, resumeWhen: 'combat playback recovers' },
-  transportDegraded: { severity: 'warning', automaticRecovery: true, manualRecovery: true, resumeWhen: 'a sync response settles' },
-  authRequired: { severity: 'blocking', automaticRecovery: true, manualRecovery: true, resumeWhen: 'authentication succeeds and the session is adopted' },
-  storageUnavailable: { severity: 'warning', automaticRecovery: true, manualRecovery: true, resumeWhen: 'local storage is available' },
-  writerConflict: { severity: 'blocking', automaticRecovery: true, manualRecovery: true, resumeWhen: 'the writer lease is adopted or taken over' },
+  dependency: { severity: 'temporary', priority: PRIORITY.temporary },
+  syncPending: { severity: 'temporary', priority: PRIORITY.temporary },
+  noPreparedRoom: { severity: 'temporary', priority: PRIORITY.temporary },
+  currentRoomNotReady: { severity: 'temporary', priority: PRIORITY.temporary },
+  nextRoomNotReady: { severity: 'temporary', priority: PRIORITY.temporary },
+  runwayExhausted: { severity: 'temporary', priority: PRIORITY.temporary },
+  missingPayload: { severity: 'temporary', priority: PRIORITY.temporary },
+  actionNotAccepted: { severity: 'temporary', priority: PRIORITY.temporary },
+  hardCap: { severity: 'temporary', priority: PRIORITY.temporary },
+  combatPlaybackFailed: { severity: 'temporary', priority: PRIORITY.temporary },
+  transportDegraded: { severity: 'warning', priority: PRIORITY.warning },
+  writerConflict: { severity: 'blocking', priority: PRIORITY.writerConflict },
+  authRequired: { severity: 'blocking', priority: PRIORITY.authRequired },
+  unsupportedProtocol: { severity: 'blocking', priority: PRIORITY.unsupportedProtocol },
 };
 
 export const PAUSE_REASONS = Object.freeze(Object.fromEntries(
   Object.entries(RECOVERABLE_REASONS).map(([reason, policy]) => [reason, Object.freeze(policy)]),
 ));
+
+export function pausePriority(reason) {
+  return PAUSE_REASONS[reason]?.priority ?? -Infinity;
+}
+
+export function shouldReplacePauseReason(currentReason, nextReason) {
+  return pausePriority(nextReason) > pausePriority(currentReason);
+}

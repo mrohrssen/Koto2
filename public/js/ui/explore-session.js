@@ -1,11 +1,12 @@
 import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
-import { PAUSE_REASONS } from '../../../src/shared/explore/pause-reasons.js';
+import { shouldReplacePauseReason } from '../../../src/shared/explore/pause-reasons.js';
 import { createAsyncOwnershipFence, FenceSuperseded } from '../async-ownership-fence.js';
 
 export const EXPLORE_SESSION_HARD_CAP = 50;
 export const EXPLORE_SESSION_RESUME_AT = 40;
 export const EXPLORE_SYNC_DEBOUNCE_MS = 300;
 export const EXPLORE_SYNC_RETRY_DELAYS_MS = [500, 1000, 2000, 4000, 8000, 15000, 30000];
+export const EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS = 12;
 
 function defaultSchedule(fn, delay) {
   const timer = setTimeout(fn, delay);
@@ -117,8 +118,6 @@ export function createExploreSession({
   onCorrection = () => {},
   onPause = () => {},
   onResume = () => {},
-  onAuthRequired = async () => false,
-  onWriterConflict = async () => {},
   schedule = defaultSchedule,
   cancel = id => clearTimeout(id),
 } = {}) {
@@ -203,16 +202,13 @@ export function createExploreSession({
   }
 
   function enterPause(reason) {
-    if (paused && pauseReason === reason) return;
-    const severityRank = { temporary: 0, warning: 1, blocking: 2 };
-    const currentSeverity = severityRank[PAUSE_REASONS[pauseReason]?.severity] ?? 0;
-    const nextSeverity = severityRank[PAUSE_REASONS[reason]?.severity] ?? 0;
-    if (paused && nextSeverity < currentSeverity) return;
+    if (paused && !shouldReplacePauseReason(pauseReason, reason)) return false;
     completeOwnershipTransaction(() => {
       paused = true;
       pauseReason = reason;
       notify(onPause, { pendingCount: log.length, reason });
     });
+    return true;
   }
 
   function resumeIfPaused() {
@@ -223,6 +219,12 @@ export function createExploreSession({
       pauseReason = null;
       notify(onResume, { pendingCount: log.length, reason });
     });
+  }
+
+  function resolvePause(reason) {
+    if (!paused || pauseReason !== reason) return false;
+    resumeIfPaused();
+    return true;
   }
 
   function maybeResumeAfterDrain() {
@@ -245,7 +247,7 @@ export function createExploreSession({
     const sessionBoundary = !fromSync && epochChanged;
 
     runway = cloneValue(nextRunway) ?? null;
-    if (runway?.protocolVersion === 2) expectedProtocolVersion = 2;
+    promoteProtocolVersion(runway?.protocolVersion);
     sessionEpoch = nextEpoch;
     const rooms = preparedRoomsFor(runway);
     const firstRoomIndex = roomIndexFor(rooms[0]);
@@ -340,6 +342,20 @@ export function createExploreSession({
     }, EXPLORE_SYNC_RETRY_DELAYS_MS[index]);
   }
 
+  function retryOrDegrade() {
+    scheduleRetry();
+    if (attempts >= EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS) enterPause('transportDegraded');
+    return { ok: false };
+  }
+
+  function promoteProtocolVersion(version) {
+    if (version === 2 && expectedProtocolVersion < 2) {
+      completeOwnershipTransaction(() => {
+        expectedProtocolVersion = 2;
+      });
+    }
+  }
+
   function responseAuthIsCurrent(transport) {
     try {
       return isAuthBindingCurrent(transport) !== false;
@@ -348,14 +364,8 @@ export function createExploreSession({
     }
   }
 
-  async function handleAuthRequired() {
+  function handleAuthRequired() {
     enterPause('authRequired');
-    try {
-      const recovered = await onAuthRequired();
-      if (recovered === true) scheduleDrain(0);
-    } catch (error) {
-      console.error('[ExploreSession] authentication recovery failed', error);
-    }
     return { ok: false };
   }
 
@@ -461,6 +471,9 @@ export function createExploreSession({
   }
 
   function drain({ force = false } = {}) {
+    if (pauseReason === 'unsupportedProtocol' || pauseReason === 'writerConflict') {
+      return Promise.resolve();
+    }
     if (force) forceDrainRequested = true;
     if (activeDrainPromise) return activeDrainPromise;
 
@@ -499,45 +512,27 @@ export function createExploreSession({
       const rawResponse = await syncRequest({ sessionEpoch, entries });
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
 
-      const isTransportEnvelope = rawResponse?.transport === true;
-      const transport = isTransportEnvelope
-        ? rawResponse
-        : { httpStatus: 200, body: rawResponse };
-      if (!responseAuthIsCurrent(transport)) return handleAuthRequired();
-      const outcome = isTransportEnvelope
-        ? classifyExploreTransport({ expectedProtocolVersion, ...transport })
-        : (rawResponse?.status === 'ok' || rawResponse?.status === 'corrected'
-          ? 'settled'
-          : 'indeterminate');
+      const transport = rawResponse;
+      const outcome = classifyExploreTransport({ expectedProtocolVersion, ...transport });
       const response = transport.body;
 
-      if (outcome === 'authRequired') {
-        return handleAuthRequired();
+      if (outcome === 'authRequired') return handleAuthRequired();
+      if (outcome === 'indeterminate') return retryOrDegrade();
+      if (!responseAuthIsCurrent(transport)) return handleAuthRequired();
+
+      if (outcome === 'unsupportedProtocol' || outcome === 'conflict') {
+        promoteProtocolVersion(response.protocolVersion);
       }
+
       if (outcome === 'conflict') {
         enterPause('writerConflict');
-        try {
-          await onWriterConflict(response);
-        } catch (error) {
-          console.error('[ExploreSession] writer-conflict recovery failed', error);
-        }
         return { ok: false };
       }
-      if (outcome !== 'settled') {
-        scheduleRetry();
-        if (attempts >= 12) enterPause('transportDegraded');
+      if (outcome === 'unsupportedProtocol') {
+        enterPause('unsupportedProtocol');
         return { ok: false };
       }
-      if (response?.protocolVersion === 2) {
-        if (expectedProtocolVersion !== 2) {
-          completeOwnershipTransaction(() => {
-            expectedProtocolVersion = 2;
-          });
-        }
-        scheduleRetry();
-        if (attempts >= 12) enterPause('transportDegraded');
-        return { ok: false };
-      }
+      if (outcome !== 'v1Settled') return retryOrDegrade();
 
       // Fence captured continuations as soon as a non-committing correction is
       // known. Combat playback may still be holding response adoption; waiting
@@ -595,8 +590,7 @@ export function createExploreSession({
       }
     } catch {
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
-      scheduleRetry();
-      return { ok: false };
+      return retryOrDegrade();
     }
   }
 
@@ -702,6 +696,7 @@ export function createExploreSession({
     getCorrectionRevision,
     consumeResultOnce,
     pause: enterPause,
+    resolvePause,
     captureFence,
   };
 }
