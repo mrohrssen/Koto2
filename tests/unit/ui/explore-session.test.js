@@ -2033,7 +2033,7 @@ test('owned auth resolution and drain accept only the exact current capture owne
   assert.equal(capture.fence.isCurrent(), true, 'owned result commit advances its capture');
 });
 
-test('unowned and distinct-owner sync requests cannot join an active owned drain', async () => {
+test('only the exact owner may coalesce with an active drain', async () => {
   let releaseFetch;
   let markFetchStarted;
   const fetchStarted = new Promise(resolve => { markFetchStarted = resolve; });
@@ -2052,18 +2052,49 @@ test('unowned and distinct-owner sync requests cannot join an active owned drain
   assert.equal(session.resolvePause('authRequired', { owner: first.sessionLease }), true);
   const second = session.captureFence({ pending: 'preserve' });
 
-  const ownedDrain = session.syncNow({ owner: first.sessionLease });
+  const ownedDrain = session.drain({ force: true, owner: first.sessionLease });
   await fetchStarted;
-  const unownedDrain = assert.rejects(session.syncNow(), FenceSuperseded);
+  const sameOwnerDrain = session.drain({ force: true, owner: first.sessionLease });
+  assert.equal(sameOwnerDrain, ownedDrain, 'the exact recovery owner may coalesce');
+  const unownedDrain = assert.rejects(session.drain(), FenceSuperseded);
   const secondOwnerDrain = assert.rejects(
-    session.syncNow({ owner: second.sessionLease }),
+    session.drain({ owner: second.sessionLease }),
     FenceSuperseded,
   );
   releaseFetch();
 
   await ownedDrain;
+  await sameOwnerDrain;
   await unownedDrain;
   await secondOwnerDrain;
+
+  let releaseUnownedFetch;
+  let markUnownedFetchStarted;
+  const unownedFetchStarted = new Promise(resolve => { markUnownedFetchStarted = resolve; });
+  const unownedFetchGate = new Promise(resolve => { releaseUnownedFetch = resolve; });
+  const unownedSession = createExploreSession({
+    syncRequest: async () => {
+      markUnownedFetchStarted();
+      await unownedFetchGate;
+      return syncOkResponse(1);
+    },
+  });
+  unownedSession.adoptRunway(makeRunway());
+  assert.equal(
+    unownedSession.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted,
+    true,
+  );
+  const unownedCapture = unownedSession.captureFence({ pending: 'preserve' });
+  const activeUnownedDrain = unownedSession.drain({ force: true });
+  await unownedFetchStarted;
+  const ownedAgainstUnownedDrain = assert.rejects(
+    unownedSession.syncNow({ owner: unownedCapture.sessionLease }),
+    FenceSuperseded,
+  );
+  releaseUnownedFetch();
+
+  await activeUnownedDrain;
+  await ownedAgainstUnownedDrain;
 });
 
 test('unowned pause, resume, checkpoint, and correction notifications observe committed ownership', async () => {

@@ -97,11 +97,13 @@ export function createExploreSessionPauseController({
     queuedAuthRecovery = { session, revision };
   }
 
-  function queueCurrentAuthSuccessor(previousSession) {
-    const successor = getSession?.();
-    if (successor && successor !== previousSession) {
-      queueAuthRecovery(successor, lifecycleRevision);
-    }
+  function queueCurrentAuthRecovery() {
+    // A stale preserve capture can mean either a replacement session or a
+    // changed ownership revision on the same still-auth-paused session. Keep
+    // one deferred successor in both cases; it starts only after the stale
+    // recovery clears, so this cannot recursively join its own promise.
+    const current = getSession?.();
+    if (current) queueAuthRecovery(current, lifecycleRevision);
   }
 
   function flushQueuedAuthRecovery() {
@@ -349,7 +351,7 @@ export function createExploreSessionPauseController({
         return true;
       } catch (error) {
         if (error instanceof FenceSuperseded) {
-          queueCurrentAuthSuccessor(session);
+          queueCurrentAuthRecovery();
           return false;
         }
         if (error instanceof FenceContractViolation) throw error;

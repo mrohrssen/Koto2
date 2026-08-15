@@ -549,11 +549,12 @@ export function createExploreSession({
   }
 
   function drain({ force = false, owner = null } = {}) {
-    const record = ownerRecord(owner, 'drain Explore session');
-    // A public caller must never join an ownership-fenced drain that belongs
-    // to another recovery. In particular, do this before `force` can change
-    // that drain's successor behavior.
-    if (activeDrainPromise && activeDrainOwner != null && activeDrainOwner !== owner) {
+    ownerRecord(owner, 'drain Explore session');
+    // A caller may join only the exact ownership context that started the
+    // active drain. `null` is an ownership context too: an owned recovery
+    // must never inherit an in-flight public drain (or vice versa).
+    // Do this before `force` can change that drain's successor behavior.
+    if (activeDrainPromise && activeDrainOwner !== owner) {
       return Promise.reject(new FenceSuperseded('drain Explore session', 'active drain'));
     }
     if (
@@ -713,9 +714,9 @@ export function createExploreSession({
 
   function syncNow({ owner = null } = {}) {
     ownerRecord(owner, 'sync Explore session');
-    // Guard before timer cancellation or force-drain mutation. An unowned
-    // call cannot influence an in-flight owned recovery.
-    if (activeDrainPromise && activeDrainOwner != null && activeDrainOwner !== owner) {
+    // Guard before timer cancellation or force-drain mutation. Both a public
+    // and an owned caller are fenced from a drain started by the other.
+    if (activeDrainPromise && activeDrainOwner !== owner) {
       return Promise.reject(new FenceSuperseded('sync Explore session', 'active drain'));
     }
     cancelDebounceTimer();

@@ -177,6 +177,47 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     ]), 'pending', 'a later independent auth failure prompts again');
   });
 
+  it('settles queued handoff claim waiters on logout and leaves no permit after terminal refusal', async () => {
+    globalThis.localStorage.setItem('authToken', 'expired-token');
+    let loginAttempts = 0;
+    globalThis.fetch = async url => {
+      if (url.endsWith('/api/auth/me')) {
+        return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+      }
+      loginAttempts += 1;
+      return makeResponse({
+        body: loginAttempts === 1
+          ? { token: 'fresh-token', user: { id: 'user-1', username: 'michi' } }
+          : { token: 'other-token', user: { id: 'user-2', username: 'other' } },
+      });
+    };
+    assert.equal(await auth.checkAuth(), true);
+    const recovery = auth.requestReauthentication();
+    dom.elements.get('auth-username').value = 'michi';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-submit').click();
+    assert.equal(await recovery, true);
+
+    const activeClaim = await auth.claimReauthentication();
+    const waitingClaim = auth.claimReauthentication();
+    auth.logout();
+
+    assert.equal(await waitingClaim, null, 'logout settles a queued successor claim');
+    assert.equal(auth.releaseReauthentication(activeClaim), false);
+    assert.equal(auth.acknowledgeReauthentication(activeClaim), false);
+
+    globalThis.localStorage.setItem('authToken', 'expired-token');
+    assert.equal(await auth.checkAuth(), true);
+    const refusedRecovery = auth.requestReauthentication();
+    dom.elements.get('auth-username').value = 'other';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-submit').click();
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(await refusedRecovery, false);
+    assert.equal(await auth.claimReauthentication(), null, 'terminal refusal cannot leave a reusable handoff');
+  });
+
   it('fails an Explore drain before fetch when shared storage no longer matches the verified principal token', async () => {
     globalThis.localStorage.setItem('authToken', 'token-a');
     globalThis.fetch = async url => {

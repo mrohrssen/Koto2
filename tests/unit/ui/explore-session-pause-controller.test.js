@@ -349,6 +349,136 @@ describe('Explore session pause controller', () => {
     controller.dispose();
   });
 
+  it('retries a same-session preserve-fence supersession after login without a second prompt', async () => {
+    let revision = 0;
+    let reason = 'authRequired';
+    let latestCapture = null;
+    let captureCount = 0;
+    const captures = [];
+    const adoptions = [];
+    const resolutions = [];
+    const drains = [];
+    const login = deferred();
+    let permitAvailable = false;
+    let activeClaim = null;
+    let promptCalls = 0;
+    let authenticationCalls = 0;
+    let acknowledgements = 0;
+
+    const session = {
+      getPauseReason: () => reason,
+      isPaused: () => reason != null,
+      pendingCount: () => 1,
+      pause(nextReason) {
+        if (reason === nextReason) return false;
+        reason = nextReason;
+        revision += 1;
+        return true;
+      },
+      captureFence({ pending, leases } = {}) {
+        assert.equal(pending, 'preserve');
+        assert.equal(typeof leases?.[0]?.isCurrent, 'function');
+        const captureRevision = revision;
+        let leaseRevision = captureRevision;
+        const sessionLease = Object.freeze({ capture: ++captureCount });
+        const isCurrent = () => revision === leaseRevision && leases[0].isCurrent();
+        const capture = {
+          session,
+          sessionLease,
+          fence: {
+            isCurrent,
+            async step(label, operation) {
+              if (!isCurrent()) throw new FenceSuperseded(label, 'same Explore session');
+              const result = await operation();
+              if (!isCurrent()) throw new FenceSuperseded(label, 'same Explore session');
+              return result;
+            },
+          },
+          advance() { leaseRevision = revision; },
+        };
+        captures.push(capture);
+        latestCapture = capture;
+        return capture;
+      },
+      resolvePause(expectedReason, { owner } = {}) {
+        if (
+          reason !== expectedReason
+          || owner !== latestCapture?.sessionLease
+          || !latestCapture.fence.isCurrent()
+        ) return false;
+        reason = null;
+        revision += 1;
+        latestCapture.advance();
+        resolutions.push(owner);
+        return true;
+      },
+      async syncNow({ owner } = {}) {
+        if (owner !== latestCapture?.sessionLease || !latestCapture.fence.isCurrent()) {
+          throw new FenceSuperseded('redeliver same Explore session', 'same Explore session');
+        }
+        drains.push(owner);
+        revision += 1;
+        latestCapture.advance();
+      },
+      supersedePreserveFence() { revision += 1; },
+    };
+
+    const { controller, narrations, actions, toasts } = harness({
+      session,
+      reauthenticate: () => {
+        authenticationCalls += 1;
+        if (permitAvailable) return Promise.resolve(true);
+        promptCalls += 1;
+        return login.promise;
+      },
+      claimReauthentication: async () => {
+        if (!permitAvailable || activeClaim) return null;
+        activeClaim = Object.freeze({});
+        return activeClaim;
+      },
+      releaseReauthentication: claim => {
+        if (claim !== activeClaim) return false;
+        activeClaim = null;
+        return true;
+      },
+      acknowledgeReauthentication: claim => {
+        if (claim !== activeClaim) return false;
+        permitAvailable = false;
+        activeClaim = null;
+        acknowledgements += 1;
+        return true;
+      },
+      adoptRecoveryState: async ({ capture }) => {
+        adoptions.push(capture.sessionLease);
+        return true;
+      },
+    });
+
+    controller.handlePause({ reason: 'authRequired' });
+    await waitFor(() => promptCalls === 1);
+    const staleCapture = captures[0];
+    session.supersedePreserveFence();
+    permitAvailable = true;
+    login.resolve(true);
+
+    await waitFor(() => drains.length === 1 && acknowledgements === 1);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    assert.equal(captureCount, 2, 'the same live session was captured again after its stale login');
+    assert.equal(staleCapture.fence.isCurrent(), false);
+    assert.deepEqual(adoptions, [captures[1].sessionLease], 'the stale capture never adopts state');
+    assert.deepEqual(resolutions, [captures[1].sessionLease], 'only the fresh capture resolves auth');
+    assert.deepEqual(drains, [captures[1].sessionLease], 'only the fresh capture redelivers pending work');
+    assert.equal(authenticationCalls, 2);
+    assert.equal(promptCalls, 1, 'the completed login is retained for the fresh same-session recovery');
+    assert.equal(reason, null);
+    assert.deepEqual(narrations, []);
+    assert.deepEqual(actions, []);
+    assert.deepEqual(toasts, []);
+    controller.dispose();
+  });
+
   it('rethrows a fence contract violation instead of treating it as a recoverable stale flow', async () => {
     const session = createSession({ reason: 'authRequired', pending: 1 });
     session.captureFence = () => ({
