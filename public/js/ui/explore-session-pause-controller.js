@@ -45,7 +45,7 @@ export function createExploreSessionPauseController({
   let authRecoveryPromise = null;
   let activeAuthRecovery = null;
   let queuedAuthRecovery = null;
-  let automaticAuthRepeatUsed = false;
+  let automaticAuthRepeatEpisode = null;
 
   const isCurrent = (revision, session) => (
     !disposed
@@ -104,6 +104,36 @@ export function createExploreSessionPauseController({
     // recovery clears, so this cannot recursively join its own promise.
     const current = getSession?.();
     if (current) queueAuthRecovery(current, lifecycleRevision);
+  }
+
+  function currentAuthEpisode(session, revision) {
+    return {
+      session,
+      revision,
+      localRevision: session?.getLocalRevision?.(),
+    };
+  }
+
+  function hasUsedAutomaticAuthRepeat(session, revision) {
+    const episode = automaticAuthRepeatEpisode;
+    return (
+      episode?.session === session
+      && episode.revision === revision
+      && episode.localRevision === session?.getLocalRevision?.()
+    );
+  }
+
+  function useAutomaticAuthRepeat(session, revision) {
+    automaticAuthRepeatEpisode = currentAuthEpisode(session, revision);
+  }
+
+  function clearAutomaticAuthRepeat(session, revision) {
+    if (
+      automaticAuthRepeatEpisode?.session === session
+      && automaticAuthRepeatEpisode.revision === revision
+    ) {
+      automaticAuthRepeatEpisode = null;
+    }
   }
 
   function flushQueuedAuthRecovery() {
@@ -307,6 +337,10 @@ export function createExploreSessionPauseController({
           const candidateClaim = await claimReauthentication();
           if (!hasCurrentAuthRecovery(capture, revision, session)) {
             if (candidateClaim != null) releaseReauthentication?.(candidateClaim);
+            // Claim acquisition itself can suspend. Once a stale claimant
+            // releases the one-use handoff, let the current auth-paused
+            // session claim it after this recovery clears.
+            queueCurrentAuthRecovery();
             return false;
           }
           if (candidateClaim == null) {
@@ -336,9 +370,9 @@ export function createExploreSessionPauseController({
         if (session.getPauseReason?.() != null || session.isPaused?.() === true) {
           if (
             session.getPauseReason?.() === 'authRequired'
-            && !automaticAuthRepeatUsed
+            && !hasUsedAutomaticAuthRepeat(session, revision)
           ) {
-            automaticAuthRepeatUsed = true;
+            useAutomaticAuthRepeat(session, revision);
             queueAuthRecovery(session, revision);
           }
           return false;
@@ -347,7 +381,7 @@ export function createExploreSessionPauseController({
           throw new FenceContractViolation('Explore auth recovery did not acknowledge its exact reauthentication claim');
         }
         acknowledged = true;
-        automaticAuthRepeatUsed = false;
+        clearAutomaticAuthRepeat(session, revision);
         return true;
       } catch (error) {
         if (error instanceof FenceSuperseded) {
@@ -427,6 +461,7 @@ export function createExploreSessionPauseController({
     disposed = true;
     lifecycleRevision += 1;
     queuedAuthRecovery = null;
+    automaticAuthRepeatEpisode = null;
     cancelRecoveryTimer();
     if (typeof windowTarget?.removeEventListener === 'function') {
       windowTarget.removeEventListener('online', onOnline);

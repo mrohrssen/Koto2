@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createExploreSessionPauseController } from '../../../public/js/ui/explore-session-pause-controller.js';
+import { createExploreSession } from '../../../public/js/ui/explore-session.js';
 import { FenceContractViolation, FenceSuperseded } from '../../../public/js/async-ownership-fence.js';
 
 function deferred() {
@@ -16,6 +17,39 @@ async function waitFor(predicate) {
     await Promise.resolve();
   }
   assert.fail('condition was not met');
+}
+
+function makeRealRunway(overrides = {}) {
+  const preparedRooms = overrides.preparedRooms ?? [{
+    index: 0,
+    roomId: 'room-auth-recovery-0',
+    actionSeq: 7,
+    room: { id: 'room-auth-recovery-0', type: 'friendlyNpc' },
+    acceptedActions: ['friendlyNpc.choose'],
+    actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    dependencies: [],
+    offlineReady: true,
+  }];
+  return {
+    sessionEpoch: 'ese_auth_observer111',
+    roomActionSeq: 7,
+    currentRoom: 0,
+    preparedRooms,
+    ...overrides,
+  };
+}
+
+function settledTransport(body) {
+  return {
+    transport: true,
+    httpStatus: 200,
+    body: { protocolVersion: 1, ...body },
+    parseError: null,
+    networkError: null,
+    aborted: false,
+    clientAuthMismatch: false,
+    authRevision: 0,
+  };
 }
 
 function eventTarget({ visibilityState = 'visible' } = {}) {
@@ -111,6 +145,88 @@ function harness({
     documentTarget,
   });
   return { controller, session, narrations, actions, toasts, timers, windowTarget, documentTarget };
+}
+
+function createRealAuthRecoveryHarness(observer) {
+  const runway = makeRealRunway();
+  let session;
+  let syncRequests = 0;
+  let observerCalls = 0;
+  let acknowledgements = 0;
+  const releasedClaims = [];
+  const claims = [];
+  const observerCallback = () => {
+    observerCalls += 1;
+    // `updateUI()` → `renderExploring()` does this in production. The runway
+    // has identical contents, but it must not invalidate a current owned
+    // auth continuation merely because rendering re-read its authoritative state.
+    session.adoptRunway(runway);
+  };
+  session = createExploreSession({
+    syncRequest: async ({ entries }) => {
+      syncRequests += 1;
+      if (observer === 'correction') {
+        return settledTransport({
+          status: 'corrected',
+          confirmedThroughSeq: 0,
+          rejectedSeq: entries.at(-1).seq,
+          results: [],
+        });
+      }
+      return settledTransport({
+        status: 'ok',
+        confirmedThroughSeq: entries.at(-1).seq,
+        results: [],
+      });
+    },
+    onResume: observer === 'resume' ? observerCallback : undefined,
+    onCheckpoint: observer === 'checkpoint' ? observerCallback : undefined,
+    onCorrection: observer === 'correction' ? observerCallback : undefined,
+    schedule: () => 0,
+    cancel: () => {},
+  });
+  session.adoptRunway(runway);
+  assert.equal(
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted,
+    true,
+  );
+  session.pause('authRequired');
+
+  const controller = createExploreSessionPauseController({
+    getSession: () => session,
+    reauthenticate: async () => true,
+    claimReauthentication: async () => {
+      const claim = Object.freeze({ claim: claims.length + 1 });
+      claims.push(claim);
+      return claim;
+    },
+    releaseReauthentication: claim => {
+      releasedClaims.push(claim);
+      return true;
+    },
+    adoptRecoveryState: async ({ capture }) => {
+      assert.equal(capture.session, session);
+      return true;
+    },
+    acknowledgeReauthentication: claim => {
+      assert.equal(claim, claims.at(-1));
+      acknowledgements += 1;
+      return true;
+    },
+    schedule: () => 0,
+    cancel: () => {},
+    windowTarget: eventTarget(),
+    documentTarget: eventTarget(),
+  });
+
+  return {
+    controller,
+    session,
+    getSyncRequests: () => syncRequests,
+    getObserverCalls: () => observerCalls,
+    getAcknowledgements: () => acknowledgements,
+    releasedClaims,
+  };
 }
 
 describe('Explore session pause controller', () => {
@@ -476,6 +592,228 @@ describe('Explore session pause controller', () => {
     assert.deepEqual(narrations, []);
     assert.deepEqual(actions, []);
     assert.deepEqual(toasts, []);
+    controller.dispose();
+  });
+
+  it('releases a stale deferred claim and queues the current auth-paused successor', async () => {
+    let activeSession;
+    let loginCompleted = false;
+    let promptCalls = 0;
+    let claimCalls = 0;
+    let claimStarted = false;
+    let activeClaim = null;
+    let acknowledgements = 0;
+    const login = deferred();
+    const deferredClaim = deferred();
+    const releases = [];
+    const adoptions = [];
+
+    function makeSession(name) {
+      const owner = Object.freeze({ name });
+      let reason = 'authRequired';
+      const session = {
+        name,
+        getPauseReason: () => reason,
+        isPaused: () => reason != null,
+        pendingCount: () => 1,
+        pause(nextReason) {
+          reason = nextReason;
+          return true;
+        },
+        captureFence: () => ({
+          session,
+          sessionLease: owner,
+          fence: {
+            isCurrent: () => activeSession === session,
+            async step(label, operation) {
+              if (activeSession !== session) throw new FenceSuperseded(label, 'active Explore session');
+              const result = await operation();
+              if (activeSession !== session) throw new FenceSuperseded(label, 'active Explore session');
+              return result;
+            },
+          },
+        }),
+        resolvePause(expectedReason, { owner: suppliedOwner } = {}) {
+          assert.equal(expectedReason, 'authRequired');
+          assert.equal(suppliedOwner, owner);
+          reason = null;
+          return true;
+        },
+        async syncNow({ owner: suppliedOwner } = {}) {
+          assert.equal(suppliedOwner, owner);
+          session.drains += 1;
+        },
+        drains: 0,
+      };
+      return session;
+    }
+
+    const sessionA = makeSession('A');
+    const sessionB = makeSession('B');
+    activeSession = sessionA;
+    const controller = createExploreSessionPauseController({
+      getSession: () => activeSession,
+      reauthenticate: () => {
+        if (loginCompleted) return Promise.resolve(true);
+        promptCalls += 1;
+        return login.promise;
+      },
+      claimReauthentication: () => {
+        claimCalls += 1;
+        if (claimCalls === 1) {
+          claimStarted = true;
+          return deferredClaim.promise;
+        }
+        if (activeClaim != null) return Promise.resolve(null);
+        activeClaim = Object.freeze({ claim: claimCalls });
+        return Promise.resolve(activeClaim);
+      },
+      releaseReauthentication: claim => {
+        releases.push(claim);
+        if (claim !== activeClaim) return false;
+        activeClaim = null;
+        return true;
+      },
+      adoptRecoveryState: async ({ capture }) => {
+        adoptions.push(capture.session.name);
+        return true;
+      },
+      acknowledgeReauthentication: claim => {
+        if (claim !== activeClaim) return false;
+        activeClaim = null;
+        acknowledgements += 1;
+        return true;
+      },
+      schedule: () => 0,
+      cancel: () => {},
+      windowTarget: eventTarget(),
+      documentTarget: eventTarget(),
+    });
+
+    const staleRecovery = controller.triggerRecovery();
+    await waitFor(() => promptCalls === 1);
+    loginCompleted = true;
+    login.resolve(true);
+    await waitFor(() => claimStarted);
+
+    const staleClaim = Object.freeze({ claim: 'A' });
+    activeClaim = staleClaim;
+    activeSession = sessionB;
+    deferredClaim.resolve(staleClaim);
+
+    await staleRecovery;
+    await waitFor(() => sessionB.drains === 1 && acknowledgements === 1);
+
+    assert.deepEqual(releases, [staleClaim], 'the stale flow releases exactly its candidate claim');
+    assert.deepEqual(adoptions, ['B']);
+    assert.equal(sessionA.drains, 0);
+    assert.equal(promptCalls, 1, 'B consumes the completed login instead of reopening auth');
+    controller.dispose();
+  });
+
+  for (const observer of ['resume', 'checkpoint', 'correction']) {
+    it(`keeps real owned auth recovery current through an equivalent ${observer} runway observer`, async () => {
+      const recovery = createRealAuthRecoveryHarness(observer);
+
+      const recovered = await recovery.controller.triggerRecovery();
+
+      assert.equal(
+        recovery.getSyncRequests(),
+        1,
+        `${observer}: the owned redelivery reaches exactly one request`,
+      );
+      assert.equal(recovered, true, `${observer}: equivalent render adoption does not stale recovery`);
+      assert.equal(recovery.getObserverCalls(), 1);
+      assert.equal(recovery.session.pendingCount(), 0);
+      assert.equal(recovery.session.getPauseReason(), null);
+      assert.equal(recovery.getAcknowledgements(), 1, `${observer}: the exact login claim is consumed`);
+      assert.deepEqual(recovery.releasedClaims, []);
+      recovery.controller.dispose();
+    });
+  }
+
+  it('gives a replacement auth session its own bounded repeat-recovery budget', async () => {
+    let activeSession;
+    let aAuthenticationCalls = 0;
+    let bAuthenticationCalls = 0;
+    let aSecondAuthenticationStarted = false;
+    const aSecondAuthentication = deferred();
+
+    function makeSession(name) {
+      const owner = Object.freeze({ name });
+      let reason = 'authRequired';
+      const session = {
+        name,
+        getPauseReason: () => reason,
+        isPaused: () => reason != null,
+        pendingCount: () => 1,
+        pause(nextReason) {
+          reason = nextReason;
+          return true;
+        },
+        captureFence: () => ({
+          session,
+          sessionLease: owner,
+          fence: {
+            isCurrent: () => activeSession === session,
+            async step(label, operation) {
+              if (activeSession !== session) throw new FenceSuperseded(label, 'active Explore session');
+              const result = await operation();
+              if (activeSession !== session) throw new FenceSuperseded(label, 'active Explore session');
+              return result;
+            },
+          },
+        }),
+        resolvePause(expectedReason, { owner: suppliedOwner } = {}) {
+          assert.equal(expectedReason, 'authRequired');
+          assert.equal(suppliedOwner, owner);
+          reason = null;
+          return true;
+        },
+        async syncNow({ owner: suppliedOwner } = {}) {
+          assert.equal(suppliedOwner, owner);
+          session.drains += 1;
+          reason = session.drains === 1 ? 'authRequired' : null;
+        },
+        drains: 0,
+      };
+      return session;
+    }
+
+    const sessionA = makeSession('A');
+    const sessionB = makeSession('B');
+    activeSession = sessionA;
+    const controller = createExploreSessionPauseController({
+      getSession: () => activeSession,
+      reauthenticate: () => {
+        if (activeSession === sessionA) {
+          aAuthenticationCalls += 1;
+          if (aAuthenticationCalls === 2) {
+            aSecondAuthenticationStarted = true;
+            return aSecondAuthentication.promise;
+          }
+          return Promise.resolve(true);
+        }
+        bAuthenticationCalls += 1;
+        return Promise.resolve(true);
+      },
+      adoptRecoveryState: async () => true,
+      schedule: () => 0,
+      cancel: () => {},
+      windowTarget: eventTarget(),
+      documentTarget: eventTarget(),
+    });
+
+    await controller.triggerRecovery();
+    await waitFor(() => aSecondAuthenticationStarted);
+    activeSession = sessionB;
+    aSecondAuthentication.resolve(true);
+
+    await waitFor(() => sessionB.drains === 2);
+
+    assert.equal(sessionA.drains, 1, 'A spent only its own one-repeat budget');
+    assert.equal(sessionB.drains, 2, 'B receives a fresh bounded repeat after replacement');
+    assert.equal(bAuthenticationCalls, 2);
     controller.dispose();
   });
 

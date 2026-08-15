@@ -295,18 +295,46 @@ export function createExploreSession({
     return true;
   }
 
-  function maybeResumeAfterDrain({ owner = null } = {}) {
-    if (!paused) return;
+  function shouldResumeAfterDrain() {
+    if (!paused) return false;
     if (
       pauseReason === 'authRequired'
       || pauseReason === 'writerConflict'
       || pauseReason === 'unsupportedProtocol'
-    ) return;
+    ) return false;
     if (pauseReason === 'hardCap') {
-      if (log.length <= EXPLORE_SESSION_RESUME_AT) resumeIfPaused({ owner });
-      return;
+      return log.length <= EXPLORE_SESSION_RESUME_AT;
     }
-    if (log.length === 0) resumeIfPaused({ owner });
+    return log.length === 0;
+  }
+
+  function maybeResumeAfterDrain({ owner = null } = {}) {
+    if (shouldResumeAfterDrain()) resumeIfPaused({ owner });
+  }
+
+  function cursorForRunway(nextRunway) {
+    const rooms = preparedRoomsFor(nextRunway);
+    const firstRoomIndex = roomIndexFor(rooms[0]);
+    return Number.isInteger(nextRunway?.currentRoom)
+      ? nextRunway.currentRoom
+      : firstRoomIndex;
+  }
+
+  function canSkipPublicRunwayAdoption(nextRunway) {
+    const nextEpoch = nextRunway?.sessionEpoch ?? null;
+    const needsProtocolPromotion = (
+      nextRunway?.protocolVersion === 2
+      && expectedProtocolVersion < 2
+    );
+    const wakesArmedRetry = retryTimer != null && log.length > 0;
+    return (
+      sameValue(runway, nextRunway)
+      && sessionEpoch === nextEpoch
+      && localCurrentRoom === cursorForRunway(nextRunway)
+      && !needsProtocolPromotion
+      && !wakesArmedRetry
+      && !shouldResumeAfterDrain()
+    );
   }
 
   function adoptRunwayState(
@@ -322,11 +350,7 @@ export function createExploreSession({
     runway = cloneValue(nextRunway) ?? null;
     promoteProtocolVersion(runway?.protocolVersion);
     sessionEpoch = nextEpoch;
-    const rooms = preparedRoomsFor(runway);
-    const firstRoomIndex = roomIndexFor(rooms[0]);
-    localCurrentRoom = Number.isInteger(runway?.currentRoom)
-      ? runway.currentRoom
-      : firstRoomIndex;
+    localCurrentRoom = cursorForRunway(runway);
     if (fromSync) replayPendingProceedCursor();
 
     if (epochChanged) {
@@ -369,6 +393,11 @@ export function createExploreSession({
     if (pauseReason === 'writerConflict' || pauseReason === 'unsupportedProtocol') {
       return runway;
     }
+    // Rendering can re-adopt the current authoritative runway from an owned
+    // pause/drain observer. Preserve that owner's fence when the value truly
+    // changes nothing; retry, resume, protocol, cursor, and epoch effects all
+    // remain explicit transactions below.
+    if (canSkipPublicRunwayAdoption(nextRunway)) return runway;
     return adoptRunwayInternal(nextRunway);
   }
 

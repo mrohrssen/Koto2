@@ -1908,6 +1908,73 @@ test('empty session fence rejects append then drain during a GET', async () => {
   await assert.rejects(request, FenceSuperseded);
 });
 
+test('equivalent public runway adoption preserves a capture only when it has no side effect', async () => {
+  const session = createExploreSession({
+    syncRequest: async () => syncOkResponse(1),
+    schedule: () => 0,
+    cancel: () => {},
+  });
+  const runway = makeRunway();
+  session.adoptRunway(runway);
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
+  const capture = session.captureFence({ pending: 'preserve' });
+  const equivalent = {
+    ...runway,
+    preparedRooms: runway.preparedRooms.map(room => ({ ...room })),
+  };
+
+  session.adoptRunway(equivalent);
+
+  assert.equal(capture.fence.isCurrent(), true, 'render-equivalent runway adoption is a true no-op');
+  assert.equal(await capture.fence.step('continue after equivalent runway render', () => Promise.resolve('current')), 'current');
+
+  session.adoptRunway(makeRunway({ roomActionSeq: 8 }));
+  assert.equal(capture.fence.isCurrent(), false, 'a non-equivalent public runway still supersedes');
+});
+
+test('equivalent public runway adoption still performs required retry and empty-pause effects', async () => {
+  const scheduler = makeManualScheduler();
+  let syncCalls = 0;
+  const retrySession = createExploreSession({
+    syncRequest: async ({ entries }) => {
+      syncCalls += 1;
+      return syncCalls === 1 ? transport({}) : syncOkResponse(entries.at(-1).seq);
+    },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  const retryRunway = makeRunway({ sessionEpoch: 'ese_equivalent_retry111' });
+  retrySession.adoptRunway(retryRunway);
+  assert.equal(retrySession.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
+  await scheduler.fire();
+  const retryCapture = retrySession.captureFence({ pending: 'preserve' });
+
+  retrySession.adoptRunway({
+    ...retryRunway,
+    preparedRooms: retryRunway.preparedRooms.map(room => ({ ...room })),
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(syncCalls, 2, 'an armed retry remains an observable adoption side effect');
+  assert.equal(retrySession.pendingCount(), 0);
+  assert.equal(retryCapture.fence.isCurrent(), false, 'retry work remains a real ownership mutation');
+
+  const emptySession = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
+  const emptyRunway = makeRunway({ sessionEpoch: 'ese_equivalent_resume111' });
+  emptySession.adoptRunway(emptyRunway);
+  emptySession.pause('nextRoomNotReady');
+  const emptyCapture = emptySession.captureFence({ pending: 'empty' });
+
+  emptySession.adoptRunway({
+    ...emptyRunway,
+    preparedRooms: emptyRunway.preparedRooms.map(room => ({ ...room })),
+  });
+
+  assert.equal(emptySession.isPaused(), false, 'a recoverable empty pause still resumes');
+  assert.equal(emptyCapture.fence.isCurrent(), false, 'resume remains a real ownership mutation');
+});
+
 test('empty session fence rejects same-epoch adoption, pause change, reset, and replacement', () => {
   const assertStale = mutate => {
     const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
