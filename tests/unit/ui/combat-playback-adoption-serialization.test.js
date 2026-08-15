@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { makeExploreTransport } from '../../helpers/explore-sync-transport.js';
 
 globalThis.window = {
   __intentLog: null,
@@ -193,7 +194,10 @@ async function runRejectedSessionCombatTurn(actionType, pendingFlag) {
   const state = combatState(`combat-${actionType}`, 0, 100);
   const harness = initCombatHarness(state);
   const session = configureExploreSession({
-    syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: null, results: [] }),
+    syncRequest: async () => makeExploreTransport({
+      httpStatus: 200,
+      body: { protocolVersion: 1, status: 'ok', confirmedThroughSeq: null, results: [] },
+    }),
     schedule: () => null,
     cancel: () => {},
   });
@@ -299,7 +303,10 @@ test('rejected defend append reaches move selection through the real game combat
 
 test('response adoption does not self-deadlock inside non-playback animation work', async () => {
   const session = createExploreSession({
-    syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: 1, results: [] }),
+    syncRequest: async () => makeExploreTransport({
+      httpStatus: 200,
+      body: { protocolVersion: 1, status: 'ok', confirmedThroughSeq: 1, results: [] },
+    }),
     beforeResponseAdoption: () => combatLoop.waitForExploreCombatPlaybackIdle(),
   });
   session.adoptRunway(runway(0, 'combat-a'));
@@ -322,12 +329,16 @@ test('real player playback keeps checkpoint adoption on combat A until its inter
   const impactStarted = new Promise(resolve => { markImpactStarted = resolve; });
   const impactGate = new Promise(resolve => { releaseImpact = resolve; });
   const session = configureExploreSession({
-    syncRequest: async () => ({
-      status: 'ok',
-      confirmedThroughSeq: 1,
-      results: [],
-      state: combatB,
-      exploreRunway: runway(1, 'combat-b'),
+    syncRequest: async () => makeExploreTransport({
+      httpStatus: 200,
+      body: {
+        protocolVersion: 1,
+        status: 'ok',
+        confirmedThroughSeq: 1,
+        results: [],
+        state: combatB,
+        exploreRunway: runway(1, 'combat-b'),
+      },
     }),
     beforeResponseAdoption: () => combatLoop.waitForExploreCombatPlaybackIdle(),
     onCheckpoint: response => harness.replaceState(response.state),
@@ -406,12 +417,16 @@ test('cleanup settles a real blocked attack card and stale playback cannot mutat
   const harness = initCombatHarness(combatA);
   const blockingCard = installBlockingAttackCard();
   const session = configureExploreSession({
-    syncRequest: async () => ({
-      status: 'ok',
-      confirmedThroughSeq: 1,
-      results: [],
-      state: combatB,
-      exploreRunway: runway(1, 'combat-b'),
+    syncRequest: async () => makeExploreTransport({
+      httpStatus: 200,
+      body: {
+        protocolVersion: 1,
+        status: 'ok',
+        confirmedThroughSeq: 1,
+        results: [],
+        state: combatB,
+        exploreRunway: runway(1, 'combat-b'),
+      },
     }),
     beforeResponseAdoption: () => combatLoop.waitForExploreCombatPlaybackIdle(),
     onCheckpoint: response => harness.replaceState(response.state),
