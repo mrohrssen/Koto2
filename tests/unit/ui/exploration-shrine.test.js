@@ -1,5 +1,6 @@
 import { describe, it, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { makeExploreV1OkTransport } from '../../helpers/explore-sync-transport.js';
 
 const sceneManagerState = { currentScene: null };
 let renderedChoices = null;
@@ -195,7 +196,7 @@ describe('renderShrine encounter flow', () => {
       actions: { setContent: () => {}, clear: () => { clearCalls += 1; } },
       scene: { showNarration: async () => {} },
       apiGetShrineOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderShrine();
@@ -222,14 +223,14 @@ describe('renderShrine encounter flow', () => {
       },
       scene: { showNarration: async () => {} },
       apiGetShrineOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     const rendering = renderShrine();
     for (let i = 0; i < 8 && dialogueCards.length === 0; i += 1) await Promise.resolve();
     assert.equal(dialogueCards.length, 1, 'greeting should be awaiting dismissal');
 
-    getExploreSession().pause('manual-test');
+    getExploreSession().pause('missingPayload');
     dialogueGate.resolve();
     await rendering;
 
@@ -251,7 +252,7 @@ describe('renderShrine encounter flow', () => {
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: async () => {} },
       apiGetShrineOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     const oldRendering = renderShrine();
@@ -285,7 +286,7 @@ describe('renderShrine encounter flow', () => {
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: async () => {} },
       apiGetShrineOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderShrine();
@@ -314,7 +315,7 @@ describe('renderShrine encounter flow', () => {
       },
       scene: { showNarration: async () => {} },
       apiGetShrineOffers: async () => { throw new Error('legacy offers must remain fenced'); },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     const oldRendering = renderShrine();
@@ -522,7 +523,7 @@ describe('renderShrine encounter flow', () => {
         ]
       })),
       apiChooseShrineReward: overrides.apiChooseShrineReward || (async () => ({ state: { updated: true } })),
-      apiSyncExploreSession: async entries => ({ status: 'ok', confirmedThroughSeq: entries.at(-1)?.seq ?? null }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
   }
 

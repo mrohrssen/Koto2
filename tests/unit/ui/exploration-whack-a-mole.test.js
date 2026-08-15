@@ -1,6 +1,7 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerHooks } from 'node:module';
+import { makeExploreV1OkTransport } from '../../helpers/explore-sync-transport.js';
 
 const sceneManagerState = { currentScene: null };
 let renderedButtons = [];
@@ -347,7 +348,7 @@ describe('renderWhackAMole decline flow', () => {
       // legacy proceed endpoint that performs area completion; return no state
       // here because this assertion only covers immediate prompt clearing.
       apiProceed: async () => null,
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -387,7 +388,7 @@ describe('renderWhackAMole decline flow', () => {
         yesTokens: null,
         noTokens: null,
       }),
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -440,7 +441,7 @@ describe('renderWhackAMole decline flow', () => {
         yesTokens: null,
         noTokens: null,
       }),
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -489,7 +490,7 @@ describe('renderWhackAMole decline flow', () => {
         noTokens: null,
       }),
       apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -539,7 +540,7 @@ describe('renderWhackAMole decline flow', () => {
         noTokens: null,
       }),
       apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -579,7 +580,7 @@ describe('renderWhackAMole decline flow', () => {
       updateUI: () => {},
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
     init(callbacks(() => currentState));
     await renderWhackAMole();
@@ -620,7 +621,7 @@ describe('renderWhackAMole decline flow', () => {
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: () => {} },
       apiProceed: async () => { throw new Error('legacy proceed must remain fenced'); },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -664,7 +665,7 @@ describe('renderWhackAMole decline flow', () => {
       scene: { showNarration: () => {} },
       apiGetWhackAMoleDialogue: async () => { legacyGets += 1; return null; },
       apiGetWhackAMolePool: async () => { legacyGets += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -701,7 +702,7 @@ describe('renderWhackAMole decline flow', () => {
       updateUI: () => {},
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -782,7 +783,7 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(renderedButtons[1].label, 'No');
   });
 
-  it('pauses an active standard session with incomplete Whack payload instead of using legacy GETs', async () => {
+  it('routes an incomplete active-standard Whack payload to the passive pause controller', async () => {
     const narrationCalls = [];
     let dialogueGets = 0;
     let poolGets = 0;
@@ -807,7 +808,7 @@ describe('renderWhackAMole decline flow', () => {
         poolGets += 1;
         throw new Error('legacy pool GET must remain fenced');
       },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -818,7 +819,10 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(getExploreSession().isPaused(), true);
     assert.equal(getExploreSession().getPauseReason(), 'missingPayload');
     assert.equal(narrationCalls.length, 1);
-    assert.match(narrationCalls[0].text, /whackAMole\.pool/);
+    assert.deepEqual(narrationCalls[0], {
+      text: 'Preparing the next room. Please wait…',
+      opts: { autoDismiss: 1800 },
+    });
   });
 
   it('requires canonical proceed capability before exposing active-session Whack controls', async () => {
@@ -837,7 +841,7 @@ describe('renderWhackAMole decline flow', () => {
       scene: { showNarration: () => {} },
       apiGetWhackAMoleDialogue: async () => { legacyGets += 1; },
       apiGetWhackAMolePool: async () => { legacyGets += 1; },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
@@ -865,10 +869,10 @@ describe('renderWhackAMole decline flow', () => {
       scene: { showNarration: () => {} },
       apiGetWhackAMoleDialogue: async () => { legacyGets += 1; },
       apiGetWhackAMolePool: async () => { legacyGets += 1; },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
     getExploreSession().adoptRunway(state.run.exploreRunway);
-    getExploreSession().pause('manual-test');
+    getExploreSession().pause('missingPayload');
 
     await renderWhackAMole();
 
@@ -899,14 +903,14 @@ describe('renderWhackAMole decline flow', () => {
       scene: { showNarration: () => {} },
       apiGetWhackAMoleDialogue: async () => { legacyGets += 1; return null; },
       apiGetWhackAMolePool: async () => { legacyGets += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     const rendering = renderWhackAMole();
     await Promise.resolve();
     assert.equal(dialogueCalls.length, 1, 'intro dialogue should be awaiting dismissal');
 
-    getExploreSession().pause('manual-test');
+    getExploreSession().pause('missingPayload');
     dialogueGate.resolve();
     await rendering;
 
@@ -937,13 +941,13 @@ describe('renderWhackAMole decline flow', () => {
       scene: { showNarration: () => {} },
       apiGetWhackAMoleDialogue: async () => { legacyGets += 1; return null; },
       apiGetWhackAMolePool: async () => { legacyGets += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 0 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();
     assert.equal(renderedButtons.length, 2);
     const yes = renderedButtons[0];
-    getExploreSession().pause('manual-test');
+    getExploreSession().pause('missingPayload');
     await yes.onClick();
 
     assert.equal(whackAMoleStartCalls, 0);
@@ -1184,7 +1188,7 @@ describe('renderWhackAMole decline flow', () => {
         clear: () => {},
       },
       scene: { showNarration: async () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', confirmedThroughSeq: 1 }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderWhackAMole();

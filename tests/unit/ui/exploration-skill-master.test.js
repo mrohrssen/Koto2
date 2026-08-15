@@ -1,5 +1,6 @@
 import { describe, it, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { makeExploreV1OkTransport } from '../../helpers/explore-sync-transport.js';
 
 const sceneManagerState = { currentScene: null };
 let renderedChoices = null;
@@ -379,7 +380,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
       scene: { showNarration: () => {} },
       apiSkillMasterOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -441,7 +442,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => { actionArea.innerHTML = ''; } },
       scene: { showNarration: () => {} },
       apiSkillMasterOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -477,14 +478,14 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       },
       scene: { showNarration: () => {} },
       apiSkillMasterOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
       const rendering = renderSkillMaster();
       for (let i = 0; i < 4 && dialogueCalls.length === 0; i += 1) await Promise.resolve();
       assert.equal(dialogueCalls.length, 1, 'skill prompt should be awaiting dismissal');
-      getExploreSession().pause('manual-test');
+      getExploreSession().pause('missingPayload');
       dialogueGate.resolve();
       await rendering;
     } finally {
@@ -517,7 +518,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       },
       scene: { showNarration: () => {} },
       apiSkillMasterOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -557,7 +558,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
       scene: { showNarration: () => {} },
       apiSkillMasterOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -1031,7 +1032,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       },
     };
 
-    configureExploreSession({ syncRequest: async () => ({ results: [] }) });
+    configureExploreSession({ syncRequest: async request => makeExploreV1OkTransport(request) });
     let offersCalls = 0;
     init({
       getGameState: () => state,
@@ -1270,7 +1271,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       },
     };
     const session = configureExploreSession({
-      syncRequest: async () => ({ status: 'ok', results: [] }),
+      syncRequest: async request => makeExploreV1OkTransport(request),
     });
     session.adoptRunway(oldRunway);
 
@@ -1504,7 +1505,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       updateUI: () => {},
       actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => { actionArea.innerHTML = ''; } },
       scene: { showNarration: () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -1571,7 +1572,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       updateUI: () => {},
       actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => { actionArea.innerHTML = ''; } },
       scene: { showNarration: () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -1608,7 +1609,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
         clear: () => { clearCalls += 1; actionArea.innerHTML = ''; renderedChoices = null; },
       },
       scene: { showNarration: () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -1617,7 +1618,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       });
       for (let i = 0; i < 4 && dialogueCalls.length === 0; i += 1) await Promise.resolve();
       assert.equal(dialogueCalls.length, 1, 'reward prompt should be awaiting dismissal');
-      getExploreSession().pause('manual-test');
+      getExploreSession().pause('missingPayload');
       dialogueGate.resolve();
       await rendering;
     } finally {
@@ -1649,7 +1650,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
         clear: () => { actionArea.innerHTML = ''; renderedChoices = null; },
       },
       scene: { showNarration: () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -1690,7 +1691,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       updateUI: () => {},
       actions: { setContent: html => { actionArea.innerHTML = html; }, clear: () => {} },
       scene: { showNarration: () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     try {
@@ -1786,7 +1787,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       rewardResolved: false,
     });
     const session = configureExploreSession({
-      syncRequest: async () => ({ status: 'ok', results: [] }),
+      syncRequest: async request => makeExploreV1OkTransport(request),
     });
     const originalAdopt = session.adoptRunway;
     session.adoptRunway = runway => {
@@ -1855,7 +1856,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     let currentState = initialState;
     let adoptedCanonicalRunway = false;
     const session = configureExploreSession({
-      syncRequest: async () => ({ status: 'ok', results: [] }),
+      syncRequest: async request => makeExploreV1OkTransport(request),
     });
     const originalAdopt = session.adoptRunway;
     session.adoptRunway = runway => {
@@ -1910,7 +1911,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     let adoptedStaleState = false;
     let adoptedStaleRunway = false;
     const session = configureExploreSession({
-      syncRequest: async () => ({ status: 'ok', results: [] }),
+      syncRequest: async request => makeExploreV1OkTransport(request),
     });
     const originalAdopt = session.adoptRunway;
     session.adoptRunway = runway => {
@@ -1976,7 +1977,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       createElement: () => createElementStub(),
     };
 
-    configureExploreSession({ syncRequest: async () => ({ results: [] }) });
+    configureExploreSession({ syncRequest: async request => makeExploreV1OkTransport(request) });
 
     let offersCalls = 0;
     init({
@@ -2094,7 +2095,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       createElement: () => createElementStub(),
     };
     configureExploreSession({
-      syncRequest: async () => ({ status: 'ok', results: [] }),
+      syncRequest: async request => makeExploreV1OkTransport(request),
     });
     init({
       getGameState: () => state,
@@ -2174,7 +2175,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       createElement: () => createElementStub(),
     };
     configureExploreSession({
-      syncRequest: async () => ({ status: 'ok', results: [] }),
+      syncRequest: async request => makeExploreV1OkTransport(request),
     });
     init({
       getGameState: () => state,

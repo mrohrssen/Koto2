@@ -1,5 +1,6 @@
 import { describe, it, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { makeExploreV1OkTransport } from '../../helpers/explore-sync-transport.js';
 
 const sceneManagerState = { currentScene: null };
 let renderedChoices = null;
@@ -225,7 +226,7 @@ describe('renderFriendlyNpc item prompt', () => {
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: async () => {} },
       apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderFriendlyNpc();
@@ -277,7 +278,7 @@ describe('renderFriendlyNpc item prompt', () => {
       actions: { setContent: () => {}, clear: () => { clearCalls += 1; } },
       scene: { showNarration: async () => {} },
       apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderFriendlyNpc();
@@ -304,14 +305,14 @@ describe('renderFriendlyNpc item prompt', () => {
       },
       scene: { showNarration: async () => {} },
       apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     const rendering = renderFriendlyNpc();
     for (let i = 0; i < 4 && dialogueCards.length === 0; i += 1) await Promise.resolve();
     assert.equal(dialogueCards.length, 1, 'greeting should be awaiting dismissal');
 
-    getExploreSession().pause('manual-test');
+    getExploreSession().pause('missingPayload');
     dialogueGate.resolve();
     await rendering;
 
@@ -332,7 +333,7 @@ describe('renderFriendlyNpc item prompt', () => {
       actions: { setContent: () => {}, clear: () => { renderedChoices = null; } },
       scene: { showNarration: async () => {} },
       apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderFriendlyNpc();
@@ -368,7 +369,7 @@ describe('renderFriendlyNpc item prompt', () => {
       actions: { setContent: () => {}, clear: () => { renderedChoices = null; } },
       scene: { showNarration: async () => {} },
       apiGetFriendlyNpcOffers: async () => { legacyCalls += 1; return null; },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderFriendlyNpc();
@@ -482,7 +483,7 @@ describe('renderFriendlyNpc item prompt', () => {
       updateUI: () => {},
       actions: { setContent: () => {}, clear: () => {} },
       scene: { showNarration: async () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderFriendlyNpc();
@@ -858,7 +859,7 @@ describe('renderFriendlyNpc item prompt', () => {
           },
         ],
       }),
-      apiSyncExploreSession: async entries => ({ status: 'ok', confirmedThroughSeq: entries.at(-1)?.seq ?? null }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderFriendlyNpc();
@@ -973,10 +974,7 @@ describe('renderFriendlyNpc item prompt', () => {
           effect: { field: 'baseAttackBonus', value: 1 },
         }],
       }),
-      apiSyncExploreSession: async ({ entries }) => ({
-        status: 'ok',
-        confirmedThroughSeq: entries.at(-1)?.seq ?? null,
-      }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderFriendlyNpc();
@@ -1045,10 +1043,7 @@ describe('renderFriendlyNpc item prompt', () => {
           effect: { field: 'baseAttackBonus', value: 1 },
         }],
       }),
-      apiSyncExploreSession: async ({ entries }) => ({
-        status: 'ok',
-        confirmedThroughSeq: entries.at(-1)?.seq ?? null,
-      }),
+      apiSyncExploreSession: async request => makeExploreV1OkTransport(request),
     });
 
     await renderFriendlyNpc();

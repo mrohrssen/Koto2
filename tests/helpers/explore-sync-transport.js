@@ -22,3 +22,17 @@ export function makeExploreTransport(overrides = {}) {
     ...overrides,
   };
 }
+
+export function makeExploreV1OkTransport(request = {}, bodyOverrides = {}) {
+  const entries = Array.isArray(request.entries) ? request.entries : [];
+  return makeExploreTransport({
+    httpStatus: 200,
+    body: {
+      protocolVersion: 1,
+      status: 'ok',
+      confirmedThroughSeq: entries.at(-1)?.seq ?? 0,
+      results: [],
+      ...bodyOverrides,
+    },
+  });
+}
