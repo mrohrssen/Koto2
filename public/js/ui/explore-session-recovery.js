@@ -1,4 +1,4 @@
-import { FenceSuperseded } from '../async-ownership-fence.js';
+import { FenceContractViolation, FenceSuperseded } from '../async-ownership-fence.js';
 
 // This direct state-adoption path is only for callbacks invoked by Explore
 // recovery itself. Calling the ordinary state loader here would await the drain
@@ -28,6 +28,7 @@ export async function adoptExploreSessionRecoveryState({
     );
   } catch (error) {
     if (error instanceof FenceSuperseded) return false;
+    if (error instanceof FenceContractViolation) throw error;
     return false;
   }
   if (getSession?.() !== session || capture.fence?.isCurrent?.() !== true) return false;
@@ -39,6 +40,7 @@ export async function adoptExploreSessionRecoveryState({
     return true;
   } catch (error) {
     if (error instanceof FenceSuperseded) return false;
+    if (error instanceof FenceContractViolation) throw error;
     return false;
   }
 }

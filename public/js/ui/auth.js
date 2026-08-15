@@ -8,7 +8,11 @@ import { setAnalyticsUser, trackEvent } from '../analytics.js';
 let currentTab = 'login';
 let authenticatedPrincipalId = null;
 let reauthenticationRequest = null;
-let reauthenticationSuccessPermit = false;
+// A successful same-account login may outlive the Explore capture that asked
+// for it. It is a one-use handoff, not a reusable boolean: exactly one
+// recovery owns its opaque claim at a time, and a stale owner can transfer it
+// to a waiting successor without reopening the auth UI.
+let reauthenticationSuccessPermit = null;
 
 const SAME_ACCOUNT_RECOVERY_ERROR = 'Log in to the same account to recover this run. Creating or switching accounts is not allowed.';
 
@@ -136,9 +140,26 @@ export function requestReauthentication() {
   return promise;
 }
 
-export function acknowledgeReauthentication() {
-  if (!reauthenticationSuccessPermit) return false;
-  reauthenticationSuccessPermit = false;
+export function claimReauthentication() {
+  const permit = reauthenticationSuccessPermit;
+  if (!permit) return Promise.resolve(null);
+  if (!permit.claim) return Promise.resolve(grantReauthenticationClaim(permit));
+  return new Promise(resolve => { permit.waiters.push(resolve); });
+}
+
+export function releaseReauthentication(claim) {
+  const permit = reauthenticationSuccessPermit;
+  if (!permit || permit.claim !== claim) return false;
+  permit.claim = null;
+  handoffNextReauthenticationClaim(permit);
+  return true;
+}
+
+export function acknowledgeReauthentication(claim) {
+  const permit = reauthenticationSuccessPermit;
+  if (!permit || permit.claim !== claim) return false;
+  reauthenticationSuccessPermit = null;
+  settleReauthenticationClaimWaiters(permit, null);
   return true;
 }
 
@@ -164,10 +185,33 @@ function storeToken(token) {
   localStorage.setItem('authToken', token);
 }
 
+function settleReauthenticationClaimWaiters(permit, value) {
+  const waiters = permit?.waiters?.splice(0) || [];
+  for (const resolve of waiters) resolve(value);
+}
+
+function grantReauthenticationClaim(permit) {
+  // Identity is the capability. Its shape is intentionally irrelevant to
+  // callers, so a structural lookalike can never acknowledge or release it.
+  const claim = Object.freeze({});
+  permit.claim = claim;
+  return claim;
+}
+
+function handoffNextReauthenticationClaim(permit) {
+  if (reauthenticationSuccessPermit !== permit || permit.claim) return;
+  const resolve = permit.waiters.shift();
+  if (resolve) resolve(grantReauthenticationClaim(permit));
+}
+
 function settleReauthentication(result) {
   const request = reauthenticationRequest;
   reauthenticationRequest = null;
-  reauthenticationSuccessPermit = result === true;
+  const previousPermit = reauthenticationSuccessPermit;
+  reauthenticationSuccessPermit = result === true
+    ? { claim: null, waiters: [] }
+    : null;
+  settleReauthenticationClaimWaiters(previousPermit, null);
   request?.resolve(result === true);
 }
 

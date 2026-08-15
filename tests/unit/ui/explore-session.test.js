@@ -2033,6 +2033,81 @@ test('owned auth resolution and drain accept only the exact current capture owne
   assert.equal(capture.fence.isCurrent(), true, 'owned result commit advances its capture');
 });
 
+test('unowned and distinct-owner sync requests cannot join an active owned drain', async () => {
+  let releaseFetch;
+  let markFetchStarted;
+  const fetchStarted = new Promise(resolve => { markFetchStarted = resolve; });
+  const fetchGate = new Promise(resolve => { releaseFetch = resolve; });
+  const session = createExploreSession({
+    syncRequest: async () => {
+      markFetchStarted();
+      await fetchGate;
+      return syncOkResponse(1);
+    },
+  });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
+  session.pause('authRequired');
+  const first = session.captureFence({ pending: 'preserve' });
+  assert.equal(session.resolvePause('authRequired', { owner: first.sessionLease }), true);
+  const second = session.captureFence({ pending: 'preserve' });
+
+  const ownedDrain = session.syncNow({ owner: first.sessionLease });
+  await fetchStarted;
+  const unownedDrain = assert.rejects(session.syncNow(), FenceSuperseded);
+  const secondOwnerDrain = assert.rejects(
+    session.syncNow({ owner: second.sessionLease }),
+    FenceSuperseded,
+  );
+  releaseFetch();
+
+  await ownedDrain;
+  await unownedDrain;
+  await secondOwnerDrain;
+});
+
+test('unowned pause, resume, checkpoint, and correction notifications observe committed ownership', async () => {
+  let pauseCapture;
+  let resumeCapture;
+  let checkpointCapture;
+  let correctionCapture;
+  let session;
+  session = createExploreSession({
+    syncRequest: async ({ entries }) => {
+      if (entries[0]?.payload?.itemId === 'correct') {
+        return transport({
+          status: 'corrected',
+          confirmedThroughSeq: 0,
+          rejectedSeq: 1,
+          results: [],
+        });
+      }
+      return syncOkResponse(entries.at(-1).seq);
+    },
+    onPause: () => { pauseCapture = session.captureFence({ pending: 'preserve' }); },
+    onResume: () => { resumeCapture = session.captureFence({ pending: 'preserve' }); },
+    onCheckpoint: () => { checkpointCapture = session.captureFence({ pending: 'preserve' }); },
+    onCorrection: () => { correctionCapture = session.captureFence({ pending: 'preserve' }); },
+  });
+  session.adoptRunway(makeRunway());
+
+  session.pause('authRequired');
+  assert.equal(session.resolvePause('authRequired', { owner: pauseCapture.sessionLease }), true);
+  assert.equal(pauseCapture.fence.isCurrent(), true);
+
+  session.pause('transportDegraded');
+  assert.equal(session.resolvePause('transportDegraded'), true);
+  assert.equal(resumeCapture.fence.isCurrent(), true);
+
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'checkpoint' }).accepted, true);
+  await session.syncNow();
+  assert.equal(checkpointCapture.fence.isCurrent(), true);
+
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'correct' }).accepted, true);
+  await session.syncNow();
+  assert.equal(correctionCapture.fence.isCurrent(), true);
+});
+
 test('a recognized but stale auth owner fails closed instead of resolving a replacement', () => {
   const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
   session.adoptRunway(makeRunway());

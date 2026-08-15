@@ -143,7 +143,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     assert.equal(dom.elements.get('auth-screen').classList.contains('hidden'), true);
   });
 
-  it('holds one completed same-account recovery permit until controller acknowledgement', async () => {
+  it('leases one completed same-account recovery handoff to one claimant and transfers an abandoned claim', async () => {
     globalThis.localStorage.setItem('authToken', 'expired-token');
     globalThis.fetch = async url => {
       if (url.endsWith('/api/auth/me')) return makeResponse({ body: { id: 'user-1', username: 'michi' } });
@@ -157,7 +157,20 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     assert.equal(await recovery, true);
 
     assert.equal(await auth.requestReauthentication(), true, 'a superseding session may use the completed login');
-    assert.equal(auth.acknowledgeReauthentication(), true);
+    const firstClaim = await auth.claimReauthentication();
+    const waitingClaim = auth.claimReauthentication();
+    assert.notEqual(firstClaim, null);
+    assert.equal(await Promise.race([
+      waitingClaim.then(() => 'settled'),
+      new Promise(resolve => setImmediate(() => resolve('pending'))),
+    ]), 'pending', 'the same handoff cannot be claimed by two recoveries');
+    assert.equal(auth.acknowledgeReauthentication({}), false, 'only the exact claim may consume the handoff');
+    assert.equal(auth.releaseReauthentication(firstClaim), true, 'a stale claimant releases the handoff');
+    const secondClaim = await waitingClaim;
+    assert.notEqual(secondClaim, null);
+    assert.notEqual(secondClaim, firstClaim);
+    assert.equal(auth.acknowledgeReauthentication(firstClaim), false, 'a released claim cannot consume the handoff');
+    assert.equal(auth.acknowledgeReauthentication(secondClaim), true);
     assert.equal(await Promise.race([
       auth.requestReauthentication().then(() => 'settled'),
       new Promise(resolve => setImmediate(() => resolve('pending'))),

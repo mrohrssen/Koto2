@@ -589,6 +589,8 @@ export function init(callbacks) {
     refreshRunwayState,
     reviewAuthoritativeState,
     reauthenticate: callbacks.reauthenticate,
+    claimReauthentication: callbacks.claimReauthentication,
+    releaseReauthentication: callbacks.releaseReauthentication,
     adoptRecoveryState: callbacks.adoptRecoveryState,
     acknowledgeReauthentication: callbacks.acknowledgeReauthentication,
     renderNarration: renderExploreSessionPauseNarration,

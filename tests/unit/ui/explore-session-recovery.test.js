@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createExploreSession } from '../../../public/js/ui/explore-session.js';
 import { adoptExploreSessionRecoveryState } from '../../../public/js/ui/explore-session-recovery.js';
+import { FenceContractViolation } from '../../../public/js/async-ownership-fence.js';
 
 function makeRunway(overrides = {}) {
   return {
@@ -129,6 +130,29 @@ test('recovery reports failure and retains pending work when its state fetch fai
   });
 
   assert.equal(adopted, false);
+  assert.equal(session.pendingCount(), 1);
+});
+
+test('recovery rethrows an ownership contract violation instead of masking it as a transport failure', async () => {
+  const session = createExploreSession({ syncRequest: async () => strictOkTransport() });
+  queuePendingAction(session);
+  const contractError = new FenceContractViolation('recovery descriptor contract failed');
+  const capture = {
+    session,
+    fence: {
+      isCurrent: () => true,
+      step: async () => { throw contractError; },
+    },
+  };
+
+  await assert.rejects(
+    adoptExploreSessionRecoveryState({
+      capture,
+      getSession: () => session,
+      fetchState: async () => assert.fail('the contract failure occurs before fetch'),
+    }),
+    FenceContractViolation,
+  );
   assert.equal(session.pendingCount(), 1);
 });
 

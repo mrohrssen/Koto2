@@ -2484,8 +2484,10 @@ async function initGame() {
     refreshRunwayState: ({ capture }) => loadGameState({ adoptSession: true, capture }),
     reviewAuthoritativeState: ({ capture }) => loadGameState({ adoptSession: true, capture }),
     reauthenticate: () => auth.requestReauthentication(),
+    claimReauthentication: () => auth.claimReauthentication(),
+    releaseReauthentication: claim => auth.releaseReauthentication(claim),
     adoptRecoveryState: ({ capture }) => loadGameState({ adoptSession: true, capture }),
-    acknowledgeReauthentication: () => auth.acknowledgeReauthentication(),
+    acknowledgeReauthentication: claim => auth.acknowledgeReauthentication(claim),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {
       const result = await apiSelectArea(areaId);

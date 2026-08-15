@@ -162,17 +162,35 @@ export function createExploreSession({
   function getCorrectionRevision() { return correctionRevision; }
 
   let completingOwnershipTransaction = false;
+  let ownershipNotificationQueue = null;
 
   function completeOwnershipTransaction(mutator) {
     if (completingOwnershipTransaction) return mutator();
     completingOwnershipTransaction = true;
+    const notifications = [];
+    ownershipNotificationQueue = notifications;
     try {
       const result = mutator();
       ownershipRevision += 1;
+      ownershipNotificationQueue = null;
+      completingOwnershipTransaction = false;
+      for (const notifyAfterCommit of notifications) notifyAfterCommit();
       return result;
     } finally {
+      ownershipNotificationQueue = null;
       completingOwnershipTransaction = false;
     }
+  }
+
+  // Session callbacks may immediately start a new fenced continuation. Publish
+  // the outer transaction's revision first, so an unowned callback never
+  // receives a capture that was already stale before it returned to its caller.
+  function notifyAfterOwnershipCommit(callback, ...args) {
+    if (completingOwnershipTransaction && ownershipNotificationQueue) {
+      ownershipNotificationQueue.push(() => notify(callback, ...args));
+      return;
+    }
+    notify(callback, ...args);
   }
 
   function consumeResultOnce(actionId) {
@@ -239,7 +257,7 @@ export function createExploreSession({
     completeOwnershipTransaction(() => {
       paused = true;
       pauseReason = reason;
-      notify(onPause, { pendingCount: log.length, reason });
+      notifyAfterOwnershipCommit(onPause, { pendingCount: log.length, reason });
     });
     return true;
   }
@@ -261,7 +279,7 @@ export function createExploreSession({
       paused = false;
       const reason = pauseReason;
       pauseReason = null;
-      notify(onResume, { pendingCount: log.length, reason });
+      notifyAfterOwnershipCommit(onResume, { pendingCount: log.length, reason });
     });
   }
 
@@ -532,6 +550,12 @@ export function createExploreSession({
 
   function drain({ force = false, owner = null } = {}) {
     const record = ownerRecord(owner, 'drain Explore session');
+    // A public caller must never join an ownership-fenced drain that belongs
+    // to another recovery. In particular, do this before `force` can change
+    // that drain's successor behavior.
+    if (activeDrainPromise && activeDrainOwner != null && activeDrainOwner !== owner) {
+      return Promise.reject(new FenceSuperseded('drain Explore session', 'active drain'));
+    }
     if (
       pauseReason === 'unsupportedProtocol'
       || pauseReason === 'writerConflict'
@@ -541,9 +565,6 @@ export function createExploreSession({
     }
     if (force) forceDrainRequested = true;
     if (activeDrainPromise) {
-      if (record && activeDrainOwner !== owner) {
-        return Promise.reject(new FenceSuperseded('drain Explore session', 'active drain'));
-      }
       return activeDrainPromise;
     }
 
@@ -649,14 +670,13 @@ export function createExploreSession({
               deferResume: true,
             });
           }
-          if (!record) notify(onCorrection, correction);
-          if (!record) maybeResumeAfterDrain();
         });
         advanceOwner(record);
-        if (record) {
-          notify(onCorrection, correction);
-          maybeResumeAfterDrain({ owner });
-        }
+        // Keep the correction observable while the old pause is still held,
+        // but after its ownership revision has committed. The following resume
+        // is a separate observable state transition with its own revision.
+        notify(onCorrection, correction);
+        maybeResumeAfterDrain({ owner });
         return { ok: true, appendedAfterSnapshot: false };
       } else if (response?.status === 'ok') {
         let appendedAfterSnapshot = false;
@@ -676,14 +696,12 @@ export function createExploreSession({
               deferResume: true,
             });
           }
-          if (!record) notify(onCheckpoint, response, { logEmpty: log.length === 0 });
-          if (!record) maybeResumeAfterDrain();
         });
         advanceOwner(record);
-        if (record) {
-          notify(onCheckpoint, response, { logEmpty: log.length === 0 });
-          maybeResumeAfterDrain({ owner });
-        }
+        // See correction above: checkpoint and resume are intentionally two
+        // committed notifications, in that order.
+        notify(onCheckpoint, response, { logEmpty: log.length === 0 });
+        maybeResumeAfterDrain({ owner });
         return { ok: true, appendedAfterSnapshot };
       }
     } catch (error) {
@@ -695,6 +713,11 @@ export function createExploreSession({
 
   function syncNow({ owner = null } = {}) {
     ownerRecord(owner, 'sync Explore session');
+    // Guard before timer cancellation or force-drain mutation. An unowned
+    // call cannot influence an in-flight owned recovery.
+    if (activeDrainPromise && activeDrainOwner != null && activeDrainOwner !== owner) {
+      return Promise.reject(new FenceSuperseded('sync Explore session', 'active drain'));
+    }
     cancelDebounceTimer();
     cancelRetryTimer();
     return drain({ force: true, owner });

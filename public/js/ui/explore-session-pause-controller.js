@@ -1,4 +1,4 @@
-import { FenceSuperseded } from '../async-ownership-fence.js';
+import { FenceContractViolation, FenceSuperseded } from '../async-ownership-fence.js';
 
 const EMPTY_RUNWAY_REASONS = new Set([
   'noPreparedRoom',
@@ -23,6 +23,8 @@ export function createExploreSessionPauseController({
   refreshRunwayState,
   reviewAuthoritativeState,
   reauthenticate,
+  claimReauthentication,
+  releaseReauthentication,
   adoptRecoveryState,
   acknowledgeReauthentication,
   renderNarration,
@@ -41,6 +43,9 @@ export function createExploreSessionPauseController({
   let pauseDispatching = false;
   let reviewPromise = null;
   let authRecoveryPromise = null;
+  let activeAuthRecovery = null;
+  let queuedAuthRecovery = null;
+  let automaticAuthRepeatUsed = false;
 
   const isCurrent = (revision, session) => (
     !disposed
@@ -85,6 +90,33 @@ export function createExploreSessionPauseController({
 
   function hasCurrentAuthRecovery(capture, revision, session) {
     return isCurrent(revision, session) && capture?.fence?.isCurrent?.() === true;
+  }
+
+  function queueAuthRecovery(session, revision) {
+    if (!isCurrent(revision, session) || session.getPauseReason?.() !== 'authRequired') return;
+    queuedAuthRecovery = { session, revision };
+  }
+
+  function queueCurrentAuthSuccessor(previousSession) {
+    const successor = getSession?.();
+    if (successor && successor !== previousSession) {
+      queueAuthRecovery(successor, lifecycleRevision);
+    }
+  }
+
+  function flushQueuedAuthRecovery() {
+    const queued = queuedAuthRecovery;
+    queuedAuthRecovery = null;
+    if (!queued || !isCurrent(queued.revision, queued.session)) return;
+    if (queued.session.getPauseReason?.() !== 'authRequired') return;
+    void Promise.resolve().then(() => {
+      if (
+        isCurrent(queued.revision, queued.session)
+        && queued.session.getPauseReason?.() === 'authRequired'
+      ) {
+        void triggerAuthRecovery();
+      }
+    });
   }
 
   function renderAuthoritativePause() {
@@ -196,7 +228,9 @@ export function createExploreSessionPauseController({
           isCurrent: () => isCurrent(revision, session),
         }],
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof FenceContractViolation) throw error;
+      if (error instanceof FenceSuperseded) return Promise.resolve(false);
       return Promise.resolve(false);
     }
     if (!capture) return Promise.resolve(false);
@@ -217,7 +251,9 @@ export function createExploreSessionPauseController({
         }
         return false;
       })
-      .catch(() => {
+      .catch(error => {
+        if (error instanceof FenceContractViolation) throw error;
+        if (error instanceof FenceSuperseded) return false;
         if (!hasCurrentEmptyRunwayRecovery(capture, revision, session)) return false;
         scheduleRecovery(session, revision);
         renderAuthoritativePause();
@@ -228,10 +264,19 @@ export function createExploreSessionPauseController({
   }
 
   function triggerAuthRecovery() {
-    if (disposed || authRecoveryPromise) return authRecoveryPromise || Promise.resolve(false);
     const session = getSession?.();
+    if (disposed) return Promise.resolve(false);
+    if (authRecoveryPromise) {
+      const active = activeAuthRecovery;
+      if (!active || active.session !== session || active.revision !== lifecycleRevision) {
+        queueAuthRecovery(session, lifecycleRevision);
+      }
+      return authRecoveryPromise;
+    }
     if (!session || session.getPauseReason?.() !== 'authRequired') return Promise.resolve(false);
     const revision = lifecycleRevision;
+    const active = { session, revision };
+    activeAuthRecovery = active;
 
     const recovery = (async () => {
       // This is intentionally after the promise is coalesced: a reentrant
@@ -240,6 +285,8 @@ export function createExploreSessionPauseController({
       await Promise.resolve();
       if (!isCurrent(revision, session) || session.getPauseReason?.() !== 'authRequired') return false;
       let capture;
+      let reauthenticationClaim = null;
+      let acknowledged = false;
       try {
         capture = session.captureFence?.({
           pending: 'preserve',
@@ -254,28 +301,75 @@ export function createExploreSessionPauseController({
           () => reauthenticate?.(),
         );
         if (authenticated !== true || !hasCurrentAuthRecovery(capture, revision, session)) return false;
-        if ((await adoptRecoveryState?.({ capture })) !== true) return false;
+        if (typeof claimReauthentication === 'function') {
+          const candidateClaim = await claimReauthentication();
+          if (!hasCurrentAuthRecovery(capture, revision, session)) {
+            if (candidateClaim != null) releaseReauthentication?.(candidateClaim);
+            return false;
+          }
+          if (candidateClaim == null) {
+            // Another current recovery consumed this one-use handoff. Re-run
+            // only after this flow clears so requestReauthentication can show
+            // a fresh prompt when this still-current pause is independent.
+            queueAuthRecovery(session, revision);
+            return false;
+          }
+          reauthenticationClaim = candidateClaim;
+        }
+        if ((await capture.fence.step(
+          'adopt Explore recovery state',
+          () => adoptRecoveryState?.({ capture }),
+        )) !== true) return false;
         if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
         if (session.resolvePause?.('authRequired', { owner: capture.sessionLease }) !== true) return false;
         // The auth drain that raised this pause may still be unwinding. Yield
         // before redelivery so the owned successor can never join it.
-        await Promise.resolve();
+        await capture.fence.step('yield before Explore auth redelivery', () => Promise.resolve());
         if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
-        await session.syncNow?.({ owner: capture.sessionLease });
+        await capture.fence.step(
+          'redeliver Explore auth recovery',
+          () => session.syncNow?.({ owner: capture.sessionLease }),
+        );
         if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
-        acknowledgeReauthentication?.();
+        if (session.getPauseReason?.() != null || session.isPaused?.() === true) {
+          if (
+            session.getPauseReason?.() === 'authRequired'
+            && !automaticAuthRepeatUsed
+          ) {
+            automaticAuthRepeatUsed = true;
+            queueAuthRecovery(session, revision);
+          }
+          return false;
+        }
+        if (acknowledgeReauthentication?.(reauthenticationClaim) === false) {
+          throw new FenceContractViolation('Explore auth recovery did not acknowledge its exact reauthentication claim');
+        }
+        acknowledged = true;
+        automaticAuthRepeatUsed = false;
         return true;
       } catch (error) {
-        if (error instanceof FenceSuperseded) return false;
+        if (error instanceof FenceSuperseded) {
+          queueCurrentAuthSuccessor(session);
+          return false;
+        }
+        if (error instanceof FenceContractViolation) throw error;
         // Authentication owns its own error surface. A failed adoption retains
         // the existing pause and is allowed to retry from a later signal.
         return false;
+      } finally {
+        if (!acknowledged && reauthenticationClaim != null) {
+          releaseReauthentication?.(reauthenticationClaim);
+        }
       }
     })();
-    authRecoveryPromise = recovery.finally(() => {
-      if (authRecoveryPromise === wrappedRecovery) authRecoveryPromise = null;
+    let wrappedRecovery;
+    wrappedRecovery = recovery.finally(() => {
+      if (authRecoveryPromise !== wrappedRecovery) return;
+      authRecoveryPromise = null;
+      activeAuthRecovery = null;
+      flushQueuedAuthRecovery();
     });
-    const wrappedRecovery = authRecoveryPromise;
+    authRecoveryPromise = wrappedRecovery;
     return wrappedRecovery;
   }
 
@@ -298,7 +392,9 @@ export function createExploreSessionPauseController({
         if ((await reviewAuthoritativeState?.({ capture })) !== true) {
           throw new Error('authoritative review was not adopted');
         }
-      } catch {
+      } catch (error) {
+        if (error instanceof FenceContractViolation) throw error;
+        if (error instanceof FenceSuperseded) return false;
         if (capture?.fence?.isCurrent?.() === true && isCurrent(revision, session)) {
           showToast?.('Unable to load the latest progress. Please try again.');
           renderAuthoritativePause();
@@ -328,6 +424,7 @@ export function createExploreSessionPauseController({
     if (disposed) return;
     disposed = true;
     lifecycleRevision += 1;
+    queuedAuthRecovery = null;
     cancelRecoveryTimer();
     if (typeof windowTarget?.removeEventListener === 'function') {
       windowTarget.removeEventListener('online', onOnline);

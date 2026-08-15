@@ -1,12 +1,21 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createExploreSessionPauseController } from '../../../public/js/ui/explore-session-pause-controller.js';
+import { FenceContractViolation, FenceSuperseded } from '../../../public/js/async-ownership-fence.js';
 
 function deferred() {
   let resolve;
   let reject;
   const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
   return { promise, resolve, reject };
+}
+
+async function waitFor(predicate) {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    if (predicate()) return;
+    await Promise.resolve();
+  }
+  assert.fail('condition was not met');
 }
 
 function eventTarget({ visibilityState = 'visible' } = {}) {
@@ -67,7 +76,10 @@ function harness({
   refreshRunwayState = async () => {},
   reviewAuthoritativeState = async () => {},
   reauthenticate = async () => false,
+  claimReauthentication,
+  releaseReauthentication,
   adoptRecoveryState = async () => false,
+  acknowledgeReauthentication,
   schedule,
   cancel,
 } = {}) {
@@ -82,7 +94,10 @@ function harness({
     refreshRunwayState,
     reviewAuthoritativeState,
     reauthenticate,
+    claimReauthentication,
+    releaseReauthentication,
     adoptRecoveryState,
+    acknowledgeReauthentication,
     renderNarration: value => narrations.push(value),
     renderActions: value => actions.push(value),
     showToast: value => toasts.push(value),
@@ -144,6 +159,316 @@ describe('Explore session pause controller', () => {
     assert.deepEqual(events.find(([kind]) => kind === 'drain').slice(1), [{ owner }]);
     assert.deepEqual(actions, [], 'authentication owns the action area');
     controller.dispose();
+  });
+
+  it('does not acknowledge a repeat owned 401 and redelivers once after the finishing flow clears', async () => {
+    const session = createSession({ reason: 'authRequired', pending: 1 });
+    const owner = {};
+    session.captureFence = () => ({
+      session,
+      sessionLease: owner,
+      fence: {
+        isCurrent: () => true,
+        step: async (_label, operation) => operation(),
+      },
+    });
+    session.resolvePause = (reason, { owner: suppliedOwner } = {}) => {
+      assert.equal(reason, 'authRequired');
+      assert.equal(suppliedOwner, owner);
+      session.setReason(null);
+      return true;
+    };
+
+    let controller;
+    let authenticationCalls = 0;
+    let adoptionCalls = 0;
+    let drainCalls = 0;
+    let acknowledgements = 0;
+    let activeClaim = null;
+    let claimCount = 0;
+    let releaseCount = 0;
+    const acknowledgedClaims = [];
+    ({ controller } = harness({
+      session,
+      reauthenticate: async () => { authenticationCalls += 1; return true; },
+      claimReauthentication: async () => {
+        assert.equal(activeClaim, null);
+        claimCount += 1;
+        activeClaim = { claimCount };
+        return activeClaim;
+      },
+      releaseReauthentication: claim => {
+        assert.equal(claim, activeClaim);
+        activeClaim = null;
+        releaseCount += 1;
+        return true;
+      },
+      adoptRecoveryState: async () => { adoptionCalls += 1; return true; },
+      acknowledgeReauthentication: claim => {
+        assert.equal(claim, activeClaim);
+        acknowledgedClaims.push(claim);
+        activeClaim = null;
+        acknowledgements += 1;
+        return true;
+      },
+    }));
+    session.syncNow = async ({ owner: suppliedOwner } = {}) => {
+      assert.equal(suppliedOwner, owner);
+      drainCalls += 1;
+      if (drainCalls === 1) {
+        session.setReason('authRequired');
+        controller.handlePause({ reason: 'authRequired' });
+        return;
+      }
+      session.setReason(null);
+    };
+
+    await controller.triggerRecovery();
+    await waitFor(() => drainCalls === 2 && acknowledgements === 1);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    assert.equal(authenticationCalls, 2);
+    assert.equal(adoptionCalls, 2);
+    assert.equal(drainCalls, 2, 'the repeat redelivery gets one fresh coalesced attempt, not a tight loop');
+    assert.equal(acknowledgements, 1, 'the repeat 401 did not consume the completed login');
+    assert.equal(claimCount, 2, 'the released completed-login handoff is claimed once per owned recovery');
+    assert.equal(releaseCount, 1, 'the first repeat-401 claim is released, not acknowledged');
+    assert.deepEqual(acknowledgedClaims, [{ claimCount: 2 }]);
+    assert.equal(session.getPauseReason(), null);
+    controller.dispose();
+  });
+
+  it('passes a completed login handoff from a stale replaced session to its successor without a second prompt', async () => {
+    let activeSession;
+    const adoptions = [];
+    const renders = [];
+    const login = deferred();
+    let permitAvailable = false;
+    let activeClaim = null;
+    let promptCalls = 0;
+    let acknowledgements = 0;
+
+    function makeSession(name) {
+      const owner = { name };
+      let reason = 'authRequired';
+      const session = {
+        name,
+        getPauseReason: () => reason,
+        pendingCount: () => 1,
+        pause: nextReason => {
+          reason = nextReason;
+          return true;
+        },
+        captureFence: () => ({
+          session,
+          sessionLease: owner,
+          fence: {
+            isCurrent: () => activeSession === session,
+            async step(label, operation) {
+              if (activeSession !== session) throw new FenceSuperseded(label, 'active Explore session');
+              const result = await operation();
+              if (activeSession !== session) throw new FenceSuperseded(label, 'active Explore session');
+              return result;
+            },
+          },
+        }),
+        resolvePause: (expectedReason, { owner: suppliedOwner } = {}) => {
+          assert.equal(expectedReason, 'authRequired');
+          assert.equal(suppliedOwner, owner);
+          reason = null;
+          return true;
+        },
+        syncNow: async ({ owner: suppliedOwner } = {}) => {
+          assert.equal(suppliedOwner, owner);
+          session.drains += 1;
+        },
+        drains: 0,
+      };
+      return session;
+    }
+
+    const sessionA = makeSession('A');
+    const sessionB = makeSession('B');
+    const sessionC = makeSession('C');
+    activeSession = sessionA;
+    const controller = createExploreSessionPauseController({
+      getSession: () => activeSession,
+      reauthenticate: () => {
+        if (permitAvailable) return Promise.resolve(true);
+        promptCalls += 1;
+        return login.promise;
+      },
+      claimReauthentication: async () => {
+        if (!permitAvailable || activeClaim) return null;
+        activeClaim = {};
+        return activeClaim;
+      },
+      releaseReauthentication: claim => {
+        if (claim !== activeClaim) return false;
+        activeClaim = null;
+        return true;
+      },
+      acknowledgeReauthentication: claim => {
+        if (claim !== activeClaim) return false;
+        permitAvailable = false;
+        activeClaim = null;
+        acknowledgements += 1;
+        return true;
+      },
+      adoptRecoveryState: async ({ capture }) => {
+        adoptions.push(capture.session.name);
+        return true;
+      },
+      renderNarration: value => renders.push(value),
+      renderActions: value => renders.push(value),
+      showToast: value => renders.push(value),
+      schedule: () => 0,
+      cancel: () => {},
+      windowTarget: eventTarget(),
+      documentTarget: eventTarget(),
+    });
+
+    const staleRecovery = controller.triggerRecovery();
+    await waitFor(() => promptCalls === 1);
+    activeSession = sessionB;
+    permitAvailable = true;
+    login.resolve(true);
+
+    await staleRecovery;
+    await waitFor(() => sessionB.drains === 1 && acknowledgements === 1);
+
+    assert.deepEqual(adoptions, ['B']);
+    assert.equal(sessionA.drains, 0);
+    assert.equal(promptCalls, 1, 'B consumes the completed same-account login instead of reopening auth');
+    assert.deepEqual(renders, [], 'stale A did not repaint any successor UI');
+
+    activeSession = sessionC;
+    void controller.triggerRecovery();
+    await waitFor(() => promptCalls === 2);
+    controller.dispose();
+  });
+
+  it('rethrows a fence contract violation instead of treating it as a recoverable stale flow', async () => {
+    const session = createSession({ reason: 'authRequired', pending: 1 });
+    session.captureFence = () => ({
+      sessionLease: {},
+      fence: {
+        isCurrent: () => true,
+        step: async (_label, operation) => operation(),
+      },
+    });
+    const { controller } = harness({
+      session,
+      reauthenticate: async () => {
+        throw new FenceContractViolation('reauthentication ownership contract failed');
+      },
+    });
+
+    await assert.rejects(
+      controller.triggerRecovery(),
+      FenceContractViolation,
+    );
+    controller.dispose();
+  });
+
+  it('does not mutate a successor or acknowledge when disposed at every auth await boundary', async () => {
+    for (const boundary of ['login', 'adoption', 'post-resolve yield', 'drain']) {
+      let controller;
+      let reason = 'authRequired';
+      let loginStarted = false;
+      let adoptionStarted = false;
+      let drainStarted = false;
+      let resolves = 0;
+      let adoptions = 0;
+      let drains = 0;
+      let acknowledgements = 0;
+      const login = deferred();
+      const adoption = deferred();
+      const drain = deferred();
+      const owner = {};
+      const session = {
+        getPauseReason: () => reason,
+        isPaused: () => reason != null,
+        pendingCount: () => 1,
+        pause: nextReason => { reason = nextReason; return true; },
+        captureFence: () => ({
+          sessionLease: owner,
+          fence: {
+            isCurrent: () => true,
+            step: async (_label, operation) => operation(),
+          },
+        }),
+        resolvePause: (_reason, { owner: suppliedOwner } = {}) => {
+          assert.equal(suppliedOwner, owner);
+          resolves += 1;
+          reason = null;
+          if (boundary === 'post-resolve yield') queueMicrotask(() => controller.dispose());
+          return true;
+        },
+        syncNow: async ({ owner: suppliedOwner } = {}) => {
+          assert.equal(suppliedOwner, owner);
+          drains += 1;
+          if (boundary === 'drain') {
+            drainStarted = true;
+            await drain.promise;
+          }
+        },
+      };
+      controller = createExploreSessionPauseController({
+        getSession: () => session,
+        reauthenticate: async () => {
+          loginStarted = true;
+          if (boundary === 'login') return login.promise;
+          return true;
+        },
+        adoptRecoveryState: async () => {
+          adoptions += 1;
+          adoptionStarted = true;
+          if (boundary === 'adoption') return adoption.promise;
+          return true;
+        },
+        acknowledgeReauthentication: () => { acknowledgements += 1; },
+        schedule: () => 0,
+        cancel: () => {},
+        windowTarget: eventTarget(),
+        documentTarget: eventTarget(),
+      });
+
+      const recovery = controller.triggerRecovery();
+      if (boundary === 'login') {
+        await waitFor(() => loginStarted);
+        controller.dispose();
+        login.resolve(true);
+      } else if (boundary === 'adoption') {
+        await waitFor(() => adoptionStarted);
+        controller.dispose();
+        adoption.resolve(true);
+      } else if (boundary === 'drain') {
+        await waitFor(() => drainStarted);
+        controller.dispose();
+        drain.resolve();
+      }
+      await recovery;
+
+      assert.equal(acknowledgements, 0, `${boundary}: stale work never acknowledges a login handoff`);
+      if (boundary === 'login') {
+        assert.equal(adoptions, 0, 'login disposal blocks adoption');
+        assert.equal(resolves, 0, 'login disposal blocks pause resolution');
+        assert.equal(drains, 0, 'login disposal blocks redelivery');
+      }
+      if (boundary === 'adoption') {
+        assert.equal(resolves, 0, 'adoption disposal blocks pause resolution');
+        assert.equal(drains, 0, 'adoption disposal blocks redelivery');
+      }
+      if (boundary === 'post-resolve yield') {
+        assert.equal(resolves, 1, 'the pause was resolved before this controllable yield');
+        assert.equal(drains, 0, 'yield disposal blocks redelivery');
+      }
+      if (boundary === 'drain') {
+        assert.equal(drains, 1, 'the owned drain began before disposal');
+      }
+    }
   });
 
   it('only transport, unsupported protocol, and writer conflict replace actions', () => {

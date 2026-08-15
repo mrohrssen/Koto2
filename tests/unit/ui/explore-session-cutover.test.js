@@ -219,6 +219,8 @@ function initCutoverHarness({
   waitForCombatPlaybackIdle = async () => {},
   reconcileCorrectedCombat = () => false,
   reauthenticate = async () => false,
+  claimReauthentication,
+  releaseReauthentication,
   adoptRecoveryState = async () => false,
   acknowledgeReauthentication = () => {},
   onUpdateUI = () => {},
@@ -249,6 +251,8 @@ function initCutoverHarness({
     },
     waitForCombatPlaybackIdle,
     reauthenticate,
+    claimReauthentication,
+    releaseReauthentication,
     adoptRecoveryState,
     acknowledgeReauthentication,
     apiProceed,
@@ -1396,6 +1400,8 @@ describe('explore session online stall recovery', () => {
     refreshRunwayState,
     reviewAuthoritativeState,
     reauthenticate,
+    claimReauthentication,
+    releaseReauthentication,
     adoptRecoveryState,
     acknowledgeReauthentication,
     showToast = () => {},
@@ -1421,6 +1427,8 @@ describe('explore session online stall recovery', () => {
       refreshRunwayState,
       reviewAuthoritativeState,
       reauthenticate,
+      claimReauthentication,
+      releaseReauthentication,
       adoptRecoveryState,
       acknowledgeReauthentication,
     });
@@ -1756,14 +1764,21 @@ describe('explore session online stall recovery', () => {
     let reauthenticationCalls = 0;
     let acknowledgements = 0;
     let syncCalls = 0;
+    const claim = Object.freeze({});
     actionArea.innerHTML = 'auth-owned actions';
     try {
       globalThis.window = windowTarget;
       globalThis.document = { ...previousDocument, ...documentTarget };
       initRecoveryHarness({
         reauthenticate: async () => { reauthenticationCalls += 1; return true; },
+        claimReauthentication: async () => claim,
+        releaseReauthentication: () => assert.fail('the successful owned recovery must not release its claim'),
         adoptRecoveryState: async () => { adoptionCalls += 1; return true; },
-        acknowledgeReauthentication: () => { acknowledgements += 1; },
+        acknowledgeReauthentication: suppliedClaim => {
+          assert.equal(suppliedClaim, claim);
+          acknowledgements += 1;
+          return true;
+        },
         apiSyncExploreSession: async () => {
           syncCalls += 1;
           if (syncCalls > 1) {
