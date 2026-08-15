@@ -32,6 +32,7 @@ import { wait } from '../pixi/tween.js';
 import { playAttackSound } from './combat-audio.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { SceneDisposedError } from '../scenes/scene-errors.js';
+import { FenceContractViolation, FenceSuperseded } from '../async-ownership-fence.js';
 import { BattleScene } from '../scenes/battle-scene.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
 import { trackMilestone } from '../analytics.js';
@@ -546,6 +547,56 @@ function commitOptimisticRecoveryState(recoveryCapture, state) {
   combatRecoveryCoordinator.commitLocalState(recoveryCapture, state);
 }
 
+async function reconcileOptimisticAcceptedVerification(
+  verification,
+  actionType,
+  recoveryCapture,
+  capturedOwner,
+) {
+  if (recoveryCapture || getActiveStandardExploreSession()) {
+    if (!recoveryCapture || !combatRecoveryCoordinator) {
+      return { recovered: false, outcome: 'recovery_failed', combatActive };
+    }
+    return normalizeRecoveryResult(await combatRecoveryCoordinator.recover({
+      actionType,
+      capturedOwner: capturedOwner || recoveryOwnerFromState(),
+      authoritativeResult: verification,
+      capture: recoveryCapture,
+      transformMergedState: merged => ({
+        ...merged,
+        combat: {
+          ...merged.combat,
+          optimistic: {
+            ...(merged.combat?.optimistic || {}),
+            stateVersion: verification.stateVersion,
+            nextTurnSeed: verification.nextSeed,
+          },
+        },
+      }),
+      outcome: 'optimistic_accepted',
+      finalize: false,
+    }));
+  }
+
+  const state = getGameState();
+  if (!state?.combat) return { recovered: true, outcome: 'optimistic_accepted', combatActive };
+  const merged = mergeAuthoritativeCombatState(state, verification);
+  const updatedState = {
+    ...merged,
+    combat: {
+      ...merged.combat,
+      optimistic: {
+        ...(merged.combat.optimistic || {}),
+        stateVersion: verification.stateVersion,
+        nextTurnSeed: verification.nextSeed,
+      },
+    },
+  };
+  updateGameState(updatedState);
+  await syncCombatSceneToState(updatedState);
+  return { recovered: true, outcome: 'optimistic_accepted', combatActive };
+}
+
 async function recoverNonExploreCombatErrorState(result, actionType, options) {
   if (!result?.state) return { recovered: false, outcome: 'recovery_failed', combatActive };
   const merged = mergeAuthoritativeCombatState(getGameState(), result);
@@ -641,23 +692,12 @@ async function handleOptimisticCombatVerification(
   }
 
   if (verification.status === 'accepted') {
-    const state = getGameState();
-    if (!state?.combat) return { recovered: true, outcome: 'optimistic_accepted', combatActive };
-    const merged = mergeAuthoritativeCombatState(state, verification);
-    const updatedState = {
-      ...merged,
-      combat: {
-        ...merged.combat,
-        optimistic: {
-          ...(merged.combat.optimistic || {}),
-          stateVersion: verification.stateVersion,
-          nextTurnSeed: verification.nextSeed,
-        },
-      },
-    };
-    updateGameState(updatedState);
-    await syncCombatSceneToState(updatedState);
-    return { recovered: true, outcome: 'optimistic_accepted', combatActive };
+    return reconcileOptimisticAcceptedVerification(
+      verification,
+      recoveryActionType,
+      recoveryCapture,
+      capturedOwner,
+    );
   }
 
   if (verification.status === 'corrected') {
@@ -979,11 +1019,13 @@ function handleCreatureTurnFailure({
   restartMoveSelection = startMoveSelection,
   reportError = (...args) => console.error(...args),
 } = {}) {
+  if (error instanceof FenceContractViolation) throw error;
   // An old Explore animation can reject after the session has already entered
   // the next combat. Its catch belongs to combat A and must not unlock, redraw,
   // or report into combat B. Non-Explore combat has no captured operation and
   // retains the existing recovery behavior.
   if (!isCurrentExploreCombatOperation(exploreOperation)) return false;
+  if (error instanceof FenceSuperseded) return true;
   reportError(label, error);
   clearCombatPendingFlag(pendingFlag);
   if (!turnTiming?.logged) {

@@ -69,23 +69,31 @@ export function createCombatRecoveryCoordinator({
     actionType,
     capturedOwner,
     authoritativeState = null,
+    authoritativeResult = null,
     capture: recoveryCapture = null,
     finalizeOptions = null,
+    transformMergedState = state => state,
+    outcome: requestedOutcome = null,
+    finalize = true,
   } = {}) {
     const recovery = recoveryCapture || capture(capturedOwner);
     if (!recovery) return failed();
 
     const { fence, stateLease, combatLease } = recovery;
     try {
+      const hasProvidedAuthoritative = authoritativeState != null || authoritativeResult != null;
       const authoritative = await fence.step(
-        authoritativeState == null ? 'fetch authoritative combat state' : 'read authoritative combat state',
-        () => authoritativeState == null
+        hasProvidedAuthoritative ? 'read authoritative combat state' : 'fetch authoritative combat state',
+        () => !hasProvidedAuthoritative
           ? fetchAuthoritativeState({ adoptSession: true })
-          : Promise.resolve(authoritativeState),
+          : Promise.resolve(authoritativeState ?? authoritativeResult),
       );
       if (!isUsableRecoveredState(authoritative)) return failed();
 
-      const merged = mergeAuthoritativeCombatState(getState(), { state: authoritative });
+      const merged = transformMergedState(mergeAuthoritativeCombatState(
+        getState(),
+        authoritativeResult == null ? { state: authoritative } : authoritativeResult,
+      ));
       const nextOwner = getCombatOwner(merged);
       fence.commit(
         'adopt authoritative combat state',
@@ -103,9 +111,10 @@ export function createCombatRecoveryCoordinator({
       ));
       if (synced !== true) return { recovered: false, outcome: 'recovery_scene_unavailable' };
 
-      const outcome = authoritativeState == null
+      const outcome = requestedOutcome || (!hasProvidedAuthoritative
         ? 'null_post_state_recovered'
-        : 'stale_error_state_recovered';
+        : 'stale_error_state_recovered');
+      if (!finalize) return { recovered: true, outcome };
       const finalized = await fence.step('finalize recovered combat', () => (
         finalizeRecoveredCombat(merged, actionType, outcome, finalizeOptions)
       ));

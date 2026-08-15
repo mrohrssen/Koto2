@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { createCombatRecoveryGate } from '../../../public/js/ui/combat-recovery-gate.js';
+import { createAsyncOwnershipFence } from '../../../public/js/async-ownership-fence.js';
 
 // --- Minimal DOM/global shims so combat-loop.js imports cleanly (headless) ---
 globalThis.window = { __intentLog: null };
@@ -59,6 +60,15 @@ function makeFakeSession({ acceptsCombatCycle = true, combatId = 'cmb_sess' } = 
     isPaused: () => paused,
     getPauseReason: () => pauseReason,
     getLocalRevision: () => recorded.length,
+    captureFence: ({ pending, leases = [] } = {}) => {
+      assert.ok(pending === 'empty' || pending === 'preserve');
+      return {
+        fence: createAsyncOwnershipFence([
+          { label: 'Explore session', isCurrent: () => true },
+          ...leases,
+        ]),
+      };
+    },
     pause: reason => {
       paused = true;
       pauseReason = reason;
