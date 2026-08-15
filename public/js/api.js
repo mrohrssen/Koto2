@@ -253,11 +253,14 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
         const options = { method, headers: getAuthHeaders() };
         if (method !== 'GET' && body) options.body = JSON.stringify(body);
 
-        const { response, data } = await fetchJsonWithTimeout(
+        const { response, data: rawData, parseError } = await fetchJsonWithTimeout(
           `${PLATFORM.apiBase}/api/game${endpoint}`,
           options,
           { timeoutMs: opts.timeoutMs }
         );
+        // Keep the low-level parse evidence intact for callers that need it, while
+        // preserving apiCall's historical empty-object fallback for generic paths.
+        const data = parseError ? {} : rawData;
 
         // 401 handled specifically — don't retry auth errors
         if (response.status === 401) {

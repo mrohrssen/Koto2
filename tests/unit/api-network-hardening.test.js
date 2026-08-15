@@ -106,6 +106,41 @@ describe('api network hardening', () => {
     assert.equal(offlineCount, 0);
   });
 
+  it('keeps malformed 2xx generic API responses compatible with the empty-object fallback', async () => {
+    const api = await import('../../public/js/api.js');
+    globalThis.fetch = mock.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => { throw new SyntaxError('Unexpected token <'); },
+    }));
+
+    const result = await api.__networkTest.apiCall('/state', 'GET', null, null, {
+      maxAttempts: 1,
+    });
+
+    assert.deepEqual(result, {});
+    assert.equal(globalThis.fetch.mock.callCount(), 1);
+  });
+
+  it('keeps malformed generic HTTP errors on the HTTP fallback without marking offline', async () => {
+    const api = await import('../../public/js/api.js');
+    let offlineCount = 0;
+    api.setConnectionCallbacks({ onOffline: () => { offlineCount += 1; }, onOnline: null });
+    globalThis.fetch = mock.fn(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => { throw new SyntaxError('Unexpected token <'); },
+    }));
+
+    const result = await api.__networkTest.apiCall('/state', 'GET', null, null, {
+      returnErrorBody: true,
+      maxAttempts: 1,
+    });
+
+    assert.deepEqual(result, { error: 'HTTP 500' });
+    assert.equal(offlineCount, 0);
+  });
+
   it('preserves full error bodies when returnErrorBody is enabled', async () => {
     const api = await import('../../public/js/api.js');
     const state = {
@@ -309,6 +344,26 @@ describe('api network hardening', () => {
       aborted: false,
       clientAuthMismatch: true,
       authRevision,
+    });
+  });
+
+  it('does not serialize a payload timeout into Explore sync requests', async () => {
+    const api = await import('../../public/js/api.js');
+    let requestBody = null;
+    globalThis.fetch = async (_url, options) => {
+      requestBody = JSON.parse(options.body);
+      return jsonResponse({ status: 'ok', confirmedThroughSeq: 1, results: [] });
+    };
+
+    await api.syncExploreSession({
+      sessionEpoch: 'ese_1111111111111111',
+      entries: [{ seq: 1 }],
+      timeoutMs: 1,
+    });
+
+    assert.deepEqual(requestBody, {
+      sessionEpoch: 'ese_1111111111111111',
+      entries: [{ seq: 1 }],
     });
   });
 
