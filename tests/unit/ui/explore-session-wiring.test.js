@@ -6,6 +6,20 @@ import {
   EXPLORE_SESSION_RESUME_AT,
 } from '../../../public/js/ui/explore-session.js';
 
+function completeTransport(body, overrides = {}) {
+  return {
+    transport: true,
+    httpStatus: 200,
+    body,
+    parseError: null,
+    networkError: null,
+    aborted: false,
+    clientAuthMismatch: false,
+    authRevision: 0,
+    ...overrides,
+  };
+}
+
 test('hard cap pause fires onPause and resume fires onResume', async () => {
   const events = [];
   // Fail every sync at first so the log builds to the hard cap while paused.
@@ -22,7 +36,12 @@ test('hard cap pause fires onPause and resume fires onResume', async () => {
       const confirmedThroughSeq = entries.length > EXPLORE_SESSION_RESUME_AT
         ? dropToResumeMark
         : entries.reduce((max, entry) => Math.max(max, entry.seq), 0);
-      return { status: 'ok', confirmedThroughSeq };
+      return completeTransport({
+        protocolVersion: 1,
+        status: 'ok',
+        confirmedThroughSeq,
+        results: [],
+      });
     },
     onPause: info => events.push(['pause', info.reason]),
     onResume: info => events.push(['resume', info.reason]),

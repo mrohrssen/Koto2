@@ -83,6 +83,7 @@ import * as settings from './js/settings.js';
 import * as explorationUI from './js/ui/exploration.js';
 import { getExploreSession, runWithStableExploreSession } from './js/ui/explore-session.js';
 import {
+  adoptCapturedExploreRecoveryState,
   captureGameStateFetchFence,
   isGameStateErrorResponse,
 } from './js/ui/game-state-adoption.js';
@@ -995,12 +996,11 @@ async function loadGameState({ adoptSession = false, capture = null } = {}) {
     // leave them and let their next sync reconcile the epoch via a `corrected`
     // response instead of silently discarding queued progress.
     const _session = getExploreSession?.();
+    let capturedStateAdopted = false;
     if (capture) {
       try {
-        capture.fence.commit(
-          'adopt Explore pause recovery runway',
-          capture.expectRunwayAdoption(data.run?.exploreRunway || null, { deferResume: true }),
-        );
+        adoptCapturedExploreRecoveryState({ capture, data, updateGameState });
+        capturedStateAdopted = true;
       } catch (error) {
         if (error instanceof FenceSuperseded) return false;
         throw error;
@@ -1008,9 +1008,9 @@ async function loadGameState({ adoptSession = false, capture = null } = {}) {
     } else if (_session && (_session.pendingCount?.() ?? 0) === 0) {
       _session.adoptRunway?.(data.run?.exploreRunway || null);
     }
-    // The captured commit rechecks lifecycle/session ownership immediately
-    // before this synchronous state/display mutation.
-    updateGameState(data);
+    // The captured helper atomically orders its fenced runway adoption before
+    // state publication; non-captured callers publish state directly here.
+    if (!capturedStateAdopted) updateGameState(data);
     const allCreatureIds = [
       ...(data.creatureParty?.active || []),
       ...(data.creatureParty?.reserves || []),

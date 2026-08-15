@@ -18,6 +18,20 @@ export function captureGameStateFetchFence(session, getCurrentSession) {
   };
 }
 
+/**
+ * Commits a previously captured Explore runway before publishing its state.
+ * Resume stays deferred so the pause controller can lift only its exact,
+ * still-current recoverable pause after the authoritative state is visible.
+ */
+export function adoptCapturedExploreRecoveryState({ capture, data, updateGameState }) {
+  capture.fence.commit(
+    'adopt Explore pause recovery runway',
+    capture.expectRunwayAdoption(data.run?.exploreRunway || null, { deferResume: true }),
+  );
+  updateGameState(data);
+  return true;
+}
+
 export function isGameStateErrorResponse(data) {
   return Boolean(
     data

@@ -62,21 +62,20 @@ test('loadGameState adopts the fresh explore runway after fetching rotated serve
   );
 });
 
-test('captured pause recovery defers resume until authoritative game state is installed', () => {
+test('loadGameState routes captured pause recovery through the adoption helper', () => {
   const loadGameStateSource = sourceBetween(
     gameSrc,
     'async function loadGameState(',
     'async function claimDailyCrystalBonus',
   );
-  const deferredAdoptionIndex = loadGameStateSource.indexOf('deferResume: true');
-  const commitIndex = loadGameStateSource.indexOf("'adopt Explore pause recovery runway'");
-  const updateStateIndex = loadGameStateSource.indexOf('updateGameState(data)');
+  const helperIndex = loadGameStateSource.indexOf('adoptCapturedExploreRecoveryState({ capture, data, updateGameState })');
+  const preloadIndex = loadGameStateSource.indexOf('assetPreloader.enqueue');
 
-  assert.ok(deferredAdoptionIndex >= 0, 'captured recovery runway adoption must defer automatic session resume');
-  assert.ok(commitIndex >= 0 && updateStateIndex >= 0, 'captured adoption and state installation must both exist');
+  assert.ok(helperIndex >= 0, 'captured recovery must call the executable adoption helper');
+  assert.ok(preloadIndex >= 0, 'state publication path must continue to preload authoritative assets');
   assert.ok(
-    commitIndex < updateStateIndex,
-    'the fenced runway ownership commit must precede state installation while its resume remains deferred',
+    helperIndex < preloadIndex,
+    'the helper must complete fenced adoption and authoritative state installation before related state work',
   );
 });
 
