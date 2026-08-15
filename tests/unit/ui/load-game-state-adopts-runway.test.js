@@ -270,16 +270,39 @@ test('in-session state fetches pass the adoptSession signal; boot stays bare', (
     'only boot and the two post-forfeit reload boundaries may issue a bare loadGameState call',
   );
 
-  // combat-loop's null-POST recovery fetch is in-session (active combat).
+  // Task 8 routes a standard Explore null-POST recovery through its captured
+  // coordinator. The coordinator owns the fenced authoritative fetch; combat
+  // loop keeps the nonstandard fallback separate.
   const combatLoopSrc = readFileSync(resolve(repoRoot, 'public/js/ui/combat-loop.js'), 'utf8');
   const recoverySource = sourceBetween(
     combatLoopSrc,
     'async function recoverFromNullCombatPost(',
     'async function handleOptimisticCombatVerification(',
   );
-  assert.ok(
-    recoverySource.indexOf('apiGetGameState({ adoptSession: true })') >= 0,
-    'recoverFromNullCombatPost must fetch state with adoptSession: true (in-session recovery fetch)',
+  const coordinatorSource = sourceBetween(
+    combatLoopSrc,
+    'function configureCombatRecoveryCoordinator()',
+    'function preservesRecoveryInputOwnership',
+  );
+  assert.match(
+    coordinatorSource,
+    /fetchAuthoritativeState:\s*options\s*=>\s*apiGetGameState\(options\)/,
+    'the Task 8 coordinator owns the authoritative state fetch supplied by combat-loop',
+  );
+  assert.match(
+    recoverySource,
+    /options\.recoveryCapture\s*&&\s*combatRecoveryCoordinator[\s\S]*combatRecoveryCoordinator\.recover\(/,
+    'standard Explore recovery must pass its captured owner/fence to the coordinator',
+  );
+  assert.match(
+    recoverySource,
+    /!getActiveStandardExploreSession\(\)\s*\|\|\s*!combatRecoveryCoordinator[\s\S]*recoverNonExploreNullCombatPost\(/,
+    'only nonstandard combat keeps the direct legacy recovery fallback',
+  );
+  assert.doesNotMatch(
+    recoverySource,
+    /await apiGetGameState\(/,
+    'standard Explore recovery must not bypass the coordinator with a direct state fetch',
   );
   assert.doesNotMatch(
     combatLoopSrc,

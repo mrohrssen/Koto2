@@ -61,7 +61,12 @@ test('Kanji Kombat start recovers committed combat after a missing start respons
     'function showCollectionSelect'
   );
 
-  assert.match(helperSource, /apiGetGameStateAfterExploreDrain\('kanjiKombatStartRecovery'\)/);
+  assert.match(helperSource, /apiGetGameStateAfterExploreDrain\(\)/);
+  assert.doesNotMatch(
+    helperSource,
+    /apiGetGameStateAfterExploreDrain\(\s*['\"]/,
+    'Task 10 removed ignored reason metadata from Explore drain-backed state fetches',
+  );
   assert.match(helperSource, /isKanjiKombatCombatState\(recoveredState\)/);
   assert.match(helperSource, /await enterKanjiKombatCombat\(recoveredState\)/);
   assert.match(setupSource, /else if \(!result\?\.state\) \{\s*await recoverKanjiKombatStartState\(\);/);

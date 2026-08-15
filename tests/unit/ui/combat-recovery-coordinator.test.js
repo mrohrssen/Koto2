@@ -1,5 +1,6 @@
 import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { makeExploreV1OkTransport } from '../../helpers/explore-sync-transport.js';
 
 import { createCombatRecoveryCoordinator } from '../../../public/js/ui/combat-recovery-coordinator.js';
 import {
@@ -56,7 +57,7 @@ function makeRecoveryHarness({
   };
   const owner = ownerFor(state);
 
-  configureExploreSession({ syncRequest: async () => ({}) });
+  configureExploreSession({ syncRequest: async request => makeExploreV1OkTransport(request) });
 
   function captureGameStateLease() {
     let capturedState = state;

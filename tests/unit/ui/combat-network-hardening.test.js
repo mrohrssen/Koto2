@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { makeExploreV1OkTransport } from '../../helpers/explore-sync-transport.js';
 
 function createStorage() {
   const values = new Map();
@@ -254,7 +255,7 @@ describe('combat network hardening', () => {
     console.log = () => {};
     resetKanjiKombatSession();
     resetExploreSession();
-    configureExploreSession({ syncRequest: async () => ({}) });
+    configureExploreSession({ syncRequest: async request => makeExploreV1OkTransport(request) });
     initCombatLoopTestDefaults();
     combatLoop.__combatNetworkTest.setCreatureCombatApi(null);
     combatLoop.__combatNetworkTest.setSyncIndicatorDelayMs(500);
@@ -1001,7 +1002,7 @@ describe('combat network hardening', () => {
     let fetchCount = 0;
     let moveSelectionRendered = false;
     const session = configureExploreSession({
-      syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: null, results: [] }),
+      syncRequest: async request => makeExploreV1OkTransport(request),
       schedule: () => null,
       cancel: () => {},
     });
@@ -1114,7 +1115,7 @@ describe('combat network hardening', () => {
     let moveSelectionCount = 0;
     let fetchCount = 0;
     const session = configureExploreSession({
-      syncRequest: async () => ({ status: 'ok', confirmedThroughSeq: null, results: [] }),
+      syncRequest: async request => makeExploreV1OkTransport(request),
       schedule: () => null,
       cancel: () => {},
     });
