@@ -1,9 +1,5 @@
 import { PAUSE_REASONS } from '../../../src/shared/explore/pause-reasons.js';
 
-export function pauseReasonInfo(reason) {
-  return PAUSE_REASONS[reason] || null;
-}
-
 export async function readProtocolOracle({
   client,
   manager,
@@ -67,16 +63,7 @@ export async function readProtocolOracle({
   const appliedChoiceEffects = choiceEffectSample
     ? choiceEffectSample.itemsCollected - initialItemsCollected
     : 0;
-  const observedPausePolicies = pauses.map(event => ({
-    reason: event.reason,
-    policy: pauseReasonInfo(event.reason),
-  }));
-  const pausePolicyViolations = observedPausePolicies.filter(({ policy }) => (
-    !policy
-    || (policy.automaticRecovery !== true && policy.manualRecovery !== true)
-    || typeof policy.resumeWhen !== 'string'
-    || policy.resumeWhen.length === 0
-  ));
+  const observedPauseReasons = pauses.map(event => event.reason);
 
   return {
     recordedActionIds,
@@ -84,15 +71,13 @@ export async function readProtocolOracle({
     committedRecordedActionIds,
     replayedActionIds,
     pendingCount: session.pendingCount(),
+    pendingActionIds,
     silentDeletedActionIds,
     duplicateGameEffects: Math.max(0, appliedChoiceEffects - uniqueCommittedChoices),
     missingGameEffects: Math.max(0, uniqueCommittedChoices - appliedChoiceEffects),
-    duplicateExternalEffects: 0,
     correctedSyncsUnderPureTransport: corrections.length,
-    observedPauseReasons: pauses.map(event => event.reason),
-    observedPausePolicies,
-    pausePolicyViolations,
-    unrecoverablePauses: pausePolicyViolations.length,
+    observedPauseReasons,
+    unknownPauseReasons: observedPauseReasons.filter(reason => !Object.hasOwn(PAUSE_REASONS, reason)),
     serverRoomAdvance: (stateResponse.body.run?.currentRoom ?? initialRoom) - initialRoom,
     serverState: stateResponse.body,
   };

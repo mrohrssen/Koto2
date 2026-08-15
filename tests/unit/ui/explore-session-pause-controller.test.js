@@ -85,7 +85,6 @@ function createSession({ reason = null, pending = 0 } = {}) {
       }
       return false;
     },
-    retryNow: async () => {},
     resolvePause(expectedReason) {
       if (
         currentReason !== expectedReason

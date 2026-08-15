@@ -47,7 +47,6 @@ test('does not execute a compatibility action from an empty paused session', asy
   const outcome = await exploreSessionApi.runWithStableExploreSession(
     session,
     async () => { legacyCalls += 1; },
-    { reason: 'combatStart' },
   );
 
   assert.deepEqual(outcome, { executed: false, result: null });
@@ -77,7 +76,6 @@ test('drains pending Explore entries before executing a compatibility action', a
       legacyCalls += 1;
       return 'legacy-result';
     },
-    { reason: 'combatStart' },
   );
 
   assert.deepEqual(outcome, { executed: true, result: 'legacy-result' });
@@ -112,7 +110,6 @@ test('does not execute a compatibility action when the local revision changes du
   const outcomePromise = exploreSessionApi.runWithStableExploreSession(
     session,
     async () => { legacyCalls += 1; },
-    { reason: 'combatStart' },
   );
   await firstSyncStarted;
   assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'guard-charm' }).accepted, true);

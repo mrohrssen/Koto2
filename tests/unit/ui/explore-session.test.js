@@ -18,6 +18,12 @@ import {
   roomDependenciesForType,
 } from '../../../src/game/services/explore-session-contract.js';
 
+const RETIRED_SESSION_API_FIELDS = [
+  'retry' + 'Now',
+  'onAuth' + 'Required',
+  'onWriter' + 'Conflict',
+];
+
 function makeManualScheduler() {
   const timers = [];
   return {
@@ -725,6 +731,18 @@ test('syncNow immediately drains pending entries without firing the scheduler', 
   assert.equal(session.pendingCount(), 0);
 });
 
+test('exposes syncNow and onPause as the only explicit Explore drain and pause channels', () => {
+  const session = createExploreSession({
+    syncRequest: async () => transport(okResponse(0)),
+    onPause: () => {},
+  });
+
+  assert.equal(typeof session.syncNow, 'function');
+  for (const field of RETIRED_SESSION_API_FIELDS) {
+    assert.equal(Object.hasOwn(session, field), false);
+  }
+});
+
 test('syncNow during an in-flight sync waits and drains entries appended during that sync', async () => {
   const scheduler = makeManualScheduler();
   let releaseFirst;
@@ -873,7 +891,7 @@ test('thrown sync requests share the named degradation threshold and preserve th
   assert.deepEqual(scheduler.activeDelays(), [30_000]);
 });
 
-test('indeterminate sync responses stay scheduled through degraded transport and retry now drains immediately', async () => {
+test('indeterminate sync responses stay scheduled through degraded transport and syncNow drains immediately', async () => {
   const timers = [];
   let syncCalls = 0;
   const session = createExploreSession({
@@ -900,7 +918,7 @@ test('indeterminate sync responses stay scheduled through degraded transport and
   assert.equal(session.getPauseReason(), 'transportDegraded');
 
   const callsBeforeRetry = syncCalls;
-  await session.retryNow();
+  await session.syncNow();
   assert.equal(syncCalls, callsBeforeRetry + 1);
   assert.equal(session.pendingCount(), 1);
 });
@@ -968,20 +986,17 @@ test('same-epoch runway adoption drains an armed retry without discarding pendin
   assert.equal(session.pendingCount(), 0);
 });
 
-test('auth pauses through onPause without invoking retired session recovery callbacks', async () => {
+test('auth pauses through onPause', async () => {
   const pauses = [];
-  let authRequiredCalls = 0;
   const session = createExploreSession({
     syncRequest: async () => transport({ error: 'expired' }, { httpStatus: 401 }),
     onPause: detail => pauses.push(detail),
-    onAuthRequired: async () => { authRequiredCalls += 1; return true; },
   });
   session.adoptRunway(makeRunway());
   session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
   const exactPendingLog = session.snapshot();
   await session.syncNow();
 
-  assert.equal(authRequiredCalls, 0);
   assert.deepEqual(pauses.map(({ reason }) => reason), ['authRequired']);
   assert.equal(session.getPauseReason(), 'authRequired');
   assert.deepEqual(session.snapshot(), exactPendingLog);
@@ -1171,7 +1186,6 @@ for (const status of ['ok', 'corrected']) {
 test('V2 conflict promotes the ratchet and blocks all later reposts', async () => {
   const scheduler = makeManualScheduler();
   const checkpoints = [];
-  let writerConflictCalls = 0;
   let syncCalls = 0;
   const session = createExploreSession({
     syncRequest: async () => {
@@ -1181,7 +1195,6 @@ test('V2 conflict promotes the ratchet and blocks all later reposts', async () =
         : transport(okResponse(1));
     },
     onCheckpoint: response => checkpoints.push(response),
-    onWriterConflict: () => { writerConflictCalls += 1; },
     schedule: scheduler.schedule,
     cancel: scheduler.cancel,
   });
@@ -1191,7 +1204,6 @@ test('V2 conflict promotes the ratchet and blocks all later reposts', async () =
 
   await session.syncNow();
   assert.equal(session.getPauseReason(), 'writerConflict');
-  assert.equal(writerConflictCalls, 0);
   assert.deepEqual(session.snapshot(), exactPendingLog);
   assert.deepEqual(scheduler.activeDelays(), []);
 

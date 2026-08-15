@@ -845,7 +845,6 @@ export function createExploreSession({
     currentPreparedRoom,
     recordRoomAction,
     syncNow,
-    retryNow: syncNow,
     drain,
     reset,
     pendingCount,
@@ -879,12 +878,12 @@ export function resetExploreSession() {
   activeSession = null;
 }
 
-export async function runWithStableExploreSession(session, action, { reason = 'legacyAction' } = {}) {
+export async function runWithStableExploreSession(session, action) {
   const localRevision = session?.getLocalRevision?.() ?? 0;
   const wasActiveSession = activeSession === session;
   try {
     if ((session?.pendingCount?.() ?? 0) > 0) {
-      await session.syncNow?.({ reason });
+      await session.syncNow?.();
     }
   } catch {
     return { executed: false, result: null };

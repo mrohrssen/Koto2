@@ -100,6 +100,14 @@ export async function createExploreProtocolDriver() {
       recordFriendlyNpcChoice,
       recordProceed: () => record('proceed', {}),
       flush: () => scheduler.runAll(),
+      observe: () => ({
+        pendingActionIds: session.snapshot().map(entry => entry.actionId),
+        requestCount: link.requests.length,
+        checkpointCount: checkpoints.length,
+        correctionCount: corrections.length,
+        pauseReasons: pauses.map(event => event.reason),
+        schedulerPendingCount: scheduler.pendingCount(),
+      }),
       readOracle: () => readProtocolOracle({
         client,
         manager,

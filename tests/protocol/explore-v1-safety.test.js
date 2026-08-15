@@ -3,6 +3,20 @@ import assert from 'node:assert/strict';
 
 import { createExploreProtocolDriver } from './helpers/run-driver.js';
 
+const RETIRED_ORACLE_FIELDS = [
+  'pauseReason' + 'Info',
+  'observedPause' + 'Policies',
+  'pausePolicy' + 'Violations',
+  'unrecoverable' + 'Pauses',
+  'duplicateExternal' + 'Effects',
+];
+
+function assertNoRetiredOracleFields(report) {
+  for (const field of RETIRED_ORACLE_FIELDS) {
+    assert.equal(Object.hasOwn(report, field), false);
+  }
+}
+
 describe('Explore V1 protocol safety', { concurrency: false }, () => {
   let driver;
 
@@ -31,6 +45,8 @@ describe('Explore V1 protocol safety', { concurrency: false }, () => {
     assert.equal(oracle.missingGameEffects, 0);
     assert.equal(oracle.correctedSyncsUnderPureTransport, 0);
     assert.equal(oracle.serverRoomAdvance, 1);
+    assert.deepEqual(oracle.unknownPauseReasons, []);
+    assertNoRetiredOracleFields(oracle);
   });
 
   it('retries the exact action after a request is dropped before reaching the server', async () => {
@@ -91,7 +107,7 @@ describe('Explore V1 protocol safety', { concurrency: false }, () => {
     assert.equal(oracle.correctedSyncsUnderPureTransport, 0);
   });
 
-  it('never reaches a paused state without pause policy information', async () => {
+  it('reports registered pause reasons as observed facts while retaining real idempotency evidence', async () => {
     driver.link.delayNext(125);
     const choose = driver.recordFriendlyNpcChoice();
     const blockedProceed = driver.recordProceed();
@@ -145,25 +161,93 @@ describe('Explore V1 protocol safety', { concurrency: false }, () => {
       'hardCap',
       'noPreparedRoom',
     ]);
-    assert.equal(
-      pauseOracle.observedPausePolicies.length,
-      pauseOracle.observedPauseReasons.length,
-    );
-    for (const observed of pauseOracle.observedPausePolicies) {
-      assert.ok(observed.policy, `${observed.reason} must have a mapped policy`);
-      assert.equal(
-        observed.policy.automaticRecovery === true || observed.policy.manualRecovery === true,
-        true,
-        `${observed.reason} must permit an automatic or manual recovery action`,
-      );
-      assert.ok(observed.policy.resumeWhen, `${observed.reason} must define when play resumes`);
-    }
-    assert.deepEqual(pauseOracle.pausePolicyViolations, []);
-    assert.equal(pauseOracle.unrecoverablePauses, 0);
+    assert.deepEqual(pauseOracle.unknownPauseReasons, []);
+    assertNoRetiredOracleFields(pauseOracle);
     assert.equal(pauseOracle.pendingCount, 0);
     assert.equal(pauseOracle.duplicateGameEffects, 0);
     assert.equal(pauseOracle.missingGameEffects, 0);
     assert.equal(afterDelayedChoose, 425);
     assert.ok(pauseOracle.replayedActionIds.includes(proceed.entry.actionId));
+  });
+
+  for (const status of ['ok', 'corrected']) {
+    it(`keeps a valid V2 ${status} terminal without adopting or reposting a later V1 response`, async () => {
+      driver.link.respondOnce({
+        status: 200,
+        body: {
+          protocolVersion: 2,
+          status,
+          runId: `run-v2-${status}`,
+          appliedThroughSeq: 1,
+          nextExpectedSeq: 2,
+          results: [],
+        },
+      });
+      const choose = driver.recordFriendlyNpcChoice();
+      const expectedPendingIds = [choose.entry.actionId];
+      await driver.flush();
+
+      const afterV2 = driver.observe();
+      assert.deepEqual(afterV2.pendingActionIds, expectedPendingIds);
+      assert.equal(afterV2.requestCount, 1);
+      assert.equal(afterV2.checkpointCount, 0);
+      assert.equal(afterV2.correctionCount, 0);
+      assert.equal(afterV2.schedulerPendingCount, 0);
+      assert.deepEqual(afterV2.pauseReasons, ['unsupportedProtocol']);
+
+      driver.link.respondOnce({
+        status: 200,
+        body: { protocolVersion: 1, status: 'ok', confirmedThroughSeq: 1, results: [] },
+      });
+      await driver.session.syncNow();
+
+      const afterV1 = driver.observe();
+      assert.deepEqual(afterV1.pendingActionIds, expectedPendingIds);
+      assert.equal(afterV1.requestCount, 1);
+      assert.equal(afterV1.checkpointCount, 0);
+      assert.equal(afterV1.correctionCount, 0);
+      assert.equal(afterV1.schedulerPendingCount, 0);
+      assert.equal(driver.session.getPauseReason(), 'unsupportedProtocol');
+    });
+  }
+
+  it('keeps a valid V2 conflict paused for manual review without adopting or reposting a later V1 response', async () => {
+    driver.link.respondOnce({
+      status: 409,
+      body: {
+        protocolVersion: 2,
+        status: 'conflict',
+        runId: 'run-v2-conflict',
+        appliedThroughSeq: 1,
+        nextExpectedSeq: 2,
+        results: [],
+        reason: 'writer_lease_mismatch',
+      },
+    });
+    const choose = driver.recordFriendlyNpcChoice();
+    const expectedPendingIds = [choose.entry.actionId];
+    await driver.flush();
+
+    const afterConflict = driver.observe();
+    assert.deepEqual(afterConflict.pendingActionIds, expectedPendingIds);
+    assert.equal(afterConflict.requestCount, 1);
+    assert.equal(afterConflict.checkpointCount, 0);
+    assert.equal(afterConflict.correctionCount, 0);
+    assert.equal(afterConflict.schedulerPendingCount, 0);
+    assert.deepEqual(afterConflict.pauseReasons, ['writerConflict']);
+
+    driver.link.respondOnce({
+      status: 200,
+      body: { protocolVersion: 1, status: 'ok', confirmedThroughSeq: 1, results: [] },
+    });
+    await driver.session.syncNow();
+
+    const afterV1 = driver.observe();
+    assert.deepEqual(afterV1.pendingActionIds, expectedPendingIds);
+    assert.equal(afterV1.requestCount, 1);
+    assert.equal(afterV1.checkpointCount, 0);
+    assert.equal(afterV1.correctionCount, 0);
+    assert.equal(afterV1.schedulerPendingCount, 0);
+    assert.equal(driver.session.getPauseReason(), 'writerConflict');
   });
 });

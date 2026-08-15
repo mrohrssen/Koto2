@@ -1189,7 +1189,7 @@ async function flushPendingSessionBeforeLegacyProceed(session) {
   const revision = session.getLocalRevision?.() ?? 0;
   try {
     if ((session.pendingCount?.() ?? 0) > 0) {
-      await session.syncNow({ reason: 'legacyProceed' });
+      await session.syncNow();
     }
   } catch {
     return false;

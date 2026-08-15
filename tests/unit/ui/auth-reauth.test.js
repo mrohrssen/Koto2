@@ -226,11 +226,9 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     };
     assert.equal(await auth.checkAuth(), true);
 
-    let authRequiredCalls = 0;
     const session = createExploreSession({
       syncRequest: api.syncExploreSession,
       isAuthBindingCurrent: api.isExploreSyncResponseAuthCurrent,
-      onAuthRequired: async () => { authRequiredCalls += 1; return false; },
     });
     session.adoptRunway(makeExploreRunway());
     assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
@@ -245,7 +243,6 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     await session.syncNow();
 
     assert.equal(exploreFetches, 0);
-    assert.equal(authRequiredCalls, 0, 'session-level auth orchestration is retired');
     assert.equal(session.getPauseReason(), 'authRequired');
     assert.deepEqual(session.snapshot(), exactPendingLog);
   });
@@ -263,7 +260,6 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     const adoptionGate = new Promise(resolve => { releaseAdoption = resolve; });
     const adoptionStarted = new Promise(resolve => { markAdoptionStarted = resolve; });
     const callbacks = [];
-    let authRequiredCalls = 0;
     const replacementRunway = makeExploreRunway({
       currentRoom: 1,
       preparedRooms: [{
@@ -294,7 +290,6 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
       },
       onCheckpoint: () => callbacks.push('checkpoint'),
       onCorrection: () => callbacks.push('correction'),
-      onAuthRequired: async () => { authRequiredCalls += 1; return false; },
     });
     session.adoptRunway(makeExploreRunway());
     assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
@@ -308,7 +303,6 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
 
     assert.deepEqual(session.snapshot(), exactPendingLog);
     assert.equal(session.getPauseReason(), 'authRequired');
-    assert.equal(authRequiredCalls, 0, 'session-level auth orchestration is retired');
     assert.deepEqual(callbacks, []);
     assert.equal(session.currentPreparedRoom()?.index, 0);
   });
@@ -324,7 +318,6 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     const session = createExploreSession({
       syncRequest: api.syncExploreSession,
       isAuthBindingCurrent: api.isExploreSyncResponseAuthCurrent,
-      onAuthRequired: async () => false,
     });
     session.adoptRunway(makeExploreRunway());
     assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
@@ -354,7 +347,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
       return makeResponse({ body: { status: 'ok', confirmedThroughSeq: 1, results: [] } });
     };
     assert.equal(session.resolvePause('authRequired'), true);
-    await session.retryNow();
+    await session.syncNow();
 
     assert.equal(sentHeaders.length, 1);
     assert.equal(sentHeaders[0].Authorization, 'Bearer token-a2');
@@ -384,11 +377,9 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
       });
       assert.equal(await auth.checkAuth(), true);
 
-      let authRequiredCalls = 0;
       const session = createExploreSession({
         syncRequest: api.syncExploreSession,
         isAuthBindingCurrent: api.isExploreSyncResponseAuthCurrent,
-        onAuthRequired: async () => { authRequiredCalls += 1; return false; },
       });
       session.adoptRunway(makeExploreRunway());
       assert.equal(session.recordRoomAction('friendlyNpc.choose', {
@@ -412,13 +403,11 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
       assert.deepEqual({
         genericResult,
         exploreHeaders,
-        authRequiredCalls,
         pauseReason: session.getPauseReason(),
         pendingLog: session.snapshot(),
       }, {
         genericResult: expectedResult,
         exploreHeaders: [],
-        authRequiredCalls: 0,
         pauseReason: 'authRequired',
         pendingLog: exactPendingLog,
       });

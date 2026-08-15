@@ -90,11 +90,13 @@ describe('optimistic run action integration', () => {
     assert.match(explorationSource, /room\?\.interacted[\s\S]*proceedWithRevealBuffer\(\)/);
   });
 
-  it('uses shared spotty-sync copy for rejected explore session actions', () => {
-    assert.match(explorationSource, /const EXPLORE_SPOTTY_COPY = 'Connection is spotty\. Unsynced progress can be lost if you reload\.'/);
-    assert.match(explorationSource, /function showExploreSoftPause/);
-    assert.match(explorationSource, /onPause: showExploreSoftPause/);
-    assert.match(explorationSource, /label: 'Retry now'/);
+  it('routes rejected Explore session actions through the controller-owned pause channel', () => {
+    assert.match(explorationSource, /createExploreSessionPauseController\(/);
+    assert.match(explorationSource, /onPause: exploreSessionPauseController\.handlePause/);
+    assert.match(
+      explorationSource,
+      /function handleExploreSessionPause\(pauseAttempt = \{\}\) \{\s*exploreSessionPauseController\?\.handlePause\(pauseAttempt\);\s*\}/,
+    );
     assert.doesNotMatch(explorationSource, /function isCurrentPendingRunAction|function reconcilePendingRunAction|function rollbackPendingRunAction/);
   });
 
@@ -150,9 +152,9 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(explorationSource, /apiCompleteDiscovery\(\{ actionId: pending\.actionId \}\)/);
   });
 
-  it('uses soft pause for rejected word discovery completion entries', () => {
+  it('routes rejected word discovery completion entries through the Explore pause controller', () => {
     assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.review'/);
-    assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.complete', \{ learnedWords \}\)[\s\S]*showExploreSoftPause/);
+    assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.complete', \{ learnedWords \}\)[\s\S]*handleExploreSessionPause/);
     assert.doesNotMatch(explorationSource, /Word discovery did not save\. Please try again\./);
   });
 
@@ -174,7 +176,7 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(speedReviewRoomSource, /speedReviewRoomCommitChain/);
     assert.doesNotMatch(speedReviewRoomSource, /correctPendingRunAction\(pending, completeResult\)/);
     assert.match(speedReviewRoomSource, /const remainingWords = snapshotWords\.slice\(reviewedCards\);\s*if \(remainingWords\.length === 0\)/);
-    assert.match(speedReviewRoomSource, /throw new Error\(EXPLORE_SPOTTY_COPY\)/);
+    assert.match(speedReviewRoomSource, /if \(!completionResult\?\.accepted\)[\s\S]*handleExploreSessionPause\(\{ reason: completionResult\?\.reason \|\| 'missingPayload' \}\)[\s\S]*throw new Error\('Explore session action could not be queued'\)/);
   });
 
   it('sends action ids for Kanji Kombat intro and completion choices without changing answer prediction', () => {
@@ -283,11 +285,11 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(explorationSource, /apiSkipWhackAMole\(\{ actionId: pending\.actionId \}\)/);
     assert.match(
       completeSource,
-      /if \(!queued\?\.accepted\) \{\s*if \(session\?\.isPaused\?\.\(\) !== true\) \{\s*showExploreSoftPause/
+      /if \(!queued\?\.accepted\) \{\s*if \(session\?\.isPaused\?\.\(\) !== true\) \{\s*handleExploreSessionPause/
     );
     assert.match(
       skipSource,
-      /if \(!queued\?\.accepted\) \{\s*if \(session\?\.isPaused\?\.\(\) !== true\) \{\s*showExploreSoftPause/
+      /if \(!queued\?\.accepted\) \{\s*if \(session\?\.isPaused\?\.\(\) !== true\) \{\s*handleExploreSessionPause/
     );
     assert.doesNotMatch(completeSource, /recordRoomAction\('proceed'/);
     assert.doesNotMatch(skipSource, /recordRoomAction\('proceed'/);
@@ -390,38 +392,38 @@ describe('optimistic run action integration', () => {
     assert.match(combatCaseSource, /combatPhaseRecovery\.handle\(gameState\)/);
   });
 
-  it('handles rejected NPC battle skill session actions with soft pause copy', () => {
+  it('routes rejected NPC battle skill session actions to the Explore pause controller', () => {
     const npcBattleStart = explorationSource.indexOf('export async function renderNpcBattleSkillSelection');
     assert.notEqual(npcBattleStart, -1, 'Missing NPC battle skill selection renderer');
     const npcBattleSkillSource = explorationSource.slice(npcBattleStart);
 
     assert.match(npcBattleSkillSource, /getExploreSession\(\)\?\.recordRoomAction\('npcBattleSkill\.choose'/);
     assert.match(npcBattleSkillSource, /if \(!queued\?\.accepted\)/);
-    assert.match(npcBattleSkillSource, /showExploreSoftPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)/);
+    assert.match(npcBattleSkillSource, /handleExploreSessionPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)/);
     assert.doesNotMatch(npcBattleSkillSource, /onSkillChosen\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
   });
 
-  it('handles rejected deterministic session choices with soft pause copy', () => {
+  it('routes rejected deterministic session choices to the Explore pause controller', () => {
     const shrineSource = sourceBetween(
       explorationSource,
       'async function chooseShrineReward(rewardType, creatureKey, renderOwner)',
       '/** Quiz phase'
     );
-    assert.match(shrineSource, /if \(!queued\?\.accepted\)[\s\S]*showExploreSoftPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)[\s\S]*renderShrine\(\)/);
+    assert.match(shrineSource, /if \(!queued\?\.accepted\)[\s\S]*handleExploreSessionPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)[\s\S]*renderShrine\(\)/);
 
     const skillMasterSource = sourceBetween(
       explorationSource,
       'export async function renderSkillMaster()',
       '/** Tutorial step 0'
     );
-    assert.match(skillMasterSource, /if \(!queued\?\.accepted\)[\s\S]*showExploreSoftPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)[\s\S]*renderSkillMaster\(\)/);
+    assert.match(skillMasterSource, /if \(!queued\?\.accepted\)[\s\S]*handleExploreSessionPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)[\s\S]*renderSkillMaster\(\)/);
 
     const friendlyNpcSource = sourceBetween(
       explorationSource,
       'export async function renderFriendlyNpc()',
       '// ============ NPC BATTLE SKILL REWARD ============'
     );
-    assert.match(friendlyNpcSource, /if \(!queued\?\.accepted\)[\s\S]*showExploreSoftPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)[\s\S]*renderFriendlyNpc\(\)/);
+    assert.match(friendlyNpcSource, /if \(!queued\?\.accepted\)[\s\S]*handleExploreSessionPause\(\{ reason: queued\?\.reason \|\| 'missingPayload' \}\)[\s\S]*renderFriendlyNpc\(\)/);
   });
 
   it('keeps PvP team save feedback confirmed by the server', () => {
@@ -443,13 +445,13 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(pvpTeamSaveSource, /beginPendingRunAction|createPendingRunAction|confirmPendingRunAction/);
   });
 
-  it('uses the shared spotty-sync copy for deterministic choice failures', () => {
+  it('keeps deterministic choice failures owned by the shared Explore pause controller', () => {
     const shrineSource = sourceBetween(
       explorationSource,
       'async function chooseShrineReward(rewardType, creatureKey, renderOwner)',
       '/** Quiz phase'
     );
-    assert.match(shrineSource, /showExploreSoftPause/);
+    assert.match(shrineSource, /handleExploreSessionPause/);
     assert.doesNotMatch(shrineSource, /Could not apply shrine blessing|Failed to choose shrine blessing/);
 
     const skillMasterSource = sourceBetween(
@@ -457,7 +459,7 @@ describe('optimistic run action integration', () => {
       'export async function renderSkillMaster()',
       '/** Tutorial step 0'
     );
-    assert.match(skillMasterSource, /showExploreSoftPause/);
+    assert.match(skillMasterSource, /handleExploreSessionPause/);
     assert.doesNotMatch(skillMasterSource, /Could not apply skill choice|Failed to choose skill/);
 
     const tutorialSkillMasterSource = sourceBetween(
@@ -473,13 +475,18 @@ describe('optimistic run action integration', () => {
       'export async function renderFriendlyNpc()',
       '// ============ NPC BATTLE SKILL REWARD ============'
     );
-    assert.match(friendlyNpcSource, /showExploreSoftPause/);
+    assert.match(friendlyNpcSource, /handleExploreSessionPause/);
     assert.doesNotMatch(friendlyNpcSource, /Could not apply item|Failed to choose item/);
 
     const npcBattleStart = explorationSource.indexOf('export async function renderNpcBattleSkillSelection');
     assert.notEqual(npcBattleStart, -1, 'Missing NPC battle skill selection renderer');
     const npcBattleSkillSource = explorationSource.slice(npcBattleStart);
-    assert.match(npcBattleSkillSource, /showExploreSoftPause/);
+    assert.match(npcBattleSkillSource, /handleExploreSessionPause/);
     assert.doesNotMatch(npcBattleSkillSource, /Choosing skill|Failed to choose skill/);
+
+    assert.match(
+      explorationSource,
+      /function handleExploreSessionPause\(pauseAttempt = \{\}\) \{\s*exploreSessionPauseController\?\.handlePause\(pauseAttempt\);\s*\}/,
+    );
   });
 });

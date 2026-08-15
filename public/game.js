@@ -914,18 +914,18 @@ async function loadKnownWords() {
   // No client-side fetch needed.
 }
 
-async function drainExploreSessionBeforeStateFetch(reason = 'stateFetch') {
+async function drainExploreSessionBeforeStateFetch() {
   const session = getExploreSession?.();
   if (!session || session.pendingCount?.() === 0) return;
   try {
-    await session.syncNow({ reason });
+    await session.syncNow();
   } catch (error) {
     console.warn('[ExploreSession] state fetch drain failed:', error?.message || error);
   }
 }
 
-async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSession = false } = {}) {
-  await drainExploreSessionBeforeStateFetch(reason);
+async function apiGetGameStateAfterExploreDrain({ adoptSession = false } = {}) {
+  await drainExploreSessionBeforeStateFetch();
   // Epoch contract (reload boundaries only) — two defensive layers here:
   //
   // Layer 1 (primary): GET /state only ROTATES the explore session epoch on a
@@ -971,7 +971,7 @@ async function loadGameState({ adoptSession = false, capture = null } = {}) {
       throw error;
     }
   } else {
-    data = await apiGetGameStateAfterExploreDrain('stateFetch', { adoptSession });
+    data = await apiGetGameStateAfterExploreDrain({ adoptSession });
   }
   // Fetch skipped because explore-session progress is still pending (see above):
   // keep the current optimistic client state; the drain will reconcile it under
@@ -1259,7 +1259,7 @@ async function triggerCreatureSelect() {
     removeCollectionOverlay();
     // Player cancelled — forfeit the bare run and return to hub
     await apiForfeitRun();
-    const state = await apiGetGameStateAfterExploreDrain('creatureSelectCancel');
+    const state = await apiGetGameStateAfterExploreDrain();
     if (state && !isGameStateErrorResponse(state)) {
       updateGameState(state);
       updateUI();
@@ -1323,7 +1323,7 @@ async function enterKanjiKombatCombat(state) {
 async function recoverKanjiKombatStartState() {
   let recoveredState = null;
   try {
-    recoveredState = await apiGetGameStateAfterExploreDrain('kanjiKombatStartRecovery');
+    recoveredState = await apiGetGameStateAfterExploreDrain();
   } catch (error) {
     console.warn('[KanjiKombat] start state recovery failed:', error?.message || error);
     return false;
@@ -1805,7 +1805,6 @@ async function startEncounter() {
       const sessionRetry = await runWithStableExploreSession(
         exploreSession,
         () => startCreatureEncounterFromSession(exploreSession),
-        { reason: 'combatStartRetry' },
       );
       if (!sessionRetry.executed) {
         narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });
@@ -1824,7 +1823,6 @@ async function startEncounter() {
         if (gameState.phase === 'room_encounter') return apiRoomEncounter();
         return apiStartEncounter();
       },
-      { reason: 'legacyCombatStart' },
     );
     if (!legacyStart.executed) {
       narrationBox.show('Connection is spotty. Combat will start when your progress syncs.', { autoDismiss: 1800 });

@@ -1,5 +1,6 @@
 import { describe, it, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { makeExploreTransport } from '../../helpers/explore-sync-transport.js';
 
 const sceneManagerState = { currentScene: null };
 let renderedButtons = [];
@@ -411,7 +412,7 @@ describe('renderHub fusion core review narration', () => {
             })),
           exploreRunway: gameState.run.exploreRunway,
         };
-        return latestSyncResponse;
+        return makeExploreTransport({ httpStatus: 200, body: latestSyncResponse });
       },
       apiStartSpeedReviewRoom: async () => {
         legacyStartCalls += 1;
@@ -488,7 +489,7 @@ describe('renderHub fusion core review narration', () => {
       'offline review rewards must wait for their canonical sync result');
 
     online = true;
-    await getExploreSession().syncNow({ reason: 'testReconnect' });
+    await getExploreSession().syncNow();
     assert.deepEqual(knownWordMembershipEvents, [
       ['add', '火'],
       ['add', '土'],
@@ -546,11 +547,14 @@ describe('renderHub fusion core review narration', () => {
       updateUI: () => {},
       actions: { setContent: () => {}, clear: () => { clearCalls += 1; } },
       scene: { showNarration: async () => {} },
-      apiSyncExploreSession: async () => ({ status: 'ok', results: [] }),
+      apiSyncExploreSession: async () => makeExploreTransport({
+        httpStatus: 200,
+        body: { protocolVersion: 1, status: 'ok', confirmedThroughSeq: 0, results: [] },
+      }),
       apiStartSpeedReviewRoom: async () => { legacyCalls += 1; return null; },
     });
     getExploreSession().adoptRunway(gameState.run.exploreRunway);
-    getExploreSession().pause('manual-test');
+    getExploreSession().pause('missingPayload');
 
     await renderSpeedReviewRoom();
 
@@ -793,7 +797,7 @@ describe('renderHub fusion core review narration', () => {
     await renderWordDiscovery();
     const staleHandler = documentListeners.get('discovery-card-swiped');
     const session = getExploreSession();
-    session.pause('manual-test');
+    session.pause('missingPayload');
     await renderWordDiscovery();
     assert.deepEqual(flashCardWords, []);
     assert.equal(documentListeners.has('discovery-card-swiped'), false);
