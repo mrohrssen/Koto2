@@ -3332,6 +3332,79 @@ describe('combat network hardening', () => {
     assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true);
   });
 
+  for (const {
+    actionType,
+    pendingFlag,
+    invoke,
+  } of [
+    {
+      actionType: 'attack',
+      pendingFlag: 'player',
+      invoke: (state, options) => combatLoop.__combatNetworkTest.executeCreatureMovesTurn(
+        [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+        {
+          ...options,
+          request: async () => ({ error: 'authoritative error state', state: structuredClone(state) }),
+        },
+      ),
+    },
+    {
+      actionType: 'defend',
+      pendingFlag: 'enemy',
+      invoke: (_state, options) => combatLoop.__combatNetworkTest.executeCreatureDefendThenPause(options),
+    },
+  ]) {
+    it(`propagates a fenced scene contract violation through standard Explore ${actionType} recovery`, async () => {
+      const state = makeLegacyExploreCombatState('combat-a');
+      let currentState = state;
+      let selectionRestarts = 0;
+      let reported = 0;
+      let sceneSyncs = 0;
+      const contractError = new FenceContractViolation(`${actionType} recovered scene contract`);
+      adoptLegacyExploreCombatRunway('combat-a', state);
+      if (actionType === 'defend') {
+        combatLoop.__combatNetworkTest.setCreatureCombatApi(async () => null);
+      }
+      combatLoop.__combatNetworkTest.setStateAccessors({
+        get: () => currentState,
+        update: next => { currentState = next; },
+        fetchServerState: async () => structuredClone(state),
+      });
+      setSceneManager({
+        transitioning: false,
+        currentScene: {
+          disposed: false,
+          _exiting: false,
+          syncCreatures: async () => {
+            sceneSyncs += 1;
+            throw contractError;
+          },
+        },
+      });
+      combatLoop.__combatNetworkTest.setCombatActive(true);
+      const originalConsoleError = console.error;
+      const errors = [];
+      console.error = (...args) => errors.push(args);
+      try {
+        await assert.rejects(
+          invoke(state, {
+            restartMoveSelection: () => { selectionRestarts += 1; },
+            reportError: () => { reported += 1; },
+          }),
+          error => error === contractError,
+        );
+      } finally {
+        console.error = originalConsoleError;
+      }
+
+      assert.equal(sceneSyncs, 1);
+      assert.equal(errors.length, 0);
+      assert.equal(reported, 0);
+      assert.equal(selectionRestarts, 0);
+      assert.equal(combatLoop.__combatNetworkTest.getPendingFlags()[pendingFlag], true);
+    });
+  }
+
   it('leaves successor input untouched when an error-state recovery is superseded', async () => {
     const stateA = makeLegacyExploreCombatState('combat-a');
     const stateB = makeLegacyExploreCombatState('combat-b');
