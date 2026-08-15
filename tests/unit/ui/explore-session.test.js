@@ -1326,6 +1326,133 @@ test('corrected response clears the log, notifies, and adopts response runway', 
   assert.equal(session.currentPreparedRoom().index, 1);
 });
 
+test('correction reports an appended-after-snapshot suffix before invalidating it', async () => {
+  const scheduler = makeManualScheduler();
+  const requests = [];
+  const corrections = [];
+  let resolveCorrection;
+  const correctionBody = {
+    status: 'corrected',
+    reason: 'room_index_mismatch',
+    confirmedThroughSeq: null,
+    rejectedSeq: 1,
+    results: [],
+  };
+  const correctionReady = new Promise(resolve => { resolveCorrection = resolve; });
+  let session;
+  session = createExploreSession({
+    syncRequest: async payload => {
+      requests.push(payload);
+      return correctionReady;
+    },
+    onCorrection: correction => {
+      corrections.push({
+        correction,
+        pendingCount: session.pendingCount(),
+      });
+      void session.syncNow();
+    },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+
+  const first = session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' }).entry;
+  const draining = session.syncNow();
+  await Promise.resolve();
+  const second = session.recordRoomAction('friendlyNpc.choose', { itemId: 'second' }).entry;
+  assert.equal(requests.length, 1);
+
+  resolveCorrection(transport(correctionBody));
+  await draining;
+  await scheduler.fire();
+
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(corrections.length, 1);
+  assert.equal(corrections[0].pendingCount, 0);
+  assert.deepEqual(corrections[0].correction.discardedEntries, [first, second]);
+  assert.notStrictEqual(corrections[0].correction, correctionBody);
+  assert.notStrictEqual(corrections[0].correction.discardedEntries[0], first);
+  assert.notStrictEqual(
+    corrections[0].correction.discardedEntries[0],
+    requests[0].entries[0],
+    'callback evidence must not retain the session request snapshot entry',
+  );
+  assert.notStrictEqual(
+    corrections[0].correction.discardedEntries[0].payload,
+    requests[0].entries[0].payload,
+    'callback evidence must not retain the session request snapshot payload',
+  );
+  corrections[0].correction.discardedEntries[0].payload.itemId = 'tampered';
+  assert.equal(requests[0].entries[0].payload.itemId, 'first');
+  assert.equal(Object.hasOwn(correctionBody, 'discardedEntries'), false);
+  assert.equal(requests.length, 1, 'the invalidated suffix must never be retried');
+});
+
+test('correction excludes a confirmed prefix from cloned discarded evidence without mutating its body', async () => {
+  const corrections = [];
+  const correctionBody = {
+    status: 'corrected',
+    reason: 'transcript_mismatch',
+    confirmedThroughSeq: 1,
+    rejectedSeq: 2,
+    results: [],
+  };
+  const session = createExploreSession({
+    syncRequest: async () => transport(correctionBody),
+    onCorrection: correction => corrections.push(correction),
+    schedule: () => null,
+    cancel: () => {},
+  });
+  session.adoptRunway(makeRunway());
+
+  const first = session.recordRoomAction('friendlyNpc.choose', { itemId: 'confirmed' }).entry;
+  const second = session.recordRoomAction('friendlyNpc.choose', { itemId: 'discarded' }).entry;
+  await session.syncNow();
+
+  assert.equal(session.pendingCount(), 0);
+  assert.deepEqual(corrections[0].discardedEntries, [second]);
+  assert.notStrictEqual(corrections[0].discardedEntries[0].payload, second.payload);
+  assert.deepEqual(first.payload, { itemId: 'confirmed' });
+  assert.equal(Object.hasOwn(correctionBody, 'discardedEntries'), false);
+});
+
+test('ok confirmation preserves an appended-after-snapshot suffix as the sole next request', async () => {
+  const requests = [];
+  let resolveFirst;
+  let resolveSecond;
+  let markSecondRequest;
+  const firstResponse = new Promise(resolve => { resolveFirst = resolve; });
+  const secondResponse = new Promise(resolve => { resolveSecond = resolve; });
+  const secondRequest = new Promise(resolve => { markSecondRequest = resolve; });
+  const session = createExploreSession({
+    syncRequest: async payload => {
+      requests.push(payload);
+      if (requests.length === 1) return firstResponse;
+      markSecondRequest();
+      return secondResponse;
+    },
+    schedule: () => null,
+    cancel: () => {},
+  });
+  session.adoptRunway(makeRunway());
+
+  const first = session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' }).entry;
+  const draining = session.syncNow();
+  await Promise.resolve();
+  const second = session.recordRoomAction('friendlyNpc.choose', { itemId: 'second' }).entry;
+
+  resolveFirst(syncOkResponse(first.seq));
+  await secondRequest;
+
+  assert.deepEqual(requests[1].entries, [second]);
+  resolveSecond(syncOkResponse(second.seq));
+  await draining;
+
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(requests.length, 2);
+});
+
 test('same-epoch correction advances its continuation revision without faking local work', async () => {
   const runway = makeRunway({ sessionEpoch: 'ese_same_epoch_correction' });
   const session = createExploreSession({

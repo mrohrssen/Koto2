@@ -241,8 +241,8 @@ function initCutoverHarness({
     scene: { showNarration: () => {} },
     finishCombatLoop: result => { finishCombatCalls.push(result); },
     resumeSessionCombatBefriendQuiz: result => { befriendResumeCalls.push(result); },
-    reconcileCorrectedCombat: (previousState, authoritativeState) => {
-      correctionReconcileCalls.push({ previousState, authoritativeState });
+    reconcileCorrectedCombat: (previousState, authoritativeState, correction) => {
+      correctionReconcileCalls.push({ previousState, authoritativeState, correction });
       return reconcileCorrectedCombat(previousState, authoritativeState);
     },
     waitForCombatPlaybackIdle,
@@ -1133,6 +1133,46 @@ describe('explore session proceed cutover', () => {
     assert.equal(harness.finishCombatCalls.length, 0);
     assert.equal(harness.correctionReconcileCalls.length, 0);
     assert.equal(harness.updateUiCalls, 0);
+  });
+
+  it('preserves discarded correction evidence for corrected combat reconciliation', async () => {
+    const combatRunway = {
+      sessionEpoch: 'ese_correctevidence', currentRoom: 0, roomActionSeq: 100,
+      preparedRooms: [preparedRoom(0, {
+        room: room(0, { type: 'encounter' }),
+        acceptedActions: ['combat.cycle'],
+        actionEffects: { 'combat.cycle': ['partyStats'] },
+      })],
+    };
+    const initialState = {
+      ...makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      phase: 'combat',
+      combat: { active: true, optimistic: { combatId: 'cmb-a' } },
+    };
+    const authoritativeState = {
+      ...makeState({ currentRoom: 0, exploreRunway: combatRunway }),
+      combat: { active: false, optimistic: { combatId: 'cmb-a' } },
+    };
+    const correctionBody = {
+      status: 'corrected',
+      confirmedThroughSeq: null,
+      rejectedSeq: 1,
+      results: [],
+      state: authoritativeState,
+      exploreRunway: combatRunway,
+    };
+    const harness = initCutoverHarness({
+      initialState,
+      apiSyncExploreSession: async () => completeTransport(correctionBody),
+    });
+    getExploreSession().adoptRunway(combatRunway);
+    const entry = getExploreSession().recordRoomAction('combat.cycle', { predictedHash: 'mismatch' }).entry;
+
+    await getExploreSession().syncNow();
+
+    assert.equal(harness.correctionReconcileCalls.length, 1);
+    assert.deepEqual(harness.correctionReconcileCalls[0].correction.discardedEntries, [entry]);
+    assert.equal(Object.hasOwn(correctionBody, 'discardedEntries'), false);
   });
 
   it('reconciles corrected ownership before rendering so inactive A releases and active B re-arms', async () => {

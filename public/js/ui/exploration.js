@@ -301,15 +301,21 @@ function onExploreSessionCheckpoint(response, { logEmpty = true } = {}) {
 }
 
 function onExploreSessionCorrection(response) {
+  const correction = {
+    ...response,
+    discardedEntries: Array.isArray(response?.discardedEntries)
+      ? response.discardedEntries
+      : [],
+  };
   const previousState = getGameState?.();
-  const authoritativeState = response?.state || response?.authoritativeState;
+  const authoritativeState = correction.state || correction.authoritativeState;
   if (authoritativeState) updateGameState(authoritativeState);
-  applyExploreSessionRunway(response);
-  applyExploreSessionKnownWordReviewResults(response);
-  const finished = finishSessionCombatFromResults(response);
+  applyExploreSessionRunway(correction);
+  applyExploreSessionKnownWordReviewResults(correction);
+  const finished = finishSessionCombatFromResults(correction);
   if (finished) return;
   if (authoritativeState && typeof reconcileCorrectedCombat === 'function') {
-    reconcileCorrectedCombat(previousState, authoritativeState);
+    reconcileCorrectedCombat(previousState, authoritativeState, correction);
   }
   updateUI();
 }

@@ -569,6 +569,15 @@ export function createExploreSession({
       }
 
       if (response?.status === 'corrected') {
+        const confirmed = Number.isInteger(response.confirmedThroughSeq)
+          ? response.confirmedThroughSeq
+          : -1;
+        const correction = {
+          ...response,
+          discardedEntries: log
+            .filter(entry => entry.seq > confirmed)
+            .map(entry => cloneValue(entry)),
+        };
         completeOwnershipTransaction(() => {
           log = [];
           attempts = 0;
@@ -578,7 +587,7 @@ export function createExploreSession({
               deferResume: true,
             });
           }
-          notify(onCorrection, response);
+          notify(onCorrection, correction);
           maybeResumeAfterDrain();
         });
         return { ok: true, appendedAfterSnapshot: false };
