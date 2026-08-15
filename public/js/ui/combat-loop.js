@@ -1045,7 +1045,7 @@ async function fenceExploreSessionBeforeLegacyCombat(session, capturedOwner = nu
   const revision = session?.getLocalRevision?.() ?? 0;
   const correctionRevision = session?.getCorrectionRevision?.() ?? 0;
   try {
-    await session?.syncNow?.({ reason: 'combatSeedFallback' });
+    await session?.syncNow?.();
   } catch {}
   const unchanged = (session?.getLocalRevision?.() ?? revision) === revision;
   const corrected = (session?.getCorrectionRevision?.() ?? correctionRevision) !== correctionRevision;

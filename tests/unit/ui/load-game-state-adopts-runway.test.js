@@ -79,6 +79,22 @@ test('loadGameState routes captured pause recovery through the adoption helper',
   );
 });
 
+test('legacy combat seed fallback drains without ignored sync metadata', () => {
+  const combatLoopSrc = readFileSync(resolve(repoRoot, 'public/js/ui/combat-loop.js'), 'utf8');
+  const fenceSource = sourceBetween(
+    combatLoopSrc,
+    'async function fenceExploreSessionBeforeLegacyCombat(',
+    'function buildSessionCreatureCombatTurn',
+  );
+
+  assert.match(fenceSource, /await session\?\.syncNow\?\.\(\)/);
+  assert.doesNotMatch(
+    combatLoopSrc,
+    /syncNow\??\.\s*\(\s*\{[^}]*\breason\b/,
+    'Task 10 permits ownership options only; combat-loop sync calls must not supply ignored reason metadata',
+  );
+});
+
 /**
  * Combat-tier cutover invariant (explore subway): the epoch-rotating GET /state
  * fetch must be SKIPPED while the explore session still has pending entries.
@@ -291,8 +307,8 @@ test('in-session state fetches pass the adoptSession signal; boot stays bare', (
   );
   assert.match(
     recoverySource,
-    /options\.recoveryCapture\s*&&\s*combatRecoveryCoordinator[\s\S]*combatRecoveryCoordinator\.recover\(/,
-    'standard Explore recovery must pass its captured owner/fence to the coordinator',
+    /combatRecoveryCoordinator\.recover\(\{\s*actionType,\s*capturedOwner:\s*options\.capturedOwner\s*\|\|\s*recoveryOwnerFromState\(\),\s*capture:\s*options\.recoveryCapture,/,
+    'standard Explore recovery must give the coordinator the exact captured owner and fence',
   );
   assert.match(
     recoverySource,
