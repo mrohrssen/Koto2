@@ -89,6 +89,7 @@ const {
 } = await import('../../../public/js/ui/kanji-kombat-session.js');
 const {
   FenceContractViolation,
+  FenceSuperseded,
 } = await import('../../../public/js/async-ownership-fence.js');
 const originalConsoleLog = console.log;
 const originalConsoleWarn = console.warn;
@@ -3285,6 +3286,50 @@ describe('combat network hardening', () => {
       assert.equal(selectionRestarts, 0);
       assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true);
     }
+  });
+
+  it('keeps a fenced scene supersession distinct from an unavailable scene recovery', async () => {
+    const state = makeLegacyExploreCombatState('combat-a');
+    let currentState = state;
+    let selectionRestarts = 0;
+    let sceneSyncs = 0;
+    adoptLegacyExploreCombatRunway('combat-a', state);
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: next => { currentState = next; },
+    });
+    setSceneManager({
+      transitioning: false,
+      currentScene: {
+        disposed: false,
+        _exiting: false,
+        syncCreatures: async () => {
+          sceneSyncs += 1;
+          throw new FenceSuperseded('sync recovered combat scene', 'active Explore session');
+        },
+      },
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+    const originalConsoleError = console.error;
+    const errors = [];
+    console.error = (...args) => errors.push(args);
+    try {
+      await combatLoop.__combatNetworkTest.executeCreatureMovesTurn(
+        [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+        {
+          request: async () => ({ error: 'authoritative error state', state: structuredClone(state) }),
+          restartSelection: () => { selectionRestarts += 1; },
+          reportError: () => { throw new Error('fenced scene supersession must not reach generic cleanup'); },
+        },
+      );
+    } finally {
+      console.error = originalConsoleError;
+    }
+
+    assert.equal(sceneSyncs, 1);
+    assert.equal(errors.length, 0);
+    assert.equal(selectionRestarts, 0);
+    assert.equal(combatLoop.__combatNetworkTest.getPendingFlags().player, true);
   });
 
   it('leaves successor input untouched when an error-state recovery is superseded', async () => {

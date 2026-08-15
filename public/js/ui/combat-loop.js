@@ -443,6 +443,7 @@ async function syncCombatSceneToState(state, { initial = false, isCurrent = () =
     if (mgr?.transitioning || mgr?.currentScene !== scene || scene.disposed || scene._exiting) return false;
     return synced === true;
   } catch (error) {
+    if (error instanceof FenceSuperseded) throw error;
     if (!(error instanceof SceneDisposedError)) {
       console.error('[CombatLoop] failed to sync combat scene after state recovery', error);
     }
