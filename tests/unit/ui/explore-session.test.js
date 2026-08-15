@@ -12,7 +12,7 @@ import {
   EXPLORE_SYNC_RETRY_DELAYS_MS,
   EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS,
 } from '../../../public/js/ui/explore-session.js';
-import { FenceSuperseded } from '../../../public/js/async-ownership-fence.js';
+import { FenceContractViolation, FenceSuperseded } from '../../../public/js/async-ownership-fence.js';
 import {
   predictedEffectsForAction,
   roomDependenciesForType,
@@ -1957,6 +1957,23 @@ test('declared same-epoch runway adoption advances without self-superseding', as
   assert.equal(await capture.fence.step('continue recovery', () => Promise.resolve('continued')), 'continued');
 });
 
+test('captured runway adoption uses its cloned descriptor rather than mutable caller input', () => {
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
+  const capture = session.captureFence({ pending: 'preserve' });
+  const requested = makeRunway({
+    preparedRooms: [preparedRoom(0, { actionSeq: 31, acceptedActions: ['friendlyNpc.choose'] })],
+  });
+  const descriptor = capture.expectRunwayAdoption(requested);
+  requested.preparedRooms[0].actionSeq = 999;
+
+  capture.fence.commit('adopt immutable captured runway', descriptor);
+
+  assert.equal(session.currentPreparedRoom().actionSeq, 31);
+  assert.equal(capture.fence.isCurrent(), true);
+});
+
 test('empty capture adopts a same-epoch runway only while its exact empty ownership remains current', async () => {
   const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
   session.adoptRunway(makeRunway());
@@ -1996,6 +2013,74 @@ test('deferred preserve-capture runway adoption cannot resume an empty writer co
   assert.equal(session.getPauseReason(), 'writerConflict');
   assert.deepEqual(session.snapshot(), []);
   assert.equal(resumes, 0);
+});
+
+test('owned auth resolution and drain accept only the exact current capture owner', async () => {
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(1) });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
+  session.pause('authRequired');
+  const capture = session.captureFence({ pending: 'preserve' });
+
+  assert.throws(
+    () => session.resolvePause('authRequired', { owner: {} }),
+    FenceContractViolation,
+  );
+  assert.equal(session.resolvePause('authRequired', { owner: capture.sessionLease }), true);
+  assert.equal(capture.fence.isCurrent(), true, 'owned pause resolution advances its capture');
+  await session.syncNow({ owner: capture.sessionLease });
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(capture.fence.isCurrent(), true, 'owned result commit advances its capture');
+});
+
+test('a recognized but stale auth owner fails closed instead of resolving a replacement', () => {
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
+  session.pause('authRequired');
+  const capture = session.captureFence({ pending: 'preserve' });
+  session.reset();
+
+  assert.throws(
+    () => session.resolvePause('authRequired', { owner: capture.sessionLease }),
+    FenceSuperseded,
+  );
+});
+
+test('owned auth drain rejects external append, pause, reset, and active-session replacement', () => {
+  const staleAfter = mutation => {
+    const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
+    session.adoptRunway(makeRunway());
+    assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
+    session.pause('authRequired');
+    const capture = session.captureFence({ pending: 'preserve' });
+    assert.equal(session.resolvePause('authRequired', { owner: capture.sessionLease }), true);
+    mutation(session);
+    assert.throws(
+      () => session.syncNow({ owner: capture.sessionLease }),
+      FenceSuperseded,
+    );
+  };
+
+  staleAfter(session => session.recordRoomAction('friendlyNpc.choose', { itemId: 'external' }));
+  staleAfter(session => session.pause('writerConflict'));
+  staleAfter(session => session.reset());
+
+  const sessionA = configureExploreSession({ syncRequest: async () => syncOkResponse(0) });
+  sessionA.adoptRunway(makeRunway());
+  assert.equal(sessionA.recordRoomAction('friendlyNpc.choose', { itemId: 'preserved' }).accepted, true);
+  sessionA.pause('authRequired');
+  const capture = sessionA.captureFence({
+    pending: 'preserve',
+    leases: [{ label: 'active Explore session', isCurrent: () => getExploreSession() === sessionA }],
+  });
+  assert.equal(sessionA.resolvePause('authRequired', { owner: capture.sessionLease }), true);
+  configureExploreSession({ syncRequest: async () => syncOkResponse(0) });
+  assert.throws(
+    () => sessionA.syncNow({ owner: capture.sessionLease }),
+    FenceSuperseded,
+  );
+  resetExploreSession();
 });
 
 test('a preserve fence captured during correction playback goes stale at correction commit', async () => {

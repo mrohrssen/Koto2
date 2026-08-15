@@ -3,7 +3,11 @@ import {
   isValidatedExploreV2Transport,
 } from '../../../src/shared/explore/sync-outcome.js';
 import { PAUSE_REASONS, shouldReplacePauseReason } from '../../../src/shared/explore/pause-reasons.js';
-import { createAsyncOwnershipFence, FenceSuperseded } from '../async-ownership-fence.js';
+import {
+  createAsyncOwnershipFence,
+  FenceContractViolation,
+  FenceSuperseded,
+} from '../async-ownership-fence.js';
 
 export const EXPLORE_SESSION_HARD_CAP = 50;
 export const EXPLORE_SESSION_RESUME_AT = 40;
@@ -135,6 +139,7 @@ export function createExploreSession({
   let debounceTimer = null;
   let retryTimer = null;
   let activeDrainPromise = null;
+  let activeDrainOwner = null;
   let activeDrainToken = 0;
   let forceDrainRequested = false;
   let attempts = 0;
@@ -148,6 +153,7 @@ export function createExploreSession({
   let handledResultActionIds = new Set();
   let actionNonce = createSessionNonce();
   let expectedProtocolVersion = 1;
+  const ownedSessionLeases = new WeakMap();
 
   function pendingCount() { return log.length; }
   function isPaused() { return paused; }
@@ -204,9 +210,32 @@ export function createExploreSession({
     return rooms[0] || null;
   }
 
-  function enterPause(reason) {
+  function ownerRecord(owner, label) {
+    if (owner == null) return null;
+    const record = ownedSessionLeases.get(owner);
+    if (!record) throw new FenceContractViolation(`${label} requires an Explore session owner`);
+    if (!record.isCurrent()) throw new FenceSuperseded(label, 'Explore session');
+    return record;
+  }
+
+  function advanceOwner(record) {
+    if (!record) return;
+    record.advance();
+  }
+
+  function enterPause(reason, { owner = null } = {}) {
     if (!PAUSE_REASONS[reason]) return false;
     if (paused && !shouldReplacePauseReason(pauseReason, reason)) return false;
+    const record = ownerRecord(owner, `pause ${reason}`);
+    if (record) {
+      completeOwnershipTransaction(() => {
+        paused = true;
+        pauseReason = reason;
+      });
+      advanceOwner(record);
+      notify(onPause, { pendingCount: log.length, reason });
+      return true;
+    }
     completeOwnershipTransaction(() => {
       paused = true;
       pauseReason = reason;
@@ -215,8 +244,19 @@ export function createExploreSession({
     return true;
   }
 
-  function resumeIfPaused() {
+  function resumeIfPaused({ owner = null } = {}) {
     if (!paused) return;
+    const record = ownerRecord(owner, 'resume Explore session');
+    if (record) {
+      const reason = pauseReason;
+      completeOwnershipTransaction(() => {
+        paused = false;
+        pauseReason = null;
+      });
+      advanceOwner(record);
+      notify(onResume, { pendingCount: log.length, reason });
+      return;
+    }
     completeOwnershipTransaction(() => {
       paused = false;
       const reason = pauseReason;
@@ -225,18 +265,19 @@ export function createExploreSession({
     });
   }
 
-  function resolvePause(reason) {
+  function resolvePause(reason, { owner = null } = {}) {
+    ownerRecord(owner, `resolve Explore pause ${reason}`);
     if (
       !paused
       || pauseReason !== reason
       || reason === 'writerConflict'
       || reason === 'unsupportedProtocol'
     ) return false;
-    resumeIfPaused();
+    resumeIfPaused({ owner });
     return true;
   }
 
-  function maybeResumeAfterDrain() {
+  function maybeResumeAfterDrain({ owner = null } = {}) {
     if (!paused) return;
     if (
       pauseReason === 'authRequired'
@@ -244,10 +285,10 @@ export function createExploreSession({
       || pauseReason === 'unsupportedProtocol'
     ) return;
     if (pauseReason === 'hardCap') {
-      if (log.length <= EXPLORE_SESSION_RESUME_AT) resumeIfPaused();
+      if (log.length <= EXPLORE_SESSION_RESUME_AT) resumeIfPaused({ owner });
       return;
     }
-    if (log.length === 0) resumeIfPaused();
+    if (log.length === 0) resumeIfPaused({ owner });
   }
 
   function adoptRunwayState(
@@ -359,17 +400,19 @@ export function createExploreSession({
     }, EXPLORE_SYNC_RETRY_DELAYS_MS[index]);
   }
 
-  function retryOrDegrade() {
+  function retryOrDegrade({ owner = null } = {}) {
     scheduleRetry();
-    if (attempts >= EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS) enterPause('transportDegraded');
+    if (attempts >= EXPLORE_SYNC_DEGRADE_AFTER_ATTEMPTS) enterPause('transportDegraded', { owner });
     return { ok: false };
   }
 
-  function promoteProtocolVersion(version) {
+  function promoteProtocolVersion(version, { owner = null } = {}) {
     if (version === 2 && expectedProtocolVersion < 2) {
+      const record = ownerRecord(owner, 'promote Explore protocol');
       completeOwnershipTransaction(() => {
         expectedProtocolVersion = 2;
       });
+      advanceOwner(record);
     }
   }
 
@@ -381,8 +424,8 @@ export function createExploreSession({
     }
   }
 
-  function handleAuthRequired() {
-    enterPause('authRequired');
+  function handleAuthRequired({ owner = null } = {}) {
+    enterPause('authRequired', { owner });
     return { ok: false };
   }
 
@@ -487,7 +530,8 @@ export function createExploreSession({
     return { accepted: true, pendingCount: log.length, entry: cloneValue(entry) };
   }
 
-  function drain({ force = false } = {}) {
+  function drain({ force = false, owner = null } = {}) {
+    const record = ownerRecord(owner, 'drain Explore session');
     if (
       pauseReason === 'unsupportedProtocol'
       || pauseReason === 'writerConflict'
@@ -496,13 +540,20 @@ export function createExploreSession({
       return Promise.resolve();
     }
     if (force) forceDrainRequested = true;
-    if (activeDrainPromise) return activeDrainPromise;
+    if (activeDrainPromise) {
+      if (record && activeDrainOwner !== owner) {
+        return Promise.reject(new FenceSuperseded('drain Explore session', 'active drain'));
+      }
+      return activeDrainPromise;
+    }
 
     const token = activeDrainToken + 1;
     activeDrainToken = token;
-    activeDrainPromise = runDrainLoop(token).finally(() => {
+    activeDrainOwner = owner;
+    activeDrainPromise = runDrainLoop(token, owner).finally(() => {
       if (activeDrainToken === token) {
         activeDrainPromise = null;
+        activeDrainOwner = null;
         syncing = false;
         forceDrainRequested = false;
       }
@@ -510,12 +561,14 @@ export function createExploreSession({
     return activeDrainPromise;
   }
 
-  async function runDrainLoop(token) {
+  async function runDrainLoop(token, owner = null) {
     if (log.length === 0) return;
     syncing = true;
 
     while (log.length > 0 && activeDrainToken === token) {
-      const result = await drainOnce(token);
+      ownerRecord(owner, 'drain Explore session');
+      const result = await drainOnce(token, owner);
+      ownerRecord(owner, 'drain Explore session');
       if (!result?.ok || log.length === 0) return;
       if (forceDrainRequested || result.appendedAfterSnapshot) continue;
       scheduleDrain(0);
@@ -523,7 +576,8 @@ export function createExploreSession({
     }
   }
 
-  async function drainOnce(token) {
+  async function drainOnce(token, owner = null) {
+    ownerRecord(owner, 'drain Explore session');
     const myGeneration = generation;
     cancelDebounceTimer();
     const entries = log.map(entry => cloneValue(entry));
@@ -531,6 +585,7 @@ export function createExploreSession({
 
     try {
       const rawResponse = await syncRequest({ sessionEpoch, entries });
+      ownerRecord(owner, 'drain Explore session');
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
 
       const transport = rawResponse;
@@ -538,22 +593,22 @@ export function createExploreSession({
       const response = transport.body;
 
       if (isValidatedExploreV2Transport(transport)) {
-        promoteProtocolVersion(response.protocolVersion);
+        promoteProtocolVersion(response.protocolVersion, { owner });
       }
 
-      if (outcome === 'indeterminate') return retryOrDegrade();
+      if (outcome === 'indeterminate') return retryOrDegrade({ owner });
 
-      if (outcome === 'authRequired' || !responseAuthIsCurrent(transport)) return handleAuthRequired();
+      if (outcome === 'authRequired' || !responseAuthIsCurrent(transport)) return handleAuthRequired({ owner });
 
       if (outcome === 'conflict') {
-        enterPause('writerConflict');
+        enterPause('writerConflict', { owner });
         return { ok: false };
       }
       if (outcome === 'unsupportedProtocol') {
-        enterPause('unsupportedProtocol');
+        enterPause('unsupportedProtocol', { owner });
         return { ok: false };
       }
-      if (outcome !== 'v1Settled') return retryOrDegrade();
+      if (outcome !== 'v1Settled') return retryOrDegrade({ owner });
 
       // Fence captured continuations as soon as a non-committing correction is
       // known. Combat playback may still be holding response adoption; waiting
@@ -569,8 +624,9 @@ export function createExploreSession({
       // animation awaits and the stale continuation can mutate B's scene.
       if (response?.status === 'ok' || response?.status === 'corrected') {
         await beforeResponseAdoption(response);
+        ownerRecord(owner, 'drain Explore session');
         if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
-        if (!responseAuthIsCurrent(transport)) return handleAuthRequired();
+        if (!responseAuthIsCurrent(transport)) return handleAuthRequired({ owner });
       }
 
       if (response?.status === 'corrected') {
@@ -583,6 +639,7 @@ export function createExploreSession({
             .filter(entry => entry.seq > confirmed)
             .map(entry => cloneValue(entry)),
         };
+        const record = ownerRecord(owner, 'commit Explore correction');
         completeOwnershipTransaction(() => {
           log = [];
           attempts = 0;
@@ -592,12 +649,18 @@ export function createExploreSession({
               deferResume: true,
             });
           }
-          notify(onCorrection, correction);
-          maybeResumeAfterDrain();
+          if (!record) notify(onCorrection, correction);
+          if (!record) maybeResumeAfterDrain();
         });
+        advanceOwner(record);
+        if (record) {
+          notify(onCorrection, correction);
+          maybeResumeAfterDrain({ owner });
+        }
         return { ok: true, appendedAfterSnapshot: false };
       } else if (response?.status === 'ok') {
         let appendedAfterSnapshot = false;
+        const record = ownerRecord(owner, 'commit Explore checkpoint');
         completeOwnershipTransaction(() => {
           attempts = 0;
           const confirmed = Number.isInteger(response.confirmedThroughSeq)
@@ -613,21 +676,28 @@ export function createExploreSession({
               deferResume: true,
             });
           }
-          notify(onCheckpoint, response, { logEmpty: log.length === 0 });
-          maybeResumeAfterDrain();
+          if (!record) notify(onCheckpoint, response, { logEmpty: log.length === 0 });
+          if (!record) maybeResumeAfterDrain();
         });
+        advanceOwner(record);
+        if (record) {
+          notify(onCheckpoint, response, { logEmpty: log.length === 0 });
+          maybeResumeAfterDrain({ owner });
+        }
         return { ok: true, appendedAfterSnapshot };
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof FenceSuperseded || error instanceof FenceContractViolation) throw error;
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
-      return retryOrDegrade();
+      return retryOrDegrade({ owner });
     }
   }
 
-  function syncNow() {
+  function syncNow({ owner = null } = {}) {
+    ownerRecord(owner, 'sync Explore session');
     cancelDebounceTimer();
     cancelRetryTimer();
-    return drain({ force: true });
+    return drain({ force: true, owner });
   }
 
   function reset() {
@@ -637,6 +707,7 @@ export function createExploreSession({
       localRevision += 1;
       activeDrainToken += 1;
       activeDrainPromise = null;
+      activeDrainOwner = null;
       clearTimers();
       runway = null;
       sessionEpoch = null;
@@ -667,13 +738,21 @@ export function createExploreSession({
     let expectedLifetime = sessionLifetime;
     const capturedEpoch = sessionEpoch;
     const capturedPending = cloneValue(log);
-    const sessionLease = {
-      label: 'Explore session',
+    const ownerState = {
       isCurrent: () => (
         ownershipRevision === expectedOwnershipRevision
         && sessionLifetime === expectedLifetime
       ),
+      advance: () => {
+        expectedOwnershipRevision = ownershipRevision;
+        expectedLifetime = sessionLifetime;
+      },
     };
+    const sessionLease = {
+      label: 'Explore session',
+      isCurrent: ownerState.isCurrent,
+    };
+    ownedSessionLeases.set(sessionLease, ownerState);
     const fence = createAsyncOwnershipFence([sessionLease, ...leases]);
 
     function expectRunwayAdoption(nextRunway, { deferResume = false } = {}) {
@@ -687,7 +766,7 @@ export function createExploreSession({
           ) {
             throw new Error('recovery runway adoption no longer owns this Explore session');
           }
-          return completeOwnershipTransaction(() => adoptRunwayState(nextRunway, { deferResume }));
+          return completeOwnershipTransaction(() => adoptRunwayState(requestedRunway, { deferResume }));
         },
         transitions: [{
           lease: sessionLease,
@@ -699,17 +778,16 @@ export function createExploreSession({
             && sameValue(log, capturedPending)
           ),
           advance: () => {
-            expectedOwnershipRevision = ownershipRevision;
-            expectedLifetime = sessionLifetime;
+            ownerState.advance();
           },
         }],
       };
     }
 
-    return { fence, sessionLease, expectRunwayAdoption };
+    return { session: api, fence, sessionLease, expectRunwayAdoption };
   }
 
-  return {
+  const api = {
     adoptRunway,
     currentPreparedRoom,
     recordRoomAction,
@@ -728,6 +806,7 @@ export function createExploreSession({
     resolvePause,
     captureFence,
   };
+  return api;
 }
 
 let activeSession = null;

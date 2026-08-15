@@ -2483,6 +2483,9 @@ async function initGame() {
     // into the session when the pending log is empty (see loadGameState).
     refreshRunwayState: ({ capture }) => loadGameState({ adoptSession: true, capture }),
     reviewAuthoritativeState: ({ capture }) => loadGameState({ adoptSession: true, capture }),
+    reauthenticate: () => auth.requestReauthentication(),
+    adoptRecoveryState: ({ capture }) => loadGameState({ adoptSession: true, capture }),
+    acknowledgeReauthentication: () => auth.acknowledgeReauthentication(),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {
       const result = await apiSelectArea(areaId);

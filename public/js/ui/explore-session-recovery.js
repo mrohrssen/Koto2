@@ -5,21 +5,21 @@ import { FenceSuperseded } from '../async-ownership-fence.js';
 // currently awaiting us. The recovery token permits the captured pending log,
 // but rejects every other change before the response can replace the runway.
 export async function adoptExploreSessionRecoveryState({
+  capture,
   expectedSession,
   getSession,
   fetchState,
   isUsableState = data => Boolean(data?.player) && !Object.hasOwn(data || {}, 'error'),
 } = {}) {
-  const session = expectedSession ?? getSession?.();
-  if (!session || getSession?.() !== session || typeof fetchState !== 'function') return false;
-  const capture = session.captureFence?.({
-    pending: 'preserve',
-    leases: [{
-      label: 'active Explore session',
-      isCurrent: () => getSession?.() === session,
-    }],
-  });
-  if (!capture) return false;
+  const session = expectedSession ?? capture?.session ?? getSession?.();
+  if (
+    !capture
+    || capture.session !== session
+    || !session
+    || getSession?.() !== session
+    || typeof fetchState !== 'function'
+    || capture.fence?.isCurrent?.() !== true
+  ) return false;
   let data;
   try {
     data = await capture.fence.step(
@@ -30,6 +30,7 @@ export async function adoptExploreSessionRecoveryState({
     if (error instanceof FenceSuperseded) return false;
     return false;
   }
+  if (getSession?.() !== session || capture.fence?.isCurrent?.() !== true) return false;
   if (!isUsableState(data)) return false;
 
   const nextRunway = data?.run?.exploreRunway;

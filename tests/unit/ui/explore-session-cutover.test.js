@@ -218,6 +218,9 @@ function initCutoverHarness({
   apiSyncExploreSession = async () => completeTransport({ protocolVersion: 1, status: 'ok', confirmedThroughSeq: 0, results: [] }),
   waitForCombatPlaybackIdle = async () => {},
   reconcileCorrectedCombat = () => false,
+  reauthenticate = async () => false,
+  adoptRecoveryState = async () => false,
+  acknowledgeReauthentication = () => {},
   onUpdateUI = () => {},
 } = {}) {
   let currentState = initialState;
@@ -245,6 +248,9 @@ function initCutoverHarness({
       return reconcileCorrectedCombat(previousState, authoritativeState);
     },
     waitForCombatPlaybackIdle,
+    reauthenticate,
+    adoptRecoveryState,
+    acknowledgeReauthentication,
     apiProceed,
     apiSyncExploreSession,
   });
@@ -1389,6 +1395,9 @@ describe('explore session online stall recovery', () => {
   function initRecoveryHarness({
     refreshRunwayState,
     reviewAuthoritativeState,
+    reauthenticate,
+    adoptRecoveryState,
+    acknowledgeReauthentication,
     showToast = () => {},
     onUpdateUI = () => {},
     apiSyncExploreSession = async () => completeTransport({
@@ -1411,6 +1420,9 @@ describe('explore session online stall recovery', () => {
       apiSyncExploreSession,
       refreshRunwayState,
       reviewAuthoritativeState,
+      reauthenticate,
+      adoptRecoveryState,
+      acknowledgeReauthentication,
     });
   }
 
@@ -1734,22 +1746,29 @@ describe('explore session online stall recovery', () => {
     }
   });
 
-  it('keeps authRequired authoritative and UI-inert until Task 7 owns recovery', async () => {
+  it('fences one auth recovery through same-epoch adoption and one redelivery without taking auth UI', async () => {
     const previousWindow = globalThis.window;
     const previousDocument = globalThis.document;
     const windowTarget = makeEventTarget();
     const documentTarget = makeEventTarget();
     documentTarget.visibilityState = 'visible';
-    let refreshCalls = 0;
+    let adoptionCalls = 0;
+    let reauthenticationCalls = 0;
+    let acknowledgements = 0;
     let syncCalls = 0;
     actionArea.innerHTML = 'auth-owned actions';
     try {
       globalThis.window = windowTarget;
       globalThis.document = { ...previousDocument, ...documentTarget };
       initRecoveryHarness({
-        refreshRunwayState: async () => { refreshCalls += 1; return true; },
+        reauthenticate: async () => { reauthenticationCalls += 1; return true; },
+        adoptRecoveryState: async () => { adoptionCalls += 1; return true; },
+        acknowledgeReauthentication: () => { acknowledgements += 1; },
         apiSyncExploreSession: async () => {
           syncCalls += 1;
+          if (syncCalls > 1) {
+            return completeTransport({ protocolVersion: 1, status: 'ok', confirmedThroughSeq: 1, results: [] });
+          }
           return completeTransport({ error: 'expired' }, { httpStatus: 401 });
         },
       });
@@ -1762,14 +1781,15 @@ describe('explore session online stall recovery', () => {
       await session.syncNow();
       windowTarget.dispatch('online');
       documentTarget.dispatch('visibilitychange');
-      await Promise.resolve();
-      await Promise.resolve();
+      await waitFor(() => session.pendingCount() === 0 && syncCalls === 2 && acknowledgements === 1);
 
-      assert.equal(session.getPauseReason(), 'authRequired');
-      assert.equal(session.pendingCount(), 1);
+      assert.equal(session.getPauseReason(), null);
+      assert.equal(session.pendingCount(), 0);
       assert.equal(actionArea.innerHTML, 'auth-owned actions');
-      assert.equal(refreshCalls, 0);
-      assert.equal(syncCalls, 1);
+      assert.equal(reauthenticationCalls, 1);
+      assert.equal(adoptionCalls, 1);
+      assert.equal(acknowledgements, 1);
+      assert.equal(syncCalls, 2);
     } finally {
       globalThis.window = previousWindow;
       globalThis.document = previousDocument;

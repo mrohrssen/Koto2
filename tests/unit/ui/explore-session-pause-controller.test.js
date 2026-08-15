@@ -62,7 +62,15 @@ function createSession({ reason = null, pending = 0 } = {}) {
   };
 }
 
-function harness({ session = createSession(), refreshRunwayState = async () => {}, reviewAuthoritativeState = async () => {}, schedule, cancel } = {}) {
+function harness({
+  session = createSession(),
+  refreshRunwayState = async () => {},
+  reviewAuthoritativeState = async () => {},
+  reauthenticate = async () => false,
+  adoptRecoveryState = async () => false,
+  schedule,
+  cancel,
+} = {}) {
   const narrations = [];
   const actions = [];
   const toasts = [];
@@ -73,6 +81,8 @@ function harness({ session = createSession(), refreshRunwayState = async () => {
     getSession: () => session,
     refreshRunwayState,
     reviewAuthoritativeState,
+    reauthenticate,
+    adoptRecoveryState,
     renderNarration: value => narrations.push(value),
     renderActions: value => actions.push(value),
     showToast: value => toasts.push(value),
@@ -89,6 +99,53 @@ function harness({ session = createSession(), refreshRunwayState = async () => {
 }
 
 describe('Explore session pause controller', () => {
+  it('coalesces auth pause, online, and visibility through one supplied capture', async () => {
+    const session = createSession({ reason: 'authRequired', pending: 1 });
+    const events = [];
+    const owner = {};
+    session.captureFence = options => {
+      events.push(['capture', options]);
+      return {
+        sessionLease: owner,
+        fence: {
+          isCurrent: () => true,
+          step: async (_label, operation) => operation(),
+        },
+      };
+    };
+    session.resolvePause = (reason, options) => {
+      events.push(['resolve', reason, options]);
+      session.setReason(null);
+      return true;
+    };
+    session.syncNow = async options => { events.push(['drain', options]); };
+    let authenticationCalls = 0;
+    let adoptionCalls = 0;
+    const { controller, windowTarget, documentTarget, actions } = harness({
+      session,
+      reauthenticate: async () => { authenticationCalls += 1; return true; },
+      adoptRecoveryState: async ({ capture }) => {
+        adoptionCalls += 1;
+        events.push(['adopt', capture]);
+        return true;
+      },
+    });
+
+    controller.handlePause({ reason: 'authRequired' });
+    windowTarget.dispatch('online');
+    documentTarget.dispatch('visibilitychange');
+    await controller.triggerRecovery();
+
+    assert.equal(authenticationCalls, 1);
+    assert.equal(adoptionCalls, 1);
+    assert.equal(events.filter(([kind]) => kind === 'capture').length, 1);
+    assert.equal(events.find(([kind]) => kind === 'adopt')[1].sessionLease, owner);
+    assert.deepEqual(events.find(([kind]) => kind === 'resolve').slice(1), ['authRequired', { owner }]);
+    assert.deepEqual(events.find(([kind]) => kind === 'drain').slice(1), [{ owner }]);
+    assert.deepEqual(actions, [], 'authentication owns the action area');
+    controller.dispose();
+  });
+
   it('only transport, unsupported protocol, and writer conflict replace actions', () => {
     const matrix = [
       ['transportDegraded', 1, 1],

@@ -143,6 +143,27 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     assert.equal(dom.elements.get('auth-screen').classList.contains('hidden'), true);
   });
 
+  it('holds one completed same-account recovery permit until controller acknowledgement', async () => {
+    globalThis.localStorage.setItem('authToken', 'expired-token');
+    globalThis.fetch = async url => {
+      if (url.endsWith('/api/auth/me')) return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+      return makeResponse({ body: { token: 'fresh-token', user: { id: 'user-1', username: 'michi' } } });
+    };
+    assert.equal(await auth.checkAuth(), true);
+    const recovery = auth.requestReauthentication();
+    dom.elements.get('auth-username').value = 'michi';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-submit').click();
+    assert.equal(await recovery, true);
+
+    assert.equal(await auth.requestReauthentication(), true, 'a superseding session may use the completed login');
+    assert.equal(auth.acknowledgeReauthentication(), true);
+    assert.equal(await Promise.race([
+      auth.requestReauthentication().then(() => 'settled'),
+      new Promise(resolve => setImmediate(() => resolve('pending'))),
+    ]), 'pending', 'a later independent auth failure prompts again');
+  });
+
   it('fails an Explore drain before fetch when shared storage no longer matches the verified principal token', async () => {
     globalThis.localStorage.setItem('authToken', 'token-a');
     globalThis.fetch = async url => {
@@ -407,7 +428,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     assert.equal(session.pendingCount(), 0);
   });
 
-  it('refuses a different account without storing its token or resolving recovery', async () => {
+  it('refuses a different account without storing its token and settles recovery once', async () => {
     globalThis.localStorage.setItem('authToken', 'expired-token');
     globalThis.fetch = async (url) => {
       fetchCalls.push({ url });
@@ -424,14 +445,11 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     assert.equal(globalThis.localStorage.getItem('authToken'), 'expired-token');
     assert.equal(dom.elements.get('auth-screen').classList.contains('hidden'), false);
     assert.match(dom.elements.get('auth-error').textContent, /same account/i);
-    assert.equal(await Promise.race([
-      recovery.then(() => 'resolved'),
-      new Promise(resolve => setImmediate(() => resolve('pending'))),
-    ]), 'pending');
-    assert.equal(auth.requestReauthentication(), recovery);
+    assert.equal(await recovery, false);
+    assert.notEqual(auth.requestReauthentication(), recovery);
   });
 
-  it('refuses registration during reauthentication before issuing a request', async () => {
+  it('refuses registration during reauthentication before issuing a request and settles recovery', async () => {
     globalThis.localStorage.setItem('authToken', 'expired-token');
     globalThis.fetch = async (url) => {
       fetchCalls.push({ url });
@@ -448,11 +466,8 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
 
     assert.equal(fetchCalls.length, 1);
     assert.match(dom.elements.get('auth-error').textContent, /same account/i);
-    assert.equal(await Promise.race([
-      recovery.then(() => 'resolved'),
-      new Promise(resolve => setImmediate(() => resolve('pending'))),
-    ]), 'pending');
-    assert.equal(auth.requestReauthentication(), recovery);
+    assert.equal(await recovery, false);
+    assert.notEqual(auth.requestReauthentication(), recovery);
   });
 
   it('coalesces repeated recovery requests without replacing the pending resolver', async () => {

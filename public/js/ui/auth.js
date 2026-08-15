@@ -8,6 +8,7 @@ import { setAnalyticsUser, trackEvent } from '../analytics.js';
 let currentTab = 'login';
 let authenticatedPrincipalId = null;
 let reauthenticationRequest = null;
+let reauthenticationSuccessPermit = false;
 
 const SAME_ACCOUNT_RECOVERY_ERROR = 'Log in to the same account to recover this run. Creating or switching accounts is not allowed.';
 
@@ -118,8 +119,12 @@ export function hideAuthScreen() {
 }
 
 export function requestReauthentication() {
-  showAuthScreen();
   if (reauthenticationRequest) return reauthenticationRequest.promise;
+  // A completed same-account login may outlive an Explore-session capture.
+  // One successor recovery can consume this permit without reopening auth UI;
+  // its controller acknowledges only after adoption and owned redelivery.
+  if (reauthenticationSuccessPermit) return Promise.resolve(true);
+  showAuthScreen();
   if (!authenticatedPrincipalId) {
     showError('Your previous account could not be verified. Log in again from the main sign-in screen.');
     return Promise.resolve(false);
@@ -131,6 +136,12 @@ export function requestReauthentication() {
   return promise;
 }
 
+export function acknowledgeReauthentication() {
+  if (!reauthenticationSuccessPermit) return false;
+  reauthenticationSuccessPermit = false;
+  return true;
+}
+
 export function getToken() {
   return localStorage.getItem('authToken');
 }
@@ -139,11 +150,7 @@ export function logout() {
   localStorage.removeItem('authToken');
   clearExploreSyncAuthPrincipal();
   authenticatedPrincipalId = null;
-  if (reauthenticationRequest) {
-    const { resolve } = reauthenticationRequest;
-    reauthenticationRequest = null;
-    resolve(false);
-  }
+  settleReauthentication(false);
 }
 
 // ---- Internal ----
@@ -157,9 +164,17 @@ function storeToken(token) {
   localStorage.setItem('authToken', token);
 }
 
+function settleReauthentication(result) {
+  const request = reauthenticationRequest;
+  reauthenticationRequest = null;
+  reauthenticationSuccessPermit = result === true;
+  request?.resolve(result === true);
+}
+
 async function handleSubmit(callbacks) {
   if (reauthenticationRequest && currentTab === 'register') {
     showError(SAME_ACCOUNT_RECOVERY_ERROR);
+    settleReauthentication(false);
     return;
   }
 
@@ -214,6 +229,7 @@ async function handleSubmit(callbacks) {
       )
     ) {
       showError(SAME_ACCOUNT_RECOVERY_ERROR);
+      if (reauthenticationRequest) settleReauthentication(false);
       return;
     }
 
@@ -225,9 +241,7 @@ async function handleSubmit(callbacks) {
     });
     hideAuthScreen();
     if (reauthenticationRequest) {
-      const { resolve } = reauthenticationRequest;
-      reauthenticationRequest = null;
-      resolve(true);
+      settleReauthentication(true);
       return;
     }
     if (callbacks.onAuthenticated) {

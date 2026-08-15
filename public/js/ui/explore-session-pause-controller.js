@@ -1,3 +1,5 @@
+import { FenceSuperseded } from '../async-ownership-fence.js';
+
 const EMPTY_RUNWAY_REASONS = new Set([
   'noPreparedRoom',
   'currentRoomNotReady',
@@ -13,13 +15,16 @@ const UNSUPPORTED_PROTOCOL_COPY = 'A newer version of Koto is required to contin
 const ARMED_TIMER = Symbol('armed Explore runway recovery timer');
 
 /**
- * Owns Explore's non-auth pause presentation and empty-runway recovery.
+ * Owns Explore's pause presentation plus fenced auth and empty-runway recovery.
  * Pending-log transport retry remains exclusively owned by ExploreSession.
  */
 export function createExploreSessionPauseController({
   getSession,
   refreshRunwayState,
   reviewAuthoritativeState,
+  reauthenticate,
+  adoptRecoveryState,
+  acknowledgeReauthentication,
   renderNarration,
   renderActions,
   showToast,
@@ -35,6 +40,7 @@ export function createExploreSessionPauseController({
   let recoveryAttempt = 0;
   let pauseDispatching = false;
   let reviewPromise = null;
+  let authRecoveryPromise = null;
 
   const isCurrent = (revision, session) => (
     !disposed
@@ -77,6 +83,10 @@ export function createExploreSessionPauseController({
     );
   }
 
+  function hasCurrentAuthRecovery(capture, revision, session) {
+    return isCurrent(revision, session) && capture?.fence?.isCurrent?.() === true;
+  }
+
   function renderAuthoritativePause() {
     const { session, reason } = currentPause();
     if (!session || !reason) return;
@@ -113,8 +123,8 @@ export function createExploreSessionPauseController({
       return;
     }
 
-    // Task 7 gives authentication its fenced lifecycle owner. Until then the
-    // existing auth surface keeps exclusive ownership of the action area.
+    // Authentication owns the action area. The controller owns only its
+    // reauthentication/adoption/drain lifecycle.
     if (reason === 'authRequired') return;
 
     renderNarration?.(
@@ -145,6 +155,12 @@ export function createExploreSessionPauseController({
     renderAuthoritativePause();
 
     const reason = session?.getPauseReason?.();
+    if (session && reason === 'authRequired') {
+      // onPause fires inside the session ownership transaction. Deferring the
+      // capture makes its initial revision the fully committed pause revision.
+      void Promise.resolve().then(() => triggerRecovery());
+      return;
+    }
     if (
       session
       && (session.pendingCount?.() ?? 0) === 0
@@ -157,9 +173,11 @@ export function createExploreSessionPauseController({
   }
 
   function triggerRecovery() {
-    if (disposed || recoveryPromise) return recoveryPromise || Promise.resolve(false);
+    if (disposed) return Promise.resolve(false);
     const session = getSession?.();
     const reason = session?.getPauseReason?.();
+    if (reason === 'authRequired') return triggerAuthRecovery();
+    if (recoveryPromise) return recoveryPromise;
     if (
       !session
       || (session.pendingCount?.() ?? 0) !== 0
@@ -207,6 +225,58 @@ export function createExploreSessionPauseController({
       })
       .finally(() => { recoveryPromise = null; });
     return recoveryPromise;
+  }
+
+  function triggerAuthRecovery() {
+    if (disposed || authRecoveryPromise) return authRecoveryPromise || Promise.resolve(false);
+    const session = getSession?.();
+    if (!session || session.getPauseReason?.() !== 'authRequired') return Promise.resolve(false);
+    const revision = lifecycleRevision;
+
+    const recovery = (async () => {
+      // This is intentionally after the promise is coalesced: a reentrant
+      // onPause observer cannot capture before the session transaction bumps
+      // its ownership revision.
+      await Promise.resolve();
+      if (!isCurrent(revision, session) || session.getPauseReason?.() !== 'authRequired') return false;
+      let capture;
+      try {
+        capture = session.captureFence?.({
+          pending: 'preserve',
+          leases: [{
+            label: 'Explore pause controller',
+            isCurrent: () => isCurrent(revision, session),
+          }],
+        });
+        if (!capture || !hasCurrentAuthRecovery(capture, revision, session)) return false;
+        const authenticated = await capture.fence.step(
+          'reauthenticate Explore session',
+          () => reauthenticate?.(),
+        );
+        if (authenticated !== true || !hasCurrentAuthRecovery(capture, revision, session)) return false;
+        if ((await adoptRecoveryState?.({ capture })) !== true) return false;
+        if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
+        if (session.resolvePause?.('authRequired', { owner: capture.sessionLease }) !== true) return false;
+        // The auth drain that raised this pause may still be unwinding. Yield
+        // before redelivery so the owned successor can never join it.
+        await Promise.resolve();
+        if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
+        await session.syncNow?.({ owner: capture.sessionLease });
+        if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
+        acknowledgeReauthentication?.();
+        return true;
+      } catch (error) {
+        if (error instanceof FenceSuperseded) return false;
+        // Authentication owns its own error surface. A failed adoption retains
+        // the existing pause and is allowed to retry from a later signal.
+        return false;
+      }
+    })();
+    authRecoveryPromise = recovery.finally(() => {
+      if (authRecoveryPromise === wrappedRecovery) authRecoveryPromise = null;
+    });
+    const wrappedRecovery = authRecoveryPromise;
+    return wrappedRecovery;
   }
 
   async function reviewLatestProgress() {
