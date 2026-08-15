@@ -1957,6 +1957,23 @@ test('declared same-epoch runway adoption advances without self-superseding', as
   assert.equal(await capture.fence.step('continue recovery', () => Promise.resolve('continued')), 'continued');
 });
 
+test('empty capture adopts a same-epoch runway only while its exact empty ownership remains current', async () => {
+  const session = createExploreSession({ syncRequest: async () => syncOkResponse(0) });
+  session.adoptRunway(makeRunway());
+  const capture = session.captureFence({ pending: 'empty' });
+  const refreshed = makeRunway({
+    preparedRooms: [preparedRoom(0, { actionSeq: 14, acceptedActions: ['friendlyNpc.choose'] })],
+  });
+
+  capture.fence.commit('adopt empty recovery runway', capture.expectRunwayAdoption(refreshed));
+  assert.equal(session.currentPreparedRoom().actionSeq, 14);
+  assert.equal(await capture.fence.step('continue empty recovery', () => Promise.resolve('current')), 'current');
+
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'pending' }).accepted, true);
+  assert.throws(() => session.captureFence({ pending: 'empty' }));
+  assert.equal(capture.fence.isCurrent(), false);
+});
+
 test('a preserve fence captured during correction playback goes stale at correction commit', async () => {
   let releasePlayback;
   let markPlaybackStarted;

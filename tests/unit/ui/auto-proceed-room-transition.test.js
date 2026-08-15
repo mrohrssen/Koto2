@@ -115,17 +115,11 @@ test('proceedWithRevealBuffer queues buffered proceed through explore session be
   assert.match(explorationSrc, /function applyExploreSessionProceedResult[\s\S]*advanceStateToBufferedNextRoom\(draft\)/);
 });
 
-test('exploration wires explore session recovery drains', () => {
-  assert.match(
-    explorationSrc,
-    /addEventListener\('online'[\s\S]*triggerExploreSessionRecovery\(\)/,
-    'online recovery should trigger serialized explore-session recovery'
-  );
-  assert.match(
-    explorationSrc,
-    /visibilitychange[\s\S]*triggerExploreSessionRecovery\(\)/,
-    'visibility restore should trigger serialized explore-session recovery'
-  );
+test('exploration constructs one disposable pause controller instead of embedded recovery channels', () => {
+  assert.match(explorationSrc, /createExploreSessionPauseController\(/);
+  assert.match(explorationSrc, /exploreSessionPauseController\?\.dispose\(\)/);
+  assert.match(explorationSrc, /onPause: exploreSessionPauseController\.handlePause/);
+  assert.doesNotMatch(explorationSrc, /showExploreSoftPause|runExploreSessionRecovery|wireExploreSessionRecoveryDrains/);
 });
 
 test('startEncounter resets in-flight flags when the session fence or encounter API fails', () => {

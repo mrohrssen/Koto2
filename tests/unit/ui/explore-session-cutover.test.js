@@ -1,5 +1,6 @@
 import { describe, it, mock, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { createExploreSessionPauseController } from '../../../public/js/ui/explore-session-pause-controller.js';
 
 const transitionCalls = [];
 let actionArea = null;
@@ -136,8 +137,6 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 const {
   init,
   proceedWithRevealBuffer,
-  triggerExploreSessionRecovery,
-  wireExploreSessionRecoveryDrains,
 } = await import('../../../public/js/ui/exploration.js');
 const { getExploreSession, resetExploreSession } = await import('../../../public/js/ui/explore-session.js');
 
@@ -216,7 +215,7 @@ function legacyOnlySupportRunway() {
 function initCutoverHarness({
   initialState,
   apiProceed = async () => null,
-  apiSyncExploreSession = async () => completeTransport({ status: 'ok', confirmedThroughSeq: 0, results: [] }),
+  apiSyncExploreSession = async () => completeTransport({ protocolVersion: 1, status: 'ok', confirmedThroughSeq: 0, results: [] }),
   waitForCombatPlaybackIdle = async () => {},
   reconcileCorrectedCombat = () => false,
   onUpdateUI = () => {},
@@ -247,12 +246,7 @@ function initCutoverHarness({
     },
     waitForCombatPlaybackIdle,
     apiProceed,
-    apiSyncExploreSession: async payload => {
-      const response = await apiSyncExploreSession(payload);
-      return response?.transport === true
-        ? response
-        : completeTransport({ protocolVersion: 1, ...response });
-    },
+    apiSyncExploreSession,
   });
   return {
     get currentState() { return currentState; },
@@ -270,6 +264,9 @@ function makeEventTarget() {
     listeners,
     addEventListener(type, handler) {
       listeners.set(type, [...(listeners.get(type) || []), handler]);
+    },
+    removeEventListener(type, handler) {
+      listeners.set(type, (listeners.get(type) || []).filter(item => item !== handler));
     },
     dispatch(type) {
       for (const handler of listeners.get(type) || []) handler();
@@ -346,8 +343,8 @@ describe('explore session proceed cutover', () => {
     const harness = initCutoverHarness({
       initialState,
       waitForCombatPlaybackIdle: () => playbackIdle,
-      apiSyncExploreSession: async () => ({
-        status: 'ok',
+      apiSyncExploreSession: async () => completeTransport({
+        protocolVersion: 1, status: 'ok',
         confirmedThroughSeq: 1,
         results: [],
         state: nextState,
@@ -532,13 +529,13 @@ describe('explore session proceed cutover', () => {
 
     await proceedWithRevealBuffer();
     const checkpointRunway = makeRunway({ currentRoom: 1, roomActionSeq: 101, roomCount: 4 });
-    syncRequests[0].resolve({
-      status: 'ok',
+    syncRequests[0].resolve(completeTransport({
+      protocolVersion: 1, status: 'ok',
       confirmedThroughSeq: 1,
       results: [],
       state: makeState({ currentRoom: 1, roomCount: 4, exploreRunway: checkpointRunway }),
       exploreRunway: checkpointRunway,
-    });
+    }));
     await waitFor(() => syncRequests.length === 2);
 
     await proceedWithRevealBuffer();
@@ -585,13 +582,13 @@ describe('explore session proceed cutover', () => {
     );
 
     const refreshedRunway = makeRunway({ currentRoom: 1, roomActionSeq: 101, roomCount: 4 });
-    syncRequests[0].resolve({
-      status: 'ok',
+    syncRequests[0].resolve(completeTransport({
+      protocolVersion: 1, status: 'ok',
       confirmedThroughSeq: 1,
       results: [],
       state: makeState({ currentRoom: 1, roomCount: 4, exploreRunway: refreshedRunway }),
       exploreRunway: refreshedRunway,
-    });
+    }));
     await waitFor(() => syncRequests.length === 2);
 
     assert.equal(harness.currentState.run.currentRoom, 2);
@@ -615,43 +612,24 @@ describe('explore session proceed cutover', () => {
     );
   });
 
-  it('wires recovery drains once per target and skips hidden visibility drains', async () => {
-    const runway = makeRunway();
-    let syncCalls = 0;
-    initCutoverHarness({
-      initialState: makeState({ currentRoom: 0, exploreRunway: runway }),
-      apiSyncExploreSession: async payload => {
-        syncCalls += 1;
-        return {
-          status: 'ok',
-          confirmedThroughSeq: payload.entries.at(-1).seq,
-          results: [],
-        };
-      },
-    });
-    getExploreSession().adoptRunway(runway);
-    getExploreSession().recordRoomAction('proceed');
+  it('re-initialization disposes the previous pause-controller listeners exactly once', () => {
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
     const windowTarget = makeEventTarget();
     const documentTarget = makeEventTarget();
     documentTarget.visibilityState = 'hidden';
-
-    wireExploreSessionRecoveryDrains({ windowTarget, documentTarget });
-    wireExploreSessionRecoveryDrains({ windowTarget, documentTarget });
-
-    assert.equal(windowTarget.listeners.get('online').length, 1);
-    assert.equal(documentTarget.listeners.get('visibilitychange').length, 1);
-
-    windowTarget.dispatch('online');
-    documentTarget.dispatch('visibilitychange');
-    await waitFor(() => syncCalls === 1 && getExploreSession().pendingCount() === 0);
-    await triggerExploreSessionRecovery();
-    assert.equal(syncCalls, 1);
-
-    getExploreSession().recordRoomAction('proceed');
-    documentTarget.visibilityState = 'visible';
-    documentTarget.dispatch('visibilitychange');
-    await waitFor(() => syncCalls === 2 && getExploreSession().pendingCount() === 0);
-    assert.equal(syncCalls, 2);
+    try {
+      globalThis.window = windowTarget;
+      globalThis.document = { ...previousDocument, ...documentTarget };
+      initCutoverHarness({ initialState: makeState({ exploreRunway: makeRunway() }) });
+      const firstOnline = windowTarget.listeners.get('online')[0];
+      initCutoverHarness({ initialState: makeState({ exploreRunway: makeRunway() }) });
+      assert.equal(windowTarget.listeners.get('online').length, 1);
+      assert.notEqual(windowTarget.listeners.get('online')[0], firstOnline);
+    } finally {
+      globalThis.window = previousWindow;
+      globalThis.document = previousDocument;
+    }
   });
 
   // Regression: F1 (explore subway rooms tier). A support room (shrine/friendlyNpc)
@@ -684,7 +662,7 @@ describe('explore session proceed cutover', () => {
         events.push('sync:start');
         await Promise.resolve();
         events.push('sync:end');
-        return { status: 'ok', confirmedThroughSeq: 1, results: [] };
+        return completeTransport({ protocolVersion: 1, status: 'ok', confirmedThroughSeq: 1, results: [] });
       },
     });
 
@@ -741,12 +719,12 @@ describe('explore session proceed cutover', () => {
     getExploreSession().recordRoomAction('shrine.choose', {
       rewardType: 'credits',
     });
-    requests[0].resolve({
-      status: 'ok',
+    requests[0].resolve(completeTransport({
+      protocolVersion: 1, status: 'ok',
       confirmedThroughSeq: 2,
       results: [],
       exploreRunway: runway,
-    });
+    }));
     await proceeding;
 
     assert.equal(proceedCalls, 0);
@@ -986,8 +964,8 @@ describe('explore session proceed cutover', () => {
     };
     const harness = initCutoverHarness({
       initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
-      apiSyncExploreSession: async () => ({
-        status: 'ok',
+      apiSyncExploreSession: async () => completeTransport({
+        protocolVersion: 1, status: 'ok',
         confirmedThroughSeq: 1,
         results: [committedResult],
         state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
@@ -1040,8 +1018,8 @@ describe('explore session proceed cutover', () => {
     };
     const harness = initCutoverHarness({
       initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
-      apiSyncExploreSession: async () => ({
-        status: 'ok',
+      apiSyncExploreSession: async () => completeTransport({
+        protocolVersion: 1, status: 'ok',
         confirmedThroughSeq: 1,
         results: [befriendResult],
         state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
@@ -1084,8 +1062,8 @@ describe('explore session proceed cutover', () => {
     };
     const harness = initCutoverHarness({
       initialState,
-      apiSyncExploreSession: async () => ({
-        status: 'corrected',
+      apiSyncExploreSession: async () => completeTransport({
+        protocolVersion: 1, status: 'corrected', confirmedThroughSeq: null, rejectedSeq: 1,
         results: [{ actionId: 'act-terminal', combatEnded: true, victory: true }],
         state: correctedState,
         exploreRunway: combatRunway,
@@ -1117,8 +1095,8 @@ describe('explore session proceed cutover', () => {
     };
     const harness = initCutoverHarness({
       initialState: activeState,
-      apiSyncExploreSession: async () => ({
-        status: 'corrected',
+      apiSyncExploreSession: async () => completeTransport({
+        protocolVersion: 1, status: 'corrected', confirmedThroughSeq: null, rejectedSeq: 1,
         results: [{
           actionId: 'act-befriend',
           befriendQuizTriggered: true,
@@ -1216,8 +1194,9 @@ describe('explore session proceed cutover', () => {
           internalOwner = state.combat.optimistic.combatId;
         }
       },
-      apiSyncExploreSession: async () => ({
-        status: 'corrected', results: [], state: inactiveA, exploreRunway: runwayA,
+      apiSyncExploreSession: async () => completeTransport({
+        protocolVersion: 1, status: 'corrected', confirmedThroughSeq: null, rejectedSeq: 1,
+        results: [], state: inactiveA, exploreRunway: runwayA,
       }),
     });
     getExploreSession().adoptRunway(runwayA);
@@ -1273,8 +1252,9 @@ describe('explore session proceed cutover', () => {
           internalOwner = state.combat.optimistic.combatId;
         }
       },
-      apiSyncExploreSession: async () => ({
-        status: 'corrected', results: [], state: stateB, exploreRunway: runway,
+      apiSyncExploreSession: async () => completeTransport({
+        protocolVersion: 1, status: 'corrected', confirmedThroughSeq: null, rejectedSeq: 1,
+        results: [], state: stateB, exploreRunway: runway,
       }),
     });
     getExploreSession().adoptRunway(runway);
@@ -1314,13 +1294,13 @@ describe('explore session proceed cutover', () => {
       initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
       apiSyncExploreSession: async () => {
         syncCalls += 1;
-        return {
-          status: 'ok',
+        return completeTransport({
+          protocolVersion: 1, status: 'ok',
           confirmedThroughSeq: syncCalls,
           results: [terminal],
           state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
           exploreRunway: combatRunway,
-        };
+        });
       },
     });
     getExploreSession().adoptRunway(combatRunway);
@@ -1364,13 +1344,13 @@ describe('explore session proceed cutover', () => {
       initialState: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
       apiSyncExploreSession: async () => {
         syncCalls += 1;
-        return {
-          status: 'ok',
+        return completeTransport({
+          protocolVersion: 1, status: 'ok',
           confirmedThroughSeq: syncCalls,
           results: [befriend],
           state: makeState({ currentRoom: 0, exploreRunway: combatRunway }),
           exploreRunway: combatRunway,
-        };
+        });
       },
     });
     getExploreSession().adoptRunway(combatRunway);
@@ -1402,10 +1382,10 @@ describe('explore session online stall recovery', () => {
 
   function initRecoveryHarness({
     refreshRunwayState,
-    reauthenticateExploreSession,
-    adoptExploreSession,
-    keepExploreSessionPaused,
-    apiSyncExploreSession = async () => ({
+    reviewAuthoritativeState,
+    showToast = () => {},
+    apiSyncExploreSession = async () => completeTransport({
+      protocolVersion: 1,
       status: 'ok',
       confirmedThroughSeq: 0,
       results: [],
@@ -1417,15 +1397,13 @@ describe('explore session online stall recovery', () => {
       updateGameState: state => { currentState = state; },
       updateUI: () => {},
       actions: { clear: () => {}, setContent: () => {} },
-      scene: { showNarration: () => {} },
+      scene: { showNarration: () => {}, showToast },
       finishCombatLoop: () => {},
       resumeSessionCombatBefriendQuiz: () => {},
       apiProceed: async () => null,
       apiSyncExploreSession,
       refreshRunwayState,
-      reauthenticateExploreSession,
-      adoptExploreSession,
-      keepExploreSessionPaused,
+      reviewAuthoritativeState,
     });
   }
 
@@ -1472,45 +1450,61 @@ describe('explore session online stall recovery', () => {
     assert.equal(refreshCalls, 1);
   });
 
-  it('refreshes and resumes an offline empty-log pause on the online event', async () => {
-    const originalNavigator = globalThis.navigator;
+  it('refreshes and resumes an empty-log pause through the controller online listener', async () => {
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
     const windowTarget = makeEventTarget();
-    let online = false;
-    Object.defineProperty(globalThis, 'navigator', {
-      value: { get onLine() { return online; } },
-      configurable: true,
-    });
+    const documentTarget = makeEventTarget();
 
     try {
       let refreshCalls = 0;
+      let refreshError = null;
       const stalled = pausingRunway();
       const ready = makeRunway({
         sessionEpoch: stalled.sessionEpoch,
         preparedRooms: [preparedRoom(0), preparedRoom(1)],
       });
       initRecoveryHarness({
-        refreshRunwayState: async () => {
+        refreshRunwayState: async ({ capture }) => {
           refreshCalls += 1;
-          getExploreSession().adoptRunway(ready);
+          try {
+            capture.fence.commit('test empty runway adoption', capture.expectRunwayAdoption(ready));
+          } catch (error) {
+            refreshError = error;
+            throw error;
+          }
+          return true;
         },
       });
-      wireExploreSessionRecoveryDrains({ windowTarget, documentTarget: null });
+      globalThis.window = windowTarget;
+      globalThis.document = { ...previousDocument, ...documentTarget };
+      // Re-init after installing the production event targets.
+      initRecoveryHarness({
+        refreshRunwayState: async ({ capture }) => {
+          refreshCalls += 1;
+          try {
+            capture.fence.commit('test empty runway adoption', capture.expectRunwayAdoption(ready));
+          } catch (error) {
+            refreshError = error;
+            throw error;
+          }
+          return true;
+        },
+      });
       getExploreSession().adoptRunway(stalled);
       assert.equal(getExploreSession().recordRoomAction('proceed').reason, 'nextRoomNotReady');
-      assert.equal(refreshCalls, 0);
-
-      online = true;
+      await Promise.resolve();
+      await Promise.resolve();
+      assert.equal(windowTarget.listeners.get('online')?.length, 1);
+      assert.equal(refreshCalls, 1, 'the pause itself starts the first controller-owned refresh');
+      assert.equal(refreshError, null);
       windowTarget.dispatch('online');
-      await waitFor(() => refreshCalls === 1 && !getExploreSession().isPaused());
+      await waitFor(() => !getExploreSession().isPaused());
 
       assert.equal(getExploreSession().pendingCount(), 0);
-      await Promise.resolve();
-      await Promise.resolve();
     } finally {
-      Object.defineProperty(globalThis, 'navigator', {
-        value: originalNavigator,
-        configurable: true,
-      });
+      globalThis.window = previousWindow;
+      globalThis.document = previousDocument;
     }
   });
 
@@ -1561,99 +1555,51 @@ describe('explore session online stall recovery', () => {
     }
   });
 
-  it('keeps an armed retry when an explicit recovery remains indeterminate', async () => {
-    const originalSetTimeout = globalThis.setTimeout;
-    const originalClearTimeout = globalThis.clearTimeout;
-    const timers = [];
-    globalThis.setTimeout = (fn, delay) => {
-      const timer = { fn, delay, cancelled: false };
-      timers.push(timer);
-      return timer;
-    };
-    globalThis.clearTimeout = timer => {
-      if (timer) timer.cancelled = true;
-    };
-
+  it('keeps pending-log transport retry ownership out of the pause controller', async () => {
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
+    const windowTarget = makeEventTarget();
+    const documentTarget = makeEventTarget();
+    let refreshCalls = 0;
+    let syncCalls = 0;
     try {
-      const stalled = pausingRunway();
-      const actionRunway = makeRunway({
-        sessionEpoch: stalled.sessionEpoch,
-        preparedRooms: [preparedRoom(0, {
-          acceptedActions: ['friendlyNpc.choose'],
-          actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
-        })],
-      });
-      let refreshCalls = 0;
-      let syncCalls = 0;
-      let allowSync = false;
+      globalThis.window = windowTarget;
+      globalThis.document = { ...previousDocument, ...documentTarget, visibilityState: 'visible' };
       initRecoveryHarness({
-        refreshRunwayState: async () => {
-          refreshCalls += 1;
-          throw new Error('temporary outage');
-        },
-        apiSyncExploreSession: async payload => {
+        refreshRunwayState: async () => { refreshCalls += 1; return true; },
+        apiSyncExploreSession: async () => {
           syncCalls += 1;
-          if (!allowSync) {
-            return { error: 'forbidden', httpStatus: 403, transient: false };
-          }
-          return {
-            status: 'ok',
-            confirmedThroughSeq: payload.entries.at(-1).seq,
-            results: [],
-          };
+          return completeTransport({ protocolVersion: 1, status: 'ok', confirmedThroughSeq: 1, results: [] });
         },
       });
-      getExploreSession().adoptRunway(stalled);
-      assert.equal(
-        getExploreSession().recordRoomAction('proceed').reason,
-        'nextRoomNotReady',
-      );
+      const session = getExploreSession();
+      session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
+        acceptedActions: ['friendlyNpc.choose'],
+        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+      })] }));
+      assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
+      session.pause('transportDegraded');
+      windowTarget.dispatch('online');
+      documentTarget.dispatch('visibilitychange');
+      await Promise.resolve();
+      await Promise.resolve();
 
-      const transientOutcome = await triggerExploreSessionRecovery();
-      assert.deepEqual(transientOutcome, { recovered: false, retryable: true });
-      const recoveryTimer = timers.find(timer => timer.delay === 500);
-      assert.ok(recoveryTimer, 'the transient failure should arm the first recovery retry');
-      assert.equal(refreshCalls, 1);
-
-      getExploreSession().adoptRunway(actionRunway);
-      assert.equal(
-        getExploreSession().recordRoomAction('friendlyNpc.choose', {
-          itemId: 'field-tonic',
-        }).accepted,
-        true,
-      );
-      const indeterminateOutcome = await triggerExploreSessionRecovery();
-      assert.deepEqual(indeterminateOutcome, { recovered: false, retryable: true });
-      assert.equal(syncCalls, 1);
-      assert.equal(getExploreSession().pendingCount(), 1);
-
-      if (!recoveryTimer.cancelled) {
-        recoveryTimer.fn();
-        await triggerExploreSessionRecovery();
-      }
-      assert.equal(recoveryTimer.cancelled, false);
-      assert.equal(syncCalls, 2, 'the scheduled retry must keep attempting sync');
-      assert.equal(refreshCalls, 1, 'pending sync does not refresh the runway');
-
-      allowSync = true;
-      const laterExplicitOutcome = await triggerExploreSessionRecovery();
-      assert.deepEqual(laterExplicitOutcome, { recovered: true, retryable: false });
-      assert.equal(syncCalls, 3, 'a later explicit recovery signal may retry once');
-      assert.equal(getExploreSession().pendingCount(), 0);
-      assert.equal(getExploreSession().isPaused(), false);
+      assert.equal(refreshCalls, 0);
+      assert.equal(syncCalls, 0);
+      assert.equal(session.pendingCount(), 1);
     } finally {
-      globalThis.setTimeout = originalSetTimeout;
-      globalThis.clearTimeout = originalClearTimeout;
+      globalThis.window = previousWindow;
+      globalThis.document = previousDocument;
     }
   });
 
-  it('renders truthful retry controls and drains pending work when Retry now is clicked', async () => {
+  it('renders exact Retry and drains pending work on one explicit redelivery', async () => {
     let syncCalls = 0;
     initRecoveryHarness({
       apiSyncExploreSession: async ({ entries }) => {
         syncCalls += 1;
-        if (syncCalls <= 12) return { transport: true, httpStatus: 200, body: {} };
-        return { status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] };
+        if (syncCalls <= 12) return completeTransport({});
+        return completeTransport({ protocolVersion: 1, status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] });
       },
     });
     const session = getExploreSession();
@@ -1666,8 +1612,8 @@ describe('explore session online stall recovery', () => {
     for (let attempt = 0; attempt < 12; attempt += 1) await session.syncNow();
 
     assert.match(actionArea.innerHTML, /Unsynced progress can be lost if you reload/);
-    const retryButton = renderedButtons(actionArea).find(button => button.innerHTML === 'Retry now');
-    assert.ok(retryButton, 'transport degradation renders an English Retry now control');
+    const retryButton = renderedButtons(actionArea).find(button => button.innerHTML === 'Retry');
+    assert.ok(retryButton, 'transport degradation renders the exact Retry control');
     const pendingBeforeClick = session.pendingCount();
     retryButton.click();
     await waitFor(() => syncCalls === 13 && session.pendingCount() === 0);
@@ -1675,9 +1621,10 @@ describe('explore session online stall recovery', () => {
     assert.equal(session.pendingCount(), 0);
   });
 
-  it('renders writer-conflict choices without a retry and preserves terminal session state after review', async () => {
-    let adopted = 0;
-    let keptPaused = 0;
+  it('reviews writer conflict through its supplied preserved capture without resuming', async () => {
+    let reviewed = 0;
+    let suppliedCapture = null;
+    let toastCalls = 0;
     let syncCalls = 0;
     initRecoveryHarness({
       apiSyncExploreSession: async ({ entries }) => {
@@ -1690,8 +1637,12 @@ describe('explore session online stall recovery', () => {
         }
         return completeTransport({ status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] });
       },
-      adoptExploreSession: async () => { adopted += 1; return true; },
-      keepExploreSessionPaused: async () => { keptPaused += 1; },
+      reviewAuthoritativeState: async ({ capture }) => {
+        reviewed += 1;
+        suppliedCapture = capture;
+        return true;
+      },
+      showToast: () => { toastCalls += 1; },
     });
     const session = getExploreSession();
     session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
@@ -1703,24 +1654,33 @@ describe('explore session online stall recovery', () => {
 
     assert.deepEqual(renderedButtons(actionArea).map(button => button.innerHTML), [
       'Review latest progress',
-      'Keep this session paused',
+      'Keep paused',
     ]);
     renderedButtons(actionArea)[0].click();
-    await waitFor(() => adopted === 1);
-    assert.equal(adopted, 1);
-    assert.equal(keptPaused, 0);
+    await waitFor(() => reviewed === 1);
+    assert.equal(suppliedCapture?.fence != null, true);
     assert.equal(syncCalls, 1);
     assert.equal(session.pendingCount(), 1);
     assert.equal(session.getPauseReason(), 'writerConflict');
+    renderedButtons(actionArea)[1].click();
+    assert.equal(toastCalls, 1);
   });
 
-  it('keeps writer conflict inert through online and visible-tab recovery events', async () => {
+  it('keeps writer conflict inert through current online and visible-tab controller events', async () => {
     let syncCalls = 0;
-    let adopted = 0;
+    let refreshCalls = 0;
+    let reviewCalls = 0;
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
     const windowTarget = makeEventTarget();
     const documentTarget = makeEventTarget();
     documentTarget.visibilityState = 'visible';
+    try {
+    globalThis.window = windowTarget;
+    globalThis.document = { ...previousDocument, ...documentTarget };
     initRecoveryHarness({
+      refreshRunwayState: async () => { refreshCalls += 1; return true; },
+      reviewAuthoritativeState: async () => { reviewCalls += 1; return true; },
       apiSyncExploreSession: async () => {
         syncCalls += 1;
         return completeTransport(
@@ -1728,9 +1688,7 @@ describe('explore session online stall recovery', () => {
           { httpStatus: 409 },
         );
       },
-      adoptExploreSession: async () => { adopted += 1; return true; },
     });
-    wireExploreSessionRecoveryDrains({ windowTarget, documentTarget });
     const session = getExploreSession();
     session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
       acceptedActions: ['friendlyNpc.choose'],
@@ -1747,147 +1705,87 @@ describe('explore session online stall recovery', () => {
     await Promise.resolve();
 
     assert.equal(syncCalls, 1);
-    assert.equal(adopted, 0);
+    assert.equal(refreshCalls, 0);
+    assert.equal(reviewCalls, 0);
     assert.equal(session.getPauseReason(), 'writerConflict');
     assert.deepEqual(renderedButtons(actionArea).map(button => button.innerHTML), [
       'Review latest progress',
-      'Keep this session paused',
+      'Keep paused',
     ]);
+    } finally {
+      globalThis.window = previousWindow;
+      globalThis.document = previousDocument;
+    }
   });
 
-  it('coalesces auth recovery, resolves the exact auth pause, and drains retained work once', async () => {
-    let syncCalls = 0;
-    let reauthCalls = 0;
-    let adoptCalls = 0;
-    let releaseReauthentication;
-    const reauthentication = new Promise(resolve => { releaseReauthentication = resolve; });
+  it('keeps authRequired authoritative and UI-inert until Task 7 owns recovery', async () => {
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
     const windowTarget = makeEventTarget();
     const documentTarget = makeEventTarget();
     documentTarget.visibilityState = 'visible';
-    initRecoveryHarness({
-      apiSyncExploreSession: async ({ entries }) => {
-        syncCalls += 1;
-        if (syncCalls === 1) {
+    let refreshCalls = 0;
+    let syncCalls = 0;
+    actionArea.innerHTML = 'auth-owned actions';
+    try {
+      globalThis.window = windowTarget;
+      globalThis.document = { ...previousDocument, ...documentTarget };
+      initRecoveryHarness({
+        refreshRunwayState: async () => { refreshCalls += 1; return true; },
+        apiSyncExploreSession: async () => {
+          syncCalls += 1;
           return completeTransport({ error: 'expired' }, { httpStatus: 401 });
-        }
-        return completeTransport({ status: 'ok', confirmedThroughSeq: entries.at(-1).seq, results: [] });
-      },
-      reauthenticateExploreSession: async () => {
-        reauthCalls += 1;
-        return reauthentication;
-      },
-      adoptExploreSession: async () => {
-        adoptCalls += 1;
-        return true;
-      },
-    });
-    wireExploreSessionRecoveryDrains({ windowTarget, documentTarget });
-    const session = getExploreSession();
-    session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
-      acceptedActions: ['friendlyNpc.choose'],
-      actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
-    })] }));
-    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
-    const initialDrain = session.syncNow();
-    await waitFor(() => reauthCalls === 1);
-    assert.equal(reauthCalls, 1);
+        },
+      });
+      const session = getExploreSession();
+      session.adoptRunway(makeRunway({ preparedRooms: [preparedRoom(0, {
+        acceptedActions: ['friendlyNpc.choose'],
+        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+      })] }));
+      session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+      await session.syncNow();
+      windowTarget.dispatch('online');
+      documentTarget.dispatch('visibilitychange');
+      await Promise.resolve();
+      await Promise.resolve();
 
-    windowTarget.dispatch('online');
-    documentTarget.dispatch('visibilitychange');
-    await Promise.resolve();
-    await Promise.resolve();
-
-    assert.equal(syncCalls, 1);
-    assert.equal(adoptCalls, 0);
-    assert.equal(session.getPauseReason(), 'authRequired');
-    assert.equal(renderedButtons(actionArea).length, 0);
-
-    const recoveryCompletion = Promise.race([
-      (async () => {
-        await initialDrain;
-        await waitFor(() => syncCalls === 2 && session.pendingCount() === 0);
-        return 'settled';
-      })(),
-      new Promise(resolve => setTimeout(() => resolve('timed-out'), 50)),
-    ]);
-    releaseReauthentication(true);
-    assert.equal(await recoveryCompletion, 'settled');
-
-    assert.equal(adoptCalls, 1);
-    assert.equal(reauthCalls, 1);
-    assert.equal(session.isPaused(), false);
+      assert.equal(session.getPauseReason(), 'authRequired');
+      assert.equal(session.pendingCount(), 1);
+      assert.equal(actionArea.innerHTML, 'auth-owned actions');
+      assert.equal(refreshCalls, 0);
+      assert.equal(syncCalls, 1);
+    } finally {
+      globalThis.window = previousWindow;
+      globalThis.document = previousDocument;
+    }
   });
 
-  it('does not hand stale auth recovery adoption to a replacement session', async () => {
-    let reauthenticateCalls = 0;
-    let resolveReauthentication;
-    let staleAdoptionCalls = 0;
-    const reauthentication = new Promise(resolve => { resolveReauthentication = resolve; });
-    initRecoveryHarness({
-      apiSyncExploreSession: async () => completeTransport({ error: 'expired' }, { httpStatus: 401 }),
-      reauthenticateExploreSession: async () => {
-        reauthenticateCalls += 1;
-        return reauthentication;
-      },
-      adoptExploreSession: async () => {
-        staleAdoptionCalls += 1;
-        return true;
-      },
+  it('does not render a stale lower pause over authoritative authRequired', () => {
+    let currentReason = 'nextRoomNotReady';
+    const session = {
+      pendingCount: () => 1,
+      isPaused: () => true,
+      getPauseReason: () => currentReason,
+      pause: () => { currentReason = 'authRequired'; },
+    };
+    const narrations = [];
+    const actions = [];
+    const controller = createExploreSessionPauseController({
+      getSession: () => session,
+      refreshRunwayState: async () => assert.fail('auth must not refresh runway'),
+      reviewAuthoritativeState: async () => assert.fail('auth must not review'),
+      renderNarration: value => narrations.push(value),
+      renderActions: value => actions.push(value),
+      showToast: () => {},
+      schedule: () => 0,
+      cancel: () => {},
+      windowTarget: makeEventTarget(),
+      documentTarget: makeEventTarget(),
     });
-    const sessionA = getExploreSession();
-    sessionA.adoptRunway(makeRunway({
-      sessionEpoch: 'ese_auth_owner_a',
-      preparedRooms: [preparedRoom(0, {
-        acceptedActions: ['friendlyNpc.choose'],
-        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
-      })],
-    }));
-    assert.equal(
-      sessionA.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted,
-      true,
-    );
-    const drainA = sessionA.syncNow();
-    await waitFor(() => reauthenticateCalls === 1);
-
-    let successorAdoptionCalls = 0;
-    initRecoveryHarness({
-      apiSyncExploreSession: async () => completeTransport({ status: 'ok', confirmedThroughSeq: 1, results: [] }),
-      adoptExploreSession: async () => {
-        successorAdoptionCalls += 1;
-        getExploreSession().adoptRunway(makeRunway({
-          sessionEpoch: 'ese_wrong_successor',
-          roomActionSeq: 777,
-          preparedRooms: [preparedRoom(0, { actionSeq: 777 })],
-        }));
-        return true;
-      },
-    });
-    const sessionB = getExploreSession();
-    const runwayB = makeRunway({
-      sessionEpoch: 'ese_auth_owner_b',
-      roomActionSeq: 401,
-      preparedRooms: [preparedRoom(0, {
-        actionSeq: 401,
-        acceptedActions: ['friendlyNpc.choose'],
-        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
-      })],
-    });
-    sessionB.adoptRunway(runwayB);
-    assert.equal(sessionB.recordRoomAction('friendlyNpc.choose', { itemId: 'ether' }).accepted, true);
-    const exactB = sessionB.snapshot();
-    const pauseB = sessionB.getPauseReason();
-    const roomB = sessionB.currentPreparedRoom();
-
-    resolveReauthentication(true);
-    await drainA;
-    await Promise.resolve();
-    await Promise.resolve();
-
-    assert.equal(staleAdoptionCalls, 0);
-    assert.equal(successorAdoptionCalls, 0);
-    assert.equal(sessionA.resolvePause('authRequired'), false);
-    assert.equal(sessionB.getPauseReason(), pauseB);
-    assert.deepEqual(sessionB.snapshot(), exactB);
-    assert.deepEqual(sessionB.currentPreparedRoom(), roomB);
+    controller.handlePause({ reason: 'nextRoomNotReady' });
+    assert.equal(currentReason, 'authRequired');
+    assert.deepEqual(narrations, []);
+    assert.deepEqual(actions, []);
+    controller.dispose();
   });
 });

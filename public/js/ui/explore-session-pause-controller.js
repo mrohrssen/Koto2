@@ -141,7 +141,9 @@ export function createExploreSessionPauseController({
       && (session.pendingCount?.() ?? 0) === 0
       && EMPTY_RUNWAY_REASONS.has(reason)
     ) {
-      void triggerRecovery();
+      // onPause can be delivered inside the session's ownership transaction;
+      // capture on the next microtask so the pause revision is already current.
+      void Promise.resolve().then(() => triggerRecovery());
     }
   }
 

@@ -155,9 +155,37 @@ describe('Explore session pause controller', () => {
 
     assert.equal(session.captureFenceCalls[0].pending, 'preserve');
     assert.equal(typeof session.captureFenceCalls[0].leases[0].isCurrent, 'function');
-    assert.deepEqual(captures, [{ marker: 'preserved-capture', fence: { isCurrent: captures[0]?.fence?.isCurrent } }]);
+    assert.equal(captures.length, 1);
+    assert.equal(captures[0].marker, 'preserved-capture');
+    assert.equal(typeof captures[0].fence.isCurrent, 'function');
     assert.equal(session.pendingCount(), 2);
     assert.equal(session.getPauseReason(), 'writerConflict');
+    controller.dispose();
+  });
+
+  it('coalesces writer review clicks and suppresses a same-session superseded completion', async () => {
+    const review = deferred();
+    let captureCurrent = true;
+    let reviewCalls = 0;
+    const session = createSession({ reason: 'writerConflict', pending: 1 });
+    session.captureFence = () => ({ fence: { isCurrent: () => captureCurrent } });
+    const { controller, actions, toasts } = harness({
+      session,
+      reviewAuthoritativeState: async () => { reviewCalls += 1; return review.promise; },
+    });
+
+    controller.handlePause();
+    const reviewAction = actions[0].actions[0];
+    const firstClick = reviewAction.onClick();
+    const secondClick = reviewAction.onClick();
+    assert.equal(reviewCalls, 1);
+
+    captureCurrent = false;
+    review.resolve(true);
+    await Promise.all([firstClick, secondClick]);
+
+    assert.equal(actions.length, 1);
+    assert.deepEqual(toasts, []);
     controller.dispose();
   });
 
@@ -181,7 +209,7 @@ describe('Explore session pause controller', () => {
     controller.dispose();
   });
 
-  it('uses no controller timer for pending work and ratchets empty-runway refresh delays', async () => {
+  it('uses no controller timer for pending work and ratchets empty-runway refresh delays through the cap', async () => {
     const pending = harness({ session: createSession({ reason: 'transportDegraded', pending: 1 }) });
     pending.controller.handlePause();
     pending.windowTarget.dispatch('online');
@@ -192,10 +220,14 @@ describe('Explore session pause controller', () => {
     const session = createSession({ reason: 'nextRoomNotReady', pending: 0 });
     const empty = harness({ session, refreshRunwayState: async () => {} });
     empty.controller.handlePause();
-    await empty.controller.triggerRecovery();
-    assert.equal(empty.timers[0].delay, 500);
-    await empty.timers.shift().callback();
-    assert.equal(empty.timers[0].delay, 1000);
+    const delays = [];
+    for (let attempt = 0; attempt < 7; attempt += 1) {
+      await empty.controller.triggerRecovery();
+      const timer = empty.timers.shift();
+      delays.push(timer.delay);
+      await timer.callback();
+    }
+    assert.deepEqual(delays, [500, 1000, 2000, 4000, 8000, 15000, 15000]);
     empty.controller.dispose();
   });
 
@@ -214,14 +246,13 @@ describe('Explore session pause controller', () => {
     controller.dispose();
   });
 
-  it('coalesces signal recovery, removes exact listeners, cancels timers, and ignores stale completion after disposal', async () => {
-    const refresh = deferred();
+  it('coalesces signal recovery, removes exact listeners, cancels an armed timer, and ignores stale completion after disposal', async () => {
     const cancels = [];
     const session = createSession({ reason: 'nextRoomNotReady', pending: 0 });
     let refreshCalls = 0;
     const { controller, timers, windowTarget, documentTarget, narrations } = harness({
       session,
-      refreshRunwayState: async () => { refreshCalls += 1; await refresh.promise; },
+      refreshRunwayState: async () => { refreshCalls += 1; },
       cancel: timer => cancels.push(timer),
     });
 
@@ -229,17 +260,21 @@ describe('Explore session pause controller', () => {
     assert.equal(documentTarget.listeners.get('visibilitychange').length, 1);
     windowTarget.dispatch('online');
     documentTarget.dispatch('visibilitychange');
-    await Promise.resolve();
+    await controller.triggerRecovery();
     assert.equal(refreshCalls, 1);
+    assert.equal(timers.length, 1);
+    const armedTimer = timers[0];
+    const narrationCountBeforeDispose = narrations.length;
     controller.dispose();
-    refresh.resolve();
+    await armedTimer.callback();
     await Promise.resolve();
     await Promise.resolve();
 
     assert.equal(windowTarget.listeners.get('online').length, 0);
     assert.equal(documentTarget.listeners.get('visibilitychange').length, 0);
-    assert.equal(timers.length, 0);
-    assert.deepEqual(cancels, []);
-    assert.equal(narrations.length, 0);
+    assert.equal(timers.length, 1);
+    assert.deepEqual(cancels, [armedTimer]);
+    assert.equal(refreshCalls, 1);
+    assert.equal(narrations.length, narrationCountBeforeDispose);
   });
 });

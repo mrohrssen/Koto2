@@ -379,8 +379,8 @@ async function completeWordDiscoveryOptimistically({ learnedWords = [], session 
         throw new Error(completionResult?.error || 'No response from word discovery completion API');
       }
       if (completionResult.state) updateGameState(completionResult.state);
-  } catch {
-    handleExploreSessionPause({ reason: 'missingPayload' });
+    } catch {
+      handleExploreSessionPause({ reason: 'missingPayload' });
       return null;
     }
   }
@@ -2207,7 +2207,7 @@ async function completeSpeedReviewRoomOptimistically(
   let completionResult;
   if (sessionOwned) {
     completionResult = getExploreSession()?.recordRoomAction('speedReview.complete', { roomId: room?.id });
-  if (!completionResult?.accepted) {
+    if (!completionResult?.accepted) {
       handleExploreSessionPause({ reason: completionResult?.reason || 'missingPayload' });
       if (throwOnFailure) throw new Error('Explore session action could not be queued');
       return null;
@@ -2459,7 +2459,7 @@ async function completeWhackAMoleOptimistically(score, session = getExploreSessi
   if (!session || session !== getExploreSession()) return null;
   const queued = session?.recordRoomAction('whackAMole.complete', { score });
   if (!queued?.accepted) {
-  if (session?.isPaused?.() !== true) {
+    if (session?.isPaused?.() !== true) {
       handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
     }
     return null;
@@ -2475,7 +2475,7 @@ async function skipWhackAMoleOptimistically(session = getExploreSession()) {
   if (!session || session !== getExploreSession()) return null;
   const queued = session?.recordRoomAction('whackAMole.skip', {});
   if (!queued?.accepted) {
-  if (session?.isPaused?.() !== true) {
+    if (session?.isPaused?.() !== true) {
       handleExploreSessionPause({ reason: queued?.reason || 'missingPayload' });
     }
     return null;
@@ -2524,7 +2524,7 @@ async function skipWhackAMoleLegacy(renderOwner = null) {
       renderOwner,
     );
   } catch {
-  if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return null;
+    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner)) return null;
     handleExploreSessionPause();
     return null;
   }
@@ -2544,7 +2544,7 @@ async function proceedWhackAMoleLegacy(renderOwner = null) {
       ownerOptions,
     );
   } catch {
-  if (renderOwner && !requireSupportRoomRenderOwner(renderOwner, ownerOptions)) return null;
+    if (renderOwner && !requireSupportRoomRenderOwner(renderOwner, ownerOptions)) return null;
     handleExploreSessionPause();
     return null;
   }
