@@ -6,8 +6,6 @@
  * manages global game state, and coordinates interactions between subsystems.
  * This is the entry point loaded by game.html.
  *
- * KEY EXPORTS: updateGameState(), updateGameContent() (behavioral test seams)
- *
  * KEY FUNCTIONS:
  * - updateUI(): Refreshes all UI components based on current game state
  * - updateGameState(newState): Updates local state and syncs to store
@@ -139,6 +137,7 @@ import {
 import { getBattleRewardAnchor, showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
 import { createCombatRecoveryGate } from './js/ui/combat-recovery-gate.js';
+import { createCombatPhaseRecoveryCoordinator } from './js/ui/combat-phase-recovery-coordinator.js';
 import { needsNpcDialogueRecovery } from './js/ui/npc-dialogue-recovery.js';
 import { createNpcDialogueRecoveryCoordinator } from './js/ui/npc-dialogue-recovery-coordinator.js';
 import { playNpcBattleIntro, playTutorialBossInterjection } from './js/ui/room-transition.js';
@@ -280,7 +279,7 @@ if (typeof window !== 'undefined') {
   window.__gameState = gameState;
 }
 
-export function updateGameState(newState) {
+function updateGameState(newState) {
   console.log('[DEBUG] updateGameState called. phase:', newState.phase, 'pendingBranch:', newState.run?.pendingBranch, 'currentRoom:', newState.run?.currentRoom);
   gameState = newState;
   gameStateRevision += 1;
@@ -560,14 +559,14 @@ function updateStatusBar() {
 }
 
 const combatRecoveryGate = createCombatRecoveryGate();
-const defaultCombatRecoveryStarter = options => combatLoopUI.startCombatLoop(options);
-let combatRecoveryStarter = defaultCombatRecoveryStarter;
-
-export function setCombatRecoveryStarter(starter = null) {
-  combatRecoveryStarter = typeof starter === 'function'
-    ? starter
-    : defaultCombatRecoveryStarter;
-}
+const combatPhaseRecovery = createCombatPhaseRecoveryCoordinator({
+  getSession: () => getExploreSession?.(),
+  gate: combatRecoveryGate,
+  isCombatActive: () => combatLoopUI.isCombatActive(),
+  getPlaybackRecoveryState: () => combatLoopUI.getExploreCombatPlaybackRecoveryState?.() || 'none',
+  consumePlaybackRecovery: () => combatLoopUI.consumeExploreCombatPlaybackRecovery?.() === true,
+  startCombat: options => combatLoopUI.startCombatLoop(options),
+});
 
 let postCombatShopRecoveryDone = false;
 
@@ -719,7 +718,7 @@ function updatePlayerHP() {
   // Player HP display is now handled by individual creature HP bars
 }
 
-export function updateGameContent() {
+function updateGameContent() {
   switch (gameState.phase) {
     case 'no_save':
       actions.clear();
@@ -808,29 +807,7 @@ export function updateGameContent() {
       });
       break;
     case 'combat':
-      // On page reload, the combat loop isn't running. Re-initialize it
-      // so the player sees their current combat state and can pick moves.
-      // An accepted Explore turn whose playback failed also restarts here after
-      // its authoritative checkpoint drains. That owner-checked permit must
-      // bypass combatRecoveryDone because a reload-recovered fight has already
-      // consumed the ordinary one-shot recovery gate.
-      {
-        const combatIsActive = combatLoopUI.isCombatActive();
-        const playbackRecoveryState = !combatIsActive
-          ? combatLoopUI.getExploreCombatPlaybackRecoveryState?.() || 'none'
-          : 'none';
-        const playbackRecovery = playbackRecoveryState === 'ready'
-          && combatLoopUI.consumeExploreCombatPlaybackRecovery?.() === true;
-        const playbackRecoveryHeld = playbackRecoveryState !== 'none';
-        if (combatRecoveryGate.shouldRecover(gameState, {
-          combatActive: combatIsActive,
-          playbackRecovery,
-          playbackRecoveryHeld,
-        })) {
-          combatRecoveryGate.markDone(gameState);
-          combatRecoveryStarter({ recovery: true });
-        }
-      }
+      combatPhaseRecovery.handle(gameState);
       break;
     case 'npc_dialogue':
       // Normally handled inline by combat-loop's handleCombatEnd().

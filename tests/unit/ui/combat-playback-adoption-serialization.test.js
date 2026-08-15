@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { makeExploreTransport } from '../../helpers/explore-sync-transport.js';
+import { createCombatPhaseRecoveryCoordinator } from '../../../public/js/ui/combat-phase-recovery-coordinator.js';
+import { createCombatRecoveryGate } from '../../../public/js/ui/combat-recovery-gate.js';
 
 globalThis.window = {
   __intentLog: null,
@@ -28,10 +30,10 @@ globalThis.requestAnimationFrame = callback => setImmediate(() => callback(Date.
 globalThis.cancelAnimationFrame = id => clearImmediate(id);
 
 const combatLoop = await import('../../../public/js/ui/combat-loop.js');
-const game = await import('../../../public/game.js');
 const {
   configureExploreSession,
   createExploreSession,
+  getExploreSession,
   resetExploreSession,
 } = await import('../../../public/js/ui/explore-session.js');
 const { setSceneManager } = await import('../../../public/js/scenes/scene-manager.js');
@@ -207,17 +209,22 @@ async function runRejectedSessionCombatTurn(actionType, pendingFlag) {
     reason: 'hardCap',
     pendingCount: 50,
   });
-  assert.equal(typeof game.setCombatRecoveryStarter, 'function');
   let recoveryStarts = 0;
   let moveSelectionRendered = false;
-  game.setCombatRecoveryStarter(() => {
-    recoveryStarts += 1;
-    combatLoop.__combatNetworkTest.setCombatActive(true);
-    moveSelectionRendered = true;
+  const coordinator = createCombatPhaseRecoveryCoordinator({
+    getSession: getExploreSession,
+    gate: createCombatRecoveryGate(),
+    isCombatActive: () => combatLoop.isCombatActive(),
+    getPlaybackRecoveryState: () => combatLoop.getExploreCombatPlaybackRecoveryState(),
+    consumePlaybackRecovery: () => combatLoop.consumeExploreCombatPlaybackRecovery(),
+    startCombat: () => {
+      recoveryStarts += 1;
+      combatLoop.__combatNetworkTest.setCombatActive(true);
+      moveSelectionRendered = true;
+    },
   });
-  game.updateGameState(state);
   combatLoop.__combatNetworkTest.setCombatActive(false);
-  game.updateGameContent();
+  coordinator.handle(state);
   assert.equal(recoveryStarts, 1,
     'ordinary page-reload recovery must consume the combat owner gate first');
 
@@ -249,7 +256,8 @@ async function runRejectedSessionCombatTurn(actionType, pendingFlag) {
   });
 
   const recoveryStateBeforeHandler = combatLoop.getExploreCombatPlaybackRecoveryState();
-  game.updateGameContent();
+  combatLoop.__combatNetworkTest.setCombatActive(false);
+  coordinator.handle(state);
   const recoveryStateAfterHandler = combatLoop.getExploreCombatPlaybackRecoveryState();
 
   return {
@@ -263,7 +271,7 @@ async function runRejectedSessionCombatTurn(actionType, pendingFlag) {
   };
 }
 
-test('rejected attack append reaches move selection through the real game combat phase handler', async () => {
+test('rejected attack append reaches move selection through the phase coordinator', async () => {
   try {
     const result = await runRejectedSessionCombatTurn('attack', 'player');
 
@@ -276,13 +284,12 @@ test('rejected attack append reaches move selection through the real game combat
       'the real permit must bypass the already-consumed page-reload gate');
     assert.equal(result.moveSelectionRendered, true);
   } finally {
-    game.setCombatRecoveryStarter?.(null);
     combatLoop.cleanupCombat();
     resetExploreSession();
   }
 });
 
-test('rejected defend append reaches move selection through the real game combat phase handler', async () => {
+test('rejected defend append reaches move selection through the phase coordinator', async () => {
   try {
     const result = await runRejectedSessionCombatTurn('defend', 'enemy');
 
@@ -295,7 +302,6 @@ test('rejected defend append reaches move selection through the real game combat
       'the real permit must bypass the already-consumed page-reload gate');
     assert.equal(result.moveSelectionRendered, true);
   } finally {
-    game.setCombatRecoveryStarter?.(null);
     combatLoop.cleanupCombat();
     resetExploreSession();
   }

@@ -374,7 +374,7 @@ describe('optimistic run action integration', () => {
     assert.match(npcSkillCallbackSource, /return result/);
   });
 
-  it('lets an owner-checked playback recovery bypass an already-consumed reload gate', () => {
+  it('wires combat phase recovery through the focused coordinator', () => {
     const updateGameContentSource = sourceBetween(
       gameSource,
       'function updateGameContent()',
@@ -386,26 +386,8 @@ describe('optimistic run action integration', () => {
       "case 'npc_dialogue':"
     );
 
-    assert.match(
-      combatCaseSource,
-      /getExploreCombatPlaybackRecoveryState\?\.\(\) \|\| 'none'/,
-      'combat resume must distinguish a held permit from no recovery request',
-    );
-    assert.match(
-      combatCaseSource,
-      /consumeExploreCombatPlaybackRecovery\?\.\(\) === true/,
-      'combat resume must consume the owner-checked one-shot permit',
-    );
-    assert.match(
-      combatCaseSource,
-      /combatRecoveryGate\.shouldRecover\(gameState, \{[\s\S]*?combatActive: combatIsActive,[\s\S]*?playbackRecovery,[\s\S]*?playbackRecoveryHeld/,
-      'pending playback recovery must block ordinary restart while ready recovery bypasses the reload gate',
-    );
-    assert.match(
-      combatCaseSource,
-      /combatRecoveryGate\.markDone\(gameState\)/,
-      'the recovered combat owner must consume only its own one-shot gate',
-    );
+    assert.match(gameSource, /createCombatPhaseRecoveryCoordinator\(/);
+    assert.match(combatCaseSource, /combatPhaseRecovery\.handle\(gameState\)/);
   });
 
   it('handles rejected NPC battle skill session actions with soft pause copy', () => {
