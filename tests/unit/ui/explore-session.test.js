@@ -952,6 +952,83 @@ test('completed auth recovery schedules a fresh drain after adoption', async () 
   assert.equal(scheduler.delays().at(-1), 0);
 });
 
+for (const status of ['ok', 'corrected']) {
+  test(`minimal V2 ${status} response preserves the V1 log and promotes retries without V1 adoption`, async () => {
+    const scheduler = makeManualScheduler();
+    const checkpoints = [];
+    const corrections = [];
+    const adoptionWaits = [];
+    let releaseFirstRequest;
+    const firstRequestGate = new Promise(resolve => { releaseFirstRequest = resolve; });
+    let syncCalls = 0;
+    const replacementRunway = makeRunway({
+      sessionEpoch: 'ese_v2_replacement11',
+      currentRoom: 1,
+      preparedRooms: [preparedRoom(1, { actionSeq: 99 })],
+    });
+    const session = createExploreSession({
+      syncRequest: async () => {
+        syncCalls += 1;
+        if (syncCalls === 1) {
+          await firstRequestGate;
+          return {
+            transport: true,
+            httpStatus: 200,
+            body: {
+              protocolVersion: 2,
+              status,
+              runId: 'run-v2-cutover',
+              appliedThroughSeq: 2,
+              nextExpectedSeq: 3,
+              results: [],
+              exploreRunway: replacementRunway,
+            },
+          };
+        }
+        return {
+          transport: true,
+          httpStatus: 200,
+          body: okResponse(2, { exploreRunway: replacementRunway }),
+        };
+      },
+      beforeResponseAdoption: async response => { adoptionWaits.push(response.status); },
+      onCheckpoint: response => checkpoints.push(response),
+      onCorrection: response => corrections.push(response),
+      schedule: scheduler.schedule,
+      cancel: scheduler.cancel,
+    });
+    session.adoptRunway(makeRunway());
+
+    assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'first' }).accepted, true);
+    const firstDrain = session.syncNow();
+    assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'second' }).accepted, true);
+    const exactPendingLog = session.snapshot();
+    releaseFirstRequest();
+    await firstDrain;
+
+    assert.deepEqual(session.snapshot(), exactPendingLog);
+    assert.equal(syncCalls, 1, 'V2 must not immediately repost through the V1 success loop');
+    assert.deepEqual(adoptionWaits, []);
+    assert.deepEqual(checkpoints, []);
+    assert.deepEqual(corrections, []);
+    assert.equal(session.currentPreparedRoom()?.index, 0);
+    assert.equal(scheduler.delays().at(-1), EXPLORE_SYNC_RETRY_DELAYS_MS[0]);
+    assert.ok(scheduler.delays().at(-1) > 0);
+
+    await scheduler.fire();
+
+    assert.equal(syncCalls, 2);
+    assert.deepEqual(session.snapshot(), exactPendingLog,
+      'a V1-shaped response after V2 promotion must be indeterminate');
+    assert.deepEqual(adoptionWaits, []);
+    assert.deepEqual(checkpoints, []);
+    assert.deepEqual(corrections, []);
+    assert.equal(session.currentPreparedRoom()?.index, 0);
+    assert.deepEqual(scheduler.delays(), [EXPLORE_SYNC_RETRY_DELAYS_MS[1]]);
+    assert.ok(scheduler.delays()[0] > 0);
+  });
+}
+
 test('corrected response clears the log, notifies, and adopts response runway', async () => {
   const scheduler = makeManualScheduler();
   const corrections = [];

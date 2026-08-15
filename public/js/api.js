@@ -30,6 +30,69 @@ function shouldLogApiTiming(endpoint, elapsedMs, isError = false) {
 let consecutiveFailures = 0;
 let hasRedirectedFor401 = false;
 let connectionCallbacks = { onOffline: null, onOnline: null };
+let exploreSyncAuthBinding = null;
+let exploreSyncAuthBindingRevision = 0;
+const exploreSyncResponseBindings = new WeakMap();
+
+export function bindExploreSyncAuthPrincipal({ principalId, token } = {}) {
+  if (
+    typeof principalId !== 'string'
+    || principalId.length === 0
+    || typeof token !== 'string'
+    || token.length === 0
+  ) {
+    clearExploreSyncAuthPrincipal();
+    return;
+  }
+  if (
+    exploreSyncAuthBinding?.principalId === principalId
+    && exploreSyncAuthBinding?.token === token
+  ) return;
+  exploreSyncAuthBinding = { principalId, token };
+  exploreSyncAuthBindingRevision += 1;
+}
+
+export function clearExploreSyncAuthPrincipal() {
+  if (!exploreSyncAuthBinding) return;
+  exploreSyncAuthBinding = null;
+  exploreSyncAuthBindingRevision += 1;
+}
+
+function captureExploreSyncAuthBinding() {
+  const binding = exploreSyncAuthBinding;
+  if (!binding || localStorage.getItem('authToken') !== binding.token) return null;
+  return { token: binding.token, revision: exploreSyncAuthBindingRevision };
+}
+
+function isCapturedExploreSyncAuthBindingCurrent(captured) {
+  return Boolean(captured)
+    && captured.revision === exploreSyncAuthBindingRevision
+    && exploreSyncAuthBinding?.token === captured.token
+    && localStorage.getItem('authToken') === captured.token;
+}
+
+export function isExploreSyncResponseAuthCurrent(transport) {
+  const revision = transport && typeof transport === 'object'
+    ? exploreSyncResponseBindings.get(transport)
+    : null;
+  return Number.isInteger(revision)
+    && revision === exploreSyncAuthBindingRevision
+    && captureExploreSyncAuthBinding()?.revision === revision;
+}
+
+function authRequiredExploreTransport() {
+  return {
+    transport: true,
+    httpStatus: 401,
+    body: { error: 'auth_required' },
+    parseError: null,
+  };
+}
+
+function bindExploreSyncTransportResponse(transport, authBinding) {
+  exploreSyncResponseBindings.set(transport, authBinding.revision);
+  return transport;
+}
 
 export function setConnectionCallbacks(cbs) {
   connectionCallbacks = cbs;
@@ -76,6 +139,7 @@ function resetNetworkStateForTest() {
   consecutiveFailures = 0;
   hasRedirectedFor401 = false;
   inFlightRequests.clear();
+  clearExploreSyncAuthPrincipal();
 }
 
 /**
@@ -916,15 +980,24 @@ async function syncKanjiKombatSession({ sessionEpoch, entries }) {
 }
 
 async function syncExploreSession({ sessionEpoch, entries, timeoutMs = DEFAULT_API_TIMEOUT_MS }) {
+  const authBinding = captureExploreSyncAuthBinding();
+  if (!authBinding) return authRequiredExploreTransport();
+
   const controller = new AbortController();
   const timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
   try {
     const response = await fetch(`${PLATFORM.apiBase}/api/game/explore/sync`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authBinding.token}`,
+      },
       body: JSON.stringify({ sessionEpoch, entries }),
       signal: controller.signal,
     });
+    if (!isCapturedExploreSyncAuthBindingCurrent(authBinding)) {
+      return authRequiredExploreTransport();
+    }
     onApiSuccess();
     let body = null;
     let parseError = null;
@@ -934,17 +1007,29 @@ async function syncExploreSession({ sessionEpoch, entries, timeoutMs = DEFAULT_A
       parseError = error;
     }
 
-    return { transport: true, httpStatus: response.status, body, parseError };
+    if (!isCapturedExploreSyncAuthBindingCurrent(authBinding)) {
+      return authRequiredExploreTransport();
+    }
+    return bindExploreSyncTransportResponse(
+      { transport: true, httpStatus: response.status, body, parseError },
+      authBinding,
+    );
   } catch (error) {
+    if (!isCapturedExploreSyncAuthBindingCurrent(authBinding)) {
+      return authRequiredExploreTransport();
+    }
     if (isConnectionFailure(error)) onApiFailure();
-    return {
-      transport: true,
-      httpStatus: 0,
-      body: null,
-      parseError: null,
-      networkError: error?.name === 'AbortError' ? null : error,
-      aborted: error?.name === 'AbortError',
-    };
+    return bindExploreSyncTransportResponse(
+      {
+        transport: true,
+        httpStatus: 0,
+        body: null,
+        parseError: null,
+        networkError: error?.name === 'AbortError' ? null : error,
+        aborted: error?.name === 'AbortError',
+      },
+      authBinding,
+    );
   } finally {
     if (timeoutId) clearTimeout(timeoutId);
   }

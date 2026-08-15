@@ -780,6 +780,7 @@ export function init(callbacks) {
   if (typeof callbacks.apiSyncExploreSession === 'function') {
     configureExploreSession({
       syncRequest: callbacks.apiSyncExploreSession,
+      isAuthBindingCurrent: callbacks.isExploreSyncAuthCurrent,
       beforeResponseAdoption: () => waitForCombatPlaybackIdle(),
       onCheckpoint: onExploreSessionCheckpoint,
       onCorrection: onExploreSessionCorrection,

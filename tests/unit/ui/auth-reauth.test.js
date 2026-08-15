@@ -34,8 +34,28 @@ function makeStorage() {
   };
 }
 
-function makeResponse({ ok = true, body }) {
-  return { ok, json: async () => body };
+function makeResponse({ ok = true, status = ok ? 200 : 401, body }) {
+  return { ok, status, json: async () => body };
+}
+
+function makeExploreRunway(overrides = {}) {
+  const preparedRooms = overrides.preparedRooms ?? [{
+    index: 0,
+    roomId: 'room-0',
+    actionSeq: 7,
+    room: { id: 'room-0', type: 'friendlyNpc' },
+    acceptedActions: ['friendlyNpc.choose'],
+    actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+    dependencies: [],
+    offlineReady: true,
+  }];
+  return {
+    sessionEpoch: 'ese_auth_binding11',
+    roomActionSeq: 7,
+    currentRoom: preparedRooms[0]?.index ?? 0,
+    preparedRooms,
+    ...overrides,
+  };
 }
 
 function createDom() {
@@ -73,6 +93,8 @@ await mock.module('../../../public/js/analytics.js', {
 });
 
 const auth = await import('../../../public/js/ui/auth.js');
+const api = await import('../../../public/js/api.js');
+const { createExploreSession } = await import('../../../public/js/ui/explore-session.js');
 
 describe('auth UI retained-state reauthentication', { concurrency: false }, () => {
   let dom;
@@ -119,6 +141,146 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
     assert.equal(await recovery, true);
     assert.equal(globalThis.localStorage.getItem('authToken'), 'fresh-token');
     assert.equal(dom.elements.get('auth-screen').classList.contains('hidden'), true);
+  });
+
+  it('fails an Explore drain before fetch when shared storage no longer matches the verified principal token', async () => {
+    globalThis.localStorage.setItem('authToken', 'token-a');
+    globalThis.fetch = async url => {
+      fetchCalls.push({ url });
+      return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+    };
+    assert.equal(await auth.checkAuth(), true);
+
+    let authRequiredCalls = 0;
+    const session = createExploreSession({
+      syncRequest: api.syncExploreSession,
+      onAuthRequired: async () => { authRequiredCalls += 1; return false; },
+    });
+    session.adoptRunway(makeExploreRunway());
+    assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
+    const exactPendingLog = session.snapshot();
+
+    globalThis.localStorage.setItem('authToken', 'token-b');
+    let exploreFetches = 0;
+    globalThis.fetch = async () => {
+      exploreFetches += 1;
+      return makeResponse({ body: { status: 'ok', confirmedThroughSeq: 1, results: [] } });
+    };
+    await session.syncNow();
+
+    assert.equal(exploreFetches, 0);
+    assert.equal(authRequiredCalls, 1);
+    assert.equal(session.getPauseReason(), 'authRequired');
+    assert.deepEqual(session.snapshot(), exactPendingLog);
+  });
+
+  it('rejects a V1 checkpoint when the verified binding changes during response-adoption playback', async () => {
+    globalThis.localStorage.setItem('authToken', 'token-a');
+    globalThis.fetch = async url => {
+      fetchCalls.push({ url });
+      return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+    };
+    assert.equal(await auth.checkAuth(), true);
+
+    let releaseAdoption;
+    let markAdoptionStarted;
+    const adoptionGate = new Promise(resolve => { releaseAdoption = resolve; });
+    const adoptionStarted = new Promise(resolve => { markAdoptionStarted = resolve; });
+    const callbacks = [];
+    let authRequiredCalls = 0;
+    const replacementRunway = makeExploreRunway({
+      currentRoom: 1,
+      preparedRooms: [{
+        index: 1,
+        roomId: 'room-1',
+        actionSeq: 8,
+        room: { id: 'room-1', type: 'empty' },
+        acceptedActions: ['proceed'],
+        actionEffects: { proceed: ['areaProgress'] },
+        dependencies: [],
+        offlineReady: true,
+      }],
+    });
+    globalThis.fetch = async () => makeResponse({
+      body: {
+        status: 'ok',
+        confirmedThroughSeq: 1,
+        results: [],
+        exploreRunway: replacementRunway,
+      },
+    });
+    const session = createExploreSession({
+      syncRequest: api.syncExploreSession,
+      isAuthBindingCurrent: api.isExploreSyncResponseAuthCurrent,
+      beforeResponseAdoption: async () => {
+        markAdoptionStarted();
+        await adoptionGate;
+      },
+      onCheckpoint: () => callbacks.push('checkpoint'),
+      onCorrection: () => callbacks.push('correction'),
+      onAuthRequired: async () => { authRequiredCalls += 1; return false; },
+    });
+    session.adoptRunway(makeExploreRunway());
+    assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
+    const exactPendingLog = session.snapshot();
+
+    const draining = session.syncNow();
+    await adoptionStarted;
+    globalThis.localStorage.setItem('authToken', 'token-b');
+    releaseAdoption();
+    await draining;
+
+    assert.deepEqual(session.snapshot(), exactPendingLog);
+    assert.equal(session.getPauseReason(), 'authRequired');
+    assert.equal(authRequiredCalls, 1);
+    assert.deepEqual(callbacks, []);
+    assert.equal(session.currentPreparedRoom()?.index, 0);
+  });
+
+  it('binds a fresh same-account token so retained Explore work can drain under that token', async () => {
+    globalThis.localStorage.setItem('authToken', 'token-a');
+    globalThis.fetch = async url => {
+      fetchCalls.push({ url });
+      return makeResponse({ body: { id: 'user-1', username: 'michi' } });
+    };
+    assert.equal(await auth.checkAuth(), true);
+
+    const session = createExploreSession({
+      syncRequest: api.syncExploreSession,
+      onAuthRequired: async () => false,
+    });
+    session.adoptRunway(makeExploreRunway());
+    assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
+    globalThis.fetch = async () => makeResponse({
+      ok: false,
+      status: 401,
+      body: { error: 'expired' },
+    });
+    await session.syncNow();
+    assert.equal(session.pendingCount(), 1);
+
+    const recovery = auth.requestReauthentication();
+    globalThis.fetch = async url => {
+      assert.match(url, /\/api\/auth\/login$/);
+      return makeResponse({
+        body: { token: 'token-a2', user: { id: 'user-1', username: 'michi' } },
+      });
+    };
+    dom.elements.get('auth-username').value = 'michi';
+    dom.elements.get('auth-password').value = 'password';
+    dom.elements.get('auth-submit').click();
+    assert.equal(await recovery, true);
+
+    const sentHeaders = [];
+    globalThis.fetch = async (_url, options) => {
+      sentHeaders.push(options.headers);
+      return makeResponse({ body: { status: 'ok', confirmedThroughSeq: 1, results: [] } });
+    };
+    await session.retryNow();
+
+    assert.equal(sentHeaders.length, 1);
+    assert.equal(sentHeaders[0].Authorization, 'Bearer token-a2');
+    assert.equal(session.pendingCount(), 0);
   });
 
   it('refuses a different account without storing its token or resolving recovery', async () => {

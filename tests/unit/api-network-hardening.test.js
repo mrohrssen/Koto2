@@ -31,6 +31,11 @@ beforeEach(async () => {
   globalThis.window = { location: { href: '' } };
   const api = await import('../../public/js/api.js');
   api.__networkTest.reset();
+  globalThis.localStorage.setItem('authToken', 'api-network-token');
+  api.bindExploreSyncAuthPrincipal({
+    principalId: 'api-network-user',
+    token: 'api-network-token',
+  });
   api.setConnectionCallbacks({ onOffline: null, onOnline: null });
 });
 
@@ -160,6 +165,10 @@ describe('api network hardening', () => {
   it('preserves Explore transport status and JSON parse failures for recovery', async () => {
     const api = await import('../../public/js/api.js');
     globalThis.localStorage.setItem('authToken', 'still-owned-by-reauth-flow');
+    api.bindExploreSyncAuthPrincipal({
+      principalId: 'api-network-user',
+      token: 'still-owned-by-reauth-flow',
+    });
     globalThis.fetch = mock.fn(async () => jsonResponse({ error: 'expired' }, 401));
     const auth = await api.syncExploreSession({
       sessionEpoch: 'ese_1111111111111111',
@@ -196,6 +205,8 @@ describe('api network hardening', () => {
     assert.equal(network.transport, true);
     assert.equal(network.httpStatus, 0);
     assert.ok(network.networkError instanceof TypeError);
+    assert.equal(api.isExploreSyncResponseAuthCurrent(network), true,
+      'same-principal network outcomes must remain eligible for transport retry');
 
     globalThis.fetch = mock.fn((_url, options) => new Promise((_resolve, reject) => {
       options.signal.addEventListener('abort', () => {
@@ -217,6 +228,8 @@ describe('api network hardening', () => {
       networkError: null,
       aborted: true,
     });
+    assert.equal(api.isExploreSyncResponseAuthCurrent(aborted), true,
+      'same-principal abort outcomes must remain eligible for transport retry');
   });
 
   it('does not retry creature combat cycle when the POST fails', async () => {

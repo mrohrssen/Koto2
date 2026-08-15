@@ -100,6 +100,7 @@ function hasIntersectingEffect(entries, dependencies) {
 
 export function createExploreSession({
   syncRequest,
+  isAuthBindingCurrent = () => true,
   beforeResponseAdoption = async () => {},
   onCheckpoint = () => {},
   onCorrection = () => {},
@@ -306,6 +307,25 @@ export function createExploreSession({
     }, EXPLORE_SYNC_RETRY_DELAYS_MS[index]);
   }
 
+  function responseAuthIsCurrent(transport) {
+    try {
+      return isAuthBindingCurrent(transport) !== false;
+    } catch {
+      return false;
+    }
+  }
+
+  async function handleAuthRequired() {
+    enterPause('authRequired');
+    try {
+      const recovered = await onAuthRequired();
+      if (recovered === true) scheduleDrain(0);
+    } catch (error) {
+      console.error('[ExploreSession] authentication recovery failed', error);
+    }
+    return { ok: false };
+  }
+
   function buildEntry(kind, payload, preparedRoom) {
     const seq = nextSeq++;
     return {
@@ -448,6 +468,7 @@ export function createExploreSession({
       const transport = isTransportEnvelope
         ? rawResponse
         : { httpStatus: 200, body: rawResponse };
+      if (!responseAuthIsCurrent(transport)) return handleAuthRequired();
       const outcome = isTransportEnvelope
         ? classifyExploreTransport({ expectedProtocolVersion, ...transport })
         : (rawResponse?.status === 'ok' || rawResponse?.status === 'corrected'
@@ -456,14 +477,7 @@ export function createExploreSession({
       const response = transport.body;
 
       if (outcome === 'authRequired') {
-        enterPause('authRequired');
-        try {
-          const recovered = await onAuthRequired();
-          if (recovered === true) scheduleDrain(0);
-        } catch (error) {
-          console.error('[ExploreSession] authentication recovery failed', error);
-        }
-        return { ok: false };
+        return handleAuthRequired();
       }
       if (outcome === 'conflict') {
         enterPause('writerConflict');
@@ -479,7 +493,12 @@ export function createExploreSession({
         if (attempts >= 12) enterPause('transportDegraded');
         return { ok: false };
       }
-      if (response?.protocolVersion === 2) expectedProtocolVersion = 2;
+      if (response?.protocolVersion === 2) {
+        expectedProtocolVersion = 2;
+        scheduleRetry();
+        if (attempts >= 12) enterPause('transportDegraded');
+        return { ok: false };
+      }
 
       // Fence captured continuations as soon as a non-committing correction is
       // known. Combat playback may still be holding response adoption; waiting
@@ -494,6 +513,7 @@ export function createExploreSession({
       if (response?.status === 'ok' || response?.status === 'corrected') {
         await beforeResponseAdoption(response);
         if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
+        if (!responseAuthIsCurrent(transport)) return handleAuthRequired();
       }
 
       if (response?.status === 'corrected') {

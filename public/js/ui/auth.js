@@ -1,4 +1,8 @@
-import { apiUrl } from '../api.js';
+import {
+  apiUrl,
+  bindExploreSyncAuthPrincipal,
+  clearExploreSyncAuthPrincipal,
+} from '../api.js';
 import { setAnalyticsUser, trackEvent } from '../analytics.js';
 
 let currentTab = 'login';
@@ -7,10 +11,10 @@ let reauthenticationRequest = null;
 
 const SAME_ACCOUNT_RECOVERY_ERROR = 'Log in to the same account to recover this run. Creating or switching accounts is not allowed.';
 
-function captureAuthenticatedPrincipal(user) {
-  if (typeof user?.id === 'string' && user.id.length > 0) {
-    authenticatedPrincipalId = user.id;
-  }
+function captureAuthenticatedPrincipal(user, token) {
+  if (typeof user?.id !== 'string' || user.id.length === 0) return;
+  authenticatedPrincipalId = user.id;
+  bindExploreSyncAuthPrincipal({ principalId: user.id, token });
 }
 
 /**
@@ -72,7 +76,7 @@ export async function checkAuth() {
     const res = await fetch(apiUrl('/api/auth/me'), { headers });
     if (res.ok) {
       const user = await res.json();
-      captureAuthenticatedPrincipal(user);
+      captureAuthenticatedPrincipal(user, token);
       return true;
     }
     if (token) removeToken();
@@ -92,7 +96,7 @@ export async function getCurrentUser() {
     });
     if (!res.ok) return null;
     const user = await res.json();
-    captureAuthenticatedPrincipal(user);
+    captureAuthenticatedPrincipal(user, token);
     return user;
   } catch {
     return null;
@@ -127,6 +131,7 @@ export function getToken() {
 
 export function logout() {
   localStorage.removeItem('authToken');
+  clearExploreSyncAuthPrincipal();
   authenticatedPrincipalId = null;
   if (reauthenticationRequest) {
     const { resolve } = reauthenticationRequest;
@@ -139,6 +144,7 @@ export function logout() {
 
 function removeToken() {
   localStorage.removeItem('authToken');
+  clearExploreSyncAuthPrincipal();
 }
 
 function storeToken(token) {
@@ -203,7 +209,7 @@ async function handleSubmit(callbacks) {
     }
 
     storeToken(data.token);
-    captureAuthenticatedPrincipal(data.user);
+    captureAuthenticatedPrincipal(data.user, data.token);
     await setAnalyticsUser(data.user);
     await trackEvent(currentTab === 'login' ? 'koto_login' : 'koto_sign_up', {
       method: 'password'
