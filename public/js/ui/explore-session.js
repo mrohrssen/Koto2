@@ -1,5 +1,5 @@
 import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
-import { shouldReplacePauseReason } from '../../../src/shared/explore/pause-reasons.js';
+import { PAUSE_REASONS, shouldReplacePauseReason } from '../../../src/shared/explore/pause-reasons.js';
 import { createAsyncOwnershipFence, FenceSuperseded } from '../async-ownership-fence.js';
 
 export const EXPLORE_SESSION_HARD_CAP = 50;
@@ -202,6 +202,7 @@ export function createExploreSession({
   }
 
   function enterPause(reason) {
+    if (!PAUSE_REASONS[reason]) return false;
     if (paused && !shouldReplacePauseReason(pauseReason, reason)) return false;
     completeOwnershipTransaction(() => {
       paused = true;
@@ -222,7 +223,12 @@ export function createExploreSession({
   }
 
   function resolvePause(reason) {
-    if (!paused || pauseReason !== reason) return false;
+    if (
+      !paused
+      || pauseReason !== reason
+      || reason === 'writerConflict'
+      || reason === 'unsupportedProtocol'
+    ) return false;
     resumeIfPaused();
     return true;
   }
@@ -293,6 +299,9 @@ export function createExploreSession({
   }
 
   function adoptRunway(nextRunway) {
+    if (pauseReason === 'writerConflict' || pauseReason === 'unsupportedProtocol') {
+      return runway;
+    }
     return adoptRunwayInternal(nextRunway);
   }
 
@@ -471,7 +480,11 @@ export function createExploreSession({
   }
 
   function drain({ force = false } = {}) {
-    if (pauseReason === 'unsupportedProtocol' || pauseReason === 'writerConflict') {
+    if (
+      pauseReason === 'unsupportedProtocol'
+      || pauseReason === 'writerConflict'
+      || pauseReason === 'authRequired'
+    ) {
       return Promise.resolve();
     }
     if (force) forceDrainRequested = true;
@@ -513,16 +526,15 @@ export function createExploreSession({
       if (myGeneration !== generation || token !== activeDrainToken) return { ok: false };
 
       const transport = rawResponse;
-      const outcome = classifyExploreTransport({ expectedProtocolVersion, ...transport });
+      const outcome = classifyExploreTransport(transport, { expectedProtocolVersion });
       const response = transport.body;
 
-      if (outcome === 'authRequired') return handleAuthRequired();
       if (outcome === 'indeterminate') return retryOrDegrade();
-      if (!responseAuthIsCurrent(transport)) return handleAuthRequired();
-
       if (outcome === 'unsupportedProtocol' || outcome === 'conflict') {
         promoteProtocolVersion(response.protocolVersion);
       }
+
+      if (outcome === 'authRequired' || !responseAuthIsCurrent(transport)) return handleAuthRequired();
 
       if (outcome === 'conflict') {
         enterPause('writerConflict');

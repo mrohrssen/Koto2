@@ -15,6 +15,7 @@ const TRANSPORT_KEYS = [
 
 function isCompleteTransportEnvelope(transport) {
   return isObject(transport)
+    && Object.keys(transport).length === TRANSPORT_KEYS.length
     && TRANSPORT_KEYS.every(key => Object.hasOwn(transport, key))
     && transport.transport === true
     && Number.isInteger(transport.httpStatus)
@@ -58,10 +59,10 @@ function isV2Conflict(body) {
     && body.reason.length > 0;
 }
 
-export function classifyExploreTransport({
-  expectedProtocolVersion = 1,
-  ...transport
-} = {}) {
+export function classifyExploreTransport(
+  transport = {},
+  { expectedProtocolVersion = 1 } = {},
+) {
   if (!isCompleteTransportEnvelope(transport)) return 'indeterminate';
   const {
     httpStatus,

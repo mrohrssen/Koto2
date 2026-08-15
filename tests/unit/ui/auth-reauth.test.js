@@ -278,6 +278,7 @@ describe('auth UI retained-state reauthentication', { concurrency: false }, () =
       sentHeaders.push(options.headers);
       return makeResponse({ body: { status: 'ok', confirmedThroughSeq: 1, results: [] } });
     };
+    assert.equal(session.resolvePause('authRequired'), true);
     await session.retryNow();
 
     assert.equal(sentHeaders.length, 1);

@@ -1003,6 +1003,76 @@ test('auth pause retains exact pending work and schedules no session retry', asy
   assert.deepEqual(scheduler.activeDelays(), []);
 });
 
+test('a validated V2 response ratchets before stale auth handling and rejects an injected V1 downgrade', async () => {
+  const scheduler = makeManualScheduler();
+  const callbacks = [];
+  let calls = 0;
+  const session = createExploreSession({
+    syncRequest: async () => {
+      calls += 1;
+      if (calls === 1) {
+        return transport({
+          protocolVersion: 2,
+          status: 'ok',
+          runId: 'v2-auth-ratchet',
+          appliedThroughSeq: 1,
+          nextExpectedSeq: 2,
+          results: [],
+        });
+      }
+      return transport(okResponse(1), { expectedProtocolVersion: 1 });
+    },
+    isAuthBindingCurrent: () => calls !== 1,
+    onCheckpoint: () => callbacks.push('checkpoint'),
+    onCorrection: () => callbacks.push('correction'),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
+  const exactPendingLog = session.snapshot();
+
+  await session.syncNow();
+  assert.equal(session.getPauseReason(), 'authRequired');
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.equal(session.resolvePause('authRequired'), true);
+
+  await session.syncNow();
+  assert.equal(calls, 2);
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.deepEqual(callbacks, []);
+  assert.deepEqual(scheduler.activeDelays(), [EXPLORE_SYNC_RETRY_DELAYS_MS[0]]);
+});
+
+test('authRequired blocks retries until exact resolution, then permits one explicit redelivery drain', async () => {
+  const scheduler = makeManualScheduler();
+  let calls = 0;
+  const session = createExploreSession({
+    syncRequest: async () => {
+      calls += 1;
+      return calls === 1
+        ? transport({ error: 'expired' }, { httpStatus: 401 })
+        : transport(okResponse(1));
+    },
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+  session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+  const exactPendingLog = session.snapshot();
+
+  await session.syncNow();
+  await session.syncNow();
+  await session.syncNow();
+  assert.equal(calls, 1);
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.equal(session.resolvePause('authRequired'), true);
+
+  await session.syncNow();
+  assert.equal(calls, 2);
+  assert.equal(session.pendingCount(), 0);
+});
+
 for (const status of ['ok', 'corrected']) {
   test(`unsupported V2 ${status} pauses immediately and blocks all later reposts`, async () => {
     const scheduler = makeManualScheduler();
@@ -1092,6 +1162,41 @@ test('V2 conflict promotes the ratchet and blocks all later reposts', async () =
   assert.deepEqual(scheduler.activeDelays(), []);
 });
 
+for (const [name, firstResponse, reason] of [
+  ['unsupported protocol', () => transport({
+    protocolVersion: 2, status: 'ok', runId: 'terminal-v2',
+    appliedThroughSeq: 1, nextExpectedSeq: 2, results: [],
+  }), 'unsupportedProtocol'],
+  ['writer conflict', () => transport({
+    protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch',
+  }, { httpStatus: 409 }), 'writerConflict'],
+]) {
+  test(`${name} is terminal across resolve, sync, and public runway adoption`, async () => {
+    let calls = 0;
+    const session = createExploreSession({
+      syncRequest: async () => {
+        calls += 1;
+        return firstResponse();
+      },
+      schedule: () => null,
+      cancel: () => {},
+    });
+    session.adoptRunway(makeRunway());
+    session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' });
+    const exactPendingLog = session.snapshot();
+    await session.syncNow();
+
+    assert.equal(session.getPauseReason(), reason);
+    assert.equal(session.resolvePause(reason), false);
+    await session.syncNow();
+    session.adoptRunway(makeRunway({ sessionEpoch: `ese_terminal_${reason}` }));
+
+    assert.equal(calls, 1);
+    assert.equal(session.getPauseReason(), reason);
+    assert.deepEqual(session.snapshot(), exactPendingLog);
+  });
+}
+
 test('equal-priority pauses do not replace or notify, and resolvePause requires the exact reason', () => {
   const pauses = [];
   const resumes = [];
@@ -1112,6 +1217,22 @@ test('equal-priority pauses do not replace or notify, and resolvePause requires 
   assert.equal(session.resolvePause('transportDegraded'), true);
   assert.equal(session.isPaused(), false);
   assert.deepEqual(resumes, ['transportDegraded']);
+});
+
+test('unknown pauses are inert and do not invalidate a captured session fence', () => {
+  const pauses = [];
+  const session = createExploreSession({
+    syncRequest: async () => transport(okResponse(0)),
+    onPause: detail => pauses.push(detail),
+  });
+  session.adoptRunway(makeRunway());
+  const capture = session.captureFence({ pending: 'empty' });
+
+  assert.equal(session.pause('notAReason'), false);
+  assert.equal(session.isPaused(), false);
+  assert.equal(session.getPauseReason(), null);
+  assert.deepEqual(pauses, []);
+  assert.equal(capture.fence.isCurrent(), true);
 });
 
 test('auth and writer conflict orderings preserve the authoritative owner', () => {

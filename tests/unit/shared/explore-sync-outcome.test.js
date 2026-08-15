@@ -32,9 +32,9 @@ test('classifies strict V1, unsupported V2, conflict, auth, and indeterminate en
     [transport({ httpStatus: 200, body: {} }), 'indeterminate'],
     [transport({ httpStatus: 401, body: { error: 'expired' } }), 'authRequired'],
     [transport({ clientAuthMismatch: true }), 'authRequired'],
-    [transport({ httpStatus: 200, expectedProtocolVersion: 1, body: { status: 'ok', confirmedThroughSeq: 1, results: [] } }), 'v1Settled'],
-    [transport({ httpStatus: 200, expectedProtocolVersion: 1, body: { status: 'corrected', confirmedThroughSeq: 0, rejectedSeq: 1, results: [] } }), 'v1Settled'],
-    [transport({ httpStatus: 409, expectedProtocolVersion: 1, body: { status: 'corrected', confirmedThroughSeq: null, rejectedSeq: 1, results: [] } }), 'v1Settled'],
+    [transport({ httpStatus: 200, body: { status: 'ok', confirmedThroughSeq: 1, results: [] } }), 'v1Settled'],
+    [transport({ httpStatus: 200, body: { status: 'corrected', confirmedThroughSeq: 0, rejectedSeq: 1, results: [] } }), 'v1Settled'],
+    [transport({ httpStatus: 409, body: { status: 'corrected', confirmedThroughSeq: null, rejectedSeq: 1, results: [] } }), 'v1Settled'],
     [transport({ httpStatus: 200, body: { protocolVersion: 2, status: 'ok', runId: 'r', appliedThroughSeq: 1, nextExpectedSeq: 2, results: [] } }), 'unsupportedProtocol'],
     [transport({ httpStatus: 200, body: { protocolVersion: 2, status: 'corrected', runId: 'r', appliedThroughSeq: 0, nextExpectedSeq: 1, results: [] } }), 'unsupportedProtocol'],
     [transport({ httpStatus: 409, body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' } }), 'conflict'],
@@ -43,16 +43,15 @@ test('classifies strict V1, unsupported V2, conflict, auth, and indeterminate en
   ];
 
   for (const [input, expected] of cases) {
-    assert.equal(classifyExploreTransport(input), expected, JSON.stringify(input));
+    assert.equal(classifyExploreTransport(input, { expectedProtocolVersion: 1 }), expected, JSON.stringify(input));
   }
 });
 
 test('does not accept a V1 envelope after a run speaks V2', () => {
   assert.equal(classifyExploreTransport(transport({
-    expectedProtocolVersion: 2,
     httpStatus: 200,
     body: { status: 'ok', confirmedThroughSeq: 1, results: [] },
-  })), 'indeterminate');
+  }), { expectedProtocolVersion: 2 }), 'indeterminate');
 });
 
 test('rejects transport envelopes missing even one required Task 3 field', () => {
@@ -62,7 +61,21 @@ test('rejects transport envelopes missing even one required Task 3 field', () =>
   });
   delete incomplete.authRevision;
 
-  assert.equal(classifyExploreTransport(incomplete), 'indeterminate');
+  assert.equal(classifyExploreTransport(incomplete, { expectedProtocolVersion: 1 }), 'indeterminate');
+});
+
+test('rejects surplus transport keys instead of accepting classifier configuration from the envelope', () => {
+  const injected = transport({
+    httpStatus: 200,
+    expectedProtocolVersion: 1,
+    body: { status: 'ok', confirmedThroughSeq: 1, results: [] },
+  });
+
+  assert.equal(classifyExploreTransport(injected, { expectedProtocolVersion: 1 }), 'indeterminate');
+  assert.equal(classifyExploreTransport(transport({
+    httpStatus: 200,
+    body: { status: 'ok', confirmedThroughSeq: 1, results: [] },
+  }), { expectedProtocolVersion: 2 }), 'indeterminate');
 });
 
 test('pause reasons expose only authoritative severity and replacement priority', () => {
