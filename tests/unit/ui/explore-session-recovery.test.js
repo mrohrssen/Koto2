@@ -89,3 +89,49 @@ test('recovery reports failure and retains pending work when its state fetch fai
   assert.equal(adopted, false);
   assert.equal(session.pendingCount(), 1);
 });
+
+test('expected-session recovery refuses a replacement before fetching or adopting it', async () => {
+  const sessionA = createExploreSession({ syncRequest: async () => ({ status: 'ok' }) });
+  const sessionB = createExploreSession({ syncRequest: async () => ({ status: 'ok' }) });
+  queuePendingAction(sessionB);
+  const exactB = sessionB.snapshot();
+  let fetchCalls = 0;
+
+  const adopted = await adoptExploreSessionRecoveryState({
+    expectedSession: sessionA,
+    getSession: () => sessionB,
+    fetchState: async () => {
+      fetchCalls += 1;
+      return { player: { id: 'player_1' }, run: { exploreRunway: makeRunway() } };
+    },
+  });
+
+  assert.equal(adopted, false);
+  assert.equal(fetchCalls, 0);
+  assert.deepEqual(sessionB.snapshot(), exactB);
+  assert.equal(sessionB.currentPreparedRoom().actionSeq, 10);
+});
+
+test('expected-session recovery fences a replacement during its state fetch', async () => {
+  const sessionA = createExploreSession({ syncRequest: async () => ({ status: 'ok' }) });
+  const sessionB = createExploreSession({ syncRequest: async () => ({ status: 'ok' }) });
+  queuePendingAction(sessionA);
+  queuePendingAction(sessionB);
+  const exactB = sessionB.snapshot();
+  let currentSession = sessionA;
+  let resolveFetch;
+  const recovery = adoptExploreSessionRecoveryState({
+    expectedSession: sessionA,
+    getSession: () => currentSession,
+    fetchState: () => new Promise(resolve => { resolveFetch = resolve; }),
+  });
+
+  currentSession = sessionB;
+  resolveFetch({ player: { id: 'player_1' }, run: { exploreRunway: makeRunway({
+    preparedRooms: [{ ...makeRunway().preparedRooms[0], actionSeq: 77 }],
+  }) } });
+
+  assert.equal(await recovery, false);
+  assert.deepEqual(sessionB.snapshot(), exactB);
+  assert.equal(sessionB.currentPreparedRoom().actionSeq, 10);
+});

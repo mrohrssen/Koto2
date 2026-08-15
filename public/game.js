@@ -958,8 +958,9 @@ async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSe
 // there would await the drain that is awaiting this recovery callback. It adopts
 // only the authoritative runway, preserving optimistic state and the pending log
 // until the controller schedules its fresh post-recovery drain.
-async function loadExploreSessionRecoveryState() {
+async function loadExploreSessionRecoveryState(expectedSession) {
   return adoptExploreSessionRecoveryState({
+    expectedSession,
     getSession: () => getExploreSession?.(),
     fetchState: apiGetGameState,
     isUsableState: data => !isTransientGameStateFailure(data)
@@ -2468,7 +2469,7 @@ async function initGame() {
     // into the session when the pending log is empty (see loadGameState).
     refreshRunwayState: () => loadGameState({ adoptSession: true }),
     reauthenticateExploreSession: () => auth.requestReauthentication(),
-    adoptExploreSession: () => loadExploreSessionRecoveryState(),
+    adoptExploreSession: expectedSession => loadExploreSessionRecoveryState(expectedSession),
     keepExploreSessionPaused: () => scene.showToast('This session will remain paused until you review the other device.', 3000),
     apiGetAreaOptions,
     apiSelectArea: async (areaId) => {

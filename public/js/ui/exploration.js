@@ -375,11 +375,15 @@ function showExploreWriterConflict() {
   ], { container: actionArea, append: true });
 }
 
-async function reauthenticateAndAdoptExploreSession() {
+async function reauthenticateAndAdoptExploreSession(expectedSession) {
   if (typeof reauthenticateExploreSession !== 'function') return false;
   const reauthenticated = await reauthenticateExploreSession();
-  if (reauthenticated !== true || typeof adoptExploreSession !== 'function') return false;
-  return (await adoptExploreSession()) === true;
+  if (
+    reauthenticated !== true
+    || getExploreSession?.() !== expectedSession
+    || typeof adoptExploreSession !== 'function'
+  ) return false;
+  return (await adoptExploreSession(expectedSession)) === true;
 }
 
 async function reviewExploreWriterConflict() {
@@ -405,7 +409,7 @@ async function runExploreSessionRecovery(reason) {
     return { recovered: false, retryable: false };
   }
   if (pausedFor === 'authRequired') {
-    const recoveredIdentity = await reauthenticateAndAdoptExploreSession();
+    const recoveredIdentity = await reauthenticateAndAdoptExploreSession(session);
     if (!recoveredIdentity) {
       return { recovered: false, retryable: false };
     }

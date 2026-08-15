@@ -5,12 +5,13 @@ import { FenceSuperseded } from '../async-ownership-fence.js';
 // currently awaiting us. The recovery token permits the captured pending log,
 // but rejects every other change before the response can replace the runway.
 export async function adoptExploreSessionRecoveryState({
+  expectedSession,
   getSession,
   fetchState,
   isUsableState = data => Boolean(data?.player) && !Object.hasOwn(data || {}, 'error'),
 } = {}) {
-  const session = getSession?.();
-  if (!session || typeof fetchState !== 'function') return false;
+  const session = expectedSession ?? getSession?.();
+  if (!session || getSession?.() !== session || typeof fetchState !== 'function') return false;
   const capture = session.captureFence?.({
     pending: 'preserve',
     leases: [{

@@ -1772,4 +1772,77 @@ describe('explore session online stall recovery', () => {
     assert.equal(reauthCalls, 1);
     assert.equal(session.isPaused(), false);
   });
+
+  it('does not hand stale auth recovery adoption to a replacement session', async () => {
+    let reauthenticateCalls = 0;
+    let resolveReauthentication;
+    let staleAdoptionCalls = 0;
+    const reauthentication = new Promise(resolve => { resolveReauthentication = resolve; });
+    initRecoveryHarness({
+      apiSyncExploreSession: async () => completeTransport({ error: 'expired' }, { httpStatus: 401 }),
+      reauthenticateExploreSession: async () => {
+        reauthenticateCalls += 1;
+        return reauthentication;
+      },
+      adoptExploreSession: async () => {
+        staleAdoptionCalls += 1;
+        return true;
+      },
+    });
+    const sessionA = getExploreSession();
+    sessionA.adoptRunway(makeRunway({
+      sessionEpoch: 'ese_auth_owner_a',
+      preparedRooms: [preparedRoom(0, {
+        acceptedActions: ['friendlyNpc.choose'],
+        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+      })],
+    }));
+    assert.equal(
+      sessionA.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted,
+      true,
+    );
+    const drainA = sessionA.syncNow();
+    await waitFor(() => reauthenticateCalls === 1);
+
+    let successorAdoptionCalls = 0;
+    initRecoveryHarness({
+      apiSyncExploreSession: async () => completeTransport({ status: 'ok', confirmedThroughSeq: 1, results: [] }),
+      adoptExploreSession: async () => {
+        successorAdoptionCalls += 1;
+        getExploreSession().adoptRunway(makeRunway({
+          sessionEpoch: 'ese_wrong_successor',
+          roomActionSeq: 777,
+          preparedRooms: [preparedRoom(0, { actionSeq: 777 })],
+        }));
+        return true;
+      },
+    });
+    const sessionB = getExploreSession();
+    const runwayB = makeRunway({
+      sessionEpoch: 'ese_auth_owner_b',
+      roomActionSeq: 401,
+      preparedRooms: [preparedRoom(0, {
+        actionSeq: 401,
+        acceptedActions: ['friendlyNpc.choose'],
+        actionEffects: { 'friendlyNpc.choose': ['partyStats'] },
+      })],
+    });
+    sessionB.adoptRunway(runwayB);
+    assert.equal(sessionB.recordRoomAction('friendlyNpc.choose', { itemId: 'ether' }).accepted, true);
+    const exactB = sessionB.snapshot();
+    const pauseB = sessionB.getPauseReason();
+    const roomB = sessionB.currentPreparedRoom();
+
+    resolveReauthentication(true);
+    await drainA;
+    await Promise.resolve();
+    await Promise.resolve();
+
+    assert.equal(staleAdoptionCalls, 0);
+    assert.equal(successorAdoptionCalls, 0);
+    assert.equal(sessionA.resolvePause('authRequired'), false);
+    assert.equal(sessionB.getPauseReason(), pauseB);
+    assert.deepEqual(sessionB.snapshot(), exactB);
+    assert.deepEqual(sessionB.currentPreparedRoom(), roomB);
+  });
 });
