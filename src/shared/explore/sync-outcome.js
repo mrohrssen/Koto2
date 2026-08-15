@@ -59,6 +59,23 @@ function isV2Conflict(body) {
     && body.reason.length > 0;
 }
 
+// Authentication precedence in the classifier must not prevent the session
+// from making the protocol ratchet monotonic. Keep that shared validation here
+// so the session does not duplicate the V2 transport schema.
+export function isValidatedExploreV2Transport(transport = {}) {
+  if (!isCompleteTransportEnvelope(transport)) return false;
+  const {
+    httpStatus,
+    body,
+    parseError,
+    networkError,
+    aborted,
+  } = transport;
+  if (networkError || aborted || parseError) return false;
+  if (httpStatus === 409) return isV2Conflict(body);
+  return httpStatus >= 200 && httpStatus < 300 && isV2Envelope(body);
+}
+
 export function classifyExploreTransport(
   transport = {},
   { expectedProtocolVersion = 1 } = {},

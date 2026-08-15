@@ -1,4 +1,7 @@
-import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
+import {
+  classifyExploreTransport,
+  isValidatedExploreV2Transport,
+} from '../../../src/shared/explore/sync-outcome.js';
 import { PAUSE_REASONS, shouldReplacePauseReason } from '../../../src/shared/explore/pause-reasons.js';
 import { createAsyncOwnershipFence, FenceSuperseded } from '../async-ownership-fence.js';
 
@@ -529,10 +532,11 @@ export function createExploreSession({
       const outcome = classifyExploreTransport(transport, { expectedProtocolVersion });
       const response = transport.body;
 
-      if (outcome === 'indeterminate') return retryOrDegrade();
-      if (outcome === 'unsupportedProtocol' || outcome === 'conflict') {
+      if (isValidatedExploreV2Transport(transport)) {
         promoteProtocolVersion(response.protocolVersion);
       }
+
+      if (outcome === 'indeterminate') return retryOrDegrade();
 
       if (outcome === 'authRequired' || !responseAuthIsCurrent(transport)) return handleAuthRequired();
 

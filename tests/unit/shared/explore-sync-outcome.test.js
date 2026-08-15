@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
+import {
+  classifyExploreTransport,
+  isValidatedExploreV2Transport,
+} from '../../../src/shared/explore/sync-outcome.js';
 import {
   PAUSE_REASONS,
   pausePriority,
@@ -52,6 +55,43 @@ test('does not accept a V1 envelope after a run speaks V2', () => {
     httpStatus: 200,
     body: { status: 'ok', confirmedThroughSeq: 1, results: [] },
   }), { expectedProtocolVersion: 2 }), 'indeterminate');
+});
+
+test('recognizes only fully validated V2 transport results independent of client auth mismatch', () => {
+  const validOkWithChangedAuth = transport({
+    httpStatus: 200,
+    clientAuthMismatch: true,
+    body: {
+      protocolVersion: 2,
+      status: 'ok',
+      runId: 'v2-auth-ratchet',
+      appliedThroughSeq: 1,
+      nextExpectedSeq: 2,
+      results: [],
+    },
+  });
+  const validConflictWithChangedAuth = transport({
+    httpStatus: 409,
+    clientAuthMismatch: true,
+    body: { protocolVersion: 2, status: 'conflict', reason: 'writer_lease_mismatch' },
+  });
+
+  assert.equal(isValidatedExploreV2Transport(validOkWithChangedAuth), true);
+  assert.equal(isValidatedExploreV2Transport(validConflictWithChangedAuth), true);
+  assert.equal(
+    classifyExploreTransport(validOkWithChangedAuth, { expectedProtocolVersion: 1 }),
+    'authRequired',
+  );
+
+  for (const invalid of [
+    transport({ ...validOkWithChangedAuth, parseError: new Error('html') }),
+    transport({ ...validOkWithChangedAuth, networkError: new TypeError('lost') }),
+    transport({ ...validOkWithChangedAuth, aborted: true }),
+    transport({ ...validOkWithChangedAuth, httpStatus: 401 }),
+    transport({ ...validOkWithChangedAuth, body: { protocolVersion: 2, status: 'ok' } }),
+  ]) {
+    assert.equal(isValidatedExploreV2Transport(invalid), false);
+  }
 });
 
 test('rejects transport envelopes missing even one required Task 3 field', () => {

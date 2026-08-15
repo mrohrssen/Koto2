@@ -1044,6 +1044,46 @@ test('a validated V2 response ratchets before stale auth handling and rejects an
   assert.deepEqual(scheduler.activeDelays(), [EXPLORE_SYNC_RETRY_DELAYS_MS[0]]);
 });
 
+test('a valid V2 client-auth mismatch ratchets before auth pause and rejects later V1', async () => {
+  const scheduler = makeManualScheduler();
+  const callbacks = [];
+  let calls = 0;
+  const session = createExploreSession({
+    syncRequest: async () => {
+      calls += 1;
+      if (calls === 1) {
+        return transport({
+          protocolVersion: 2,
+          status: 'ok',
+          runId: 'v2-client-auth-ratchet',
+          appliedThroughSeq: 1,
+          nextExpectedSeq: 2,
+          results: [],
+        }, { clientAuthMismatch: true });
+      }
+      return transport(okResponse(1));
+    },
+    onCheckpoint: () => callbacks.push('checkpoint'),
+    onCorrection: () => callbacks.push('correction'),
+    schedule: scheduler.schedule,
+    cancel: scheduler.cancel,
+  });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'field-tonic' }).accepted, true);
+  const exactPendingLog = session.snapshot();
+
+  await session.syncNow();
+  assert.equal(session.getPauseReason(), 'authRequired');
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.equal(session.resolvePause('authRequired'), true);
+
+  await session.syncNow();
+  assert.equal(calls, 2);
+  assert.deepEqual(session.snapshot(), exactPendingLog);
+  assert.deepEqual(callbacks, []);
+  assert.deepEqual(scheduler.activeDelays(), [EXPLORE_SYNC_RETRY_DELAYS_MS[0]]);
+});
+
 test('authRequired blocks retries until exact resolution, then permits one explicit redelivery drain', async () => {
   const scheduler = makeManualScheduler();
   let calls = 0;

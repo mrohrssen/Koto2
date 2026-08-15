@@ -351,7 +351,7 @@ function showExploreSoftPause({ reason, missingPayloadReasons = [] } = {}) {
       onClick: () => session.retryNow?.(),
     }], { container: actionArea, append: true });
   }
-  if (reason !== 'transportDegraded' && reason !== 'authRequired') {
+  if (reason !== 'transportDegraded') {
     void triggerExploreSessionRecovery(reason);
   }
 }
@@ -407,6 +407,20 @@ async function runExploreSessionRecovery(reason) {
   if (pausedFor === 'authRequired') {
     const recoveredIdentity = await reauthenticateAndAdoptExploreSession();
     if (!recoveredIdentity) {
+      return { recovered: false, retryable: false };
+    }
+    // Adoption may replace the session or supersede the auth pause. Only the
+    // same captured session may lift its exact auth pause and redeliver work.
+    if (
+      getExploreSession?.() !== session
+      || session.resolvePause?.('authRequired') !== true
+    ) {
+      return { recovered: false, retryable: false };
+    }
+    // onPause runs inside the failed drain. Yield before explicitly draining so
+    // this recovery never awaits the in-flight drain that raised the pause.
+    await Promise.resolve();
+    if (getExploreSession?.() !== session) {
       return { recovered: false, retryable: false };
     }
     if ((session.pendingCount?.() ?? 0) > 0) {
