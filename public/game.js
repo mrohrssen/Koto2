@@ -83,6 +83,7 @@ import * as settings from './js/settings.js';
 import * as explorationUI from './js/ui/exploration.js';
 import { getExploreSession, runWithStableExploreSession } from './js/ui/explore-session.js';
 import {
+  captureGameStateFetchFence,
   isGameStateErrorResponse,
 } from './js/ui/game-state-adoption.js';
 import { FenceSuperseded } from './js/async-ownership-fence.js';
@@ -943,17 +944,9 @@ async function apiGetGameStateAfterExploreDrain(reason = 'stateFetch', { adoptSe
   const session = getExploreSession?.();
   if (session && (session.pendingCount?.() ?? 0) > 0) return null;
 
-  const capture = session?.captureFence?.({
-    pending: 'empty',
-    leases: [{
-      label: 'active Explore session',
-      isCurrent: () => getExploreSession?.() === session,
-    }],
-  });
+  const capture = captureGameStateFetchFence(session, () => getExploreSession?.());
   try {
-    return capture
-      ? await capture.fence.step('fetch game state', () => apiGetGameState({ adoptSession }))
-      : await apiGetGameState({ adoptSession });
+    return await capture.fence.step('fetch game state', () => apiGetGameState({ adoptSession }));
   } catch (error) {
     if (error instanceof FenceSuperseded) return null;
     throw error;

@@ -1,6 +1,6 @@
 import { classifyExploreTransport } from '../../../src/shared/explore/sync-outcome.js';
 import { PAUSE_REASONS } from '../../../src/shared/explore/pause-reasons.js';
-import { createAsyncOwnershipFence } from '../async-ownership-fence.js';
+import { createAsyncOwnershipFence, FenceSuperseded } from '../async-ownership-fence.js';
 
 export const EXPLORE_SESSION_HARD_CAP = 50;
 export const EXPLORE_SESSION_RESUME_AT = 40;
@@ -544,9 +544,7 @@ export function createExploreSession({
       // until after that hold creates a race where the rejected local turn can
       // publish during the handoff.
       if (response?.status === 'corrected') {
-        completeOwnershipTransaction(() => {
-          correctionRevision += 1;
-        });
+        correctionRevision += 1;
       }
 
       // A combat checkpoint may arrive while the predicted turn is still
@@ -560,16 +558,18 @@ export function createExploreSession({
       }
 
       if (response?.status === 'corrected') {
-        log = [];
-        attempts = 0;
-        if (Object.hasOwn(response, 'exploreRunway')) {
-          adoptRunwayState(response.exploreRunway, {
-            fromSync: true,
-            deferResume: true,
-          });
-        }
-        notify(onCorrection, response);
-        maybeResumeAfterDrain();
+        completeOwnershipTransaction(() => {
+          log = [];
+          attempts = 0;
+          if (Object.hasOwn(response, 'exploreRunway')) {
+            adoptRunwayState(response.exploreRunway, {
+              fromSync: true,
+              deferResume: true,
+            });
+          }
+          notify(onCorrection, response);
+          maybeResumeAfterDrain();
+        });
         return { ok: true, appendedAfterSnapshot: false };
       } else if (response?.status === 'ok') {
         let appendedAfterSnapshot = false;
@@ -751,7 +751,7 @@ export async function runWithStableExploreSession(session, action, { reason = 'l
   try {
     return { executed: true, result: await capture.fence.step('run legacy Explore action', action) };
   } catch (error) {
-    if (error?.name === 'FenceSuperseded') return { executed: false, result: null };
+    if (error instanceof FenceSuperseded) return { executed: false, result: null };
     throw error;
   }
 }

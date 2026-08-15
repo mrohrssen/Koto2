@@ -1559,3 +1559,38 @@ test('declared same-epoch runway adoption advances without self-superseding', as
   assert.equal(session.currentPreparedRoom().actionSeq, 11);
   assert.equal(await capture.fence.step('continue recovery', () => Promise.resolve('continued')), 'continued');
 });
+
+test('a preserve fence captured during correction playback goes stale at correction commit', async () => {
+  let releasePlayback;
+  let markPlaybackStarted;
+  const playbackStarted = new Promise(resolve => { markPlaybackStarted = resolve; });
+  const playbackGate = new Promise(resolve => { releasePlayback = resolve; });
+  const correctedRunway = makeRunway({
+    preparedRooms: [preparedRoom(0, { actionSeq: 13, acceptedActions: ['friendlyNpc.choose'] })],
+  });
+  const session = createExploreSession({
+    syncRequest: async () => ({
+      status: 'corrected',
+      confirmedThroughSeq: null,
+      rejectedSeq: 1,
+      results: [],
+      exploreRunway: correctedRunway,
+    }),
+    beforeResponseAdoption: async () => {
+      markPlaybackStarted();
+      await playbackGate;
+    },
+  });
+  session.adoptRunway(makeRunway());
+  assert.equal(session.recordRoomAction('friendlyNpc.choose', { itemId: 'before-correction' }).accepted, true);
+
+  const draining = session.syncNow();
+  await playbackStarted;
+  const capture = session.captureFence({ pending: 'preserve' });
+  releasePlayback();
+  await draining;
+
+  assert.equal(session.pendingCount(), 0);
+  assert.equal(session.currentPreparedRoom().actionSeq, 13);
+  assert.equal(capture.fence.isCurrent(), false);
+});

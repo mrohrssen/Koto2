@@ -154,3 +154,13 @@ test('legacy session action uses the shared ownership fence after active-session
   assert.equal(callbackCalls, 0);
   exploreSessionApi.resetExploreSession();
 });
+
+test('a non-fence error named FenceSuperseded still propagates from a legacy action', async () => {
+  const session = makeSession();
+  const impostor = Object.assign(new Error('real action error'), { name: 'FenceSuperseded' });
+
+  await assert.rejects(
+    exploreSessionApi.runWithStableExploreSession(session, async () => { throw impostor; }),
+    error => error === impostor,
+  );
+});
