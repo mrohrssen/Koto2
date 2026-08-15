@@ -136,6 +136,50 @@ export function createExploreSessionPauseController({
     }
   }
 
+  function isAttachedAuthRecovery(active) {
+    return (
+      active != null
+      && active.detached !== true
+      && activeAuthRecovery === active
+      && authRecoveryPromise === active.promise
+    );
+  }
+
+  function hasCurrentActiveAuthRecovery(active) {
+    return (
+      active != null
+      && active.detached !== true
+      && (
+        active.capture == null
+          ? isCurrent(active.revision, active.session)
+          : hasCurrentAuthRecovery(active.capture, active.revision, active.session)
+      )
+    );
+  }
+
+  function releaseActiveReauthenticationClaim(active) {
+    const claim = active?.reauthenticationClaim;
+    if (claim == null) return false;
+    // Clear before notifying auth so a reentrant detach/finally cannot
+    // release this exact opaque claim twice.
+    active.reauthenticationClaim = null;
+    releaseReauthentication?.(claim);
+    return true;
+  }
+
+  function detachAuthRecovery(active = activeAuthRecovery) {
+    if (!active) {
+      authRecoveryPromise = null;
+      return false;
+    }
+    if (active.detached === true) return false;
+    active.detached = true;
+    releaseActiveReauthenticationClaim(active);
+    if (activeAuthRecovery === active) activeAuthRecovery = null;
+    if (authRecoveryPromise === active.promise) authRecoveryPromise = null;
+    return true;
+  }
+
   function flushQueuedAuthRecovery() {
     const queued = queuedAuthRecovery;
     queuedAuthRecovery = null;
@@ -238,7 +282,17 @@ export function createExploreSessionPauseController({
 
   function triggerRecovery() {
     if (disposed) return Promise.resolve(false);
-    const session = getSession?.();
+    let session = getSession?.();
+    if (
+      authRecoveryPromise
+      && (!activeAuthRecovery || !hasCurrentActiveAuthRecovery(activeAuthRecovery))
+    ) {
+      // Signals can arrive for a non-auth successor too. Release a stale
+      // auth handoff before handling that successor, rather than leaving an
+      // unrelated hung adoption to monopolize it.
+      detachAuthRecovery(activeAuthRecovery);
+      session = getSession?.();
+    }
     const reason = session?.getPauseReason?.();
     if (reason === 'authRequired') return triggerAuthRecovery();
     if (recoveryPromise) return recoveryPromise;
@@ -296,18 +350,31 @@ export function createExploreSessionPauseController({
   }
 
   function triggerAuthRecovery() {
-    const session = getSession?.();
+    let session = getSession?.();
     if (disposed) return Promise.resolve(false);
     if (authRecoveryPromise) {
       const active = activeAuthRecovery;
-      if (!active || active.session !== session || active.revision !== lifecycleRevision) {
-        queueAuthRecovery(session, lifecycleRevision);
+      if (active && hasCurrentActiveAuthRecovery(active)) {
+        return authRecoveryPromise;
       }
-      return authRecoveryPromise;
+      // A previous recovery can be parked in external adoption while its
+      // capture, session, or controller lifecycle has already gone stale.
+      // It cannot safely own the one-use auth handoff any longer, so detach
+      // (rather than aborting the external work) before the current session
+      // is allowed to begin a successor recovery.
+      detachAuthRecovery(active);
+      session = getSession?.();
     }
     if (!session || session.getPauseReason?.() !== 'authRequired') return Promise.resolve(false);
     const revision = lifecycleRevision;
-    const active = { session, revision };
+    const active = {
+      session,
+      revision,
+      capture: null,
+      reauthenticationClaim: null,
+      detached: false,
+      promise: null,
+    };
     activeAuthRecovery = active;
 
     const recovery = (async () => {
@@ -315,58 +382,57 @@ export function createExploreSessionPauseController({
       // onPause observer cannot capture before the session transaction bumps
       // its ownership revision.
       await Promise.resolve();
-      if (!isCurrent(revision, session) || session.getPauseReason?.() !== 'authRequired') return false;
-      let capture;
-      let reauthenticationClaim = null;
+      if (!hasCurrentActiveAuthRecovery(active) || session.getPauseReason?.() !== 'authRequired') return false;
       let acknowledged = false;
       try {
-        capture = session.captureFence?.({
+        const capture = session.captureFence?.({
           pending: 'preserve',
           leases: [{
             label: 'Explore pause controller',
             isCurrent: () => isCurrent(revision, session),
           }],
         });
-        if (!capture || !hasCurrentAuthRecovery(capture, revision, session)) return false;
+        active.capture = capture;
+        if (!capture || !hasCurrentActiveAuthRecovery(active)) return false;
         const authenticated = await capture.fence.step(
           'reauthenticate Explore session',
           () => reauthenticate?.(),
         );
-        if (authenticated !== true || !hasCurrentAuthRecovery(capture, revision, session)) return false;
+        if (authenticated !== true || !hasCurrentActiveAuthRecovery(active)) return false;
         if (typeof claimReauthentication === 'function') {
           const candidateClaim = await claimReauthentication();
-          if (!hasCurrentAuthRecovery(capture, revision, session)) {
+          if (!hasCurrentActiveAuthRecovery(active)) {
             if (candidateClaim != null) releaseReauthentication?.(candidateClaim);
             // Claim acquisition itself can suspend. Once a stale claimant
             // releases the one-use handoff, let the current auth-paused
             // session claim it after this recovery clears.
-            queueCurrentAuthRecovery();
+            if (isAttachedAuthRecovery(active)) queueCurrentAuthRecovery();
             return false;
           }
           if (candidateClaim == null) {
             // Another current recovery consumed this one-use handoff. Re-run
             // only after this flow clears so requestReauthentication can show
             // a fresh prompt when this still-current pause is independent.
-            queueAuthRecovery(session, revision);
+            if (isAttachedAuthRecovery(active)) queueAuthRecovery(session, revision);
             return false;
           }
-          reauthenticationClaim = candidateClaim;
+          active.reauthenticationClaim = candidateClaim;
         }
         if ((await capture.fence.step(
           'adopt Explore recovery state',
           () => adoptRecoveryState?.({ capture }),
         )) !== true) return false;
-        if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
+        if (!hasCurrentActiveAuthRecovery(active)) return false;
         if (session.resolvePause?.('authRequired', { owner: capture.sessionLease }) !== true) return false;
         // The auth drain that raised this pause may still be unwinding. Yield
         // before redelivery so the owned successor can never join it.
         await capture.fence.step('yield before Explore auth redelivery', () => Promise.resolve());
-        if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
+        if (!hasCurrentActiveAuthRecovery(active)) return false;
         await capture.fence.step(
           'redeliver Explore auth recovery',
           () => session.syncNow?.({ owner: capture.sessionLease }),
         );
-        if (!hasCurrentAuthRecovery(capture, revision, session)) return false;
+        if (!hasCurrentActiveAuthRecovery(active)) return false;
         if (session.getPauseReason?.() != null || session.isPaused?.() === true) {
           if (
             session.getPauseReason?.() === 'authRequired'
@@ -377,15 +443,16 @@ export function createExploreSessionPauseController({
           }
           return false;
         }
-        if (acknowledgeReauthentication?.(reauthenticationClaim) === false) {
+        if (acknowledgeReauthentication?.(active.reauthenticationClaim) === false) {
           throw new FenceContractViolation('Explore auth recovery did not acknowledge its exact reauthentication claim');
         }
+        active.reauthenticationClaim = null;
         acknowledged = true;
         clearAutomaticAuthRepeat(session, revision);
         return true;
       } catch (error) {
         if (error instanceof FenceSuperseded) {
-          queueCurrentAuthRecovery();
+          if (isAttachedAuthRecovery(active)) queueCurrentAuthRecovery();
           return false;
         }
         if (error instanceof FenceContractViolation) throw error;
@@ -393,18 +460,17 @@ export function createExploreSessionPauseController({
         // the existing pause and is allowed to retry from a later signal.
         return false;
       } finally {
-        if (!acknowledged && reauthenticationClaim != null) {
-          releaseReauthentication?.(reauthenticationClaim);
-        }
+        if (!acknowledged) releaseActiveReauthenticationClaim(active);
       }
     })();
     let wrappedRecovery;
     wrappedRecovery = recovery.finally(() => {
-      if (authRecoveryPromise !== wrappedRecovery) return;
+      if (!isAttachedAuthRecovery(active) || active.promise !== wrappedRecovery) return;
       authRecoveryPromise = null;
       activeAuthRecovery = null;
       flushQueuedAuthRecovery();
     });
+    active.promise = wrappedRecovery;
     authRecoveryPromise = wrappedRecovery;
     return wrappedRecovery;
   }
@@ -460,6 +526,7 @@ export function createExploreSessionPauseController({
     if (disposed) return;
     disposed = true;
     lifecycleRevision += 1;
+    detachAuthRecovery(activeAuthRecovery);
     queuedAuthRecovery = null;
     automaticAuthRepeatEpisode = null;
     cancelRecoveryTimer();

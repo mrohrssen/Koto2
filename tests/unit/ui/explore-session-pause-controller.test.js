@@ -229,6 +229,57 @@ function createRealAuthRecoveryHarness(observer) {
   };
 }
 
+function createDeferredAuthSession(name, { isActive }) {
+  const owner = Object.freeze({ name });
+  let reason = 'authRequired';
+  const captures = [];
+  const session = {
+    name,
+    drains: 0,
+    resolves: 0,
+    captures,
+    getPauseReason: () => reason,
+    isPaused: () => reason != null,
+    pendingCount: () => 1,
+    pause(nextReason) {
+      reason = nextReason;
+      return true;
+    },
+    captureFence() {
+      const fence = {
+        isCurrent: () => isActive(session),
+        async step(label, operation) {
+          if (!isActive(session)) throw new FenceSuperseded(label, 'active Explore session');
+          const result = await operation();
+          if (!isActive(session)) throw new FenceSuperseded(label, 'active Explore session');
+          return result;
+        },
+      };
+      const capture = { session, sessionLease: owner, fence };
+      captures.push(capture);
+      return capture;
+    },
+    resolvePause(expectedReason, { owner: suppliedOwner } = {}) {
+      if (
+        expectedReason !== 'authRequired'
+        || suppliedOwner !== owner
+        || reason !== 'authRequired'
+        || !isActive(session)
+      ) return false;
+      reason = null;
+      session.resolves += 1;
+      return true;
+    },
+    async syncNow({ owner: suppliedOwner } = {}) {
+      if (suppliedOwner !== owner || !isActive(session)) {
+        throw new FenceSuperseded('redeliver Explore auth recovery', 'active Explore session');
+      }
+      session.drains += 1;
+    },
+  };
+  return session;
+}
+
 describe('Explore session pause controller', () => {
   it('coalesces auth pause, online, and visibility through one supplied capture', async () => {
     const session = createSession({ reason: 'authRequired', pending: 1 });
@@ -709,6 +760,268 @@ describe('Explore session pause controller', () => {
     assert.equal(sessionA.drains, 0);
     assert.equal(promptCalls, 1, 'B consumes the completed login instead of reopening auth');
     controller.dispose();
+  });
+
+  it('detaches a hung claimed adoption so a replacement can consume the handoff before its gate resolves', async () => {
+    let activeSession;
+    let permitAvailable = false;
+    let activeClaim = null;
+    let promptCalls = 0;
+    let acknowledgements = 0;
+    const login = deferred();
+    const staleAdoption = deferred();
+    const claims = [];
+    const releases = [];
+    const acknowledgedClaims = [];
+    const adoptions = [];
+    const sessionA = createDeferredAuthSession('A', {
+      isActive: session => activeSession === session,
+    });
+    const sessionB = createDeferredAuthSession('B', {
+      isActive: session => activeSession === session,
+    });
+    activeSession = sessionA;
+
+    const controller = createExploreSessionPauseController({
+      getSession: () => activeSession,
+      reauthenticate: () => {
+        if (permitAvailable) return Promise.resolve(true);
+        promptCalls += 1;
+        return login.promise;
+      },
+      claimReauthentication: async () => {
+        if (!permitAvailable || activeClaim) return null;
+        const claim = Object.freeze({ claim: claims.length + 1 });
+        claims.push(claim);
+        activeClaim = claim;
+        return claim;
+      },
+      releaseReauthentication: claim => {
+        releases.push(claim);
+        if (claim !== activeClaim) return false;
+        activeClaim = null;
+        return true;
+      },
+      acknowledgeReauthentication: claim => {
+        if (claim !== activeClaim) return false;
+        acknowledgedClaims.push(claim);
+        activeClaim = null;
+        permitAvailable = false;
+        acknowledgements += 1;
+        return true;
+      },
+      adoptRecoveryState: ({ capture }) => {
+        adoptions.push(capture.session.name);
+        return capture.session === sessionA ? staleAdoption.promise : Promise.resolve(true);
+      },
+      schedule: () => 0,
+      cancel: () => {},
+      windowTarget: eventTarget(),
+      documentTarget: eventTarget(),
+    });
+
+    const staleRecovery = controller.triggerRecovery();
+    await waitFor(() => promptCalls === 1);
+    permitAvailable = true;
+    login.resolve(true);
+    await waitFor(() => adoptions.length === 1 && adoptions[0] === 'A');
+
+    activeSession = sessionB;
+    const successorRecovery = controller.triggerRecovery();
+    try {
+      await waitFor(() => sessionB.drains === 1 && acknowledgements === 1);
+
+      assert.equal(promptCalls, 1, 'B consumes A\'s completed login instead of reopening auth');
+      assert.deepEqual(adoptions, ['A', 'B']);
+      assert.equal(sessionA.resolves, 0);
+      assert.equal(sessionA.drains, 0);
+      assert.equal(sessionB.resolves, 1);
+      assert.equal(releases.length, 1);
+      assert.equal(releases[0], claims[0], 'detaching A releases only A\'s held claim');
+      assert.equal(acknowledgedClaims.length, 1);
+      assert.equal(acknowledgedClaims[0], claims[1], 'B alone consumes the transferred handoff');
+
+      staleAdoption.resolve(true);
+      await staleRecovery;
+      await successorRecovery;
+      await Promise.resolve();
+
+      assert.deepEqual(adoptions, ['A', 'B'], 'A\'s late completion cannot start another adoption');
+      assert.equal(sessionB.drains, 1, 'A\'s late completion cannot redeliver B');
+      assert.equal(acknowledgements, 1, 'A\'s late completion cannot acknowledge B\'s claim');
+      assert.equal(releases.length, 1, 'A\'s claim is never released twice');
+      assert.equal(releases[0], claims[0]);
+    } finally {
+      staleAdoption.resolve(true);
+      await staleRecovery;
+      controller.dispose();
+    }
+  });
+
+  it('releases a stale claimed auth flow before handling a non-auth recovery signal', async () => {
+    let activeSession;
+    let activeClaim = null;
+    let adoptionStarted = false;
+    const staleAdoption = deferred();
+    const releases = [];
+    const claimA = Object.freeze({ claim: 'A' });
+    const sessionA = createDeferredAuthSession('A', {
+      isActive: session => activeSession === session,
+    });
+    const sessionB = createSession({ reason: null, pending: 0 });
+    activeSession = sessionA;
+    const controller = createExploreSessionPauseController({
+      getSession: () => activeSession,
+      reauthenticate: async () => true,
+      claimReauthentication: async () => {
+        activeClaim = claimA;
+        return activeClaim;
+      },
+      releaseReauthentication: claim => {
+        releases.push(claim);
+        if (claim !== activeClaim) return false;
+        activeClaim = null;
+        return true;
+      },
+      adoptRecoveryState: () => {
+        adoptionStarted = true;
+        return staleAdoption.promise;
+      },
+      schedule: () => 0,
+      cancel: () => {},
+      windowTarget: eventTarget(),
+      documentTarget: eventTarget(),
+    });
+
+    const staleRecovery = controller.triggerRecovery();
+    await waitFor(() => activeClaim != null && adoptionStarted);
+
+    activeSession = sessionB;
+    await controller.triggerRecovery();
+
+    assert.equal(releases.length, 1);
+    assert.equal(releases[0], claimA, 'the stale auth handoff is released without waiting for adoption');
+    assert.equal(sessionA.resolves, 0);
+    assert.equal(sessionA.drains, 0);
+
+    staleAdoption.resolve(true);
+    await staleRecovery;
+    await Promise.resolve();
+    assert.equal(releases.length, 1, 'the late stale flow cannot release the claim twice');
+    assert.equal(releases[0], claimA);
+    controller.dispose();
+  });
+
+  it('releases a hung claimed adoption on disposal so a replacement controller recovers before the stale gate resolves', async () => {
+    let activeSession;
+    let permitAvailable = false;
+    let activeClaim = null;
+    let promptCalls = 0;
+    let acknowledgements = 0;
+    const login = deferred();
+    const staleAdoption = deferred();
+    const claims = [];
+    const claimWaiters = [];
+    const releases = [];
+    const acknowledgedClaims = [];
+    const adoptions = [];
+    const sessionA = createDeferredAuthSession('A', {
+      isActive: session => activeSession === session,
+    });
+    const sessionB = createDeferredAuthSession('B', {
+      isActive: session => activeSession === session,
+    });
+    activeSession = sessionA;
+
+    const claimNext = () => {
+      const claim = Object.freeze({ claim: claims.length + 1 });
+      claims.push(claim);
+      activeClaim = claim;
+      return claim;
+    };
+    const claimReauthentication = () => {
+      if (!permitAvailable) return Promise.resolve(null);
+      if (!activeClaim) return Promise.resolve(claimNext());
+      const waiter = deferred();
+      claimWaiters.push(waiter);
+      return waiter.promise;
+    };
+    const releaseReauthentication = claim => {
+      releases.push(claim);
+      if (claim !== activeClaim) return false;
+      activeClaim = null;
+      const waiter = claimWaiters.shift();
+      if (waiter) waiter.resolve(claimNext());
+      return true;
+    };
+    const acknowledgeReauthentication = claim => {
+      if (claim !== activeClaim) return false;
+      acknowledgedClaims.push(claim);
+      activeClaim = null;
+      permitAvailable = false;
+      acknowledgements += 1;
+      return true;
+    };
+    const createController = getSession => createExploreSessionPauseController({
+      getSession,
+      reauthenticate: () => {
+        if (permitAvailable) return Promise.resolve(true);
+        promptCalls += 1;
+        return login.promise;
+      },
+      claimReauthentication,
+      releaseReauthentication,
+      acknowledgeReauthentication,
+      adoptRecoveryState: ({ capture }) => {
+        adoptions.push(capture.session.name);
+        return capture.session === sessionA ? staleAdoption.promise : Promise.resolve(true);
+      },
+      schedule: () => 0,
+      cancel: () => {},
+      windowTarget: eventTarget(),
+      documentTarget: eventTarget(),
+    });
+
+    const controllerA = createController(() => activeSession);
+    const staleRecovery = controllerA.triggerRecovery();
+    await waitFor(() => promptCalls === 1);
+    permitAvailable = true;
+    login.resolve(true);
+    await waitFor(() => adoptions.length === 1 && adoptions[0] === 'A');
+
+    activeSession = sessionB;
+    controllerA.dispose();
+    const controllerB = createController(() => activeSession);
+    const successorRecovery = controllerB.triggerRecovery();
+    try {
+      await waitFor(() => sessionB.drains === 1 && acknowledgements === 1);
+
+      assert.equal(promptCalls, 1, 'B uses the completed login released by disposed A');
+      assert.deepEqual(adoptions, ['A', 'B']);
+      assert.equal(sessionA.resolves, 0);
+      assert.equal(sessionA.drains, 0);
+      assert.equal(sessionB.resolves, 1);
+      assert.equal(releases.length, 1);
+      assert.equal(releases[0], claims[0], 'dispose releases A\'s exact claim immediately');
+      assert.equal(acknowledgedClaims.length, 1);
+      assert.equal(acknowledgedClaims[0], claims[1], 'B alone acknowledges its replacement claim');
+
+      staleAdoption.resolve(true);
+      await staleRecovery;
+      await successorRecovery;
+      await Promise.resolve();
+
+      assert.deepEqual(adoptions, ['A', 'B'], 'late A work remains inert after B succeeds');
+      assert.equal(sessionB.drains, 1);
+      assert.equal(acknowledgements, 1);
+      assert.equal(releases.length, 1, 'late A work cannot release B\'s claim');
+      assert.equal(releases[0], claims[0]);
+    } finally {
+      staleAdoption.resolve(true);
+      await staleRecovery;
+      controllerA.dispose();
+      controllerB.dispose();
+    }
   });
 
   for (const observer of ['resume', 'checkpoint', 'correction']) {
