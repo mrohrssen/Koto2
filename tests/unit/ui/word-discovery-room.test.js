@@ -36,8 +36,11 @@ describe('word discovery optimistic room flow', () => {
     assert.doesNotMatch(wordDiscoverySource, /続ける/);
   });
 
-  it('soft pauses when completion cannot be queued', () => {
-    assert.match(explorationSource, /recordRoomAction\('wordDiscovery\.complete', \{ learnedWords \}\)[\s\S]*showExploreSoftPause/);
+  it('routes an unqueueable completion through the session pause controller', () => {
+    assert.match(
+      explorationSource,
+      /recordRoomAction\('wordDiscovery\.complete', \{ learnedWords \}\)[\s\S]*handleExploreSessionPause\(\{ reason: completionResult\?\.reason \|\| 'missingPayload' \}\)/
+    );
     assert.doesNotMatch(explorationSource, /Word discovery did not save\. Please try again\./);
   });
 });

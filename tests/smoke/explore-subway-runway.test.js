@@ -92,7 +92,7 @@ const OFFLINE_WINDOWS = [
 // in this list — it is allowed and asserted separately.
 const FORBIDDEN_COPY = ['did not save', 'Invalid choice', 'Synced with server'];
 
-// The sanctioned soft-pause copy (public/js/ui/exploration.js EXPLORE_SPOTTY_COPY).
+// The sanctioned soft-pause copy is rendered by the Explore session pause controller.
 // Rendered inside the (auto-dismissing) narration box, so we match on substring.
 // Note: #narration-box is always in the DOM; only `.narration-box.visible` means
 // a narration is actually showing (see domSignals).
