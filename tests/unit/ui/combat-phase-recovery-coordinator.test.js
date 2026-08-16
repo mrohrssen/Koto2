@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import { createCombatPhaseRecoveryCoordinator } from '../../../public/js/ui/combat-phase-recovery-coordinator.js';
 import { createCombatRecoveryGate } from '../../../public/js/ui/combat-recovery-gate.js';
+import { GameManager } from '../../../src/game/loop.js';
+import { createCombatState } from '../../../src/game/state.js';
 
 const STANDARD_EXPLORE_COMBAT_STATE = {
   phase: 'combat',
@@ -76,12 +78,35 @@ describe('combat phase recovery coordinator', () => {
     });
   });
 
+  it('starts recovery for a serialized ordinary Explore run whose mode is null', () => {
+    const { dependencies, calls } = makePhaseDependencies();
+    const coordinator = createCombatPhaseRecoveryCoordinator(dependencies);
+    const game = new GameManager();
+    game.initMeta();
+    game.createPlayer('RecoveryTester');
+    game.startRun();
+    game.run.areaSelectionRequired = false;
+    game.run.initialSkillPick.chosenId = 'recovery-skill';
+    game.combat = createCombatState({ id: 'enemy', hp: 10, maxHp: 10 });
+    const serializedState = game.getState();
+
+    assert.equal(serializedState.phase, 'combat');
+    assert.equal(serializedState.run.mode, null);
+    coordinator.handle(serializedState);
+
+    assert.equal(calls.starts, 1);
+    assert.equal(calls.markDone, 1);
+    assert.deepEqual(calls.startOptions, [{ recovery: true }]);
+  });
+
   it('does not start or consume playback for ineligible states', () => {
     const { dependencies, calls } = makePhaseDependencies({ playbackState: 'ready' });
     const coordinator = createCombatPhaseRecoveryCoordinator(dependencies);
     const states = [
       { ...STANDARD_EXPLORE_COMBAT_STATE, run: { active: true, mode: 'kanjiKombat' } },
-      { ...STANDARD_EXPLORE_COMBAT_STATE, phase: 'pvp_combat' },
+      { ...STANDARD_EXPLORE_COMBAT_STATE, run: { active: true, mode: 'future-mode' } },
+      { ...STANDARD_EXPLORE_COMBAT_STATE, run: { active: true } },
+      { ...STANDARD_EXPLORE_COMBAT_STATE, phase: 'pvp_battle' },
       { ...STANDARD_EXPLORE_COMBAT_STATE, run: { active: false, mode: 'standard' } },
       { ...STANDARD_EXPLORE_COMBAT_STATE, combat: { active: false } },
       { ...STANDARD_EXPLORE_COMBAT_STATE, combat: null },

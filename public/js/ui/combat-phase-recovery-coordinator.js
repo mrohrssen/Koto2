@@ -11,9 +11,10 @@ export function createCombatPhaseRecoveryCoordinator({
   startCombat,
 } = {}) {
   function isEligible(state) {
+    const runMode = state?.run?.mode;
     return state?.phase === 'combat'
       && state.run?.active === true
-      && state.run?.mode === 'standard'
+      && (runMode === null || runMode === 'standard')
       && state.combat?.active === true;
   }
 
