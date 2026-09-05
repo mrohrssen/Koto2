@@ -3,6 +3,7 @@ import assert from 'node:assert';
 
 let prefetchWordCalls = [];
 let playWordPairCalls = [];
+let knownWords = new Set();
 
 // Mock browser-only modules that attack-card.js imports at the module level.
 // All mocks must be set up before dynamically importing attack-card.js so that
@@ -10,7 +11,7 @@ let playWordPairCalls = [];
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: {
     renderJpSentence: (tokens) => tokens.map(t => [t.reading, t.meaning || t.nameEn].filter(Boolean).join(' ')).join(' '),
-    getKnownWords: () => new Set(),
+    getKnownWords: () => knownWords,
     entityToToken: (x) => ({ ...x, meaning: x.nameEn || x.meaning }),
   }
 });
@@ -42,6 +43,7 @@ const {
   insertNpcAttackCard,
   createAttackCardContinueControl,
   cancelAttackCardContinueControls,
+  ATTACK_CARD_TIMING,
 } = await import('../../../public/js/ui/attack-card.js');
 
 describe('attack-card helpers — formatResultValue', () => {
@@ -187,6 +189,7 @@ function createFakeAttackCard() {
   const continueEl = { textContent: 'tap to continue' };
   const card = {
     classList: createClassList(),
+    querySelectorAll: () => [],
     parentElement: null,
     isConnected: true,
     contains(target) {
@@ -527,5 +530,157 @@ describe('insertNpcAttackCard (via buildSplitAttackCard attackerHtml shape)', ()
     assert.ok(html.includes('mentor.webp'));
     // No legacy .sac-attacker-name element should appear
     assert.ok(!html.includes('sac-attacker-name'));
+  });
+});
+
+
+// An inserted card is essential here: only its actual rendered vocabulary may
+// authorize an automatic skip; arbitrary or incomplete cards remain manual.
+async function setupAutoCard(t, { atk = SAMPLE_ATTACK, enabled = true, words = ['火', '炎', '木'], isEnemy = false, npc = false } = {}) {
+  const auto = await import('../../../public/js/ui/combat-auto-mode.js');
+  cancelAttackCardContinueControls();
+  knownWords = new Set(words);
+  auto.updateExploreCombatAutoContext({ phase: 'combat', run: { active: true }, combat: {} });
+  auto.setCombatAutoEnabled(enabled);
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const fixture = createFakeAttackCard();
+  const originalDocument = globalThis.document;
+  const area = { innerHTML: '', querySelector: () => fixture.card };
+  globalThis.document = { getElementById: id => id === 'action-area' ? area : null };
+  if (npc) insertNpcAttackCard(atk);
+  else insertAttackCard(atk, isEnemy);
+  globalThis.document = originalDocument;
+  t.after(() => {
+    cancelAttackCardContinueControls();
+    auto.setCombatAutoEnabled(false);
+    auto.updateExploreCombatAutoContext(null);
+    knownWords = new Set();
+  });
+  const control = createAttackCardContinueControl(fixture.card);
+  return { ...fixture, control, auto };
+}
+
+describe('attack result Auto', () => {
+  it('advances all-known results only after effects finish and the reading delay elapses', async t => {
+    const { control, card } = await setupAutoCard(t);
+    t.mock.timers.tick(10000);
+    assert.equal(control.wasRequested(), false, 'animation alone must never request a skip');
+    const done = control.wait();
+    t.mock.timers.tick(1199);
+    assert.equal(control.wasRequested(), false);
+    t.mock.timers.tick(1);
+    assert.equal(control.wasRequested(), true);
+    assert.equal(card.classList.contains('sac-fading-out'), true);
+    t.mock.timers.tick(ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+    await done;
+  });
+
+  for (const npc of [false, true]) {
+    it(`advances all-known ${npc ? 'NPC' : 'enemy/opponent'} results through the same control`, async t => {
+      const { control } = await setupAutoCard(t, { isEnemy: true, npc });
+      const done = control.wait();
+      t.mock.timers.tick(1200);
+      assert.equal(control.wasRequested(), true);
+      t.mock.timers.tick(ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+      await done;
+    });
+  }
+
+  it('cancels a pending skip on entering Kanji Kombat', async t => {
+    const { control, auto } = await setupAutoCard(t);
+    control.wait();
+    t.mock.timers.tick(600);
+    auto.updateExploreCombatAutoContext({ phase: 'combat', run: { active: true, mode: 'kanjiKombat' }, combat: {} });
+    t.mock.timers.tick(10000);
+    assert.equal(control.wasRequested(), false);
+  });
+
+  it('does not substitute creature IDs for FSRS vocabulary keys', async t => {
+    const { control } = await setupAutoCard(t, { words: ['hi', 'ki', '炎'] });
+    control.wait();
+    t.mock.timers.tick(10000);
+    assert.equal(control.wasRequested(), false);
+  });
+
+  it('keeps all-known results manual when Auto is off', async t => {
+    const { control } = await setupAutoCard(t, { enabled: false });
+    control.wait();
+    t.mock.timers.tick(10000);
+    assert.equal(control.wasRequested(), false);
+  });
+
+  for (const unknown of ['火', '炎', '木']) {
+    it(`holds the result when the ${unknown} word is unknown`, async t => {
+      const { control } = await setupAutoCard(t, { words: ['火', '炎', '木'].filter(w => w !== unknown) });
+      control.wait();
+      t.mock.timers.tick(10000);
+      assert.equal(control.wasRequested(), false);
+    });
+  }
+
+  it('holds incomplete vocabulary even when every supplied word is known', async t => {
+    const { control } = await setupAutoCard(t, { atk: { ...SAMPLE_ATTACK, attackerSkillName: '', moveName: '' } });
+    control.wait();
+    t.mock.timers.tick(10000);
+    assert.equal(control.wasRequested(), false);
+  });
+
+  it('checks the rendered move precedence instead of a different known move field', async t => {
+    const { control } = await setupAutoCard(t, { atk: { ...SAMPLE_ATTACK, attackerSkillName: 'unknown', moveName: '炎' } });
+    control.wait();
+    t.mock.timers.tick(10000);
+    assert.equal(control.wasRequested(), false);
+  });
+
+  it('allows repeated known words in self-target results', async t => {
+    const { control } = await setupAutoCard(t, { atk: { ...SAMPLE_ATTACK, targetWord: '火' }, words: ['火', '炎'] });
+    const done = control.wait();
+    t.mock.timers.tick(1200);
+    assert.equal(control.wasRequested(), true);
+    t.mock.timers.tick(ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+    await done;
+  });
+
+  it('cancels a pending skip when Auto is switched off and allows enabling it on an existing result', async t => {
+    const { control, auto } = await setupAutoCard(t);
+    const done = control.wait();
+    t.mock.timers.tick(600);
+    auto.setCombatAutoEnabled(false);
+    t.mock.timers.tick(2000);
+    assert.equal(control.wasRequested(), false);
+    auto.setCombatAutoEnabled(true);
+    t.mock.timers.tick(1200);
+    assert.equal(control.wasRequested(), true);
+    t.mock.timers.tick(ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+    await done;
+  });
+
+  it('rechecks knownness when the delay expires', async t => {
+    const { control } = await setupAutoCard(t);
+    control.wait();
+    knownWords.delete('炎');
+    t.mock.timers.tick(10000);
+    assert.equal(control.wasRequested(), false);
+  });
+
+  it('clears the timer when a manual tap advances the result', async t => {
+    const { control, actionArea } = await setupAutoCard(t);
+    const done = control.wait();
+    actionArea.dispatchClick();
+    t.mock.timers.tick(ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+    await done;
+    t.mock.timers.tick(10000);
+    assert.equal(actionArea.listenerCount('click'), 0);
+  });
+
+  it('cancels a scheduled skip during combat teardown', async t => {
+    const { control, card, actionArea } = await setupAutoCard(t);
+    const done = control.wait();
+    cancelAttackCardContinueControls();
+    await done;
+    t.mock.timers.tick(10000);
+    assert.equal(control.wasRequested(), false);
+    assert.equal(card.classList.contains('sac-fading-out'), false);
+    assert.equal(actionArea.listenerCount('click'), 0);
   });
 });

@@ -8,6 +8,7 @@ import { showEffectEvents } from './combat-vfx.js';
 import { getHpColor } from './combat-ui-utils.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { BattleScene } from '../scenes/battle-scene.js';
+import { setPvpCombatAutoContext } from './combat-auto-mode.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -81,6 +82,8 @@ export function startPvpBattle(data) {
     actionPlaybackActive: false,
     pendingMatchEnd: null
   };
+
+  setPvpCombatAutoContext(true);
 
   if (typeof onPvpBattleStart === 'function') {
     onPvpBattleStart();
@@ -547,6 +550,7 @@ function flushPendingMatchEnd() {
 
 function renderMatchEnd(data) {
   if (!pvpState) return;
+  setPvpCombatAutoContext(false);
 
   const { winnerName } = data;
   pvpState.rankedResult = data.rankedResult || null;
@@ -596,6 +600,7 @@ function renderResult(resultText, resultColor, winnerName, rankedResult = null) 
 
   // Register rematch handlers
   pvpSocket.on('pvp:rematch-start', () => {
+    setPvpCombatAutoContext(false);
     // Both want rematch — go back to team select
     // Need to import renderPvpTeamSelect dynamically to avoid circular dependency
     import('./pvp-lobby.js').then(lobby => {
@@ -604,6 +609,7 @@ function renderResult(resultText, resultColor, winnerName, rankedResult = null) 
   });
 
   pvpSocket.on('pvp:rematch-cancelled', () => {
+    setPvpCombatAutoContext(false);
     actions.setContent(`
       <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px;max-width:340px;margin:0 auto;">
         <div style="font-size:1.2em;color:var(--text-secondary);">Opponent left</div>
@@ -696,6 +702,7 @@ function returnFromPvp({ toMultiplayer = false } = {}) {
   pvpSocket.leaveMatch();
   pvpSocket.disconnect();
   pvpState = null;
+  setPvpCombatAutoContext(false);
 
   const gameState = getGameState();
   gameState.phase = toMultiplayer ? 'pvp_lobby' : 'hub';

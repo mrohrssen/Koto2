@@ -234,6 +234,25 @@ window.__inspector.fullScan()
 
 ---
 
+### Combat Auto (Explore and PvP)
+
+**Trigger:** Enter an ordinary Explore encounter after the tutorial, or start a PvP match.
+
+**Expected screen:** A bottom-right battlefield **Auto** button starts off. Tapping it highlights the button and changes its state to on. It only advances attack results; the player still chooses moves and targets.
+
+**Interactions and checks:**
+1. Leave Auto off and perform an attack: the result waits for a tap.
+2. Enable Auto with all three result words (attacker, move, target) in the player's FSRS known-word list: the result advances 1.2 seconds after attack playback reaches its usual tap-to-continue point.
+3. Repeat for an enemy/opponent attack. The same rule applies in both directions and both modes.
+4. Use a result with any unknown word: it continues to wait for a tap even with Auto on. Missing vocabulary also keeps the manual pause.
+5. Turn Auto off during the delay: the pending skip is cancelled. Turning it on while an all-known result is waiting starts a fresh delay.
+6. Tap manually during animation or the delay: the existing early-tap behavior still advances once effects finish, exactly once.
+7. Finish or leave combat: no old timer advances a reward, move choice, or subsequent screen. Auto is hidden outside combat, including Kanji Kombat and tutorial combat.
+
+The known-word check uses the same FSRS-derived list as Japanese display (Learning, Review, or Relearning). Self-target moves may repeat a word; all three displayed roles must be known, but they need not be three different words.
+
+---
+
 ### Phase 3d: Kanji Kombat First-Time Onboarding (phase: `combat`, mode: `kanjiKombat`)
 
 **Trigger:** An account with `meta.kanjiKombatOnboarding.completed === false` clicks **Kanji Kombat**, selects an owned creature, and starts the run.

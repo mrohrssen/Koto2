@@ -8,6 +8,7 @@ import { creatureSpriteHtml } from './sprite-utils.js';
 import { SC_NAMES } from './combat-ui-utils.js';
 import { actionIconUrl, creatureStaticUrl, npcSpriteUrl } from '../assets/asset-urls.js';
 import { assetPreloader } from '../assets/asset-preloader.js';
+import { isCombatAutoEnabled, subscribeCombatAutoMode } from './combat-auto-mode.js';
 
 /** Map move `category` → tone class used by CSS for color. */
 export function resultTone(atk) {
@@ -75,6 +76,7 @@ export function effectivenessText(atk) {
 }
 
 export const ATTACK_CARD_TIMING = {
+  AUTO_CONTINUE_DELAY: 1200,
   ROW_STAGGER: 50,
   ROW_ANIM_DURATION: 100,
   FADE_OUT_DURATION: 100
@@ -93,6 +95,25 @@ export const ELEMENT_THEME = {
 // forfeiting or otherwise tearing down combat cannot leave a detached card
 // holding Explore checkpoint adoption forever.
 const activeContinueControlCancels = new Set();
+const cardVocabulary = new WeakMap();
+
+// These are the same three base words rendered in attacker / move / target order.
+// Never filter missing entries: all three displayed roles must be known.
+function resolveAttackWords(atk) {
+  return [
+    atk.attackerWord || atk.attackerNameJp || atk.attackerName,
+    atk.attackerSkillName || atk.moveName,
+    atk.targetWord || atk.targetNameJp || atk.targetName,
+  ];
+}
+
+function hasKnownCardVocabulary(card) {
+  const words = cardVocabulary.get(card);
+  const knownWords = getKnownWords();
+  return words?.length === 3 && words.every(word =>
+    typeof word === 'string' && word.length > 0 && knownWords.has(word)
+  );
+}
 
 export function cancelAttackCardContinueControls() {
   for (const cancel of [...activeContinueControlCancels]) cancel();
@@ -123,19 +144,20 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
   const knownWords = getKnownWords();
   const wordDict = new Map();
 
+  const [attackerWord, moveWord, targetWord] = resolveAttackWords(atk);
   const attackerToken = entityToToken({
-    word: atk.attackerWord || atk.attackerNameJp || atk.attackerName,
+    word: attackerWord,
     reading: atk.attackerReading,
     nameEn: atk.attackerName,
     meaning: atk.attackerMeaning || atk.attackerName,
   });
   const moveToken = entityToToken({
-    word: atk.attackerSkillName || atk.moveName,
+    word: moveWord,
     reading: atk.attackerSkillReading,
     meaning: atk.attackerSkillEn || atk.moveNameEn,
   });
   const targetToken = entityToToken({
-    word: atk.targetWord || atk.targetNameJp || atk.targetName,
+    word: targetWord,
     reading: atk.targetReading,
     nameEn: atk.targetName,
     meaning: atk.targetMeaning || atk.targetName,
@@ -224,6 +246,7 @@ export function insertAttackCard(atk, isEnemy) {
   const card = actionArea.querySelector('.split-attack-card');
   if (!card) return null;
 
+  cardVocabulary.set(card, resolveAttackWords(atk));
   const rows = card.querySelectorAll('.sac-row');
   rows.forEach((row, i) => {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
@@ -261,6 +284,7 @@ export function insertNpcAttackCard(atk) {
   const card = actionArea.querySelector('.split-attack-card');
   if (!card) return null;
 
+  cardVocabulary.set(card, resolveAttackWords(atk));
   const rows = card.querySelectorAll('.sac-row');
   rows.forEach((row, i) => {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
@@ -283,6 +307,8 @@ export function createAttackCardContinueControl(card) {
   let resolved = false;
   let waitingResolve = null;
   let fadeTimer = null;
+  let autoTimer = null;
+  let unsubscribeAuto = null;
 
   const getContinueLabel = () => card?.querySelector?.('.sac-continue') || null;
 
@@ -291,8 +317,16 @@ export function createAttackCardContinueControl(card) {
     if (label) label.textContent = text;
   };
 
+  const clearAutoTimer = () => {
+    if (autoTimer != null) clearTimeout(autoTimer);
+    autoTimer = null;
+  };
+
   const cleanup = () => {
     if (eventTarget) eventTarget.removeEventListener('click', onTap);
+    clearAutoTimer();
+    unsubscribeAuto?.();
+    unsubscribeAuto = null;
   };
 
   const settle = () => {
@@ -347,6 +381,28 @@ export function createAttackCardContinueControl(card) {
     requestContinue();
   }
 
+  function updateAutoContinue() {
+    clearAutoTimer();
+    if (requested || resolved || !waitingResolve) return;
+    if (!isCombatAutoEnabled() || !hasKnownCardVocabulary(card)) {
+      setLabel('tap to continue');
+      return;
+    }
+    setLabel('continuing automatically...');
+    autoTimer = setTimeout(() => {
+      autoTimer = null;
+      // Recheck both the session scope and FSRS membership at the deadline.
+      if (card?.isConnected === false) {
+        settle();
+      } else if (isCombatAutoEnabled() && hasKnownCardVocabulary(card)) {
+        requestContinue();
+      } else {
+        setLabel('tap to continue');
+      }
+    }, ATTACK_CARD_TIMING.AUTO_CONTINUE_DELAY);
+  }
+
+  unsubscribeAuto = subscribeCombatAutoMode(updateAutoContinue);
   if (eventTarget) {
     eventTarget.addEventListener('click', onTap);
   }
@@ -364,6 +420,7 @@ export function createAttackCardContinueControl(card) {
       return new Promise((resolve) => {
         waitingResolve = resolve;
         if (requested) finish();
+        else updateAutoContinue();
       });
     },
     requestContinue,

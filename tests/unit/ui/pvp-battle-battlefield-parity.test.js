@@ -1,5 +1,6 @@
 import { beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { isCombatAutoEnabled, setCombatAutoEnabled, setPvpCombatAutoContext } from '../../../public/js/ui/combat-auto-mode.js';
 
 const socketHandlers = {};
 const moveSelections = [];
@@ -12,6 +13,8 @@ await mock.module('../../../public/js/pvp-socket.js', {
     off: (event) => { delete socketHandlers[event]; },
     emit: () => {},
     submitAction: () => {},
+    leaveMatch: () => {},
+    disconnect: () => {},
   },
 });
 await mock.module('../../../public/js/audio.js', {
@@ -59,6 +62,8 @@ describe('PvP battlefield layout parity', () => {
   beforeEach(() => {
     for (const event of Object.keys(socketHandlers)) delete socketHandlers[event];
     moveSelections.length = 0;
+    setPvpCombatAutoContext(false);
+    setCombatAutoEnabled(false);
     attackDisplayImpl = () => {};
     effectEventsImpl = async () => {};
     globalThis.document = {
@@ -67,6 +72,31 @@ describe('PvP battlefield layout parity', () => {
     };
     globalThis.performance = { now: () => 0 };
     globalThis.requestAnimationFrame = () => {};
+  });
+
+  it('makes Auto available for a match and clears it after results and return', () => {
+    const clickHandlers = {};
+    const state = { phase: 'pvp_lobby' };
+    globalThis.document.getElementById = (id) => ({
+      addEventListener: (event, handler) => { clickHandlers[id] = handler; },
+    });
+    init({
+      getGameState: () => state,
+      updateUI: () => {},
+      actions: { setContent: () => {} },
+      scene: { showFormation: () => {} },
+    });
+    setCombatAutoEnabled(true);
+    const match = { yourTeam: [{ hp: 10 }], opponentTeam: [{ hp: 10 }], opponentName: 'Rival' };
+    startPvpBattle(match);
+    assert.equal(isCombatAutoEnabled(), true);
+    socketHandlers['pvp:match-end']({ winnerId: 'rival', winnerName: 'Rival' });
+    assert.equal(isCombatAutoEnabled(), false);
+    clickHandlers['pvp-result-hub-btn']();
+    assert.equal(state.phase, 'hub');
+    assert.equal(isCombatAutoEnabled(), false);
+    startPvpBattle(match);
+    assert.equal(isCombatAutoEnabled(), true, 'the next match restores the session preference');
   });
 
   it('renders PvP formations through the shared showFormation path', () => {
@@ -131,6 +161,7 @@ describe('PvP battlefield layout parity', () => {
 
   it('waits for terminal action playback before rendering match end', async () => {
     const contentRenders = [];
+    setCombatAutoEnabled(true);
     let finishAttackDisplay;
     attackDisplayImpl = () => new Promise(resolve => { finishAttackDisplay = resolve; });
 
@@ -181,9 +212,11 @@ describe('PvP battlefield layout parity', () => {
       'terminal result must not render while action playback can still repaint combat UI'
     );
 
+    assert.equal(isCombatAutoEnabled(), true, 'Auto remains usable until the last attack finishes');
     finishAttackDisplay();
     await new Promise(resolve => setTimeout(resolve, 0));
 
+    assert.equal(isCombatAutoEnabled(), false, 'Auto hides when the final result renders');
     assert.equal(
       contentRenders.some(html => html.includes('Defeat')),
       true,

@@ -113,6 +113,7 @@ import * as diagnostics from './js/diagnostics.js';
 import * as pvpLobbyUI from './js/ui/pvp-lobby.js';
 import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import { isPvpBattleActive } from './js/ui/pvp-battle.js';
+import { initCombatAutoMode, updateExploreCombatAutoContext, setPvpCombatAutoContext, setCombatAutoEnabled } from './js/ui/combat-auto-mode.js';
 import * as speedReview from './js/ui/speed-review.js';
 import * as kanjiKombatUI from './js/ui/kanji-kombat.js';
 import * as chestsUI from './js/ui/chests.js';
@@ -283,6 +284,7 @@ function updateGameState(newState) {
   console.log('[DEBUG] updateGameState called. phase:', newState.phase, 'pendingBranch:', newState.run?.pendingBranch, 'currentRoom:', newState.run?.currentRoom);
   gameState = newState;
   gameStateRevision += 1;
+  updateExploreCombatAutoContext(gameState, { playbackActive: combatAnimationActive });
   store.set('gameState', gameState);
   // Test seam: expose the live client state so automated harnesses can read
   // phase / room / runway WITHOUT fetching GET /api/game/state (which rotates
@@ -506,6 +508,7 @@ let sceneTransitionActive = false;
 let lastNarrationHidePhase = null;
 
 function updateUI() {
+  updateExploreCombatAutoContext(gameState, { playbackActive: combatAnimationActive });
   // Clear narration on phase transitions, but preserve active dialogue during
   // same-phase refreshes such as skill offer loading in the opening tutorial.
   const phaseChangedForNarration = lastNarrationHidePhase !== gameState.phase;
@@ -596,6 +599,12 @@ function handleConnectionOnline(...args) {
 }
 
 function clearClientSessionState() {
+  // FSRS membership and Auto preference belong to the current signed-in player.
+  // If the next account's vocabulary fetch fails, keep its results manual.
+  setKnownWords([]);
+  setCombatAutoEnabled(false);
+  setPvpCombatAutoContext(false);
+  updateExploreCombatAutoContext(null);
   const nextState = resetClientSessionState(gameState, {
     cleanupCombat: () => combatLoopUI.cleanupCombat(),
     clearActions: () => actions.clear(),
@@ -1847,6 +1856,8 @@ async function startEncounter() {
 
 
 async function returnToHub() {
+  setPvpCombatAutoContext(false);
+  updateExploreCombatAutoContext(null);
   diagnostics.logAction('return_to_hub');
   if (combatLoopUI.isCombatActive()) {
     combatLoopUI.cleanupCombat();
@@ -1876,6 +1887,7 @@ function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 // BattleScene → ExplorationScene so player sprites stay visible through
 // the victory window (ghost-formation fix).
 function showVictoryModal(result) {
+  updateExploreCombatAutoContext(null);
   audio.stopBGM();
   actions.clear();
 
@@ -1907,6 +1919,7 @@ function showVictoryModal(result) {
 // "return to hub" (returnToHubCb fires loadGameState + updateUI). Awaited by
 // stopCombatLoop so BattleScene stays up through the defeat screen.
 async function showAdventureReport(isVictory, outcome = isVictory ? 'victory' : 'defeat') {
+  updateExploreCombatAutoContext(null);
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   const endingState = gameState;
@@ -1940,6 +1953,7 @@ async function showAdventureReport(isVictory, outcome = isVictory ? 'victory' : 
 }
 
 function showGameOverModal(result) {
+  updateExploreCombatAutoContext(null);
   audio.stopBGM();
   audio.playSFX('defeat');
   actions.clear();
@@ -1961,6 +1975,7 @@ function canRetryPostCombatShop(state) {
 }
 
 async function showPostCombatShopFlow() {
+  updateExploreCombatAutoContext(null);
   try {
     const shopResult = await apiRollPostCombatShop();
     if (!shopResult?.items?.length) return;
@@ -2566,6 +2581,8 @@ async function initGame() {
     scene,
   });
 
+  initCombatAutoMode();
+
   pvpBattleUI.init({
     getGameState: () => gameState,
     updateUI,
@@ -2691,7 +2708,10 @@ async function initGame() {
       currentFlashCardWord = words.length === 1 ? words[0] : null;
       actions.showFlashCards(words, options);
     },
-    setCombatAnimationActive: (active) => { combatAnimationActive = active; },
+    setCombatAnimationActive: (active) => {
+      combatAnimationActive = active;
+      updateExploreCombatAutoContext(gameState, { playbackActive: active });
+    },
     apiCreatureCombatCycle,
     apiVerifyCreatureCombatCycle,
     apiSubmitKanjiKombatAnswer,
